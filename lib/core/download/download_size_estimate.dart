@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../models/video_source.dart';
+import 'dash_manifest.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Download size estimates. Shown with a "~" and used only for display + the
@@ -34,6 +35,24 @@ List<HlsVariant> parseHlsVariants(String manifest) {
   }
   out.sort((a, b) => b.bandwidth.compareTo(a.bandwidth));
   return out;
+}
+
+/// Total bitrate (bits/s) of the DASH tracks an episode download would fetch:
+/// the video representation closest to [quality] plus the best audio
+/// representation. Null when the manifest states no usable bandwidth.
+///
+/// Reuses [parseDashManifest] so the estimate matches what the downloader will
+/// actually pick; it is only a display estimate, never a decision.
+int? dashTotalBitrate(String mpd, String? quality) {
+  final manifest = parseDashManifest(
+    mpd,
+    'https://estimate.invalid/',
+    quality: quality ?? 'best',
+  );
+  if (manifest == null || manifest.isEmpty) return null;
+  final total =
+      (manifest.video?.bandwidth ?? 0) + (manifest.audio?.bandwidth ?? 0);
+  return total > 0 ? total : null;
 }
 
 /// Height parsed from a quality label like "1080p" or "720p60", else null
@@ -118,7 +137,34 @@ Future<SizeEstimate?> estimateEpisodeBytes(
   final uri = Uri.tryParse(url);
   if (uri == null || !uri.hasScheme) return null;
   if (url.contains('.mpd')) {
-    return null; // DASH sizes aren't cheap to derive
+    // DASH: the manifest states each representation's bandwidth, so a size is
+    // bitrate × runtime — the same estimate HLS masters get. Parse it rather
+    // than skip; a wrong-by-a-bit estimate beats "unknown" for the storage
+    // warning. Falls back to null when the runtime or bitrate is missing.
+    final headers = source.headers ?? const <String, String>{};
+    final owned = client == null;
+    final http = client ?? HttpClient();
+    http.connectionTimeout = const Duration(seconds: 8);
+    try {
+      final req = await http.getUrl(uri);
+      headers.forEach(req.headers.set);
+      final res = await req.close().timeout(const Duration(seconds: 10));
+      if (res.statusCode < 200 || res.statusCode >= 400) return null;
+      final bytes = await res.fold<List<int>>(<int>[], (buffer, chunk) {
+        if (buffer.length + chunk.length > 2 * 1024 * 1024) {
+          throw const FormatException('MPD too large for a size estimate');
+        }
+        return buffer..addAll(chunk);
+      }).timeout(const Duration(seconds: 10));
+      final runtimeSec = (runtimeMinutes ?? 0) * 60;
+      final bitrate = dashTotalBitrate(utf8.decode(bytes), source.quality);
+      if (bitrate == null || runtimeSec <= 0) return null;
+      return (bytes: bitrate ~/ 8 * runtimeSec, solid: false);
+    } catch (_) {
+      return null;
+    } finally {
+      if (owned) http.close(force: true);
+    }
   }
   final isHls =
       source.container == SourceContainer.hls || url.contains('.m3u8');

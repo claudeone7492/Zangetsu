@@ -586,6 +586,21 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
                             }.start()
                         }
                     }
+                    // Mux a DASH episode's separately-downloaded fMP4 video and
+                    // audio tracks into one playable MP4 (MediaMuxer stream-copy).
+                    "muxDashToMp4" -> {
+                        val video = call.argument<String>("video")
+                        val audio = call.argument<String>("audio")
+                        val output = call.argument<String>("output")
+                        if (video.isNullOrEmpty() || output.isNullOrEmpty()) {
+                            result.error("BAD_ARGS", "video/output required", null)
+                        } else {
+                            Thread {
+                                val ok = com.spyou.watch_app.download.DashMuxer.mux(video, audio, output)
+                                runOnUiThread { result.success(ok) }
+                            }.start()
+                        }
+                    }
                     // Detected storage volumes the app can write to WITHOUT the SAF
                     // picker (which Android TV usually lacks): internal + any SD/USB
                     // drive, as app-specific external dirs from getExternalFilesDirs.

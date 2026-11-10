@@ -41,6 +41,33 @@ import UIKit
       channel.setMethodCallHandler(bridge.handle)
     }
 
+    // Download channel: mux a DASH episode's separately-downloaded fMP4 video
+    // and audio tracks into one MP4 (AVFoundation passthrough). Runs off the
+    // main thread; returns false on any failure so Dart can fall back.
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "DashMuxer") {
+      let channel = FlutterMethodChannel(
+        name: "zangetsu/download",
+        binaryMessenger: registrar.messenger()
+      )
+      channel.setMethodCallHandler { call, result in
+        guard call.method == "muxDashToMp4" else {
+          result(FlutterMethodNotImplemented)
+          return
+        }
+        guard let args = call.arguments as? [String: Any],
+              let video = args["video"] as? String,
+              let output = args["output"] as? String else {
+          result(FlutterError(code: "BAD_ARGS", message: "video/output required", details: nil))
+          return
+        }
+        let audio = args["audio"] as? String
+        DispatchQueue.global(qos: .userInitiated).async {
+          let ok = DashMuxer.mux(videoPath: video, audioPath: audio, outputPath: output)
+          DispatchQueue.main.async { result(ok) }
+        }
+      }
+    }
+
     // Novel-fetch channel: the iOS twin of Android's NovelHttp. The LNReader
     // plugin's HTTP goes through URLSession here instead of Dart's HTTP client,
     // because URLSession rides the system TLS stack (a Safari-like fingerprint)

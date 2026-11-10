@@ -18,6 +18,7 @@
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		A91E7D39F31B4EED9A0D67B1 /* MangaTranslationBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A91E7D39F31B4EED9A0D67B0 /* MangaTranslationBridge.swift */; };
+		F1A0C0DE0005DASHMUX02 /* DashMuxer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A0C0DE0004DASHMUX01 /* DashMuxer.swift */; };
 		B8F1170E2A2D410100000001 /* MangayomiCloudflareBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F1170E2A2D410100000002 /* MangayomiCloudflareBridge.swift */; };
 		D9F1340E2A2D410100000001 /* PhoneVoiceSearchBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F1340E2A2D410100000002 /* PhoneVoiceSearchBridge.swift */; };
 		F2A7815711DBDC43F90BF104 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E275654149C45B4B791D90E /* Pods_RunnerTests.framework */; };
@@ -70,6 +71,7 @@
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A91E7D39F31B4EED9A0D67B0 /* MangaTranslationBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaTranslationBridge.swift; sourceTree = "<group>"; };
+		F1A0C0DE0004DASHMUX01 /* DashMuxer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashMuxer.swift; sourceTree = "<group>"; };
 		B8F1170E2A2D410100000002 /* MangayomiCloudflareBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangayomiCloudflareBridge.swift; sourceTree = "<group>"; };
 		BE6D4D512D3DF17C0419DFBF /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
 		C0C3AF967BF035541D547E99 /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
@@ -174,6 +176,7 @@
 				1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */,
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				A91E7D39F31B4EED9A0D67B0 /* MangaTranslationBridge.swift */,
+				F1A0C0DE0004DASHMUX01 /* DashMuxer.swift */,
 				B8F1170E2A2D410100000002 /* MangayomiCloudflareBridge.swift */,
 				D9F1340E2A2D410100000002 /* PhoneVoiceSearchBridge.swift */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
@@ -438,6 +441,7 @@
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				A91E7D39F31B4EED9A0D67B1 /* MangaTranslationBridge.swift in Sources */,
+				F1A0C0DE0005DASHMUX02 /* DashMuxer.swift in Sources */,
 				B8F1170E2A2D410100000001 /* MangayomiCloudflareBridge.swift in Sources */,
 				D9F1340E2A2D410100000001 /* PhoneVoiceSearchBridge.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,

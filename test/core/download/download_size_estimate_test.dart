@@ -9,6 +9,31 @@ VideoSource src(String url, {String? quality}) =>
     VideoSource(url: url, quality: quality, container: SourceContainer.mp4);
 
 void main() {
+  group('dashTotalBitrate', () {
+    const mpd = '''
+<MPD>
+  <Period>
+    <AdaptationSet mimeType="video/mp4">
+      <Representation id="a" bandwidth="800000" height="720"/>
+      <Representation id="b" bandwidth="2000000" height="1080"/>
+    </AdaptationSet>
+    <AdaptationSet mimeType="audio/mp4">
+      <Representation id="c" bandwidth="128000"/>
+    </AdaptationSet>
+  </Period>
+</MPD>
+''';
+
+    test('adds the requested video bitrate to the best audio', () {
+      expect(dashTotalBitrate(mpd, '720p'), 800000 + 128000);
+      expect(dashTotalBitrate(mpd, 'best'), 2000000 + 128000);
+    });
+
+    test('is null when no bandwidth is stated', () {
+      expect(dashTotalBitrate('<MPD><Period/></MPD>', 'best'), isNull);
+    });
+  });
+
   group('parseHlsVariants', () {
     test('reads bandwidth and height, fastest first', () {
       const manifest = '''
@@ -141,6 +166,19 @@ novariant.m3u8
             'hi.m3u8\n',
           );
           await req.response.close();
+        } else if (req.uri.path == '/x.mpd') {
+          req.response.headers.contentType = ContentType.text;
+          req.response.write(
+            '<MPD><Period>'
+            '<AdaptationSet mimeType="video/mp4">'
+            '<Representation id="v" bandwidth="4000000" height="1080"/>'
+            '</AdaptationSet>'
+            '<AdaptationSet mimeType="audio/mp4">'
+            '<Representation id="a" bandwidth="128000"/>'
+            '</AdaptationSet>'
+            '</Period></MPD>',
+          );
+          await req.response.close();
         } else if (req.uri.path == '/error.mp4') {
           req.response.statusCode = HttpStatus.forbidden;
           req.response.headers.contentLength = 128;
@@ -223,11 +261,14 @@ novariant.m3u8
       );
     });
 
-    test('dash is skipped without fetching', () async {
-      expect(
-        await estimateEpisodeBytes(src('${base.replace(path: '/x.mpd')}')),
-        isNull,
+    test('dash estimates from the manifest bitrates, not solid', () async {
+      final est = await estimateEpisodeBytes(
+        src('${base.replace(path: '/x.mpd')}'),
+        runtimeMinutes: 24,
       );
+      // (4_000_000 + 128_000) bits/s ÷ 8 × 1440s.
+      expect(est?.bytes, (4000000 + 128000) ~/ 8 * 1440);
+      expect(est?.solid, isFalse);
     });
   });
 }

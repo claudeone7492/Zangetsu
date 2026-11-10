@@ -227,19 +227,29 @@ class DownloadManager extends ChangeNotifier {
         if (rec == null || rec.status == DownloadStatus.canceled) return;
         _candidates.remove(id);
         var path = d?['filePath'] as String?;
-        // The isolate handed back the local .ts temp; remux it to a real .mp4
-        // (Android) and move it into shared storage / the user's SAF folder here.
+        // The isolate handed back the local temp; finalize it here (HLS: remux
+        // TS→MP4; DASH: mux the split tracks) and move it into shared storage /
+        // the user's SAF folder.
         if (path != null && d?['needsFinalize'] == true) {
-          // Say so. Joining, remuxing and moving rewrite the whole file, and
+          // Say so. Joining, muxing and moving rewrite the whole file, and
           // the progress bar only ever measured the fetch — so it has been
           // sitting at 100% through all of it, looking hung.
           _put(rec.copyWith(status: DownloadStatus.finalizing));
           notifyListeners();
-          final finalized = await _finalizeHls(
-            path,
-            customUri: d?['customUri'] as String?,
-            subDir: d?['sharedSubDir'] as String?,
-          );
+          final isDashResult = d?['dash'] == true;
+          final audio = d?['audioPath'] as String?;
+          final finalized = isDashResult
+              ? await _finalizeDash(
+                  path,
+                  audioPath: audio,
+                  customUri: d?['customUri'] as String?,
+                  subDir: d?['sharedSubDir'] as String?,
+                )
+              : await _finalizeHls(
+                  path,
+                  customUri: d?['customUri'] as String?,
+                  subDir: d?['sharedSubDir'] as String?,
+                );
           if (finalized != null) path = finalized;
         }
         await _markDone(rec, path);
@@ -318,15 +328,22 @@ class DownloadManager extends ChangeNotifier {
             if (status == 'done') {
               _candidates.remove(id);
               var path = m['filePath'] as String?;
-              // App was killed before the live finalize ran — remux + move now.
+              // App was killed before the live finalize ran — remux/mux now.
               if (path != null && m['needsFinalize'] == true) {
                 _put(rec.copyWith(status: DownloadStatus.finalizing));
                 notifyListeners();
-                final finalized = await _finalizeHls(
-                  path,
-                  customUri: m['customUri'] as String?,
-                  subDir: m['sharedSubDir'] as String?,
-                );
+                final finalized = m['dash'] == true
+                    ? await _finalizeDash(
+                        path,
+                        audioPath: m['audioPath'] as String?,
+                        customUri: m['customUri'] as String?,
+                        subDir: m['sharedSubDir'] as String?,
+                      )
+                    : await _finalizeHls(
+                        path,
+                        customUri: m['customUri'] as String?,
+                        subDir: m['sharedSubDir'] as String?,
+                      );
                 if (finalized != null) path = finalized;
               }
               await _markDone(rec, path);
@@ -664,8 +681,10 @@ class DownloadManager extends ChangeNotifier {
   ///
   /// Auto Resolve already walks every candidate in priority order; this hands
   /// it the extra condition downloading needs, so it keeps going past a source
-  /// whose streams are all manifests instead of settling on it. One sweep, not
-  /// one sweep per rejected source — that was quadratic and froze the app.
+  /// with nothing in the requested category instead of settling on it. HLS and
+  /// DASH both download now, so any category-matching stream qualifies. One
+  /// sweep, not one sweep per rejected source — that was quadratic and froze
+  /// the app.
   Future<bool> _tryAnotherSource(DownloadRecord rec) async {
     if (!ZmodeIds.isZ(rec.episodeUrl)) {
       return false; // only the catalogue sweeps
@@ -678,10 +697,8 @@ class DownloadManager extends ChangeNotifier {
     try {
       final next = await GetIt.I<MetadataRepository>().sourcesWhere(
         rec.episodeUrl,
-        (streams) => sourcesForDownloadCategory(
-          streams,
-          rec.category,
-        ).any((s) => !isDash(s)),
+        (streams) =>
+            sourcesForDownloadCategory(streams, rec.category).isNotEmpty,
       );
       if (_isCanceled(rec.id)) return true;
       final ranked = _ranked(next.streams, rec.quality, category: rec.category);
@@ -718,12 +735,20 @@ class DownloadManager extends ChangeNotifier {
       await _startHlsDownload(rec, source);
       return;
     }
+    if (isDash(source)) {
+      await _startHlsDownload(rec, source, dash: true);
+      return;
+    }
     if (isTorrentSource(source)) {
       final http = await _maybeDebridHttp(rec, source);
       if (http == null) return; // torrent path started, or Always failed
       source = http;
       if (_isHls(source)) {
         await _startHlsDownload(rec, source);
+        return;
+      }
+      if (isDash(source)) {
+        await _startHlsDownload(rec, source, dash: true);
         return;
       }
     }
@@ -791,7 +816,11 @@ class DownloadManager extends ChangeNotifier {
   /// true background. We resolve the path here (UI isolate owns path_provider),
   /// start the service, and dispatch the job; progress/done/failed come back via
   /// [_listenBackgroundService].
-  Future<void> _startHlsDownload(DownloadRecord rec, VideoSource source) async {
+  Future<void> _startHlsDownload(
+    DownloadRecord rec,
+    VideoSource source, {
+    bool dash = false,
+  }) async {
     _put(rec.copyWith(status: DownloadStatus.downloading, progress: 0));
     notifyListeners();
     HlsDownloadJournal? journal;
@@ -800,22 +829,25 @@ class DownloadManager extends ChangeNotifier {
       final safeShow = _safe(rec.showTitle);
       final dir = Directory('${docs.path}/$_sharedDir/$safeShow');
       await dir.create(recursive: true);
-      // Download the concatenated TS to a local temp with an honest .ts name;
-      // the main isolate finalizes it (remux → real .mp4 on Android, else keep
-      // the .ts) once the service reports done — see _finalizeHls.
-      final outputPath =
+      // HLS: download the concatenated TS to a local temp with an honest .ts
+      // name. DASH: download the split fMP4 tracks beside a .mp4 base name. The
+      // main isolate finalizes either (remux TS→MP4, or mux the DASH tracks)
+      // once the service reports done — see _finalizeHls / _finalizeDash.
+      final base =
           '${dir.path}/${safeShow}_E${rec.episodeNumber?.toInt() ?? ''}'
-          '_${_safe(rec.quality)}.ts';
+          '_${_safe(rec.quality)}';
+      final outputPath = dash ? '$base.mp4' : '$base.ts';
 
-      // Background HLS isolate needs flutter_background_service (Android/iOS only).
+      // The background isolate needs flutter_background_service (Android/iOS).
       if (isAppleTv) {
         throw UnsupportedError(
-          'Background HLS downloads are not available on Apple TV',
+          'Background segment downloads are not available on Apple TV',
         );
       }
 
       final job = <String, dynamic>{
         'id': rec.id,
+        'kind': dash ? 'dash' : 'hls',
         'url': source.url,
         'headers': source.headers ?? const <String, String>{},
         'outputPath': outputPath,
@@ -858,6 +890,30 @@ class DownloadManager extends ChangeNotifier {
   static const MethodChannel _downloadChannel = MethodChannel(
     'zangetsu/download',
   );
+
+  /// Mux a DASH episode's separately-downloaded fMP4 [video] + [audio] tracks
+  /// into one MP4 via the native muxer (Android MediaMuxer / iOS AVFoundation).
+  /// Returns true on success; false when the native muxer is absent or fails,
+  /// so the caller can fall back to keeping the video track alone.
+  Future<bool> _muxDashToMp4(
+    String video,
+    String? audio,
+    String output,
+  ) async {
+    if (!Platform.isAndroid && !Platform.isIOS) return false;
+    try {
+      final ok = await _downloadChannel
+          .invokeMethod<bool>('muxDashToMp4', {
+            'video': video,
+            'audio': audio,
+            'output': output,
+          })
+          .timeout(_remuxTimeout, onTimeout: () => false);
+      return ok ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
 
   /// Remux the concatenated-TS file at [input] into a real MP4 at [output] via
   /// the native MediaMuxer (stream-copy). Returns true on success; false on
@@ -984,6 +1040,81 @@ class DownloadManager extends ChangeNotifier {
     if (dest != VideoDestination.publicDownloads) {
       // privateStorage: the remuxed file is already in app-documents.
       return publish;
+    }
+    try {
+      final moved = await _fileDownloader.moveFileToSharedStorage(
+        publish,
+        SharedStorage.downloads,
+        directory: dir,
+      );
+      return moved ?? publish;
+    } catch (_) {
+      return publish;
+    }
+  }
+
+  /// Finalizes a DASH download: mux the separately-downloaded [videoPath] and
+  /// [audioPath] fMP4 tracks into one playable `.mp4`, then move it into the
+  /// custom SAF folder / public Downloads / a detected drive — exactly like
+  /// [_finalizeHls]. When the native muxer is unavailable or fails we keep the
+  /// video track alone (a silent video is better than nothing; the audio track
+  /// is deleted either way so it never strands).
+  Future<String?> _finalizeDash(
+    String videoPath, {
+    String? audioPath,
+    String? customUri,
+    String? subDir,
+  }) async {
+    final dir = subDir ?? _sharedDir;
+    final dest = videoDestination(
+      keepPrivate: _downloadPrefs.keepPrivate,
+      locationUri: customUri,
+    );
+    final isVolume = dest == VideoDestination.detectedVolume;
+
+    // Mux onto the target where possible to avoid a big post-move.
+    String? muxed;
+    var muxedOnVolume = false;
+    if (isVolume && customUri != null) {
+      try {
+        final destDir = Directory('$customUri/$dir');
+        await destDir.create(recursive: true);
+        final out =
+            '${destDir.path}/${_withExt(videoPath.split('/').last, 'mp4')}';
+        if (await _muxDashToMp4(videoPath, audioPath, out)) {
+          muxed = out;
+          muxedOnVolume = true;
+        }
+      } catch (_) {}
+    }
+    if (muxed == null) {
+      final out = _withExt(videoPath, 'mp4');
+      if (await _muxDashToMp4(videoPath, audioPath, out)) muxed = out;
+    }
+    // Keep the video track if muxing failed; drop the now-redundant audio.
+    final publish = muxed ?? videoPath;
+    for (final p in [videoPath, audioPath]) {
+      if (p != null && p != publish) {
+        try {
+          final f = File(p);
+          if (await f.exists()) await f.delete();
+        } catch (_) {}
+      }
+    }
+    if (muxedOnVolume) return muxed; // already written straight onto the volume
+    if (dest == VideoDestination.safTree && customUri != null) {
+      final moved = await _moveIntoTree(
+        publish,
+        customUri,
+        publish.split('/').last,
+      );
+      return moved ?? publish;
+    }
+    if (isVolume && customUri != null) {
+      return await _moveToVolume(publish, customUri, dir) ?? publish;
+    }
+    if (dest != VideoDestination.publicDownloads) {
+      return publish; // privateStorage: already in app-documents
     }
     try {
       final moved = await _fileDownloader.moveFileToSharedStorage(
@@ -1896,13 +2027,10 @@ class DownloadManager extends ChangeNotifier {
   }
 
   /// A DASH manifest — a few KB of XML listing where the video lives, not the
-  /// video. There is no DASH segment downloader here (HLS has one), so these
-  /// can never produce a file.
-  ///
-  /// Worth spotting BEFORE downloading: without this the manifest is fetched
-  /// as if it were the episode, and only the "under 512KB isn't a video" guard
-  /// catches it — after a request, a write and a delete, per server, on a
-  /// source where every server is DASH.
+  /// video. These download through the in-app DASH segment downloader (see
+  /// [_startHlsDownload] with `dash: true`), which fetches the split video and
+  /// audio tracks and muxes them; a manifest that can't be downloaded (CENC
+  /// encrypted, no resolvable track) is skipped by the normal try-next flow.
   static bool isDash(VideoSource s) =>
       (Uri.tryParse(s.url)?.path ?? s.url).toLowerCase().endsWith('.mpd');
 
@@ -2006,19 +2134,18 @@ class DownloadManager extends ChangeNotifier {
     return m == null ? 0 : int.parse(m.group(1)!);
   }
 
-  /// All sources (HLS + direct, both downloadable now) ordered for the requested
-  /// quality. 'best' = highest first; otherwise by CLOSENESS to the requested
-  /// height (so 360p gets the smallest file) — ties go to the higher quality.
-  /// The full ordered list doubles as the try-next fallback.
+  /// All sources (HLS, DASH + direct — all downloadable now) ordered for the
+  /// requested quality. 'best' = highest first; otherwise by CLOSENESS to the
+  /// requested height (so 360p gets the smallest file) — ties go to the higher
+  /// quality. The full ordered list doubles as the try-next fallback.
   static List<VideoSource> _ranked(
     List<VideoSource> sources,
     String quality, {
     required String category,
   }) {
-    // Drop what cannot become a file at all, rather than finding out by
-    // downloading it.
-    final byCategory = sourcesForDownloadCategory(sources, category);
-    final list = List<VideoSource>.from(byCategory.where((s) => !isDash(s)));
+    final list = List<VideoSource>.from(
+      sourcesForDownloadCategory(sources, category),
+    );
     if (list.isEmpty) return const [];
     if (quality == 'best') {
       list.sort((a, b) => _height(b).compareTo(_height(a)));
