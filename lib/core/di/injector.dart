@@ -136,6 +136,7 @@ import '../../features/watch_together/watch_room_service.dart';
 import '../../features/watch_together/watch_together_controller.dart';
 import '../cast/cast_controller.dart';
 import '../cast/cast_proxy.dart';
+import '../comments/episode_comments_service.dart';
 import '../supabase/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show OtpType;
 
@@ -265,6 +266,9 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   // Supabase is already Supabase.initialize()d in main.dart; this is just the
   // thin client wrapper the stores/services depend on.
   sl.registerSingleton<SupabaseService>(SupabaseService());
+  sl.registerLazySingleton<EpisodeCommentsService>(
+    () => EpisodeCommentsService(sl<SupabaseService>()),
+  );
   sl.registerLazySingleton<TvPairingService>(
     () => TvPairingService(sl<SupabaseService>()),
   );

@@ -461,7 +461,42 @@
 			}
 		}
 	},
-	"watchComments": "Comments",
+        "watchComments": "Comments",
+        "commentsEmpty": "No comments yet — start the conversation.",
+        "commentsSignInToComment": "Sign in to join the conversation.",
+        "commentsPlaceholder": "Add a comment…",
+        "commentsPost": "Post",
+        "commentsEdited": "edited",
+        "commentsYou": "You",
+        "commentsDelete": "Delete comment",
+        "commentsDeleteConfirm": "Delete this comment?",
+        "commentsLoadFailed": "Couldn't load comments",
+        "commentsPostFailed": "Couldn't post your comment",
+        "commentsJustNow": "just now",
+        "commentsMinutesAgo": "{count}m ago",
+        "@commentsMinutesAgo": {
+                "placeholders": {
+                        "count": {
+                                "type": "int"
+                        }
+                }
+        },
+        "commentsHoursAgo": "{count}h ago",
+        "@commentsHoursAgo": {
+                "placeholders": {
+                        "count": {
+                                "type": "int"
+                        }
+                }
+        },
+        "commentsDaysAgo": "{count}d ago",
+        "@commentsDaysAgo": {
+                "placeholders": {
+                        "count": {
+                                "type": "int"
+                        }
+                }
+        },
 	"watchEpisodes": "Episodes",
 	"watchComingSoon": "Coming soon",
 	"watchAutoplay": "Auto-play",

@@ -2265,6 +2265,90 @@ abstract class AppLocalizations {
   /// **'Comments'**
   String get watchComments;
 
+  /// No description provided for @commentsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet — start the conversation.'**
+  String get commentsEmpty;
+
+  /// No description provided for @commentsSignInToComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to join the conversation.'**
+  String get commentsSignInToComment;
+
+  /// No description provided for @commentsPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a comment…'**
+  String get commentsPlaceholder;
+
+  /// No description provided for @commentsPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Post'**
+  String get commentsPost;
+
+  /// No description provided for @commentsEdited.
+  ///
+  /// In en, this message translates to:
+  /// **'edited'**
+  String get commentsEdited;
+
+  /// No description provided for @commentsYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get commentsYou;
+
+  /// No description provided for @commentsDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete comment'**
+  String get commentsDelete;
+
+  /// No description provided for @commentsDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this comment?'**
+  String get commentsDeleteConfirm;
+
+  /// No description provided for @commentsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load comments'**
+  String get commentsLoadFailed;
+
+  /// No description provided for @commentsPostFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t post your comment'**
+  String get commentsPostFailed;
+
+  /// No description provided for @commentsJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get commentsJustNow;
+
+  /// No description provided for @commentsMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}m ago'**
+  String commentsMinutesAgo(int count);
+
+  /// No description provided for @commentsHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}h ago'**
+  String commentsHoursAgo(int count);
+
+  /// No description provided for @commentsDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}d ago'**
+  String commentsDaysAgo(int count);
+
   /// No description provided for @watchEpisodes.
   ///
   /// In en, this message translates to:

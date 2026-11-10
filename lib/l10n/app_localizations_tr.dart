@@ -1179,6 +1179,54 @@ class AppLocalizationsTr extends AppLocalizations {
   String get watchComments => 'Comments';
 
   @override
+  String get commentsEmpty => 'No comments yet — start the conversation.';
+
+  @override
+  String get commentsSignInToComment => 'Sign in to join the conversation.';
+
+  @override
+  String get commentsPlaceholder => 'Add a comment…';
+
+  @override
+  String get commentsPost => 'Post';
+
+  @override
+  String get commentsEdited => 'edited';
+
+  @override
+  String get commentsYou => 'You';
+
+  @override
+  String get commentsDelete => 'Delete comment';
+
+  @override
+  String get commentsDeleteConfirm => 'Delete this comment?';
+
+  @override
+  String get commentsLoadFailed => 'Couldn\'t load comments';
+
+  @override
+  String get commentsPostFailed => 'Couldn\'t post your comment';
+
+  @override
+  String get commentsJustNow => 'just now';
+
+  @override
+  String commentsMinutesAgo(int count) {
+    return '${count}m ago';
+  }
+
+  @override
+  String commentsHoursAgo(int count) {
+    return '${count}h ago';
+  }
+
+  @override
+  String commentsDaysAgo(int count) {
+    return '${count}d ago';
+  }
+
+  @override
   String get watchEpisodes => 'Episodes';
 
   @override

@@ -61,12 +61,14 @@ import '../../core/ui/subtitle_language_picker.dart';
 import '../detail/cubit/detail_cubit.dart' show seasonOf, seasonsOf;
 import '../../core/cast/cast_controller.dart';
 import '../../core/cast/cast_proxy.dart';
+import '../../core/discord/discord_presence.dart';
 import '../watch_together/watch_together_controller.dart';
 import '../watch_together/ui/room_panel.dart';
 import '../../core/app_mode.dart';
 import '../../core/tv/tv_focusable.dart';
 import '../settings/settings_screen.dart';
 import 'player_controller.dart';
+import 'episode_comments_sheet.dart';
 import 'player_watch_page.dart';
 import 'watch_page_motion.dart';
 import 'watch_page_info.dart';
@@ -2547,37 +2549,24 @@ class _PlayerScreenState extends State<PlayerScreen> {
     autoSkipFiller: sl<PlaybackPrefs>().autoSkipFiller,
   );
 
-  void _openComingSoonSheet() {
-    _sheet<void>(
-      _SheetSurface(
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.chat_bubble_outline_rounded,
-                  color: AppColors.accent,
-                  size: 28,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  context.l10n.watchComments,
-                  style: AppText.title.copyWith(color: Colors.white),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  context.l10n.watchComingSoon,
-                  style: AppText.body.copyWith(color: AppColors.textSecondary),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+  void _openCommentsSheet() {
+    final episodes = _c.episodes;
+    final idx = _c.state.currentIndex;
+    if (idx < 0 || idx >= episodes.length) return;
+    final ep = episodes[idx];
+    showEpisodeCommentsSheet(
+      context,
+      sourceId: widget.sourceId,
+      // The download icon's id is the stable show identity; fall back to the
+      // show URL (then source id) exactly as it does, so a stream and its
+      // downloaded copy share one thread.
+      showId:
+          widget.downloadShowId ??
+          _resolvedWatchDownloadId ??
+          widget.showUrl ??
+          widget.sourceId,
+      episodeId: ep.id,
+      episodeLabel: discordEpisodeLabel(ep, fallbackNumber: idx + 1),
     );
   }
 
@@ -2926,7 +2915,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         setState(() => _watchSeason = seasonOf(_c.episodes[i]));
         _c.openEpisode(i);
       },
-      onComments: _openComingSoonSheet,
+      onComments: _openCommentsSheet,
       onAutoplayChanged: _setAutoplayNext,
     );
   }
