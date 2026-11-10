@@ -23,6 +23,22 @@ import 'package:watch_app/core/zmode/zmode_ids.dart';
 import 'package:watch_app/features/detail/cubit/detail_cubit.dart';
 import 'package:watch_app/features/detail/wrong_title_sheet.dart';
 
+/// Polls [done] on the real event loop until it holds, then returns. The
+/// picker's pin is a real async Hive put; under a loaded full-suite run it can
+/// take longer than a fixed delay to land, so wait for the write itself rather
+/// than guessing a duration — the following assertion is then deterministic and
+/// no put is left in flight to hit a box the tearDown has already closed.
+Future<void> _awaitWrite(bool Function() done, {int tries = 400}) async {
+  for (var i = 0; i < tries; i++) {
+    if (done()) {
+      // Let the cubit's post-await emit run before runAsync exits.
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      return;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+  }
+}
+
 class _Src implements SourceRepository {
   _Src(this.bySource);
   final Map<String, List<MediaItem>> bySource;
@@ -230,7 +246,7 @@ void main() {
 
     await t.runAsync(() async {
       await t.tap(find.textContaining('HiAnime'));
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await _awaitWrite(() => sl<MatchStore>().get(fma, 'ani:2')?.pinned == true);
     });
     await t.pumpAndSettle();
 
@@ -261,7 +277,7 @@ void main() {
 
     await t.runAsync(() async {
       await t.tap(find.text('Fullmetal Alchemist (2003)').last);
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await _awaitWrite(() => sl<MatchStore>().get(fma, 'ani:1')?.pinned == true);
     });
     await t.pumpAndSettle();
 
@@ -299,7 +315,7 @@ void main() {
 
     await t.runAsync(() async {
       await t.tap(find.text('Fullmetal Alchemist (2003)').last);
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await _awaitWrite(() => sl<MatchStore>().get(fma, 'ani:1')?.pinned == true);
     });
     await t.pumpAndSettle();
 
@@ -385,7 +401,7 @@ void main() {
 
     await t.runAsync(() async {
       await t.tap(find.textContaining('HiAnime'));
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await _awaitWrite(() => sl<MatchStore>().get(fma, 'ani:2')?.pinned == true);
     });
     await t.pumpAndSettle();
 
@@ -451,7 +467,7 @@ void main() {
     await t.pumpAndSettle();
     await t.runAsync(() async {
       await t.tap(find.textContaining('HiAnime'));
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await _awaitWrite(() => sl<MatchStore>().get(manga, 'ani:2') != null);
     });
     await t.pumpAndSettle();
 
