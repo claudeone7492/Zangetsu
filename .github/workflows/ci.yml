@@ -45,6 +45,21 @@ jobs:
       # on the host runner; see dart_test.yaml. They run on-device instead.
       - run: flutter test --reporter expanded
 
+  js-providers:
+    name: JS providers (offline harness)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      # The provider .js files and their contract tests run on a plain Node
+      # runtime — no Flutter needed. Network-dependent cases are gated behind
+      # RUN_LIVE=1 and stay skipped here, so this job is hermetic: it proves
+      # every provider parses and answers getInfo, and that the first-party
+      # manifest only advertises files that actually load.
+      - run: node --test js_harness/*.test.mjs
+
   build-android:
     name: Build (Android)
     runs-on: ubuntu-latest
