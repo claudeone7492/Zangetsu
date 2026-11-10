@@ -234,3 +234,27 @@ feature is kept; no proprietary SDK is reintroduced.
 | `feature/tv-settings-restructure` | **skipped** — superseded by `4c032a57` "Consolidate TV and Mobile Settings pages" (file deleted on `main`) |
 | `feat/portrait-mini-player` | **skipped** — 1436 commits stale; portrait watch page already re-architected on `main` as `PlayerWatchPage` (`lib/features/player/player_watch_page.dart`). Merging would regress the current `PlayerScreen` (external-player, TV handoff, scrobble, `EpisodePlayerRoute`). |
 | `release/1.9.7` | **skipped** — a `1.9.7+11103 → 1.9.7+11104` build bump; `main` is already at `2.3.5+23637`. |
+
+### CI — all four jobs green
+Run `42815032016` on head `75b40950`: **Analyze ✅ · Test ✅ · Build (Android) ✅ · Build (iOS) ✅**.
+iOS needed one more fix: the pbxproj hard-referenced the gitignored
+`ios/Runner/GoogleService-Info.plist` in Copy Bundle Resources, so any clean checkout failed
+with "Build input file cannot be found". It is now bundled by an optional copy phase that
+no-ops when absent (Android already applied its Firebase plugin conditionally, and the Dart
+side already tolerated a missing plist).
+
+### Corrections to the original gap table (verified on the integration branch)
+Several rows were stale or misread; the underlying feature is already present:
+
+| Original claim | Reality |
+|---|---|
+| "HLS-only source download ❌ (`DownloadStatus.unsupported`, phase 2)" | **Already implemented.** `HlsDownloader` + `_startHlsDownload` (background isolate, journal, resume, AES-128, fMP4/TS, subtitles). The enum comment is stale. Only **DASH** (`.mpd`) has no downloader — `_ranked` drops it by design. |
+| "Watch Together / Watch Party ❌" | **Fully built, owner-disabled** (`e20d1d71 chore: disable watch together feature`). Supabase Broadcast/Presence backend, lobby, sync math and tests all exist. Left off deliberately — not re-enabled without an explicit go-ahead. |
+| "Nav-tabs preview 'Change content mode' ❌ (no-op)" | **False positive.** The real dock button opens a working `GlassMenu`; the `onTap: () {}` is a settings *preview* mock. |
+| "Profile 'more features' placeholder 🟡" | Intentional empty-state copy ("More features are on their way with Zoro…"), not a TODO. |
+
+### Genuinely remaining (not done, not owner-gated)
+- **DASH (`.mpd`) download** — no segment downloader; manifests are dropped as un-downloadable.
+- **Episode comments** — `player_screen.dart` `_openComingSoonSheet()` placeholder.
+- **iOS release**, **Windows platform**, **per-device build split** — unstarted.
+- **Shikimori / Trakt / Kitsu trackers** — not present (MAL, MangaBaka, Simkl exist).
