@@ -139,7 +139,18 @@
     "mangaTranslationPreview",
     "mangaTranslationAppearanceFitNote",
     "mangaTranslationShowOriginal",
-    "mangaTranslationShowTranslations"
+    "mangaTranslationShowTranslations",
+    "allSet",
+    "startWatching",
+    "getStarted",
+    "skipForNow",
+    "multipleStreamingSources",
+    "upTo4kHdrStreams",
+    "autoUpdatingNoAppUpdate",
+    "downloadingSourceCatalog",
+    "installingSource",
+    "setupFailedCheckConnection",
+    "onboardingInstallBlurb"
   ],
 
   "de": [
@@ -396,7 +407,18 @@
     "mangaTranslationPreview",
     "mangaTranslationAppearanceFitNote",
     "mangaTranslationShowOriginal",
-    "mangaTranslationShowTranslations"
+    "mangaTranslationShowTranslations",
+    "allSet",
+    "startWatching",
+    "getStarted",
+    "skipForNow",
+    "multipleStreamingSources",
+    "upTo4kHdrStreams",
+    "autoUpdatingNoAppUpdate",
+    "downloadingSourceCatalog",
+    "installingSource",
+    "setupFailedCheckConnection",
+    "onboardingInstallBlurb"
   ],
 
   "es": [
@@ -653,7 +675,18 @@
     "mangaTranslationPreview",
     "mangaTranslationAppearanceFitNote",
     "mangaTranslationShowOriginal",
-    "mangaTranslationShowTranslations"
+    "mangaTranslationShowTranslations",
+    "allSet",
+    "startWatching",
+    "getStarted",
+    "skipForNow",
+    "multipleStreamingSources",
+    "upTo4kHdrStreams",
+    "autoUpdatingNoAppUpdate",
+    "downloadingSourceCatalog",
+    "installingSource",
+    "setupFailedCheckConnection",
+    "onboardingInstallBlurb"
   ],
 
   "fr": [
@@ -910,7 +943,18 @@
     "mangaTranslationPreview",
     "mangaTranslationAppearanceFitNote",
     "mangaTranslationShowOriginal",
-    "mangaTranslationShowTranslations"
+    "mangaTranslationShowTranslations",
+    "allSet",
+    "startWatching",
+    "getStarted",
+    "skipForNow",
+    "multipleStreamingSources",
+    "upTo4kHdrStreams",
+    "autoUpdatingNoAppUpdate",
+    "downloadingSourceCatalog",
+    "installingSource",
+    "setupFailedCheckConnection",
+    "onboardingInstallBlurb"
   ],
 
   "id": [
@@ -1053,7 +1097,18 @@
     "mangaTranslationPreview",
     "mangaTranslationAppearanceFitNote",
     "mangaTranslationShowOriginal",
-    "mangaTranslationShowTranslations"
+    "mangaTranslationShowTranslations",
+    "allSet",
+    "startWatching",
+    "getStarted",
+    "skipForNow",
+    "multipleStreamingSources",
+    "upTo4kHdrStreams",
+    "autoUpdatingNoAppUpdate",
+    "downloadingSourceCatalog",
+    "installingSource",
+    "setupFailedCheckConnection",
+    "onboardingInstallBlurb"
   ],
 
   "it": [
@@ -1310,7 +1365,18 @@
     "mangaTranslationPreview",
     "mangaTranslationAppearanceFitNote",
     "mangaTranslationShowOriginal",
-    "mangaTranslationShowTranslations"
+    "mangaTranslationShowTranslations",
+    "allSet",
+    "startWatching",
+    "getStarted",
+    "skipForNow",
+    "multipleStreamingSources",
+    "upTo4kHdrStreams",
+    "autoUpdatingNoAppUpdate",
+    "downloadingSourceCatalog",
+    "installingSource",
+    "setupFailedCheckConnection",
+    "onboardingInstallBlurb"
   ],
 
   "ja": [
@@ -1567,7 +1633,18 @@
     "mangaTranslationPreview",
     "mangaTranslationAppearanceFitNote",
     "mangaTranslationShowOriginal",
-    "mangaTranslationShowTranslations"
+    "mangaTranslationShowTranslations",
+    "allSet",
+    "startWatching",
+    "getStarted",
+    "skipForNow",
+    "multipleStreamingSources",
+    "upTo4kHdrStreams",
+    "autoUpdatingNoAppUpdate",
+    "downloadingSourceCatalog",
+    "installingSource",
+    "setupFailedCheckConnection",
+    "onboardingInstallBlurb"
   ],
 
   "pt": [
@@ -1710,7 +1787,18 @@
     "mangaTranslationPreview",
     "mangaTranslationAppearanceFitNote",
     "mangaTranslationShowOriginal",
-    "mangaTranslationShowTranslations"
+    "mangaTranslationShowTranslations",
+    "allSet",
+    "startWatching",
+    "getStarted",
+    "skipForNow",
+    "multipleStreamingSources",
+    "upTo4kHdrStreams",
+    "autoUpdatingNoAppUpdate",
+    "downloadingSourceCatalog",
+    "installingSource",
+    "setupFailedCheckConnection",
+    "onboardingInstallBlurb"
   ],
 
   "tr": [
@@ -1853,7 +1941,18 @@
     "mangaTranslationPreview",
     "mangaTranslationAppearanceFitNote",
     "mangaTranslationShowOriginal",
-    "mangaTranslationShowTranslations"
+    "mangaTranslationShowTranslations",
+    "allSet",
+    "startWatching",
+    "getStarted",
+    "skipForNow",
+    "multipleStreamingSources",
+    "upTo4kHdrStreams",
+    "autoUpdatingNoAppUpdate",
+    "downloadingSourceCatalog",
+    "installingSource",
+    "setupFailedCheckConnection",
+    "onboardingInstallBlurb"
   ],
 
   "zh": [
@@ -2110,7 +2209,18 @@
     "mangaTranslationPreview",
     "mangaTranslationAppearanceFitNote",
     "mangaTranslationShowOriginal",
-    "mangaTranslationShowTranslations"
+    "mangaTranslationShowTranslations",
+    "allSet",
+    "startWatching",
+    "getStarted",
+    "skipForNow",
+    "multipleStreamingSources",
+    "upTo4kHdrStreams",
+    "autoUpdatingNoAppUpdate",
+    "downloadingSourceCatalog",
+    "installingSource",
+    "setupFailedCheckConnection",
+    "onboardingInstallBlurb"
   ],
 
   "zh_TW": [
@@ -2367,6 +2477,17 @@
     "mangaTranslationPreview",
     "mangaTranslationAppearanceFitNote",
     "mangaTranslationShowOriginal",
-    "mangaTranslationShowTranslations"
+    "mangaTranslationShowTranslations",
+    "allSet",
+    "startWatching",
+    "getStarted",
+    "skipForNow",
+    "multipleStreamingSources",
+    "upTo4kHdrStreams",
+    "autoUpdatingNoAppUpdate",
+    "downloadingSourceCatalog",
+    "installingSource",
+    "setupFailedCheckConnection",
+    "onboardingInstallBlurb"
   ]
 }

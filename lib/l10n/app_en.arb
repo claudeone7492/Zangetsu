@@ -3202,5 +3202,23 @@
 	"mangaTranslationPreview": "Translation preview",
 	"mangaTranslationAppearanceFitNote": "Long text may scale down to stay inside its detected area and avoid overlap.",
 	"mangaTranslationShowOriginal": "Show original page",
-	"mangaTranslationShowTranslations": "Show translations"
+	"mangaTranslationShowTranslations": "Show translations",
+	"allSet": "You're all set!",
+	"startWatching": "Start watching",
+	"getStarted": "Get Started",
+	"skipForNow": "Skip for now",
+	"multipleStreamingSources": "Multiple streaming sources",
+	"upTo4kHdrStreams": "Up to 4K / HDR streams",
+	"autoUpdatingNoAppUpdate": "Auto-updating, no app update needed",
+	"downloadingSourceCatalog": "Downloading source catalog…",
+	"installingSource": "Installing {name}… ({done}/{total})",
+	"@installingSource": {
+		"placeholders": {
+			"name": { "type": "String" },
+			"done": { "type": "int" },
+			"total": { "type": "int" }
+		}
+	},
+	"setupFailedCheckConnection": "Setup failed — check your connection and try again.",
+	"onboardingInstallBlurb": "To get started we'll install the official source catalog — you can add, update or remove sources any time in Settings → Providers."
 }

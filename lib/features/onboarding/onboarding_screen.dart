@@ -6,12 +6,16 @@ import '../../core/ui/splash_style.dart';
 import 'bankai_splash.dart';
 import 'package:hive/hive.dart';
 
+import '../../core/app_config.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
+import '../../core/provider/provider_registry.dart';
+import '../../core/provider/provider_repo_registry.dart';
 import '../../core/state/active_source_cubit.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
-import '../sources/providers_hub_screen.dart';
+import '../home/cubit/home_cubit.dart';
+import 'how_it_works.dart';
 import 'onboarding_screen_tv.dart';
 import '../../l10n/l10n.dart';
 
@@ -180,6 +184,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _controller = PageController();
   double _page = 0;
 
+  bool _busy = false;
+  String? _error;
+  String _status = '';
+  // After sources install, show a short "how it works" guide before entering
+  // the app (new users). Skippers / failures never reach this.
+  bool _showTips = false;
+
   @override
   void initState() {
     super.initState();
@@ -195,16 +206,71 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  /// Marks onboarding done, hands off to the app, then opens Providers so the
-  /// user lands right where they add a repository. No network call, no
-  /// install — the app just navigates.
-  Future<void> _addSourcesNow() async {
-    await _markOnboarded();
-    if (!mounted) return;
-    widget.onDone();
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const ProvidersHubScreen()));
+  /// Downloads the official Zangetsu provider repo and installs every source,
+  /// then activates a well-populated default so Home is useful on first open.
+  /// A single source that fails to install is skipped rather than failing the
+  /// whole run; only a total failure surfaces an error with a retry.
+  Future<void> _setup() async {
+    final l10n = context.l10n;
+    setState(() {
+      _busy = true;
+      _error = null;
+      _status = l10n.downloadingSourceCatalog;
+    });
+    try {
+      final repos = sl<ProviderReposRegistry>();
+      final registry = sl<ProviderRegistry>();
+      final repo = await repos.fetchAndCache(kZangetsuRepoUrl);
+      final total = repo.sources.length;
+      var installed = 0;
+      final installedIds = <String>[];
+      for (final s in repo.sources) {
+        if (!mounted) return;
+        setState(
+          () => _status = l10n.installingSource(s.name, installed + 1, total),
+        );
+        try {
+          await registry.install(
+            sourceId: s.id,
+            fileUrl: repos.resolveFileUrl(repo, s),
+            repoUrl: repo.url,
+            displayName: s.name,
+            version: s.version,
+            force: true,
+          );
+          installed++;
+          installedIds.add(s.id);
+        } catch (_) {
+          // Skip a single failed source; keep installing the rest.
+        }
+      }
+      if (installed == 0) {
+        throw Exception('No sources could be installed');
+      }
+      // Activate the default source for a new user (AniKoto) so Home lands on
+      // a working, well-populated source; fall back to the first that installed
+      // if the default didn't. Only new users reach this (onboarding runs
+      // once), so existing users' saved pick is never touched.
+      sl<ActiveSourceCubit>().setSource(
+        installedIds.contains(kDefaultSourceId)
+            ? kDefaultSourceId
+            : installedIds.first,
+      );
+      sl<HomeCubit>().load();
+      await _markOnboarded();
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _showTips = true;
+        });
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _error = context.l10n.setupFailedCheckConnection;
+      });
+    }
   }
 
   Future<void> _later() async {
@@ -234,9 +300,54 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  /// Post-setup "how it works" guide. Shown once after sources install; the
+  /// button enters the app. The guide is also reachable later via
+  /// Settings → How it works.
+  Widget _buildTips() => Scaffold(
+    backgroundColor: AppColors.bg,
+    body: SafeArea(
+      child: Column(
+        children: [
+          const SizedBox(height: 18),
+          const _Logo(),
+          const SizedBox(height: 12),
+          Text(
+            context.l10n.allSet,
+            style: AppText.title,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 6),
+          const Expanded(child: HowItWorksView()),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(28, 0, 28, 28),
+            child: SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: FilledButton(
+                onPressed: widget.onDone,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: Text(
+                  context.l10n.startWatching,
+                  style: AppText.button.copyWith(color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     if (sl<AppMode>().isTv) return OnboardingScreenTv(onDone: widget.onDone);
+    if (_showTips) return _buildTips();
     final onLastPage = _page > _pageCount - 1.5;
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -278,7 +389,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     2,
                     (d) => _GetGoingPage(
                       delta: d,
-                      onAddSourcesNow: _addSourcesNow,
+                      busy: _busy,
+                      status: _status,
+                      error: _error,
+                      onInstall: _setup,
                       onLater: _later,
                     ),
                   ),
@@ -307,6 +421,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
     );
   }
+}
+
+/// The app mark in a soft accent tile — used on the post-setup tips page.
+class _Logo extends StatelessWidget {
+  const _Logo();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 84,
+    height: 84,
+    decoration: BoxDecoration(
+      color: AppColors.accentSoft,
+      borderRadius: BorderRadius.circular(22),
+    ),
+    alignment: Alignment.center,
+    child: Icon(
+      Icons.play_circle_fill_rounded,
+      color: AppColors.accent,
+      size: 46,
+    ),
+  );
 }
 
 /// Centers a page's content vertically, but lets it scroll on short screens
@@ -563,12 +698,18 @@ class _Step extends StatelessWidget {
 class _GetGoingPage extends StatelessWidget {
   const _GetGoingPage({
     required this.delta,
-    required this.onAddSourcesNow,
+    required this.busy,
+    required this.status,
+    required this.error,
+    required this.onInstall,
     required this.onLater,
   });
 
   final double delta;
-  final VoidCallback onAddSourcesNow;
+  final bool busy;
+  final String status;
+  final String? error;
+  final VoidCallback onInstall;
   final VoidCallback onLater;
 
   @override
@@ -588,19 +729,44 @@ class _GetGoingPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  context.l10n.providersWaitingInSettings,
+                  context.l10n.onboardingInstallBlurb,
                   style: AppText.body.copyWith(color: AppColors.textSecondary),
                   textAlign: TextAlign.center,
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 28),
+          if (busy) ...[
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.4,
+                color: AppColors.accent,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              status,
+              style: AppText.caption.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+          ],
+          if (error != null) ...[
+            Text(
+              error!,
+              style: AppText.caption.copyWith(color: AppColors.accent),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 14),
+          ],
           SizedBox(
             width: double.infinity,
             height: 52,
             child: FilledButton(
-              onPressed: onAddSourcesNow,
+              onPressed: busy ? null : onInstall,
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.accent,
                 foregroundColor: Colors.white,
@@ -609,14 +775,14 @@ class _GetGoingPage extends StatelessWidget {
                 ),
               ),
               child: Text(
-                context.l10n.addSourcesNow,
+                error != null ? context.l10n.retry : context.l10n.addSourcesNow,
                 style: AppText.button.copyWith(color: Colors.white),
               ),
             ),
           ),
           const SizedBox(height: 6),
           TextButton(
-            onPressed: onLater,
+            onPressed: busy ? null : onLater,
             child: Text(
               context.l10n.illDoItLater,
               style: AppText.caption.copyWith(color: AppColors.textTertiary),

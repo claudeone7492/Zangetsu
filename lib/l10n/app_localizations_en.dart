@@ -5732,4 +5732,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mangaTranslationShowTranslations => 'Show translations';
+
+  @override
+  String get allSet => 'You\'re all set!';
+
+  @override
+  String get startWatching => 'Start watching';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get skipForNow => 'Skip for now';
+
+  @override
+  String get multipleStreamingSources => 'Multiple streaming sources';
+
+  @override
+  String get upTo4kHdrStreams => 'Up to 4K / HDR streams';
+
+  @override
+  String get autoUpdatingNoAppUpdate => 'Auto-updating, no app update needed';
+
+  @override
+  String get downloadingSourceCatalog => 'Downloading source catalog…';
+
+  @override
+  String installingSource(String name, int done, int total) {
+    return 'Installing $name… ($done/$total)';
+  }
+
+  @override
+  String get setupFailedCheckConnection =>
+      'Setup failed — check your connection and try again.';
+
+  @override
+  String get onboardingInstallBlurb =>
+      'To get started we\'ll install the official source catalog — you can add, update or remove sources any time in Settings → Providers.';
 }

@@ -9969,6 +9969,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show translations'**
   String get mangaTranslationShowTranslations;
+
+  /// No description provided for @allSet.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re all set!'**
+  String get allSet;
+
+  /// No description provided for @startWatching.
+  ///
+  /// In en, this message translates to:
+  /// **'Start watching'**
+  String get startWatching;
+
+  /// No description provided for @getStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// No description provided for @skipForNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip for now'**
+  String get skipForNow;
+
+  /// No description provided for @multipleStreamingSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiple streaming sources'**
+  String get multipleStreamingSources;
+
+  /// No description provided for @upTo4kHdrStreams.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to 4K / HDR streams'**
+  String get upTo4kHdrStreams;
+
+  /// No description provided for @autoUpdatingNoAppUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-updating, no app update needed'**
+  String get autoUpdatingNoAppUpdate;
+
+  /// No description provided for @downloadingSourceCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading source catalog…'**
+  String get downloadingSourceCatalog;
+
+  /// No description provided for @installingSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing {name}… ({done}/{total})'**
+  String installingSource(String name, int done, int total);
+
+  /// No description provided for @setupFailedCheckConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup failed — check your connection and try again.'**
+  String get setupFailedCheckConnection;
+
+  /// No description provided for @onboardingInstallBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'To get started we\'ll install the official source catalog — you can add, update or remove sources any time in Settings → Providers.'**
+  String get onboardingInstallBlurb;
 }
 
 class _AppLocalizationsDelegate
