@@ -11,6 +11,46 @@
       "file": "../providers/framextv.js",
       "logo": "https://framextv.cc/favicon.ico",
       "nsfw": false
+    },
+    {
+      "id": "netweb",
+      "name": "NetWeb",
+      "version": "1.0.0",
+      "type": "movie",
+      "lang": "en",
+      "file": "../providers/netweb.js",
+      "logo": "https://netweb-cvu7.onrender.com/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "vidsrc",
+      "name": "VidSrc",
+      "version": "1.0.0",
+      "type": "movie",
+      "lang": "en",
+      "file": "../providers/vidsrc.js",
+      "logo": "https://vidsrc.pm/favicon.svg",
+      "nsfw": false
+    },
+    {
+      "id": "vidlink",
+      "name": "VidLink",
+      "version": "1.0.0",
+      "type": "movie",
+      "lang": "en",
+      "file": "../providers/vidlink.js",
+      "logo": "https://vidlink.pro/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "iptv",
+      "name": "IPTV",
+      "version": "1.0.0",
+      "type": "movie",
+      "lang": "en",
+      "file": "../providers/iptv.js",
+      "logo": "https://iptv-org.github.io/logo.svg",
+      "nsfw": false
     }
   ]
 }
