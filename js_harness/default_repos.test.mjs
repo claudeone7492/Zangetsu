@@ -1,62 +1,71 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { loadProvider, callProvider } from './host.mjs';
 
 // The app ships with NO built-in providers; onboarding installs the sources in
-// these manifests (kDefaultRepoUrls in lib/core/app_config.dart). Keep this list
-// in sync with that constant. This test is the harness-side guard that every
-// source a new user receives actually loads and answers getInfo under the same
-// wrapper the app uses — a broken upstream provider shows up here, not as a
-// silent empty Home for the user.
-const REPOS = [
-  'https://raw.githubusercontent.com/claudeone7492/Zangetsu/main/provider-repo/index.json',
-  'https://raw.githubusercontent.com/Spyou/zangetsu-providers/main/index.json',
-  'https://raw.githubusercontent.com/Spyou/Zangetsu-spyou-provider/main/index.json',
-  'https://raw.githubusercontent.com/Spyou/sozoread-providers/main/index.json',
-];
+// kDefaultRepoUrls (lib/core/app_config.dart) — now a single curated pack whose
+// manifest lives in this repo at provider-repo/index.json. Every source in that
+// pack was verified end-to-end (browse → search → detail → playback/reader)
+// before being added; anything that did not resolve fully was pruned.
+//
+// The local test is hermetic: it loads each manifest entry straight from the
+// repo tree and asserts it loads and answers getInfo under the same wrapper the
+// app uses. The live test (RUN_LIVE=1) additionally fetches the manifest and
+// each source over the network, so a source that rots after merge is caught.
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(here, '..');
+const manifestPath = path.join(repoRoot, 'provider-repo', 'index.json');
+const RAW_MANIFEST =
+  'https://raw.githubusercontent.com/claudeone7492/Zangetsu/main/provider-repo/index.json';
+
+const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+test('the curated pack has sources of every mode', () => {
+  const types = new Set(manifest.sources.map((s) => s.type));
+  for (const t of ['anime', 'movie', 'manga', 'novel']) {
+    assert.ok(types.has(t), `manifest should include a ${t} source`);
+  }
+});
+
+test('every curated source loads from the repo tree and answers getInfo', async () => {
+  for (const s of manifest.sources) {
+    // `file` is written relative to the manifest dir (provider-repo/), so it
+    // resolves to providers/<id>.js inside the repo — mirror that here.
+    const filePath = path.resolve(path.dirname(manifestPath), s.file);
+    assert.ok(fs.existsSync(filePath), `${s.id}: ${s.file} exists in the repo`);
+    loadProvider(s.id, filePath);
+    const info = JSON.parse(await callProvider(s.id, 'getInfo', []));
+    assert.ok(info.name, `${s.id} getInfo has a name`);
+    assert.ok(info.type, `${s.id} getInfo has a type`);
+    assert.equal(info.type, s.type, `${s.id} getInfo.type matches the manifest`);
+  }
+});
 
 const LIVE = process.env.RUN_LIVE === '1';
 const live = (name, fn) =>
   test(name, { skip: LIVE ? false : 'set RUN_LIVE=1 to run network test' }, fn);
 
-live('every default repo source loads and reports getInfo', async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'default-repos-'));
-  let checked = 0;
-  const skipped = [];
-  try {
-    for (const repoUrl of REPOS) {
-      const manifestRes = await fetch(repoUrl);
-      if (!manifestRes.ok) {
-        // The first-party pack lives on the app repo's main branch, which only
-        // gains it once this branch's PR merges. Until then onboarding skips it
-        // (unreachable repos are non-fatal) — mirror that here.
-        skipped.push(`${repoUrl} → HTTP ${manifestRes.status}`);
-        continue;
-      }
-      const manifest = await manifestRes.json();
-      assert.ok(Array.isArray(manifest.sources), `${repoUrl} has a sources[]`);
-      const base = repoUrl.slice(0, repoUrl.lastIndexOf('/') + 1);
+live('the published manifest matches this repo and every source downloads', async () => {
+  const res = await fetch(RAW_MANIFEST);
+  if (!res.ok) {
+    // main only gains this pack once the PR merges; onboarding treats an
+    // unreachable repo as non-fatal, so mirror that here.
+    console.log(`[default_repos] skipped: manifest → HTTP ${res.status}`);
+    return;
+  }
+  const remote = await res.json();
+  const remoteIds = remote.sources.map((s) => s.id).sort();
+  const localIds = manifest.sources.map((s) => s.id).sort();
+  assert.deepEqual(remoteIds, localIds, 'published manifest matches the repo');
 
-      for (const s of manifest.sources) {
-        const fileUrl = new URL(s.file, base).toString();
-        const res = await fetch(fileUrl);
-        assert.ok(res.ok, `${s.id}: ${fileUrl} → HTTP ${res.status}`);
-        const local = path.join(dir, `${s.id}.js`);
-        fs.writeFileSync(local, await res.text());
-
-        loadProvider(s.id, new URL(`file://${local}`));
-        const info = JSON.parse(await callProvider(s.id, 'getInfo', []));
-        assert.ok(info.name, `${s.id} getInfo has a name`);
-        assert.ok(info.type, `${s.id} getInfo has a type`);
-        checked++;
-      }
-    }
-    if (skipped.length) console.log('[default_repos] skipped:', skipped.join('; '));
-    assert.ok(checked >= 20, `expected the full default set, validated ${checked}`);
-  } finally {
-    fs.rmSync(dir, { recursive: true, force: true });
+  const base = RAW_MANIFEST.slice(0, RAW_MANIFEST.lastIndexOf('/') + 1);
+  for (const s of remote.sources) {
+    const url = new URL(s.file, base).toString();
+    const r = await fetch(url);
+    assert.ok(r.ok, `${s.id}: ${url} → HTTP ${r.status}`);
   }
 });

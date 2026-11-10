@@ -23,18 +23,18 @@ const String kAppId = 'watch_app';
 /// ships with NO built-in providers — every source comes from these manifests.
 ///
 /// Order matters: the first repo is the streaming pack the default source is
-/// drawn from. The manga/novel packs follow, so a new user has all three modes
-/// populated without visiting Providers. Each repo installs independently — a
-/// repo that is unreachable is skipped rather than failing the whole run.
+/// drawn from. Only sources that resolve fully (browse, search, detail, and
+/// playback/reader) ship here — dead upstreams are dropped rather than handed
+/// to a new user as an empty Home. Each repo installs independently — a repo
+/// that is unreachable is skipped rather than failing the whole run.
+///
+/// The curated first-party pack carries the verified anime, movie, manga and
+/// novel sources (it vendors the working subset of the community packs). The
+/// Spyou repos stay reachable through the community directory
+/// ([kSourceDirectoryUrl]) so a user can still add anything we dropped.
 const List<String> kDefaultRepoUrls = [
-  // First-party pack (frameXTV, maintained with the app).
+  // First-party pack — every source here is verified end-to-end.
   'https://raw.githubusercontent.com/claudeone7492/Zangetsu/main/provider-repo/index.json',
-  // Streaming (anime + movies/series). Maintained by Spyou.
-  'https://raw.githubusercontent.com/Spyou/zangetsu-providers/main/index.json',
-  // Additional streaming pack (anime + movies).
-  'https://raw.githubusercontent.com/Spyou/Zangetsu-spyou-provider/main/index.json',
-  // Manga + novel pack (Sozo Read contract; Zangetsu reads it natively).
-  'https://raw.githubusercontent.com/Spyou/sozoread-providers/main/index.json',
 ];
 
 /// Content source activated for a NEW user at the end of first-run onboarding.

@@ -1,6 +1,6 @@
 {
   "name": "Zangetsu Official Sources",
-  "description": "First-party providers maintained alongside the app. Installed on first launch alongside the community packs.",
+  "description": "First-party providers maintained alongside the app. Installed on first launch. Every source here is verified end-to-end (browse, search, detail, and playback/reader) before it ships.",
   "sources": [
     {
       "id": "framextv",
@@ -50,6 +50,96 @@
       "lang": "en",
       "file": "../providers/iptv.js",
       "logo": "https://iptv-org.github.io/logo.svg",
+      "nsfw": false
+    },
+    {
+      "id": "anikoto",
+      "name": "AniKoto",
+      "version": "1.0.8",
+      "type": "anime",
+      "lang": "en",
+      "file": "../providers/anikoto.js",
+      "logo": "https://anikototv.to/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "hianime",
+      "name": "HiAnime",
+      "version": "1.2.2",
+      "type": "anime",
+      "lang": "en",
+      "file": "../providers/hianime.js",
+      "logo": "https://hianime.at/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "animecube",
+      "name": "AnimeCube",
+      "version": "1.0.5",
+      "type": "anime",
+      "lang": "zh",
+      "file": "../providers/animecube.js",
+      "logo": "https://animecube.live/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "fourkhdhub",
+      "name": "4K HDHub",
+      "version": "1.0.6",
+      "type": "movie",
+      "lang": "en",
+      "file": "../providers/fourkhdhub.js",
+      "logo": "https://4khdhub.club/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "hdhub4u",
+      "name": "HDHub4u",
+      "version": "1.2.4",
+      "type": "movie",
+      "lang": "en",
+      "file": "../providers/hdhub4u.js",
+      "logo": "https://hdhub4u.re/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "mangakakalot",
+      "name": "Mangakakalot",
+      "version": "1.0.0",
+      "type": "manga",
+      "lang": "en",
+      "file": "../providers/mangakakalot.js",
+      "logo": "https://mangakakalot.fun/logo.png",
+      "nsfw": false
+    },
+    {
+      "id": "mangakatana",
+      "name": "Mangakatana",
+      "version": "1.0.0",
+      "type": "manga",
+      "lang": "en",
+      "file": "../providers/mangakatana.js",
+      "logo": "https://mangakatana.com/static/img/logo.png",
+      "nsfw": false
+    },
+    {
+      "id": "mangapill",
+      "name": "Mangapill",
+      "version": "1.0.0",
+      "type": "manga",
+      "lang": "en",
+      "file": "../providers/mangapill.js",
+      "logo": "https://mangapill.com/static/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "gutenberg",
+      "name": "Project Gutenberg",
+      "version": "1.0.2",
+      "type": "novel",
+      "lang": "multi",
+      "file": "../providers/gutenberg.js",
+      "logo": "https://www.gutenberg.org/gutenberg/pg-logo-129x80.png",
       "nsfw": false
     }
   ]

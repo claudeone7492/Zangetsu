@@ -192,12 +192,10 @@ void main() {
     expect(seen.first, startsWith('a:1/'));
   });
 
-  test('kDefaultRepoUrls includes the streaming + manga/novel packs', () {
-    expect(kDefaultRepoUrls.length, greaterThanOrEqualTo(2));
-    expect(
-      kDefaultRepoUrls.any((u) => u.contains('zangetsu-providers')),
-      isTrue,
-    );
-    expect(kDefaultRepoUrls.any((u) => u.contains('sozoread-providers')), isTrue);
+  test('kDefaultRepoUrls ships only the curated first-party pack', () {
+    // Dead upstreams were pruned: the default set is the single first-party
+    // manifest, which vendors every source verified end-to-end.
+    expect(kDefaultRepoUrls.length, 1);
+    expect(kDefaultRepoUrls.single, contains('provider-repo/index.json'));
   });
 }
