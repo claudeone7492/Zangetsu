@@ -954,7 +954,13 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
     Widget sourceCatalogueContent(ContentMode contentMode) =>
         SourceCatalogueHomeContent(
           controller: _sourceCatalogueController,
-          initialSourceId: HomeCataloguePrefs.sourceIdFor(contentMode),
+          // Hand the child our tracked id when we have one: the widget is
+          // re-inserted on every rebuild (mode/catalogue swaps) and would
+          // otherwise re-resolve `initialSourceId: null` back to the active
+          // source, silently discarding a pick the user just made here.
+          initialSourceId:
+              _sourceCatalogueSourceId ??
+              HomeCataloguePrefs.sourceIdFor(contentMode),
           mode: contentMode,
           onSourceSelected: (sourceId) {
             _sourceCatalogueSourceId = sourceId;

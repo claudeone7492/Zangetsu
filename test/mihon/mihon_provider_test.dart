@@ -230,8 +230,10 @@ void main() {
       final p = MihonProvider(info: srcInfo(id: 7));
       final pages = await p.getPages('/c1');
 
-      expect(log.single.method, 'getPages');
-      final args = log.single.arguments as Map;
+      // getPages is the call under test; a follow-up imageCookie call may also
+      // be logged when the pages are cached for Cloudflare-gated hosts.
+      final getPagesCall = log.firstWhere((c) => c.method == 'getPages');
+      final args = getPagesCall.arguments as Map;
       expect(args['sourceId'], 7);
       expect(args['url'], '/c1');
 
@@ -305,7 +307,10 @@ void main() {
         info: srcInfo(baseUrl: 'https://m.example.com', headers: const {}),
       );
       final items = await p.popular();
-      expect(items.single.coverHeaders, {'Referer': 'https://m.example.com'});
+      expect(items.single.coverHeaders, {
+        'Referer': 'https://m.example.com',
+        'x-mihon-src': '7',
+      });
     });
 
     test('leaves an existing Referer untouched (case-insensitive)', () async {
@@ -324,7 +329,10 @@ void main() {
         ),
       );
       final items = await p.popular();
-      expect(items.single.coverHeaders, {'referer': 'https://original.example.com'});
+      expect(items.single.coverHeaders, {
+        'referer': 'https://original.example.com',
+        'x-mihon-src': '7',
+      });
     });
 
     test('no headers and no baseUrl → coverHeaders is null', () async {

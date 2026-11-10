@@ -99,6 +99,7 @@ Future<void> _registerStubs() async {
   await Hive.openBox(TorrentPrefs.boxName);
   await Hive.openBox(ThemeController.boxName);
   await ReaderPrefs.init();
+  await SearchPrefs.init();
   await ViewerProfileStore.init();
   final sl = GetIt.instance;
   sl

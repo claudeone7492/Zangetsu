@@ -4,8 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
+import 'package:watch_app/core/download/download_manager.dart';
 import 'package:watch_app/core/download/download_prefs.dart';
 import 'package:watch_app/features/settings/download_location_screen.dart';
+
+class _StubDownloadManager extends ChangeNotifier implements DownloadManager {
+  @override
+  noSuchMethod(Invocation i) => super.noSuchMethod(i);
+
+  @override
+  Future<List<({String path, String label, bool removable})>>
+  listDownloadVolumes() async => const [];
+}
 
 void main() {
   late Directory _dir;
@@ -15,6 +25,7 @@ void main() {
     Hive.init(_dir.path);
     await Hive.openBox(DownloadPrefs.boxName);
     GetIt.instance.registerSingleton<DownloadPrefs>(DownloadPrefs());
+    GetIt.instance.registerSingleton<DownloadManager>(_StubDownloadManager());
   });
 
   tearDown(() async {

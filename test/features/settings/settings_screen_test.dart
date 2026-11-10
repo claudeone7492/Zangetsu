@@ -182,6 +182,13 @@ void main() {
     addTearDown(authCubit.close);
     GetIt.instance.registerSingleton<AuthCubit>(authCubit);
 
+    if (openFromProfile) {
+      // ViewerProfileHomeScreen paints an indeterminate spinner while auth is
+      // still `unknown`. Nothing here calls restore(), so settle on
+      // signed-out or the first pumpAndSettle never returns.
+      authCubit.emit(const AuthState(status: AuthStatus.unauthenticated));
+    }
+
     await tester.pumpWidget(
       MultiBlocProvider(
         providers: [

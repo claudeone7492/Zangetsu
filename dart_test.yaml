@@ -1,0 +1,11 @@
+# Test configuration.
+#
+# `ffi` marks suites that exercise the native QuickJS bridge (flutter_js). The
+# shared library is only built into a real app bundle, so these cannot run on
+# the plain host `flutter test` runner and are skipped here. Run them on-device
+# (or against a built plugin) with:
+#
+#   flutter test --tags ffi
+tags:
+  ffi:
+    skip: "Requires the native QuickJS FFI plugin; run on-device."

@@ -599,25 +599,26 @@ class _LiquidNavDock extends StatelessWidget {
           ? sl<ViewerProfileStore>().activeProfile
           : null;
       if (profile != null) {
-        // Hero landing spot for the profile-picker avatar flight — the old
-        // dock has the same tag, so the flight works on both navbars. Only
-        // one of icon/activeIcon is ever mounted, so the tag stays unique.
-        return Hero(
-          tag: viewerProfileHeroTag(profile.id),
-          child: ClipOval(
-            child: ProfileAvatarFace(
+        final face = ClipOval(
+          child: ProfileAvatarFace(
+            profile: profile,
+            photoUrl: profilePhotoForFace(
               profile: profile,
-              photoUrl: profilePhotoForFace(
-                profile: profile,
-                accountPhotoUrl: sl.isRegistered<AuthCubit>()
-                    ? sl<AuthCubit>().state.avatarUrl
-                    : null,
-              ),
-              iconSize: 18,
-              photoDiameter: 26,
+              accountPhotoUrl: sl.isRegistered<AuthCubit>()
+                  ? sl<AuthCubit>().state.avatarUrl
+                  : null,
             ),
+            iconSize: 18,
+            photoDiameter: 26,
           ),
         );
+        // The liquid tab bar mounts the unselected layer AND the selected
+        // overlay at the same time, so a Hero on both would share one tag and
+        // Hero throws. The unselected layer renders every tab, so it is the
+        // one that carries the flight; the overlay gets the bare face.
+        return selected
+            ? face
+            : Hero(tag: viewerProfileHeroTag(profile.id), child: face);
       }
       return Icon(Icons.person_outline_rounded, color: color);
     }

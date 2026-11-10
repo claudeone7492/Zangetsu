@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -793,6 +794,13 @@ void main() {
             const MethodChannel('plugins.flutter.io/path_provider'),
             (call) async => '/tmp',
           );
+      // flutter_cache_manager's singleton arms a 10s cleanup Timer the first
+      // time any image resolves, and the widget-test binding fails a test if
+      // one is still pending when its tree is disposed. Nothing here needs
+      // the cleanup to be deferred, so collapse the interval: the timer then
+      // fires inside the very pump that armed it instead of outliving the
+      // test. See disposeHarness for the final drain.
+      DefaultCacheManager().store.cleanupRunMinInterval = Duration.zero;
       final completer = Completer<void>();
       // runZonedGuarded, not a plain try/catch: the databaseFactory
       // StateError is thrown from deep inside flutter_cache_manager's own
@@ -931,6 +939,14 @@ void main() {
         await tester.pumpWidget(const SizedBox());
         await Future<void>.delayed(const Duration(milliseconds: 50));
       });
+      // Final drain for the zeroed cache-cleanup timer (see setUpAll): pump
+      // with a real-async gap so any resolve still in flight lands and its
+      // timer fires inside the pump rather than after the test.
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump();
+      await tester.pump();
     }
 
     testWidgets('a chapter with no pages says so instead of going black', (

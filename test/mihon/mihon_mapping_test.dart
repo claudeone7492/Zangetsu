@@ -33,7 +33,7 @@ void main() {
       expect(item.cover, isNull);
     });
 
-    test('non-empty headers are forwarded as coverHeaders, unmodified', () {
+    test('non-empty headers are forwarded as coverHeaders, plus the x-mihon-src marker', () {
       final item = mediaItemFromSManga(
         {
           'url': 'https://source.test/manga/3',
@@ -43,7 +43,14 @@ void main() {
         sourceId: 'mihon:111',
         headers: {'Referer': 'https://source.test/'},
       );
-      expect(item.coverHeaders, {'Referer': 'https://source.test/'});
+      // The source's own headers are preserved verbatim; the internal
+      // `x-mihon-src` marker is added on top so covers route through the
+      // native Mihon image host (cf_clearance cookie). It is stripped before
+      // any real network request.
+      expect(item.coverHeaders, {
+        'Referer': 'https://source.test/',
+        'x-mihon-src': '111',
+      });
     });
 
     test('empty headers produce null coverHeaders', () {
@@ -121,14 +128,17 @@ void main() {
       expect(detail.studios, ['Solo Artist']);
     });
 
-    test('non-empty headers are forwarded as coverHeaders on detail', () {
+    test('non-empty headers are forwarded as coverHeaders on detail, plus the marker', () {
       final detail = mediaDetailFromSManga(
         {'url': 'u', 'title': 'T', 'status': 1},
         const [],
         sourceId: 'mihon:10',
         headers: {'Referer': 'https://source.test/'},
       );
-      expect(detail.coverHeaders, {'Referer': 'https://source.test/'});
+      expect(detail.coverHeaders, {
+        'Referer': 'https://source.test/',
+        'x-mihon-src': '10',
+      });
     });
 
     test('status 2 -> completed, 5 -> cancelled, 6 -> hiatus, unknown -> unknown', () {

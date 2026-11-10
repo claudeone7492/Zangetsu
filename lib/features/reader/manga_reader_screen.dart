@@ -756,9 +756,12 @@ class _MangaReaderScreenState extends State<MangaReaderScreen>
     // A tile crop needs a real file on disk, which most pages do not start
     // with — resolve one here, off the same preload pass that measures the
     // page, so it is ready by the time the page is built.
-    if (!_pageFile.containsKey(p.url)) {
+    final known = _pageFile[p.url];
+    File? resolved = known == null ? null : File(known);
+    if (resolved == null) {
       final f = await _pageFiles.fileFor(p.url, p.headers);
       if (f != null && mounted) {
+        resolved = f;
         // Read the TRUE pixel size here rather than leaving it to the measure
         // paths below, because neither can supply it for every page kind: a
         // page the native side draws never reaches [_measureFromFile], and
@@ -783,6 +786,16 @@ class _MangaReaderScreenState extends State<MangaReaderScreen>
     // to that decode.
     if (_drawnLocally(p) || sl<ReaderPrefs>().cropBorders) {
       await _measureFromProvider(p, width);
+      return;
+    }
+    // [PageFileCache] already resolved a file for this page (loose file, cbz
+    // entry, native bytes, or a disk-cache hit) — measure that instead of
+    // asking flutter_cache_manager again. The second lookup downloads nothing
+    // useful and, on the default sqflite-backed store, arms its 10s cache
+    // cleanup timer on every page, which leaks into tests and does real
+    // background work for pages the reader already has on disk.
+    if (resolved != null) {
+      await _measureFromFile(resolved, p.url, index);
       return;
     }
     final stream = DefaultCacheManager().getFileStream(
