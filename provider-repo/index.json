@@ -1,0 +1,16 @@
+{
+  "name": "Zangetsu Official Sources",
+  "description": "First-party providers maintained alongside the app. Installed on first launch alongside the community packs.",
+  "sources": [
+    {
+      "id": "framextv",
+      "name": "frameXTV",
+      "version": "1.0.0",
+      "type": "movie",
+      "lang": "en",
+      "file": "../providers/framextv.js",
+      "logo": "https://framextv.cc/favicon.ico",
+      "nsfw": false
+    }
+  ]
+}

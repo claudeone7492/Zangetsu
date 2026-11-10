@@ -19,16 +19,37 @@ String kAppBuild = '';
 /// checked by the repo guard so a manga-only (Sozo) repo can't be added.
 const String kAppId = 'watch_app';
 
-/// The official provider repo, installed on first launch via onboarding.
-/// The app ships with NO built-in providers — every source comes from here.
-const String kZangetsuRepoUrl =
-    'https://raw.githubusercontent.com/Spyou/zangetsu-providers/main/index.json';
+/// Default provider repos, installed on first launch via onboarding. The app
+/// ships with NO built-in providers — every source comes from these manifests.
+///
+/// Order matters: the first repo is the streaming pack the default source is
+/// drawn from. The manga/novel packs follow, so a new user has all three modes
+/// populated without visiting Providers. Each repo installs independently — a
+/// repo that is unreachable is skipped rather than failing the whole run.
+const List<String> kDefaultRepoUrls = [
+  // First-party pack (frameXTV, maintained with the app).
+  'https://raw.githubusercontent.com/claudeone7492/Zangetsu/main/provider-repo/index.json',
+  // Streaming (anime + movies/series). Maintained by Spyou.
+  'https://raw.githubusercontent.com/Spyou/zangetsu-providers/main/index.json',
+  // Additional streaming pack (anime + movies).
+  'https://raw.githubusercontent.com/Spyou/Zangetsu-spyou-provider/main/index.json',
+  // Manga + novel pack (Sozo Read contract; Zangetsu reads it natively).
+  'https://raw.githubusercontent.com/Spyou/sozoread-providers/main/index.json',
+];
 
 /// Content source activated for a NEW user at the end of first-run onboarding.
-/// Must be an id present in the [kZangetsuRepoUrl] manifest. Existing users are
-/// never affected — onboarding runs once and their pick is already persisted;
-/// if this source fails to install, onboarding falls back to the first one.
+/// Must be an id present in one of [kDefaultRepoUrls]' manifests. Existing
+/// users are never affected — onboarding runs once and their pick is already
+/// persisted; if this source fails to install, onboarding falls back to the
+/// first source that did.
 const String kDefaultSourceId = 'anikoto';
+
+/// Public directory of community source repos (Sozo Read format:
+/// `{entries:[{name,author,repoUrl,description,tags,verified}]}`). Browsed from
+/// Providers → Add repo so a user can discover community packs in one tap.
+/// Optional: a fetch failure simply hides the discovery list.
+const String kSourceDirectoryUrl =
+    'https://raw.githubusercontent.com/Spyou/sozoread-directory/main/index.json';
 
 /// Manifest schema version this app speaks. Repos below this are rejected.
 const int kManifestSchemaVersion = 2;

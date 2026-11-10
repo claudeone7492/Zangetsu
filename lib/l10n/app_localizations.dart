@@ -5116,6 +5116,12 @@ abstract class AppLocalizations {
   /// **'Add repo'**
   String get addRepo;
 
+  /// No description provided for @communityRepos.
+  ///
+  /// In en, this message translates to:
+  /// **'Community repos'**
+  String get communityRepos;
+
   /// No description provided for @noProvidersInstalled.
   ///
   /// In en, this message translates to:

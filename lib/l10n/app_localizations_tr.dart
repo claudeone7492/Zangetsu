@@ -2686,6 +2686,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get addRepo => 'Depo ekle';
 
   @override
+  String get communityRepos => 'Community repos';
+
+  @override
   String get noProvidersInstalled => 'Kurulu sağlayıcı yok.';
 
   @override

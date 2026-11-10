@@ -2686,6 +2686,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get addRepo => 'إضافة مستودع';
 
   @override
+  String get communityRepos => 'Community repos';
+
+  @override
   String get noProvidersInstalled => 'لا توجد مزوّدات مثبّتة.';
 
   @override

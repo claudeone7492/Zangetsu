@@ -2688,6 +2688,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get addRepo => 'Tambah repo';
 
   @override
+  String get communityRepos => 'Community repos';
+
+  @override
   String get noProvidersInstalled => 'Belum ada penyedia terpasang.';
 
   @override

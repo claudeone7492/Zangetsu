@@ -2689,6 +2689,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get addRepo => 'Añadir repo';
 
   @override
+  String get communityRepos => 'Community repos';
+
+  @override
   String get noProvidersInstalled => 'No hay proveedores instalados.';
 
   @override

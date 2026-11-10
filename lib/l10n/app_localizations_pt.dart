@@ -2704,6 +2704,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get addRepo => 'Adicionar repo';
 
   @override
+  String get communityRepos => 'Community repos';
+
+  @override
   String get noProvidersInstalled => 'Nenhum provedor instalado.';
 
   @override

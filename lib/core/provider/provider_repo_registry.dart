@@ -126,6 +126,41 @@ class ProviderRepoException implements Exception {
   String toString() => 'ProviderRepoException: $message';
 }
 
+/// One entry in the community source directory ([kSourceDirectoryUrl]). The
+/// directory is a flat, human-curated list of repos the app can add in one tap
+/// — separate from the manifests themselves, which list individual sources.
+class SourceDirectoryEntry {
+  const SourceDirectoryEntry({
+    required this.name,
+    required this.repoUrl,
+    this.author = '',
+    this.description = '',
+    this.tags = const [],
+    this.verified = false,
+  });
+
+  final String name;
+  final String repoUrl;
+  final String author;
+  final String description;
+  final List<String> tags;
+
+  /// Curator-marked as safe/working; the UI shows a verified badge.
+  final bool verified;
+
+  factory SourceDirectoryEntry.fromJson(Map<String, dynamic> j) =>
+      SourceDirectoryEntry(
+        name: (j['name'] as String?)?.trim() ?? '',
+        repoUrl: (j['repoUrl'] as String?)?.trim() ?? '',
+        author: (j['author'] as String?)?.trim() ?? '',
+        description: (j['description'] as String?)?.trim() ?? '',
+        tags: ((j['tags'] as List<dynamic>?) ?? const [])
+            .whereType<String>()
+            .toList(),
+        verified: (j['verified'] as bool?) ?? false,
+      );
+}
+
 /// Local registry of provider repos (Cloudstream-style discovery). The
 /// app keeps a Hive list of repo URLs + their cached manifests; the
 /// Sources screen renders one section per repo, and tapping Install
@@ -291,6 +326,41 @@ class ProviderReposRegistry {
     if (segs.isNotEmpty) segs.removeLast(); // drop `index.json`
     final dir = segs.isEmpty ? '' : '${segs.join('/')}/';
     return uri.replace(path: '/$dir$logo').toString();
+  }
+
+  /// Fetches the community source directory (Sozo Read format) and returns its
+  /// entries, dropping any without a usable `repoUrl`. Best-effort: returns an
+  /// empty list on any failure so the add-repo dialog simply shows no
+  /// suggestions rather than an error. Filtered to entries not already tracked
+  /// so the dialog never offers a repo the user already has.
+  Future<List<SourceDirectoryEntry>> fetchDirectory(String url) async {
+    try {
+      final response = await dio.get<String>(
+        url,
+        options: Options(
+          responseType: ResponseType.plain,
+          headers: const {'Cache-Control': 'no-cache'},
+        ),
+      );
+      final body = response.data;
+      if (body == null || body.isEmpty) return const [];
+      final json = jsonDecode(body) as Map<String, dynamic>;
+      final raw = (json['entries'] as List<dynamic>?) ?? const [];
+      final out = <SourceDirectoryEntry>[];
+      for (final e in raw) {
+        if (e is! Map) continue;
+        final entry = SourceDirectoryEntry.fromJson(
+          Map<String, dynamic>.from(e),
+        );
+        if (entry.repoUrl.isEmpty || entry.name.isEmpty) continue;
+        if (has(entry.repoUrl)) continue;
+        out.add(entry);
+      }
+      return out;
+    } catch (e) {
+      debugPrint('ProviderReposRegistry.fetchDirectory failed: $e');
+      return const [];
+    }
   }
 
   Stream<BoxEvent> watch() => _box.watch();

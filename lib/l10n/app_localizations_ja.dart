@@ -2616,6 +2616,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get addRepo => 'リポジトリを追加';
 
   @override
+  String get communityRepos => 'Community repos';
+
+  @override
   String get noProvidersInstalled => 'プロバイダーはインストールされていません。';
 
   @override

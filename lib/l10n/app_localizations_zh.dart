@@ -2602,6 +2602,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get addRepo => '添加仓库';
 
   @override
+  String get communityRepos => 'Community repos';
+
+  @override
   String get noProvidersInstalled => '尚未安装扩展。';
 
   @override

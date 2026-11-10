@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 
 import '../../core/app_config.dart';
 import '../../core/di/injector.dart';
+import '../../core/provider/default_repo_installer.dart';
 import '../../core/provider/provider_registry.dart';
 import '../../core/provider/provider_repo_registry.dart';
 import '../../core/state/active_source_cubit.dart';
@@ -36,7 +37,7 @@ class _OnboardingScreenTvState extends State<OnboardingScreenTv> {
   String _status = '';
   bool _showTips = false;
 
-  /// Downloads the official Zangetsu provider repo and installs every source,
+  /// Downloads every default provider repo and installs all of its sources,
   /// then activates a well-populated default so Home is useful on first open.
   /// A single source that fails is skipped rather than failing the whole run.
   Future<void> _setup() async {
@@ -47,42 +48,21 @@ class _OnboardingScreenTvState extends State<OnboardingScreenTv> {
       _status = l10n.downloadingSourceCatalog;
     });
     try {
-      final repos = sl<ProviderReposRegistry>();
-      final registry = sl<ProviderRegistry>();
-      final repo = await repos.fetchAndCache(kZangetsuRepoUrl);
-      final total = repo.sources.length;
-      var installed = 0;
-      final installedIds = <String>[];
-      for (final s in repo.sources) {
-        if (!mounted) return;
-        setState(
-          () => _status = l10n.installingSource(s.name, installed + 1, total),
-        );
-        try {
-          await registry.install(
-            sourceId: s.id,
-            fileUrl: repos.resolveFileUrl(repo, s),
-            repoUrl: repo.url,
-            displayName: s.name,
-            version: s.version,
-            force: true,
-          );
-          installed++;
-          installedIds.add(s.id);
-        } catch (_) {
-          // Skip a single failed source; keep installing the rest.
-        }
-      }
-      if (installed == 0) {
-        throw Exception('No sources could be installed');
-      }
+      final result = await provisionDefaultRepos(
+        repos: sl<ProviderReposRegistry>(),
+        registry: sl<ProviderRegistry>(),
+        onStatus: (name, done, total) {
+          if (!mounted) return;
+          setState(() => _status = l10n.installingSource(name, done, total));
+        },
+      );
       // New TV users default to AniKoto; fall back to the first installed source
       // if it didn't install. Runs only on first-run onboarding — existing users
       // keep their saved pick.
       sl<ActiveSourceCubit>().setSource(
-        installedIds.contains(kDefaultSourceId)
+        result.installedIds.contains(kDefaultSourceId)
             ? kDefaultSourceId
-            : installedIds.first,
+            : result.installedIds.first,
       );
       sl<HomeCubit>().load();
       await _markOnboarded();
