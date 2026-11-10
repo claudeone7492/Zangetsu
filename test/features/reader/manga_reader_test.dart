@@ -238,6 +238,127 @@ void _pureLogicTests() {
 
 // ── Widget-level fakes ───────────────────────────────────────────────────────
 
+/// A 1x1 transparent GIF, served for every image request.
+///
+/// Without this the reader's pages load over the real `HttpClient`, which
+/// hits `example.com` from the test host. The result is nondeterministic —
+/// on a host with network access `example.com` answers 400 and the image
+/// service reports an uncaught `HttpException`, which fails whichever test
+/// happens to be running; offline the request never completes at all. Serving
+/// a fixed in-memory image keeps the reader's decode and cache paths
+/// exercised without touching the network.
+final _pixelGif = Uint8List.fromList([
+  0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, 0x80, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x21, 0xF9, 0x04, 0x01, 0x00,
+  0x00, 0x00, 0x00, 0x2C, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00,
+  0x00, 0x02, 0x02, 0x44, 0x01, 0x00, 0x3B,
+]);
+
+/// Routes every `HttpClient` to [_pixelGif] (mirrors
+/// `streaming_services_screen_test.dart`).
+class _StubImageHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? _) => _StubClient();
+}
+
+class _StubClient implements HttpClient {
+  @override
+  bool autoUncompress = true;
+  @override
+  Duration idleTimeout = const Duration(seconds: 15);
+
+  // flutter_cache_manager downloads through `openUrl`, while `Image.network`
+  // uses `getUrl`; support both so any image path in the reader is stubbed.
+  @override
+  Future<HttpClientRequest> openUrl(String method, Uri url) async =>
+      _StubRequest(url);
+
+  @override
+  Future<HttpClientRequest> getUrl(Uri url) async => _StubRequest(url);
+
+  @override
+  void close({bool force = false}) {}
+
+  @override
+  noSuchMethod(Invocation i) => super.noSuchMethod(i);
+}
+
+class _StubRequest implements HttpClientRequest {
+  _StubRequest(this.uri);
+  @override
+  final Uri uri;
+  @override
+  final HttpHeaders headers = _StubHeaders();
+  @override
+  bool followRedirects = true;
+  @override
+  int maxRedirects = 5;
+  @override
+  int contentLength = -1;
+  @override
+  bool persistentConnection = true;
+
+  @override
+  Future<void> addStream(Stream<List<int>> stream) => stream.drain<void>();
+
+  @override
+  Future<HttpClientResponse> close() async => _StubResponse();
+
+  @override
+  noSuchMethod(Invocation i) => super.noSuchMethod(i);
+}
+
+class _StubHeaders implements HttpHeaders {
+  @override
+  List<String>? operator [](String name) => null;
+  @override
+  String? value(String name) => null;
+  @override
+  void forEach(void Function(String name, List<String> values) f) {}
+  @override
+  void add(String name, Object value, {bool preserveHeaderCase = false}) {}
+  @override
+  void set(String name, Object value, {bool preserveHeaderCase = false}) {}
+  @override
+  noSuchMethod(Invocation i) => super.noSuchMethod(i);
+}
+
+class _StubResponse implements HttpClientResponse {
+  @override
+  int get statusCode => 200;
+  @override
+  int get contentLength => _pixelGif.length;
+  @override
+  HttpHeaders get headers => _StubHeaders();
+  @override
+  bool get isRedirect => false;
+  @override
+  bool get persistentConnection => false;
+  @override
+  String get reasonPhrase => 'OK';
+  @override
+  List<RedirectInfo> get redirects => const <RedirectInfo>[];
+  @override
+  HttpClientResponseCompressionState get compressionState =>
+      HttpClientResponseCompressionState.notCompressed;
+
+  @override
+  StreamSubscription<List<int>> listen(
+    void Function(List<int>)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) => Stream<List<int>>.value(_pixelGif).listen(
+    onData,
+    onError: onError,
+    onDone: onDone,
+    cancelOnError: cancelOnError,
+  );
+
+  @override
+  noSuchMethod(Invocation i) => super.noSuchMethod(i);
+}
+
 /// A fake reading-capable source that hands back canned pages per chapter
 /// URL — mirrors `_FakeReadingProvider` in novel_reader_test.dart, with
 /// `getPages` implemented instead of `getText`.
@@ -789,6 +910,10 @@ void main() {
     // `--name` filtering, so this doesn't create an ordering dependency the
     // way an explicit warm-up test would.
     setUpAll(() async {
+      // Serve every image request from memory: the reader's pages use real
+      // URLs, and without this they load over the network from the test host
+      // (see [_pixelGif]).
+      HttpOverrides.global = _StubImageHttpOverrides();
       TestWidgetsFlutterBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(
             const MethodChannel('plugins.flutter.io/path_provider'),
@@ -838,6 +963,8 @@ void main() {
         onTimeout: () {},
       );
     });
+
+    tearDownAll(() => HttpOverrides.global = null);
 
     setUp(() async {
       // CachedNetworkImage (flutter_cache_manager) hits path_provider to find
@@ -939,13 +1066,17 @@ void main() {
         await tester.pumpWidget(const SizedBox());
         await Future<void>.delayed(const Duration(milliseconds: 50));
       });
-      // Final drain for the zeroed cache-cleanup timer (see setUpAll): pump
-      // with a real-async gap so any resolve still in flight lands and its
-      // timer fires inside the pump rather than after the test.
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 20)),
-      );
-      await tester.pump();
+      // Final drain for flutter_cache_manager's own timers (see setUpAll):
+      // a resolve that lands after the tree is gone arms fresh ones, so give
+      // any real-async work a gap to settle and then advance the fake clock
+      // past every interval the cache uses (the cleanup timer, now zeroed,
+      // and the 3s JSON-cache write debounce) until nothing is left pending.
+      for (var i = 0; i < 5; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 100)),
+        );
+        await tester.pump(const Duration(seconds: 11));
+      }
       await tester.pump();
     }
 
