@@ -107,6 +107,9 @@ import '../download/chapter_downloader.dart';
 import '../download/download_manager.dart';
 import '../download/download_prefs.dart';
 import '../download/download_service.dart';
+import '../debrid/debrid_prefs.dart';
+import '../debrid/debrid_resolver.dart';
+import '../debrid/playable_torrent.dart';
 import '../torrent/torrent_download_service.dart';
 import '../torrent/torrent_prefs.dart';
 import '../torrent/torrent_service.dart';
@@ -484,6 +487,16 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   sl.registerSingleton<TorrentPrefs>(TorrentPrefs());
   sl.registerSingleton<TorrentService>(TorrentService());
   sl.registerSingleton<TorrentDownloadService>(TorrentDownloadService());
+  await DebridPrefs.init();
+  sl.registerSingleton<DebridPrefs>(DebridPrefs());
+  sl.registerSingleton<DebridResolver>(DebridResolver(prefs: sl<DebridPrefs>()));
+  sl.registerSingleton<PlayableTorrent>(
+    PlayableTorrent(
+      debrid: sl<DebridResolver>(),
+      torrents: sl<TorrentService>(),
+      torrentPrefs: sl<TorrentPrefs>(),
+    ),
+  );
   await SearchHistory.init();
   sl.registerSingleton<SearchHistory>(SearchHistory());
   await AnimationPrefs.init(); // list/grid reveal toggle (phone/iOS only)
@@ -1185,7 +1198,12 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   await DownloadManager.init();
   await DownloadService.initialize(); // configure the foreground-service host
   sl.registerSingleton<DownloadManager>(
-    DownloadManager(sl<CatalogueRepository>(), sl<DownloadPrefs>())..setup(),
+    DownloadManager(
+      sl<CatalogueRepository>(),
+      sl<DownloadPrefs>(),
+      sl<TorrentDownloadService>(),
+      sl<DebridResolver>(),
+    )..setup(),
   );
 
   // Offline manga/novel chapters. Foreground-only, so no service to start —

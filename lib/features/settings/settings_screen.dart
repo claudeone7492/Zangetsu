@@ -52,6 +52,7 @@ import 'home_rows_screen.dart';
 import 'nav_tabs_screen.dart';
 import 'reader_settings_screen.dart';
 import 'discord_settings_screen.dart';
+import 'debrid_settings_screen.dart';
 import 'torrent_settings_screen.dart';
 import '../../core/provider/provider_downloader.dart';
 import '../../core/provider/provider_registry.dart';
@@ -898,6 +899,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
         },
       ),
     if (WatchTogetherController.isEnabled)
+      _SettingsEntry(
+        section: SettingsSection.account,
+        icon: Icons.cloud_outlined,
+        title: 'Debrid',
+        subtitle: 'Real-Debrid & TorBox for torrents',
+        keywords:
+            'debrid real-debrid realdebrid torbox magnet torrent cache rd',
+        onTap: () async {
+          await _push(const DebridSettingsScreen());
+          if (mounted) setState(() {});
+        },
+      ),
       _SettingsEntry(
         section: SettingsSection.account,
         icon: Icons.groups_2_outlined,
