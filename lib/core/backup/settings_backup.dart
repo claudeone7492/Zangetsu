@@ -47,6 +47,7 @@ class SettingsBackup {
     'streaming_prefs', // streaming-service region + pinned service rows
     'zmode_source_order', // Source Priority: which source Auto Resolve tries first
     'viewer_profiles', // per-account profile names and Kids-mode preference
+    'debrid_prefs', // debrid mode + active service (tokens are not here)
   ];
 
   /// Returns a map of `{boxName: {key: value, ...}}` for every open box.

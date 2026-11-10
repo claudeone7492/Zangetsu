@@ -97,9 +97,12 @@ void main() {
     expect(selection.value, isTrue);
   });
 
-  test('a closed box falls back without changing Home', () async {
+  test('a closed box falls back to the in-memory selection', () async {
+    await HomeCataloguePrefs.setSourceSelected(true);
     await Hive.box(HomeCataloguePrefs.boxName).close();
-    expect(HomeCataloguePrefs.sourceSelected, isFalse);
+    // With nothing persisted to read, the notifier Home subscribes to stays
+    // authoritative rather than every read resolving to `metadata`.
+    expect(HomeCataloguePrefs.sourceSelected, isTrue);
     expect(HomeCataloguePrefs.sourceId, isNull);
     expect(HomeCataloguePrefs.sourceIdFor(ContentMode.anime), isNull);
   });

@@ -36,6 +36,14 @@ class HomeCataloguePrefs {
   }
 
   static HomeCatalogueKind get catalogueKind {
+    if (!Hive.isBoxOpen(boxName)) {
+      // Nothing persisted to read (the box is normally opened at bootstrap): fall
+      // back to the in-memory selection so the notifier Home subscribes to stays
+      // authoritative instead of every read resolving to `metadata`.
+      return _sourceSelection?.value == true
+          ? HomeCatalogueKind.source
+          : HomeCatalogueKind.metadata;
+    }
     switch (_savedKind()) {
       case 'source':
         return HomeCatalogueKind.source;
