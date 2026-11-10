@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -326,7 +327,7 @@ class _SearchViewState extends State<_SearchView>
     // Arrived from a genre or tag chip: run that filtered browse straight
     // away, not a frame later. context.read is safe here, it subscribes to
     // nothing.
-    if (!(widget.initialFilters ?? const MetaFilters()).isEmpty) {
+    if ((widget.initialFilters ?? const MetaFilters()).isNotEmpty) {
       _applyMetaFilters();
     }
     _checkVoice();
@@ -1957,18 +1958,10 @@ class _SearchViewState extends State<_SearchView>
         SizedBox(
           height: itemH,
           child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            // With a screen reader on, build every poster (not just the lazy
-            // window) so TalkBack can reach each one and the row auto-scrolls to
-            // it — otherwise swipe navigation stalls at the first few. Sighted
-            // users keep the lazy 600px window unchanged.
-            // `accessibleNavigationOf`, not `MediaQuery.of(...)`: the latter
-            // subscribes to every aspect including viewInsets, so each row
-            // rebuilt on every frame of the keyboard sliding in or out.
-            cacheExtent: MediaQuery.accessibleNavigationOf(context)
+            scrollCacheExtent: ScrollCacheExtent.pixels(MediaQuery.accessibleNavigationOf(context)
                 ? double.infinity
-                : 600,
+                : 600), scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: preview.length,
             itemBuilder: (context, i) {
               final item = preview[i];
@@ -2268,13 +2261,12 @@ class _SearchViewState extends State<_SearchView>
   // ── Flat results grid (single-source / vertical) ──────────────────────────
   Widget _resultsGrid(List<MediaItem> items, double cellW) {
     return GridView.builder(
-      padding: EdgeInsets.fromLTRB(
+      scrollCacheExtent: ScrollCacheExtent.pixels(800), padding: EdgeInsets.fromLTRB(
         16,
         6,
         16,
         MediaQuery.paddingOf(context).bottom,
       ),
-      cacheExtent: 800,
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: posterGridColumns(context),

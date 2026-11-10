@@ -2608,8 +2608,7 @@ class _TvExoPlayerScreenState extends State<TvExoPlayerScreen> {
                         valueListenable: _fillerEps,
                         builder: (context, fillers, _) {
                           return ListView.builder(
-                            primary: false,
-                            cacheExtent: 2000,
+                            scrollCacheExtent: ScrollCacheExtent.pixels(2000), primary: false,
                             itemCount: visibleCount,
                             itemBuilder: (context, localI) {
                               final i = visibleStart + localI;

@@ -178,6 +178,7 @@ class MalCatalogue implements AnimeCatalogue {
   /// One request per row — MAL has no aliasing, so this is N calls where
   /// AniList makes one. They run together; a row that fails is dropped rather
   /// than failing the screen.
+  @override
   Future<List<HomeSection>> home(ZKind kind) async {
     final rows = _rows(kind);
     // Fetched once and shared by both seasonal rows rather than per row — they
@@ -293,6 +294,7 @@ class MalCatalogue implements AnimeCatalogue {
     return _items(res.data, kind);
   }
 
+  @override
   Future<MediaDetail> detail(ZCanonical c) async {
     final id = _malIdOf(c);
     final res = await _get('/${_path(c.kind)}/$id', {'fields': _detailFields});
@@ -355,6 +357,7 @@ class MalCatalogue implements AnimeCatalogue {
     );
   }
 
+  @override
   Future<List<Episode>> episodes(ZCanonical c) async =>
       (await detail(c)).episodes;
 

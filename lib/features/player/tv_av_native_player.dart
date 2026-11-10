@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -1132,9 +1131,7 @@ class TvAvNativePlayer {
     }
 
     final swapped = hlsCdnSwapEncode(streamUrl, subId);
-    final vttMaster = swapped == null
-        ? null
-        : swapped.replaceFirst(RegExp(r'[^/]+$'), 'master.m3u8');
+    final vttMaster = swapped?.replaceFirst(RegExp(r'[^/]+$'), 'master.m3u8');
     debugPrint(
       '[zangetsu-sub-timing] VTT encode differs from video — probing '
       'sibling playlists (all renditions)',

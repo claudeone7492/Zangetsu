@@ -1722,17 +1722,20 @@ class _HomeViewState extends State<_HomeView>
   /// show (streaming) or last read manga/novel. Null when there's nothing yet.
   ({String? cover, Map<String, String>? headers}) _modeArt(ContentMode m) {
     if (m == ContentMode.anime) {
-      if (!Hive.isBoxOpen(WatchHistory.boxName))
+      if (!Hive.isBoxOpen(WatchHistory.boxName)) {
         return (cover: null, headers: null);
+      }
       for (final e in sl<WatchHistory>().all()) {
         final c = e.thumbnail ?? e.cover;
-        if (c != null && c.isNotEmpty)
+        if (c != null && c.isNotEmpty) {
           return (cover: c, headers: e.coverHeaders);
+        }
       }
       return (cover: null, headers: null);
     }
-    if (!Hive.isBoxOpen(ReadHistory.boxName))
+    if (!Hive.isBoxOpen(ReadHistory.boxName)) {
       return (cover: null, headers: null);
+    }
     final type = m == ContentMode.manga
         ? ProviderType.manga
         : ProviderType.novel;

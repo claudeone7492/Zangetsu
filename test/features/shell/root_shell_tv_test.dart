@@ -52,9 +52,9 @@ import 'package:watch_app/features/home/cubit/home_cubit.dart';
 import 'package:watch_app/features/shell/root_shell_tv.dart';
 
 MigrationBridge _fakeBridge() => MigrationBridge(
-  invoke: (_, __) async => const {'ok': false},
-  signInPassword: (_, __) async => false,
-  verifyOtp: (_, __) async => false,
+  invoke: (_, _) async => const {'ok': false},
+  signInPassword: (_, _) async => false,
+  verifyOtp: (_, _) async => false,
 );
 
 // ── Minimal fakes (no platform channels, no Hive) ──────────────────────────
@@ -99,8 +99,6 @@ class _FakeMyListStore implements MyListStore {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   List<MediaItem> all() => const [];
@@ -118,8 +116,6 @@ class _FakeSearchHistory implements SearchHistory {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   List<String> recent() => const [];
@@ -131,8 +127,6 @@ class _FakeSearchPrefs extends ChangeNotifier implements SearchPrefs {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   SearchLayout get layout => SearchLayout.vertical;
@@ -166,8 +160,6 @@ class _FakeSearchSourcePrefs extends ChangeNotifier
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   Set<String> get excluded => const {};
@@ -182,8 +174,6 @@ class _FakeProviderRegistry implements ProviderRegistry {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   List<ProviderRegistryEntry> getAll() => const [];
@@ -207,8 +197,6 @@ class _FakeAniListService extends ChangeNotifier implements AniListService {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   bool get isConnected => false;
@@ -228,8 +216,6 @@ class _FakeMalService extends ChangeNotifier implements MalService {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   bool get isConnected => false;
@@ -249,8 +235,6 @@ class _FakeSimklService extends ChangeNotifier implements SimklService {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   bool get isConnected => false;
@@ -502,7 +486,7 @@ void main() {
 
       final rail = find.byWidgetPredicate(
         (w) =>
-            w is Focus && (w as Focus).focusNode?.debugLabel == 'tv-rail-scope',
+            w is Focus && w.focusNode?.debugLabel == 'tv-rail-scope',
       );
       final settingsInRail = find.descendant(
         of: rail,

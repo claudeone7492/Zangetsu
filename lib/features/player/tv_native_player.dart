@@ -697,8 +697,9 @@ class TvNativePlayer {
     int durMs, {
     bool completed = false,
   }) {
-    if (index < 0 || index >= _episodes.length || durMs <= 0 || posMs <= 0)
+    if (index < 0 || index >= _episodes.length || durMs <= 0 || posMs <= 0) {
       return;
+    }
     final ep = _episodes[index];
     _resume?.save(
       _sourceId,

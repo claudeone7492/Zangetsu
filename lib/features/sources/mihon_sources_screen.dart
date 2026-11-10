@@ -659,7 +659,7 @@ class _MihonSourceRowState extends State<_MihonSourceRow> {
               ),
             ),
             child: Text(
-              context.l10n.updateArrowVersion('${update.availableVersion}'),
+              context.l10n.updateArrowVersion(update.availableVersion),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

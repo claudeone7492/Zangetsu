@@ -21,9 +21,9 @@ import 'package:watch_app/features/auth/migration_bridge.dart';
 import 'package:watch_app/features/backup/backup_screen.dart';
 
 MigrationBridge _fakeBridge() => MigrationBridge(
-      invoke: (_, __) async => const {'ok': false},
-      signInPassword: (_, __) async => false,
-      verifyOtp: (_, __) async => false,
+      invoke: (_, _) async => const {'ok': false},
+      signInPassword: (_, _) async => false,
+      verifyOtp: (_, _) async => false,
     );
 
 // ── Stubs ─────────────────────────────────────────────────────────────────────

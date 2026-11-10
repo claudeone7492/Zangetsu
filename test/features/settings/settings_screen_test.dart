@@ -30,9 +30,9 @@ import 'package:watch_app/features/settings/settings_screen.dart';
 import 'package:watch_app/l10n/app_localizations.dart';
 
 MigrationBridge _fakeBridge() => MigrationBridge(
-  invoke: (_, __) async => const {'ok': false},
-  signInPassword: (_, __) async => false,
-  verifyOtp: (_, __) async => false,
+  invoke: (_, _) async => const {'ok': false},
+  signInPassword: (_, _) async => false,
+  verifyOtp: (_, _) async => false,
 );
 
 // ── Minimal stubs (mirrors settings_screen_tv_test.dart / AppMode wiring) ────
@@ -129,11 +129,11 @@ void _mockPathProvider(WidgetTester tester) {
 
 void main() {
   late ActiveSourceCubit activeCubit;
-  late Directory _hiveDir;
+  late Directory hiveDir;
 
   setUp(() async {
-    _hiveDir = await Directory.systemTemp.createTemp();
-    Hive.init(_hiveDir.path);
+    hiveDir = await Directory.systemTemp.createTemp();
+    Hive.init(hiveDir.path);
     await Hive.openBox(DownloadPrefs.boxName);
     await Hive.openBox(TorrentPrefs.boxName);
     await Hive.openBox(ThemeController.boxName);
@@ -162,10 +162,10 @@ void main() {
     await activeCubit.close();
     await GetIt.instance.reset();
     await Hive.deleteFromDisk();
-    if (_hiveDir.existsSync()) await _hiveDir.delete(recursive: true);
+    if (hiveDir.existsSync()) await hiveDir.delete(recursive: true);
   });
 
-  Future<void> _pumpSettings(
+  Future<void> pumpSettings(
     WidgetTester tester, {
     bool showBackButton = false,
     bool openFromProfile = false,
@@ -210,7 +210,7 @@ void main() {
   testWidgets(
     'top level shows one combined profile row and one row per section',
     (tester) async {
-      await _pumpSettings(tester);
+      await pumpSettings(tester);
 
       // Each section is now a single drill-down row.
       for (final section in const [
@@ -244,7 +244,7 @@ void main() {
   testWidgets('route-pushed Settings shows a visible back button', (
     tester,
   ) async {
-    await _pumpSettings(tester, openFromProfile: true);
+    await pumpSettings(tester, openFromProfile: true);
     await tester.tap(find.byTooltip('Profile menu'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('App settings'));
@@ -257,7 +257,7 @@ void main() {
   testWidgets(
     'combined profile row opens viewer manager and keeps sign-in available',
     (tester) async {
-      await _pumpSettings(tester);
+      await pumpSettings(tester);
 
       await tester.tap(find.text('Profiles & account'));
       await tester.pumpAndSettle();
@@ -270,7 +270,7 @@ void main() {
   );
 
   testWidgets('tapping a category drills into its settings', (tester) async {
-    await _pumpSettings(tester);
+    await pumpSettings(tester);
 
     await tester.tap(find.text('Sources'));
     await tester.pumpAndSettle();
@@ -297,7 +297,7 @@ void main() {
   testWidgets('Reading section has a Reader entry that opens reader defaults', (
     tester,
   ) async {
-    await _pumpSettings(tester);
+    await pumpSettings(tester);
 
     await tester.tap(find.text('Reading'));
     await tester.pumpAndSettle();
@@ -338,7 +338,7 @@ void main() {
       ),
     );
 
-    await _pumpSettings(tester);
+    await pumpSettings(tester);
 
     await tester.tap(find.text('Reading'));
     await tester.pumpAndSettle();
@@ -382,7 +382,7 @@ void main() {
   testWidgets('Manga translation appearance opens from Reader settings', (
     tester,
   ) async {
-    await _pumpSettings(tester);
+    await pumpSettings(tester);
 
     await tester.tap(find.text('Reading'));
     await tester.pumpAndSettle();
@@ -408,7 +408,7 @@ void main() {
   testWidgets('search cuts across every section (flat filtered list)', (
     tester,
   ) async {
-    await _pumpSettings(tester);
+    await pumpSettings(tester);
 
     await tester.enterText(find.byType(TextField), 'backup');
     await tester.pumpAndSettle();

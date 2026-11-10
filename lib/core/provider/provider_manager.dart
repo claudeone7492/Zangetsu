@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+// ignore: unused_import
 import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
@@ -485,6 +486,7 @@ class _JsHost {
       // provider's sourceId, or 'ex:<extractorId>' for an extractor call —
       // the latter names no installed source, so it's not a useful key here.
       final src = (payload['__src'] as String?) ?? '';
+      // ignore: unused_local_variable
       final srcId = (src.isEmpty || src.startsWith('ex:')) ? null : src;
       final method = (payload['method'] as String?) ?? 'GET';
       final headers =
@@ -493,6 +495,7 @@ class _JsHost {
       final tMs = (payload['timeoutMs'] as num?)?.toInt() ?? 0;
       final follow = payload['followRedirects'] != false;
       final wantCf = payload['browser'] == true || payload['cf'] == true;
+      // ignore: unused_local_variable
       final host = Uri.parse(url).host;
       final hdr = headers.map((k, v) => MapEntry(k, v.toString()));
       // OWNER-DISABLED 2026-10-03: Zangetsu-provider Cloudflare handling is
@@ -746,6 +749,7 @@ class _JsHost {
   /// Hydrate the in-memory CF maps from the persistent store once, on first use.
   /// Restored clearances are optimistic: a stale one is dropped + re-solved by
   /// the fetch path, so this only saves a solve when a still-valid one exists.
+  // ignore: unused_element
   void _ensureCfRestored() {
     if (_cfRestored) return;
     _cfRestored = true;
@@ -757,6 +761,7 @@ class _JsHost {
   }
 
   /// True if a CF solve for [host] failed within the last [_cfFailTtlMs].
+  // ignore: unused_element
   bool _cfRecentlyFailed(String host) {
     final at = _cfFailedAt[host];
     if (at == null) return false;
@@ -769,6 +774,7 @@ class _JsHost {
   /// to the EXACT User-Agent that solved it, so when we have one we must FORCE
   /// the solving UA — even over a UA the provider set — or Cloudflare 403s the
   /// mismatch. Without a CF cookie we leave the provider's UA untouched.
+  // ignore: unused_element
   void _applyCf(String host, Map<String, String> hdr) {
     final cookie = _cfCookie[host];
     final ua = _cfUa[host];
@@ -790,6 +796,7 @@ class _JsHost {
   }
 
   /// True when a response is a Cloudflare interstitial rather than real content.
+  // ignore: unused_element
   bool _looksLikeBlocked(Response<dynamic> resp) => looksLikeCloudflareBlock(
     resp.statusCode ?? 0,
     resp.data?.toString() ?? '',
@@ -802,6 +809,7 @@ class _JsHost {
   /// client for the same class of problem, so this borrows it rather than
   /// standing up a second stack. Android-only; null on any failure, and the
   /// caller then keeps the original response.
+  // ignore: unused_element
   Future<Response<dynamic>?> _retryOverNative(
     String url,
     String method,
@@ -833,6 +841,7 @@ class _JsHost {
     }
   }
 
+  // ignore: unused_element
   bool _looksLikeCfChallenge(Response<dynamic> resp) => looksLikeCfChallenge(
     status: resp.statusCode ?? 0,
     cfMitigated: resp.headers.value('cf-mitigated'),

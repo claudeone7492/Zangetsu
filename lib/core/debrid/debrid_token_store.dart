@@ -8,6 +8,7 @@ class DebridTokenStore {
   DebridTokenStore._();
 
   static const FlutterSecureStorage _storage = FlutterSecureStorage(
+    // ignore: deprecated_member_use
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
 

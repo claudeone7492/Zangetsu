@@ -35,7 +35,7 @@ class LibraryTab {
 /// jumped between tabs instead of tracking the gesture. The detail screen
 /// already uses a TabController for the same job, so this matches it.
 class LibraryTabs extends StatefulWidget {
-  const LibraryTabs({
+  const LibraryTabs({super.key, 
     required this.tabs,
     required this.selectedId,
     required this.onSelected,
@@ -80,8 +80,8 @@ class LibraryTabsState extends State<LibraryTabs>
   }
 
   @override
-  void didUpdateWidget(LibraryTabs old) {
-    super.didUpdateWidget(old);
+  void didUpdateWidget(LibraryTabs oldWidget) {
+    super.didUpdateWidget(oldWidget);
     // A tab appearing or disappearing (a status emptying out, a category made)
     // invalidates the controller's length, which is fixed at construction.
     if (widget.tabs.length != _c.length) {

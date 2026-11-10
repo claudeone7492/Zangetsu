@@ -11,6 +11,7 @@ import 'package:watch_app/core/anilist/anilist_network_policy.dart';
 /// and an unconsumed error future fails the test on its own.
 ErrorInterceptorHandler _errHandler() {
   final h = ErrorInterceptorHandler();
+  // ignore: invalid_use_of_protected_member
   h.future.ignore();
   return h;
 }

@@ -667,11 +667,13 @@ class DownloadManager extends ChangeNotifier {
   /// whose streams are all manifests instead of settling on it. One sweep, not
   /// one sweep per rejected source — that was quadratic and froze the app.
   Future<bool> _tryAnotherSource(DownloadRecord rec) async {
-    if (!ZmodeIds.isZ(rec.episodeUrl))
+    if (!ZmodeIds.isZ(rec.episodeUrl)) {
       return false; // only the catalogue sweeps
+    }
     if (!GetIt.I.isRegistered<MetadataRepository>()) return false;
-    if (_sweeping.contains(rec.id))
+    if (_sweeping.contains(rec.id)) {
       return false; // already looking for this one
+    }
     _sweeping.add(rec.id);
     try {
       final next = await GetIt.I<MetadataRepository>().sourcesWhere(
@@ -1043,8 +1045,9 @@ class DownloadManager extends ChangeNotifier {
     if (source.subtitles.isEmpty && !fromHls) return;
     final live = _records[rec.id];
     if (live == null || live.status == DownloadStatus.canceled) return;
-    if (live.subtitles.isNotEmpty)
+    if (live.subtitles.isNotEmpty) {
       return; // already saved (e.g. a retry mirror)
+    }
     try {
       final docs = await getApplicationDocumentsDirectory();
       final safeShow = _safe(rec.showTitle);

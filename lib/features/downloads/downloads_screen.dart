@@ -1388,7 +1388,7 @@ class _ThumbWatchBadge extends StatelessWidget {
     if (resume == null) return const SizedBox.shrink();
     return ValueListenableBuilder<Box<Map>>(
       valueListenable: Hive.box<Map>(ResumeStore.boxName).listenable(),
-      builder: (context, _, __) {
+      builder: (context, _, _) {
         final mark = resume.get(
           record.sourceId,
           record.showUrl,
@@ -1453,7 +1453,7 @@ class _ThumbDuration extends StatelessWidget {
     if (resume == null) return const SizedBox.shrink();
     return ValueListenableBuilder<Box<Map>>(
       valueListenable: Hive.box<Map>(ResumeStore.boxName).listenable(),
-      builder: (context, _, __) {
+      builder: (context, _, _) {
         final total = resume
             .get(record.sourceId, record.showUrl, record.episodeId)
             ?.duration;

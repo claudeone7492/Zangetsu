@@ -231,7 +231,7 @@ class TrackerHub {
     );
     return [
       for (final r in results)
-        if (r != null) r,
+        ?r,
     ];
   }
 

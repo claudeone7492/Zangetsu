@@ -234,9 +234,8 @@ class CastController extends ChangeNotifier {
         'subtitles': castSubtitleMaps(subtitles),
         'startMs': startAt.inMilliseconds,
         if (duration > Duration.zero) 'durationMs': duration.inMilliseconds,
-        if (hlsSegmentFormat != null) 'hlsSegmentFormat': hlsSegmentFormat,
-        if (hlsVideoSegmentFormat != null)
-          'hlsVideoSegmentFormat': hlsVideoSegmentFormat,
+        'hlsSegmentFormat': ?hlsSegmentFormat,
+        'hlsVideoSegmentFormat': ?hlsVideoSegmentFormat,
       });
     } catch (_) {}
   }

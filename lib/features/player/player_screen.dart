@@ -1304,8 +1304,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
   // never-played mpv screen. mpv itself is untouched — it just never opens a DRM url.
   bool _drmHandedOff = false;
   Future<void> _handoffToNativeDrm(VideoSource drm) async {
-    if (_drmHandedOff)
+    if (_drmHandedOff) {
       return; // _open can fire more than once (switch/failover)
+    }
     _drmHandedOff = true;
     await _c.player
         .pause(); // don't buffer the idle mpv player behind the DRM one
@@ -1383,8 +1384,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
         if (i < 0 && r.episodeNumber != null) {
           i = _c.episodes.indexWhere((e) => e.number == r.episodeNumber);
         }
-        if (i >= 0 && i != _c.state.currentIndex)
+        if (i >= 0 && i != _c.state.currentIndex) {
           _c.openEpisode(i, fromRoom: true);
+        }
       },
       content: {
         'sourceId': _c.sourceId,

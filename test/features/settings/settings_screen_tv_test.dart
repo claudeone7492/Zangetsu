@@ -43,9 +43,9 @@ import 'package:watch_app/features/settings/settings_screen.dart';
 import 'package:watch_app/l10n/app_localizations.dart';
 
 MigrationBridge _fakeBridge() => MigrationBridge(
-  invoke: (_, __) async => const {'ok': false},
-  signInPassword: (_, __) async => false,
-  verifyOtp: (_, __) async => false,
+  invoke: (_, _) async => const {'ok': false},
+  signInPassword: (_, _) async => false,
+  verifyOtp: (_, _) async => false,
 );
 
 // ── Minimal stubs ─────────────────────────────────────────────────────────────

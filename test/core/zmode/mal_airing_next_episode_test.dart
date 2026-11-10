@@ -29,7 +29,7 @@ MalCatalogue _mal({
         'title': 'A Show',
         'num_episodes': episodes,
         'status': status,
-        if (startDate != null) 'start_date': startDate,
+        'start_date': ?startDate,
       },
     );
   return MalCatalogue(dio);
@@ -90,7 +90,7 @@ class _Adapter implements HttpClientAdapter {
   final Map<String, dynamic> Function(Map<String, dynamic>) respond;
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options, _, __) async {
+  Future<ResponseBody> fetch(RequestOptions options, _, _) async {
     final body = respond(Map<String, dynamic>.from(options.queryParameters));
     return ResponseBody.fromString(
       const JsonEncoder().convert(body),

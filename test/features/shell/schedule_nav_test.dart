@@ -71,9 +71,9 @@ List<Color> _cardFill(WidgetTester tester, String key) {
 }
 
 MigrationBridge _fakeBridge() => MigrationBridge(
-  invoke: (_, __) async => const {'ok': false},
-  signInPassword: (_, __) async => false,
-  verifyOtp: (_, __) async => false,
+  invoke: (_, _) async => const {'ok': false},
+  signInPassword: (_, _) async => false,
+  verifyOtp: (_, _) async => false,
 );
 
 // ── Minimal fakes (same shape as root_shell_tv_test.dart's harness) ────────
@@ -114,8 +114,6 @@ class _FakeMyListStore implements MyListStore {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   List<MediaItem> all() => const [];
@@ -132,8 +130,6 @@ class _FakeSearchHistory implements SearchHistory {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   List<String> recent() => const [];
@@ -144,8 +140,6 @@ class _FakeSearchPrefs extends ChangeNotifier implements SearchPrefs {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   SearchLayout get layout => SearchLayout.vertical;
@@ -193,8 +187,6 @@ class _FakeSearchSourcePrefs extends ChangeNotifier
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   Set<String> get excluded => const {};
@@ -208,8 +200,6 @@ class _FakeProviderRegistry implements ProviderRegistry {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   List<ProviderRegistryEntry> getAll() => const [];
@@ -232,8 +222,6 @@ class _FakeAniListService extends ChangeNotifier implements AniListService {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   bool get isConnected => false;
@@ -253,8 +241,6 @@ class _FakeMalService extends ChangeNotifier implements MalService {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   bool get isConnected => false;
@@ -274,8 +260,6 @@ class _FakeSimklService extends ChangeNotifier implements SimklService {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   bool get isConnected => false;
@@ -881,8 +865,6 @@ class _FiltersRepo implements MetadataRepository {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 }
 
 class _TestViewerProfileStore extends ViewerProfileStore {

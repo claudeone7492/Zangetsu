@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import 'reveal_item.dart';
@@ -38,15 +39,10 @@ class ContentRow extends StatelessWidget {
         SizedBox(
           height: itemHeight,
           child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            // With a screen reader on, build every item (not just the lazy
-            // window) so TalkBack can focus each one and the row auto-scrolls to
-            // it — otherwise horizontal swipe navigation stalls at the first few.
-            // Sighted users keep the lazy 600px window unchanged.
-            cacheExtent: MediaQuery.of(context).accessibleNavigation
+            scrollCacheExtent: ScrollCacheExtent.pixels(MediaQuery.of(context).accessibleNavigation
                 ? double.infinity
-                : 600,
+                : 600), scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: itemCount,
             itemBuilder: (context, index) => Padding(
               padding: const EdgeInsetsDirectional.only(end: 12),

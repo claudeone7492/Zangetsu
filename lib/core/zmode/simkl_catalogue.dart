@@ -122,7 +122,7 @@ class SimklCatalogue implements VideoCatalogue {
     );
     return [
       for (final s in sections)
-        if (s != null) s,
+        ?s,
     ];
   }
 

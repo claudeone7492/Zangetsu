@@ -154,6 +154,7 @@ Future<void> main() async {
         // probed-offline boot runs it with a short fuse instead of skipping.
         await Supabase.initialize(
           url: Environment.supabaseUrl,
+          // ignore: deprecated_member_use
           anonKey: Environment.supabaseAnonKey,
           // TV auth uses QR pairing, not OAuth redirect deep links.
           authOptions: FlutterAuthClientOptions(detectSessionInUri: !appleTv),
@@ -229,6 +230,7 @@ Future<void> _retrySupabaseInit() async {
     try {
       await Supabase.initialize(
         url: Environment.supabaseUrl,
+        // ignore: deprecated_member_use
         anonKey: Environment.supabaseAnonKey,
         authOptions: FlutterAuthClientOptions(detectSessionInUri: !isAppleTv),
       ).timeout(const Duration(seconds: 8));
@@ -418,8 +420,9 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
   }
 
   void _onLocaleChanged() {
-    if (mounted)
+    if (mounted) {
       setState(() {}); // language changed → rebuild MaterialApp.locale
+    }
   }
 
   /// The streaming kind changed: swap Home rows without blanking the screen.

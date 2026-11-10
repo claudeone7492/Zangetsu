@@ -78,7 +78,7 @@ class _Adapter implements HttpClientAdapter {
   final Map<String, dynamic> Function(Map<String, dynamic>) respond;
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options, _, __) async {
+  Future<ResponseBody> fetch(RequestOptions options, _, _) async {
     final body = respond(Map<String, dynamic>.from(options.queryParameters));
     return ResponseBody.fromString(
       _encode(body),

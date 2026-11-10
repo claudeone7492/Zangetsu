@@ -82,7 +82,7 @@ class _MalAdapter implements HttpClientAdapter {
   final String title;
 
   @override
-  Future<ResponseBody> fetch(RequestOptions o, _, __) async => ResponseBody.fromString(
+  Future<ResponseBody> fetch(RequestOptions o, _, _) async => ResponseBody.fromString(
         jsonEncode({
           'data': [
             {

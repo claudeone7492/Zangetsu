@@ -66,7 +66,7 @@ class ActiveSourceCubit extends Cubit<String> {
     if (saved == null || saved.isEmpty || saved == state) {
       debugPrint(
         '[active-source] reapplySaved · skip '
-        '(saved="$saved" current="${state}" same=${saved == state})',
+        '(saved="$saved" current="$state" same=${saved == state})',
       );
       return false;
     }

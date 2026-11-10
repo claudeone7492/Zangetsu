@@ -2362,8 +2362,9 @@ class PlayerCubit extends Cubit<PlayerState> {
     if (!_openedLocalFile) {
       unawaited(_pollForMoreSources(_episodeUrl(currentEpisode)));
     }
-    if (roomRole == RoomRole.host)
+    if (roomRole == RoomRole.host) {
       onLocalPlayback?.call('episode', Duration.zero);
+    }
     return true;
   }
 
@@ -2712,8 +2713,9 @@ class PlayerCubit extends Cubit<PlayerState> {
     // ONLY torrent-specific code in the open path; direct urls skip it entirely.
     if (isTorrentUrl(s.url)) {
       final resolved = await _resolveTorrent(s, g);
-      if (g != _gen || resolved == null)
+      if (g != _gen || resolved == null) {
         return; // superseded or failed (error emitted)
+      }
       s = resolved;
     }
     _startTimer?.cancel();
@@ -3820,8 +3822,9 @@ class PlayerCubit extends Cubit<PlayerState> {
     if (_goodPosMs > 0 && nowMs - _userSeekMs > 3000) {
       final elapsed = Duration(milliseconds: nowMs - _goodPosMs);
       final jump = _lastPos - _goodPos;
-      if (jump > elapsed * 4 + const Duration(seconds: 10))
+      if (jump > elapsed * 4 + const Duration(seconds: 10)) {
         return; // implausible
+      }
     }
     _goodPos = _lastPos;
     _goodPosMs = nowMs;

@@ -18,11 +18,11 @@ class _StubDownloadManager extends ChangeNotifier implements DownloadManager {
 }
 
 void main() {
-  late Directory _dir;
+  late Directory dir;
 
   setUp(() async {
-    _dir = await Directory.systemTemp.createTemp();
-    Hive.init(_dir.path);
+    dir = await Directory.systemTemp.createTemp();
+    Hive.init(dir.path);
     await Hive.openBox(DownloadPrefs.boxName);
     GetIt.instance.registerSingleton<DownloadPrefs>(DownloadPrefs());
     GetIt.instance.registerSingleton<DownloadManager>(_StubDownloadManager());
@@ -31,7 +31,7 @@ void main() {
   tearDown(() async {
     await GetIt.instance.reset();
     await Hive.deleteFromDisk();
-    if (_dir.existsSync()) await _dir.delete(recursive: true);
+    if (dir.existsSync()) await dir.delete(recursive: true);
   });
 
   testWidgets('renders Choose folder tile and default current-location label',

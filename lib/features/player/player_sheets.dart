@@ -1160,8 +1160,9 @@ class _TvStepperRowState extends State<_TvStepperRow> {
   bool _focused = false;
 
   KeyEventResult _onKey(FocusNode node, KeyEvent e) {
-    if (e is! KeyDownEvent && e is! KeyRepeatEvent)
+    if (e is! KeyDownEvent && e is! KeyRepeatEvent) {
       return KeyEventResult.ignored;
+    }
     if (e.logicalKey == LogicalKeyboardKey.arrowLeft) {
       widget.onDec?.call();
       return KeyEventResult.handled;

@@ -6,7 +6,6 @@ import '../core/playback/search_prefs.dart';
 import '../core/playback/source_health_store.dart' show SourceOutcome;
 import '../core/theme/theme_controller.dart';
 import '../core/ui/nav_prefs.dart';
-import 'app_localizations.dart';
 import 'l10n.dart';
 
 /// Localized dock tab label (phone bottom bar).

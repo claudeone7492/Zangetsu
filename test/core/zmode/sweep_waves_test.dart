@@ -12,7 +12,6 @@ import 'package:watch_app/core/repository/source_repository.dart';
 import 'package:watch_app/core/zmode/match_store.dart';
 import 'package:watch_app/core/zmode/playback_resolver.dart';
 import 'package:watch_app/core/zmode/source_matcher.dart';
-import 'package:watch_app/core/zmode/zmode_ids.dart';
 import 'package:watch_app/core/zmode/zmode_source_prefs.dart';
 
 const _ep2 = 'zm://anime/mal:100/ep/2';
@@ -35,6 +34,12 @@ class _TimedSrc implements SourceRepository {
 
   /// The order episode lists were actually requested in.
   final asked = <String>[];
+
+  /// Peak number of `episodes` calls in flight at once. A wave that asks its
+  /// sources together reaches the full candidate count; one at a time never
+  /// exceeds 1.
+  int maxConcurrent = 0;
+  int _active = 0;
 
   @override
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
@@ -77,12 +82,18 @@ class _TimedSrc implements SourceRepository {
     String? sourceId,
   }) async {
     asked.add(sourceId!);
-    await Future<void>.delayed(delay[sourceId] ?? Duration.zero);
-    return [
-      Episode(id: '1', title: 'Ep 1', number: 1, url: 'https://$sourceId/1'),
-      if (hasEpisode2.contains(sourceId))
-        Episode(id: '2', title: 'Ep 2', number: 2, url: 'https://$sourceId/2'),
-    ];
+    _active++;
+    if (_active > maxConcurrent) maxConcurrent = _active;
+    try {
+      await Future<void>.delayed(delay[sourceId] ?? Duration.zero);
+      return [
+        Episode(id: '1', title: 'Ep 1', number: 1, url: 'https://$sourceId/1'),
+        if (hasEpisode2.contains(sourceId))
+          Episode(id: '2', title: 'Ep 2', number: 2, url: 'https://$sourceId/2'),
+      ];
+    } finally {
+      _active--;
+    }
   }
 
   @override
@@ -134,9 +145,9 @@ void main() {
     return r;
   }
 
-  // The whole point. Three sources that each take 200ms cost 600ms when asked
-  // one at a time and about 200ms when asked together — that difference IS the
-  // feature, so it is measured rather than assumed.
+  // The whole point. Three sources that each take 200ms must be asked at the
+  // same time, not one after another. Measured as real concurrency rather than
+  // wall-clock time so the test cannot flake on a loaded CI runner.
   test('a wave asks its sources at the same time, not one after another',
       () async {
     final src = _TimedSrc(
@@ -149,16 +160,14 @@ void main() {
       // Only the last one can serve it, so all three are asked.
       hasEpisode2: const {'c'},
     );
-    final sw = Stopwatch()..start();
     final out = await build(src).sources(_ep2);
-    sw.stop();
 
     expect(out, isNotEmpty);
     expect(src.asked.length, 3, reason: 'all three were needed');
     expect(
-      sw.elapsedMilliseconds,
-      lessThan(450),
-      reason: 'one at a time would be ~600ms; together it is ~200ms',
+      src.maxConcurrent,
+      3,
+      reason: 'a wave asks every candidate together; one at a time would be 1',
     );
   });
 

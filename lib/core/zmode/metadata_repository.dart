@@ -956,8 +956,9 @@ class MetadataRepository implements CatalogueRepository {
     if (firstUnaired != null && n >= firstUnaired) {
       // An exact date only for the very next one — anything beyond it would be
       // us guessing at a schedule we were never told.
-      if (n == firstUnaired && airsAt != null)
+      if (n == firstUnaired && airsAt != null) {
         return 'Airs ${_shortDate(airsAt)}';
+      }
       return 'Not out yet';
     }
     return checkedSource == null ? 'Not available' : 'Not on $checkedSource';
@@ -1108,7 +1109,8 @@ class MetadataRepository implements CatalogueRepository {
 
   void _remember(MediaItem i) {
     final c = ZmodeIds.parseShow(i.url);
-    if (c != null)
+    if (c != null) {
       _titles[c.key] = (title: i.title, alt: i.englishTitle, malId: i.malId);
+    }
   }
 }

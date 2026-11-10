@@ -25,7 +25,7 @@ Map<String, dynamic> _node(int id, String title, String? start) => {
   'node': {
     'id': id,
     'title': title,
-    if (start != null) 'start_date': start,
+    'start_date': ?start,
     'main_picture': {'large': 'https://x/$id.jpg'},
   },
 };
@@ -107,7 +107,7 @@ class _Adapter implements HttpClientAdapter {
   final Map<String, dynamic> Function(String path) respond;
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options, _, __) async {
+  Future<ResponseBody> fetch(RequestOptions options, _, _) async {
     return ResponseBody.fromString(
       const JsonEncoder().convert(respond(options.path)),
       200,

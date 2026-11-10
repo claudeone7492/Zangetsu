@@ -22,7 +22,7 @@ class _Adapter implements HttpClientAdapter {
   final asked = <Uri>[];
 
   @override
-  Future<ResponseBody> fetch(RequestOptions o, _, __) async {
+  Future<ResponseBody> fetch(RequestOptions o, _, _) async {
     asked.add(o.uri);
     if (o.uri.path == '/redirect') {
       return ResponseBody.fromString(

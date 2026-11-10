@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 
@@ -31,9 +32,8 @@ class GenreChips extends StatelessWidget {
     return SizedBox(
       height: 40,
       child: ListView.separated(
-        scrollDirection: Axis.horizontal,
+        scrollCacheExtent: ScrollCacheExtent.pixels(600), scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        cacheExtent: 600,
         itemCount: kGenres.length,
         separatorBuilder: (context, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
