@@ -202,3 +202,35 @@ Legend: ✅ done / shipped · 🟡 partial or gated · ❌ not done / missing
 3. **Test suite is red** (12 failures) and **CI is not committed**.
 4. **Cloudflare handling** is owner-disabled (documented, not a bug).
 5. **Per-device build split** (android/ios/rest) and **Windows** platform are unstarted.
+
+---
+
+## Implementation status (follow-up pass)
+
+Branch: `openhands/green-main-and-integrations` → PR #1 (base `main`).
+
+### Green main — done
+- **Test job**: green. Full suite 4283 passed / 8 skipped / 0 failed.
+  - Fixed `test/core/zmode/match_store_test.dart` (missing `MatchStore.open()` left a Hive box unopened).
+  - Fixed `test/core/zmode/sweep_waves_test.dart` (wall-clock budget → deterministic concurrency assertion).
+- **Analyze job**: green (`flutter analyze` clean).
+- **Build (Android) / Build (iOS)**: fixed. Both failed only because the proprietary,
+  gitignored Discord native SDK (`.aar` / `.xcframework`) is absent from a clean checkout.
+  Removed the native Discord Social SDK, its JNI layer, both MethodChannel bridges and the
+  local install script; Rich Presence now runs on the Dart OAuth gateway on every platform.
+
+### Discord "kizzy" replacement — closed, not viable
+KizzyRPC authenticates with a raw Discord **account** token (self-bot; against Discord ToS) and
+is Android-only, whereas the app holds only OAuth Bearer tokens. The OAuth Rich Presence
+feature is kept; no proprietary SDK is reintroduced.
+
+### Unmerged branches — integrated or intentionally skipped
+| Branch | Outcome |
+|---|---|
+| `fix/misc-tv-fixes` | merged |
+| `feature/stremio-support` | merged |
+| `feat/debrid-rd-torbox` | merged |
+| `fix/68-tv-auto-tracking` | merged |
+| `feature/tv-settings-restructure` | **skipped** — superseded by `4c032a57` "Consolidate TV and Mobile Settings pages" (file deleted on `main`) |
+| `feat/portrait-mini-player` | **skipped** — 1436 commits stale; portrait watch page already re-architected on `main` as `PlayerWatchPage` (`lib/features/player/player_watch_page.dart`). Merging would regress the current `PlayerScreen` (external-player, TV handoff, scrobble, `EpisodePlayerRoute`). |
+| `release/1.9.7` | **skipped** — a `1.9.7+11103 → 1.9.7+11104` build bump; `main` is already at `2.3.5+23637`. |
