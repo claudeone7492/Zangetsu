@@ -13,7 +13,6 @@ import '../privacy/incognito_mode.dart';
 import 'discord_auth.dart';
 import 'discord_config.dart';
 import 'discord_gateway.dart';
-import 'discord_sdk_gateway.dart';
 import 'discord_presence.dart';
 import 'discord_token_store.dart';
 
@@ -55,6 +54,13 @@ class DiscordRpc {
   DiscordActivity? _current;
   int _presenceRevision = 0;
   final Map<String, String> _assetCache = {}; // posterUrl -> "mp:..." key
+
+  /// Builds the transport for a freshly-obtained token. Overridable in tests so
+  /// presence logic can be exercised without a live gateway socket.
+  @visibleForTesting
+  DiscordGateway Function(String token, {Future<void> Function()? onAuthFailure})
+      gatewayFactory = (token, {onAuthFailure}) =>
+          DiscordGateway(token, onAuthFailure: onAuthFailure);
   Timer? _clearTimer;
   Timer? _presenceSendTimer;
 
@@ -610,11 +616,8 @@ class DiscordRpc {
       return;
     }
     debugPrint('[discord] connecting gateway');
-    _gateway =
-        (supportsNativeDiscordPresence
-              ? DiscordSdkGateway(token, onAuthFailure: _onAuthFailure)
-              : DiscordGateway('Bearer $token', onAuthFailure: _onAuthFailure))
-          ..connect();
+    _gateway = gatewayFactory('Bearer $token', onAuthFailure: _onAuthFailure)
+      ..connect();
     if (_current != null) {
       _gateway!.setPresence(_current, status: presenceStatus);
     }
@@ -665,8 +668,6 @@ class DiscordRpc {
   /// Convert a poster URL into a Discord-displayable `mp:external/...` key via
   /// the external-assets API (so the real cover shows). Cached per URL.
   Future<String?> _externalAsset(String url) async {
-    // The native SDK resolves artwork URLs itself.
-    if (supportsNativeDiscordPresence) return url;
     final cached = _assetCache[url];
     if (cached != null) return cached;
     final token = await getValidAccessToken();

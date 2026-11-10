@@ -405,7 +405,6 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {}
 
     private var playerOrientationObserver: PhoneOrientationObserver? = null
-    private var discordPresence: DiscordPresenceBridge? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         // FlutterActivity.configureFlutterEngine did this for us; FlutterFragment
@@ -426,7 +425,6 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
                     playerOrientationObserver = null
                 }
             })
-        discordPresence = DiscordPresenceBridge(this, flutterEngine.dartExecutor.binaryMessenger)
 
         // Bridge mega-repo plugins → our repo list: when a plugin's load() calls
         // RepositoryManager.addRepository(...), forward each URL to Dart so it
@@ -2012,8 +2010,6 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
     override fun onDestroy() {
         playerOrientationObserver?.disable()
         playerOrientationObserver = null
-        discordPresence?.dispose()
-        discordPresence = null
         phoneVoiceSearch?.dispose()
         phoneVoiceSearch = null
         pip.unregister()
