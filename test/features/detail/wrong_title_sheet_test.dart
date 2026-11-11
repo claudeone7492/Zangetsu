@@ -316,6 +316,10 @@ void main() {
     await t.runAsync(() async {
       await t.tap(find.text('Fullmetal Alchemist (2003)').last);
       await _awaitWrite(() => sl<MatchStore>().get(fma, 'ani:1')?.pinned == true);
+      // The pin lands before the sheet's confirmation resumes to fire the
+      // refresh, and that refresh is itself async. Wait for the reload too,
+      // or a loaded full-suite run can assert while it is still in flight.
+      await _awaitWrite(() => repo.detailCalls > 0);
     });
     await t.pumpAndSettle();
 
@@ -468,6 +472,9 @@ void main() {
     await t.runAsync(() async {
       await t.tap(find.textContaining('HiAnime'));
       await _awaitWrite(() => sl<MatchStore>().get(manga, 'ani:2') != null);
+      // The reload the switch triggers is async; wait for it so a loaded run
+      // cannot assert while it is still in flight (same race as above).
+      await _awaitWrite(() => repo.detailCalls > 0);
     });
     await t.pumpAndSettle();
 
