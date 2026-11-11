@@ -2925,6 +2925,18 @@ abstract class AppLocalizations {
   /// **'Shrink to a floating window when you leave the app'**
   String get shrinkToAFloatingWindowWhenYouLeaveTheApp;
 
+  /// No description provided for @backgroundPlayback.
+  ///
+  /// In en, this message translates to:
+  /// **'Background playback'**
+  String get backgroundPlayback;
+
+  /// No description provided for @keepPlayingAudioWhenYouLeaveTheApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep playing with a notification when you leave the app'**
+  String get keepPlayingAudioWhenYouLeaveTheApp;
+
   /// No description provided for @showQualityLabel.
   ///
   /// In en, this message translates to:

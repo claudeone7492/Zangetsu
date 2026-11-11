@@ -593,6 +593,8 @@
 	"thumbnailsWhileScrubbingStreamsCostsExtraData": "Thumbnails while scrubbing streams — costs extra data",
 	"autoPictureInPicture": "Auto picture-in-picture",
 	"shrinkToAFloatingWindowWhenYouLeaveTheApp": "Shrink to a floating window when you leave the app",
+	"backgroundPlayback": "Background playback",
+	"keepPlayingAudioWhenYouLeaveTheApp": "Keep playing with a notification when you leave the app",
 	"showQualityLabel": "Show quality label",
 	"plainQualityTextEG1080pOnTheTopBarRight": "Plain quality text (e.g. 1080p) on the top-bar right",
 	"gestureControls": "Gesture controls",

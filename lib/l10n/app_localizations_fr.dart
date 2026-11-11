@@ -1534,6 +1534,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Réduit en fenêtre flottante quand tu quittes l’app';
 
   @override
+  String get backgroundPlayback => 'Background playback';
+
+  @override
+  String get keepPlayingAudioWhenYouLeaveTheApp =>
+      'Keep playing with a notification when you leave the app';
+
+  @override
   String get showQualityLabel => 'Afficher le label de qualité';
 
   @override

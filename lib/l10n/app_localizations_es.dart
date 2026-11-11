@@ -1533,6 +1533,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'Se encoge a una ventana flotante al salir de la app';
 
   @override
+  String get backgroundPlayback => 'Background playback';
+
+  @override
+  String get keepPlayingAudioWhenYouLeaveTheApp =>
+      'Keep playing with a notification when you leave the app';
+
+  @override
   String get showQualityLabel => 'Mostrar etiqueta de calidad';
 
   @override

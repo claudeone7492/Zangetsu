@@ -1543,6 +1543,13 @@ class AppLocalizationsPt extends AppLocalizations {
       'Reduzir a uma janela flutuante quando você sair do app';
 
   @override
+  String get backgroundPlayback => 'Background playback';
+
+  @override
+  String get keepPlayingAudioWhenYouLeaveTheApp =>
+      'Keep playing with a notification when you leave the app';
+
+  @override
   String get showQualityLabel => 'Mostrar rótulo de qualidade';
 
   @override

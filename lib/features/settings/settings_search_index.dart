@@ -211,6 +211,11 @@ final settingsLeaves = <SettingsLeaf>[
   ),
   SettingsLeaf(
     LeafParent.playback,
+    (l) => l.backgroundPlayback,
+    keywords: 'background audio notification keep playing',
+  ),
+  SettingsLeaf(
+    LeafParent.playback,
     (l) => l.playerInfoOverlay,
     keywords: 'stats debug hud',
   ),

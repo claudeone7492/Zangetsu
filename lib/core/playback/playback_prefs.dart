@@ -336,6 +336,14 @@ class PlaybackPrefs {
   bool get autoPip => _box.get('autoPip', defaultValue: true) as bool;
   Future<void> setAutoPip(bool value) => _box.put('autoPip', value);
 
+  /// Keep playing (audio and video) when the app is backgrounded, with an
+  /// ongoing notification for transport. The native phone player honours it
+  /// through a foreground media-playback service.
+  bool get backgroundPlayback =>
+      _box.get('backgroundPlayback', defaultValue: true) as bool;
+  Future<void> setBackgroundPlayback(bool value) =>
+      _box.put('backgroundPlayback', value);
+
   /// Route TV playback to the fully-native player (TvPlayerActivity, real-window
   /// SurfaceView) instead of the Flutter platform-view player. Default ON on TV:
   /// the platform-view surface black-screens on some TVs, and the native window

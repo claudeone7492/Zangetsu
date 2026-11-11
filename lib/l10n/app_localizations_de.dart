@@ -1532,6 +1532,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Beim Verlassen der App in ein schwebendes Fenster schrumpfen';
 
   @override
+  String get backgroundPlayback => 'Background playback';
+
+  @override
+  String get keepPlayingAudioWhenYouLeaveTheApp =>
+      'Keep playing with a notification when you leave the app';
+
+  @override
   String get showQualityLabel => 'Qualitätslabel zeigen';
 
   @override

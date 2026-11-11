@@ -1493,6 +1493,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get shrinkToAFloatingWindowWhenYouLeaveTheApp => 'アプリを離れると小窓に縮小';
 
   @override
+  String get backgroundPlayback => 'Background playback';
+
+  @override
+  String get keepPlayingAudioWhenYouLeaveTheApp =>
+      'Keep playing with a notification when you leave the app';
+
+  @override
   String get showQualityLabel => '画質ラベルを表示';
 
   @override
