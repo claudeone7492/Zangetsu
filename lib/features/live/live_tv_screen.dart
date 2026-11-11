@@ -6,6 +6,7 @@ import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
 import '../../core/models/home_section.dart';
 import '../../core/models/media_item.dart';
+import '../../core/playback/playback_prefs.dart';
 import '../../core/repository/source_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
@@ -25,6 +26,19 @@ import '../search/browse_source_screen.dart' show canonicalTargetFor;
 /// pack (see `bundled_pack.dart`), so this page never has to ask the user to
 /// install anything.
 const String kLiveTvSourceId = 'iptv';
+
+/// Order the channel rows are shown in. "Default" keeps the catalogue's own
+/// order (usually popularity), which is the only one that means anything for
+/// live TV — the two alphabetical modes are for finding a known channel fast.
+enum LiveSort {
+  defaultOrder('Default'),
+  nameAsc('A–Z'),
+  nameDesc('Z–A');
+
+  const LiveSort(this.label);
+
+  final String label;
+}
 
 /// Live TV — the channels the bundled IPTV source is offering, laid out as
 /// category rails, with a search field over the same catalogue.
@@ -58,9 +72,33 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   /// would fire a dozen sweeps for one word.
   static const Duration _searchDebounce = Duration(milliseconds: 350);
 
+  // Deliberately smaller than the 200×168 poster card the page shipped with:
+  // a live channel is a logo, not cover art, so a denser rail shows more of
+  // the catalogue at a glance. 3:2 landscape matches how channel art is shot.
+  static const double _phoneCardWidth = 140;
+  static const double _phoneCardHeight = 116;
+
+  /// One extra column vs. the standard poster grid, for the same "smaller
+  /// cards" reason — search hits are channels too.
+  static const int _phoneSearchColumns = 4;
+
+  double _phoneSearchCellWidth(BuildContext context) {
+    const padding = 32.0;
+    const spacing = 12.0;
+    return (MediaQuery.sizeOf(context).width -
+            padding -
+            spacing * (_phoneSearchColumns - 1)) /
+        _phoneSearchColumns;
+  }
+
   bool _loading = true;
   bool _failed = false;
   List<HomeSection> _sections = const [];
+
+  /// 0 = "All channels", otherwise an index into [_categories]. Applied to
+  /// browse AND search, so the bar stays meaningful once a query is typed.
+  int _category = 0;
+  LiveSort _sort = LiveSort.defaultOrder;
 
   final TextEditingController _queryController = TextEditingController();
   Timer? _debounce;
@@ -108,6 +146,73 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
         _sections = const [];
       });
     }
+  }
+
+
+  /// Non-empty category names, in catalogue order. Index 0 of the selector is
+  /// the synthetic "All channels"; the rest map here by `index - 1`.
+  List<String> get _categories => [
+    for (final s in _sections)
+      if (s.items.isNotEmpty) s.title,
+  ];
+
+  /// The category the selector is on, or null for "All". Guarded against an
+  /// out-of-range index so a reload that returns fewer categories can't throw.
+  String? get _selectedCategory =>
+      _category > 0 && _category <= _categories.length
+      ? _categories[_category - 1]
+      : null;
+
+  /// The rows the browse view actually paints, after the category filter and
+  /// the chosen sort. Empty rows are dropped so a filter never leaves a
+  /// titled-but-empty rail.
+  List<HomeSection> get _visibleSections {
+    final selected = _selectedCategory;
+    final out = <HomeSection>[];
+    for (final s in _sections) {
+      if (s.items.isEmpty) continue;
+      if (selected != null && s.title != selected) continue;
+      out.add(HomeSection(title: s.title, items: _sorted(s.items)));
+    }
+    return out;
+  }
+
+  /// Search hits, narrowed by the same category selector and sort. The hits
+  /// only carry a title/url — not the IPTV category they came from — so the
+  /// category here is a title match, which is what a live channel name almost
+  /// always carries anyway ("Sky Sports", "BBC News").
+  List<MediaItem> get _visibleResults {
+    final selected = _selectedCategory;
+    final hits = selected == null
+        ? _results
+        : _results
+              .where(
+                (m) => m.title.toLowerCase().contains(selected.toLowerCase()),
+              )
+              .toList(growable: false);
+    return _sorted(hits);
+  }
+
+  List<MediaItem> _sorted(List<MediaItem> items) => switch (_sort) {
+    LiveSort.defaultOrder => items,
+    LiveSort.nameAsc =>
+      [...items]..sort(
+        (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+      ),
+    LiveSort.nameDesc =>
+      [...items]..sort(
+        (a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()),
+      ),
+  };
+
+  void _onCategoryChanged(int index) {
+    if (index == _category) return;
+    setState(() => _category = index);
+  }
+
+  void _onSortChanged(LiveSort sort) {
+    if (sort == _sort) return;
+    setState(() => _sort = sort);
   }
 
   void _onQueryChanged(String value) {
@@ -187,42 +292,128 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: TextField(
-              controller: _queryController,
-              onChanged: _onQueryChanged,
-              textInputAction: TextInputAction.search,
-              style: AppText.body.copyWith(color: AppColors.textPrimary),
-              decoration: InputDecoration(
-                isDense: true,
-                hintText: context.l10n.search,
-                prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                suffixIcon: _query.isEmpty
-                    ? null
-                    : IconButton(
-                        tooltip: context.l10n.retry,
-                        icon: const Icon(Icons.close_rounded, size: 18),
-                        onPressed: () {
-                          _queryController.clear();
-                          _onQueryChanged('');
-                        },
-                      ),
-                filled: true,
-                fillColor: AppColors.surface,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
+          preferredSize: const Size.fromHeight(104),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: TextField(
+                  controller: _queryController,
+                  onChanged: _onQueryChanged,
+                  textInputAction: TextInputAction.search,
+                  style: AppText.body.copyWith(color: AppColors.textPrimary),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    hintText: context.l10n.search,
+                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                    suffixIcon: _query.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: context.l10n.retry,
+                            icon: const Icon(Icons.close_rounded, size: 18),
+                            onPressed: () {
+                              _queryController.clear();
+                              _onQueryChanged('');
+                            },
+                          ),
+                    filled: true,
+                    fillColor: AppColors.surface,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              _phoneControlBar(),
+            ],
           ),
         ),
       ),
       body: _query.isEmpty ? _phoneBrowse() : _phoneSearchResults(),
     );
   }
+
+  /// The sub-header under the search bar: a horizontally scrollable category
+  /// selector (All + one per IPTV category) followed by a compact sort button.
+  /// Both filter the browse rails and the search hits.
+  Widget _phoneControlBar() {
+    final categories = _categories;
+    return SizedBox(
+      height: 40,
+      child: Row(
+        children: [
+          Expanded(
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+              itemCount: categories.length + 1,
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
+              itemBuilder: (context, i) => _phoneCategoryChip(i),
+            ),
+          ),
+          _phoneSortButton(),
+          const SizedBox(width: 8),
+        ],
+      ),
+    );
+  }
+
+  Widget _phoneCategoryChip(int index) {
+    final selected = _category == index;
+    final label = index == 0 ? context.l10n.all : _categories[index - 1];
+    return Center(
+      child: GestureDetector(
+        key: ValueKey('live-category-$index'),
+        onTap: () => _onCategoryChanged(index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.accent : AppColors.surface,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            label,
+            style: AppText.body.copyWith(
+              color: selected ? Colors.black : AppColors.textSecondary,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _phoneSortButton() => PopupMenuButton<LiveSort>(
+    key: const ValueKey('live-sort-button'),
+    tooltip: context.l10n.sort,
+    initialValue: _sort,
+    onSelected: _onSortChanged,
+    color: AppColors.surface,
+    itemBuilder: (context) => [
+      for (final s in LiveSort.values)
+        PopupMenuItem(value: s, child: Text(s.label)),
+    ],
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.sort_rounded, size: 16, color: AppColors.textSecondary),
+          const SizedBox(width: 6),
+          Text(
+            _sort.label,
+            style: AppText.body.copyWith(color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    ),
+  );
 
   Widget _phoneBrowse() {
     if (_loading) {
@@ -236,9 +427,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
         onAction: _load,
       );
     }
-    final sections = _sections
-        .where((s) => s.items.isNotEmpty)
-        .toList(growable: false);
+    final sections = _visibleSections;
     if (sections.isEmpty) {
       return EmptyState(
         icon: Icons.live_tv_outlined,
@@ -257,14 +446,14 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
           child: ContentRow(
             title: section.title,
             itemCount: section.items.length,
-            itemWidth: 200,
-            itemHeight: 168,
+            itemWidth: _phoneCardWidth,
+            itemHeight: _phoneCardHeight,
             itemBuilder: (context, j) => PosterCard(
               title: section.items[j].title,
               imageUrl: section.items[j].cover,
               headers: section.items[j].coverHeaders,
               onTap: () => _open(section.items[j]),
-              cellWidth: 200,
+              cellWidth: _phoneCardWidth,
             ),
           ),
         );
@@ -284,7 +473,8 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
         onAction: () => _runSearch(_query),
       );
     }
-    if (_results.isEmpty) {
+    final results = _visibleResults;
+    if (results.isEmpty) {
       return EmptyState(
         icon: Icons.search_off_rounded,
         message: context.l10n.noResults,
@@ -293,17 +483,25 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: posterGridColumns(context),
-        childAspectRatio: posterGridAspect(context),
+        crossAxisCount: _phoneSearchColumns,
+        childAspectRatio: posterCellAspect(
+          _phoneSearchCellWidth(context),
+          textScaler: MediaQuery.textScalerOf(context),
+          wide: posterLayout(context) == PosterCardLayout.wide,
+          titleInside: posterTitleInside(
+            context,
+            wide: posterLayout(context) == PosterCardLayout.wide,
+          ),
+        ),
         crossAxisSpacing: 12,
         mainAxisSpacing: 16,
       ),
-      itemCount: _results.length,
+      itemCount: results.length,
       itemBuilder: (context, i) => PosterCard(
-        title: _results[i].title,
-        imageUrl: _results[i].cover,
-        headers: _results[i].coverHeaders,
-        onTap: () => _open(_results[i]),
+        title: results[i].title,
+        imageUrl: results[i].cover,
+        headers: results[i].coverHeaders,
+        onTap: () => _open(results[i]),
       ),
     );
   }
@@ -354,8 +552,83 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
                   ],
                 ),
               ),
+            _tvControlBar(l10n),
             Expanded(
               child: _query.isEmpty ? _tvBrowse(l10n) : _tvSearchResults(l10n),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// TV sub-header: the same category selector + sort as phone, but built from
+  /// D-pad-focusable pills so a remote can drive it. Sits under the title row
+  /// and above the rails.
+  Widget _tvControlBar(AppLocalizations l10n) {
+    final categories = _categories;
+    return SizedBox(
+      height: 46,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+        children: [
+          for (var i = 0; i <= categories.length; i++)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 10),
+              child: _tvCategoryPill(i, categories),
+            ),
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: 6, end: 10),
+            child: _tvSortPill(l10n),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tvCategoryPill(int index, List<String> categories) {
+    final selected = _category == index;
+    final label = index == 0 ? context.l10n.all : categories[index - 1];
+    return TvFocusable(
+      variant: TvFocusVariant.pill,
+      semanticLabel: label,
+      onTap: () => _onCategoryChanged(index),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        child: Text(
+          label,
+          style: AppText.button.copyWith(
+            color: selected ? AppColors.textPrimary : AppColors.textSecondary,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Cycles Default → A–Z → Z–A. A menu would be three focus stops for one
+  /// value; a cycle keeps the remote's path short.
+  Widget _tvSortPill(AppLocalizations l10n) {
+    final next = LiveSort.values[(_sort.index + 1) % LiveSort.values.length];
+    return TvFocusable(
+      variant: TvFocusVariant.pill,
+      semanticLabel: '${l10n.sort}: ${_sort.label}',
+      onTap: () => _onSortChanged(next),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.sort_rounded,
+              size: 16,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _sort.label,
+              style: AppText.button.copyWith(color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -410,9 +683,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
       );
     }
     if (_failed) return _tvMessage(l10n.somethingWentWrong, retry: _load);
-    final sections = _sections
-        .where((s) => s.items.isNotEmpty)
-        .toList(growable: false);
+    final sections = _visibleSections;
     if (sections.isEmpty) return _tvMessage(l10n.noResults, retry: _load);
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 32),
@@ -438,7 +709,8 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     if (_searchFailed) {
       return _tvMessage(l10n.somethingWentWrong, retry: () => _runSearch(_query));
     }
-    if (_results.isEmpty) return _tvMessage(l10n.noResults);
+    final results = _visibleResults;
+    if (results.isEmpty) return _tvMessage(l10n.noResults);
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(40, 0, 40, 40),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -447,9 +719,9 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
         crossAxisSpacing: 18,
         mainAxisSpacing: 22,
       ),
-      itemCount: _results.length,
+      itemCount: results.length,
       itemBuilder: (_, i) {
-        final item = _results[i];
+        final item = results[i];
         return TvPosterTile(
           autofocus: i == 0,
           title: item.title,

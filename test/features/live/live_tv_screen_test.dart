@@ -129,10 +129,94 @@ void main() {
     expect(repo.homeCalls, 1);
     // The screen pins the IPTV source by id rather than taking the active one.
     expect(repo.lastSourceId, kLiveTvSourceId);
-    expect(find.text('News'), findsOneWidget);
-    expect(find.text('Sports'), findsOneWidget);
+    expect(find.text('News'), findsWidgets);
+    expect(find.text('Sports'), findsWidgets);
     expect(find.text('World News'), findsOneWidget);
     expect(find.text('Football'), findsOneWidget);
+  });
+
+  testWidgets('the sub-header lists All plus every non-empty category', (
+    tester,
+  ) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+        HomeSection(title: 'Sports', items: [_channel('s1', 'Football')]),
+        HomeSection(title: 'Empty', items: const []),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    // All + the two categories that actually have channels; the empty one is
+    // dropped so a filter can never land on a blank rail.
+    expect(find.text('All'), findsOneWidget);
+    expect(find.text('News'), findsWidgets);
+    expect(find.text('Sports'), findsWidgets);
+    expect(find.text('Empty'), findsNothing);
+  });
+
+  testWidgets('picking a category narrows the rails to that category', (
+    tester,
+  ) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+        HomeSection(title: 'Sports', items: [_channel('s1', 'Football')]),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    // Tap the "Sports" chip (index 2: All=0, News=1, Sports=2) rather than the
+    // rail header that also reads "Sports".
+    await tester.tap(find.byKey(const ValueKey('live-category-2')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Football'), findsOneWidget);
+    expect(find.text('World News'), findsNothing);
+
+    // Back to All restores both.
+    await tester.tap(find.byKey(const ValueKey('live-category-0')));
+    await tester.pumpAndSettle();
+    expect(find.text('World News'), findsOneWidget);
+    expect(find.text('Football'), findsOneWidget);
+  });
+
+  testWidgets('the sort control reorders the channels', (tester) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(
+          title: 'News',
+          items: [_channel('n1', 'Zebra TV'), _channel('n2', 'Alpha TV')],
+        ),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    // Default keeps catalogue order (Zebra first).
+    expect(
+      tester.getTopLeft(find.text('Zebra TV')).dx,
+      lessThan(tester.getTopLeft(find.text('Alpha TV')).dx),
+    );
+
+    await tester.tap(find.byKey(const ValueKey('live-sort-button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('A–Z').last);
+    await tester.pumpAndSettle();
+
+    // A–Z puts Alpha first.
+    expect(
+      tester.getTopLeft(find.text('Alpha TV')).dx,
+      lessThan(tester.getTopLeft(find.text('Zebra TV')).dx),
+    );
   });
 
   testWidgets('a failed browse shows the retry state, and retry re-fetches', (
