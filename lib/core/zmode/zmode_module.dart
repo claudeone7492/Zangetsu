@@ -161,9 +161,10 @@ List<({String id, String name})> candidatesForKind(
     ZKind.novel => ContentMode.novel,
     _ => ContentMode.anime,
   };
+  final types = manifestSourceTypes();
   return [
     for (final s in all)
-      if (sourceIdMatchesContentMode(s.id, mode)) s,
+      if (sourceInMode(s.id, mode, types)) s,
   ];
 }
 

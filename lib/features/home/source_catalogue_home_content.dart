@@ -189,13 +189,12 @@ class SourceCatalogueHomeContentState
     if (sourceId != null) widget.onSourceSelected?.call(sourceId);
   }
 
-  List<({String id, String name})> _sourcesForMode() => _repository
-      .loadedSources
-      .where((source) {
-        final id = source.id;
-        return sourceIdMatchesContentMode(id, _mode);
-      })
-      .toList(growable: false);
+  List<({String id, String name})> _sourcesForMode() {
+    final types = manifestSourceTypes();
+    return _repository.loadedSources
+        .where((source) => sourceInMode(source.id, _mode, types))
+        .toList(growable: false);
+  }
 
   Future<void> _load({bool reset = false}) async {
     final sourceId = _sourceId;
