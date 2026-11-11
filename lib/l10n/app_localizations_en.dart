@@ -183,6 +183,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get live => 'Live';
 
   @override
+  String get liveTv => 'Live TV';
+
+  @override
   String get sub => 'Sub';
 
   @override
@@ -3417,6 +3420,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sources => 'Sources';
+
+  @override
+  String get shorts => 'Shorts';
 
   @override
   String get normalSpeed => 'Normal';

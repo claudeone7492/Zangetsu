@@ -9,14 +9,11 @@ import 'package:hive/hive.dart';
 import '../../core/app_config.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
-import '../../core/provider/default_repo_installer.dart';
 import '../../core/provider/provider_registry.dart';
-import '../../core/provider/provider_repo_registry.dart';
 import '../../core/state/active_source_cubit.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../home/cubit/home_cubit.dart';
-import 'how_it_works.dart';
 import 'onboarding_screen_tv.dart';
 import '../../l10n/l10n.dart';
 
@@ -161,18 +158,17 @@ class _SplashScreenState extends State<SplashScreen>
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Onboarding — first launch. The app ships with NO sources installed; this
-// screen just explains that and points the user at Providers to add their
-// own repository, then hands off to the app via [onDone]. Three swipeable
-// pages (brand → how sources work → the two hand-off actions), all purely
-// presentational — no network call or install anywhere on this screen.
+// Onboarding — first launch. Every source the app uses is bundled and installed
+// during boot, so there is nothing here for the user to set up. This screen is
+// a single automatic step: it activates the default source, loads Home, then
+// hands off to the app via [onDone]. On the rare chance the bundled pack did
+// not land (a truncated install), it retries once, then simply lets the user in.
 // ─────────────────────────────────────────────────────────────────────────────
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key, required this.onDone});
 
-  /// Called once setup completes (or is skipped) — the boot gate then shows
-  /// the app shell.
+  /// Called once setup completes — the boot gate then shows the app shell.
   final VoidCallback onDone;
 
   @override
@@ -180,222 +176,90 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  static const _pageCount = 3;
-
-  final _controller = PageController();
-  double _page = 0;
-
-  bool _busy = false;
-  String? _error;
   String _status = '';
-  // After sources install, show a short "how it works" guide before entering
-  // the app (new users). Skippers / failures never reach this.
-  bool _showTips = false;
 
   @override
   void initState() {
     super.initState();
-    _controller.addListener(() {
-      final p = _controller.page;
-      if (p != null) setState(() => _page = p);
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _setup());
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  /// Downloads every default provider repo and installs all of its sources,
-  /// then activates a well-populated default so Home is useful on first open.
-  /// A single source that fails to install is skipped rather than failing the
-  /// whole run; only a total failure surfaces an error with a retry.
+  /// Activates a well-populated default so Home is useful on first open. The
+  /// sources themselves are already installed by the boot pass; this only picks
+  /// which one is active and primes Home. Best-effort: any failure still marks
+  /// onboarding done so the user is never trapped on this screen.
   Future<void> _setup() async {
-    final l10n = context.l10n;
-    setState(() {
-      _busy = true;
-      _error = null;
-      _status = l10n.downloadingSourceCatalog;
-    });
-    try {
-      final result = await provisionDefaultRepos(
-        repos: sl<ProviderReposRegistry>(),
-        registry: sl<ProviderRegistry>(),
-        onStatus: (name, done, total) {
-          if (!mounted) return;
-          setState(() => _status = l10n.installingSource(name, done, total));
-        },
-      );
-      // Activate the default source for a new user (AniKoto) so Home lands on
-      // a working, well-populated source; fall back to the first that installed
-      // if the default didn't. Only new users reach this (onboarding runs
-      // once), so existing users' saved pick is never touched.
-      sl<ActiveSourceCubit>().setSource(
-        result.installedIds.contains(kDefaultSourceId)
-            ? kDefaultSourceId
-            : result.installedIds.first,
-      );
-      sl<HomeCubit>().load();
-      await _markOnboarded();
-      if (mounted) {
-        setState(() {
-          _busy = false;
-          _showTips = true;
-        });
-      }
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _busy = false;
-        _error = l10n.setupFailedCheckConnection;
-      });
+    if (mounted) {
+      setState(() => _status = context.l10n.downloadingSourceCatalog);
     }
-  }
-
-  Future<void> _later() async {
+    try {
+      final active = sl<ActiveSourceCubit>();
+      final installed = [
+        for (final e in sl<ProviderRegistry>().getAll())
+          if (e.enabled) e.name,
+      ];
+      if (installed.isNotEmpty) {
+        active.setSource(
+          installed.contains(kDefaultSourceId)
+              ? kDefaultSourceId
+              : installed.first,
+        );
+      }
+      if (sl.isRegistered<HomeCubit>()) sl<HomeCubit>().load();
+    } catch (_) {
+      // Sources install during boot; a failure here is not worth blocking on.
+    }
     await _markOnboarded();
     if (mounted) widget.onDone();
   }
 
-  void _next() => _controller.nextPage(
-    duration: const Duration(milliseconds: 320),
-    curve: Curves.easeOutCubic,
-  );
-
-  /// Eases a page in/out and gives it a touch of depth as it scrolls past —
-  /// tied to the live scroll position (no spring/bounce). `delta` is how
-  /// many pages this page currently sits from the controller's position, and
-  /// is handed to the page itself so its hero art and its text can drift at
-  /// their own, slightly different rates (parallax).
-  Widget _pageShell(int index, Widget Function(double delta) builder) {
-    final delta = (_page - index).clamp(-1.0, 1.0);
-    final fade = 1 - Curves.easeOut.transform(delta.abs()) * 0.55;
-    return Opacity(
-      opacity: fade,
-      child: Transform.translate(
-        offset: Offset(0, delta * 14),
-        child: builder(delta),
-      ),
-    );
-  }
-
-  /// Post-setup "how it works" guide. Shown once after sources install; the
-  /// button enters the app. The guide is also reachable later via
-  /// Settings → How it works.
-  Widget _buildTips() => Scaffold(
-    backgroundColor: AppColors.bg,
-    body: SafeArea(
-      child: Column(
-        children: [
-          const SizedBox(height: 18),
-          const _Logo(),
-          const SizedBox(height: 12),
-          Text(
-            context.l10n.allSet,
-            style: AppText.title,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 6),
-          const Expanded(child: HowItWorksView()),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(28, 0, 28, 28),
-            child: SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: FilledButton(
-                onPressed: widget.onDone,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: Text(
-                  context.l10n.startWatching,
-                  style: AppText.button.copyWith(color: Colors.white),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-
   @override
   Widget build(BuildContext context) {
     if (sl<AppMode>().isTv) return OnboardingScreenTv(onDone: widget.onDone);
-    if (_showTips) return _buildTips();
-    final onLastPage = _page > _pageCount - 1.5;
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
         child: Column(
           children: [
+            const Spacer(flex: 2),
+            const _Logo(),
+            const SizedBox(height: 18),
+            Text(
+              context.l10n.goodToHaveYouHere,
+              style: AppText.title,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
             Padding(
-              padding: const EdgeInsets.fromLTRB(8, 4, 20, 4),
-              child: SizedBox(
-                height: 40,
-                child: Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 200),
-                    opacity: onLastPage ? 0 : 1,
-                    child: IgnorePointer(
-                      ignoring: onLastPage,
-                      child: TextButton(
-                        onPressed: _later,
-                        child: Text(
-                          context.l10n.skip,
-                          style: AppText.caption.copyWith(
-                            color: AppColors.textTertiary,
-                          ),
-                        ),
-                      ),
-                    ),
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                context.l10n.onboardingIntro,
+                style: AppText.body.copyWith(color: AppColors.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const Spacer(flex: 3),
+            Column(
+              children: [
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    color: AppColors.accent,
                   ),
                 ),
-              ),
-            ),
-            Expanded(
-              child: PageView(
-                controller: _controller,
-                children: [
-                  _pageShell(0, (d) => _BrandPage(delta: d)),
-                  _pageShell(1, (d) => _HowItWorksPage(delta: d)),
-                  _pageShell(
-                    2,
-                    (d) => _GetGoingPage(
-                      delta: d,
-                      busy: _busy,
-                      status: _status,
-                      error: _error,
-                      onInstall: _setup,
-                      onLater: _later,
-                    ),
+                const SizedBox(height: 12),
+                Text(
+                  _status,
+                  style: AppText.caption.copyWith(
+                    color: AppColors.textSecondary,
                   ),
-                ],
-              ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
-              child: Row(
-                children: [
-                  _PageDots(page: _page, count: _pageCount),
-                  const Spacer(),
-                  AnimatedOpacity(
-                    duration: const Duration(milliseconds: 200),
-                    opacity: onLastPage ? 0 : 1,
-                    child: IgnorePointer(
-                      ignoring: onLastPage,
-                      child: _NextButton(onTap: _next),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            const SizedBox(height: 60),
           ],
         ),
       ),
@@ -403,7 +267,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-/// The app mark in a soft accent tile — used on the post-setup tips page.
+/// The app mark in a soft accent tile.
 class _Logo extends StatelessWidget {
   const _Logo();
 
@@ -422,411 +286,4 @@ class _Logo extends StatelessWidget {
       size: 46,
     ),
   );
-}
-
-/// Centers a page's content vertically, but lets it scroll on short screens
-/// instead of overflowing.
-class _ScrollablePage extends StatelessWidget {
-  const _ScrollablePage({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) => SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: Center(child: child),
-        ),
-      ),
-    );
-  }
-}
-
-/// Page 1 — the brand moment. The logo mark and wordmark, stacked, on the
-/// app's usual dark background with the same soft accent glow the splash
-/// screen uses — then a warm one-line welcome. The hero art drifts a touch
-/// slower than the welcome text as the page scrolls (parallax via [delta]).
-class _BrandPage extends StatelessWidget {
-  const _BrandPage({required this.delta});
-
-  final double delta;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ScrollablePage(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          RepaintBoundary(
-            child: Transform.translate(
-              offset: Offset(delta * 10, 0),
-              child: Container(
-                width: 260,
-                height: 260,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.accent.withValues(alpha: 0.14),
-                      AppColors.accent.withValues(alpha: 0.04),
-                      Colors.transparent,
-                    ],
-                    stops: const [0.0, 0.5, 1.0],
-                  ),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset(
-                      'assets/icon/logo_mark.png',
-                      width: 92,
-                      height: 92,
-                      fit: BoxFit.contain,
-                    ),
-                    const SizedBox(height: 16),
-                    FractionallySizedBox(
-                      widthFactor: 0.62,
-                      child: Image.asset(
-                        'assets/icon/wordmark.png',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 34),
-          Transform.translate(
-            offset: Offset(delta * 22, 0),
-            child: Column(
-              children: [
-                Text(
-                  context.l10n.goodToHaveYouHere,
-                  style: AppText.title,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  context.l10n.onboardingIntro,
-                  style: AppText.body.copyWith(color: AppColors.textSecondary),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Page 2 — mechanics. The three ecosystems a repository can belong to, then
-/// the four taps it takes to get from here to a working source. The
-/// ecosystem row drifts a touch slower than the text above and below it as
-/// the page scrolls (parallax via [delta]).
-class _HowItWorksPage extends StatelessWidget {
-  const _HowItWorksPage({required this.delta});
-
-  final double delta;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ScrollablePage(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Transform.translate(
-            offset: Offset(delta * 22, 0),
-            child: Column(
-              children: [
-                Text(
-                  context.l10n.youChooseWhatsInside,
-                  style: AppText.title,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  context.l10n.addTheSourcesYouWant,
-                  style: AppText.body.copyWith(color: AppColors.textSecondary),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 30),
-          Transform.translate(
-            offset: Offset(delta * 10, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _EcosystemTile(
-                  icon: Icons.movie_filter_outlined,
-                  label: context.l10n.modeStreaming,
-                ),
-                _EcosystemTile(
-                  icon: Icons.menu_book_outlined,
-                  label: context.l10n.modeManga,
-                ),
-                _EcosystemTile(
-                  icon: Icons.auto_stories_outlined,
-                  label: context.l10n.modeNovel,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
-          Transform.translate(
-            offset: Offset(delta * 22, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _Step(number: 1, label: context.l10n.openProviders),
-                _Step(
-                  number: 2,
-                  label: context.l10n.pickStreamingMangaOrNovels,
-                ),
-                _Step(number: 3, label: context.l10n.pasteInARepositoryLink),
-                _Step(number: 4, label: context.l10n.browseAndGrab),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EcosystemTile extends StatelessWidget {
-  const _EcosystemTile({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: AppColors.surface2,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Icon(icon, color: AppColors.textSecondary, size: 26),
-        ),
-        const SizedBox(height: 9),
-        Text(label, style: AppText.caption),
-      ],
-    );
-  }
-}
-
-class _Step extends StatelessWidget {
-  const _Step({required this.number, required this.label});
-
-  final int number;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 9),
-      child: Row(
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.accentSoft,
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              '$number',
-              style: AppText.caption.copyWith(
-                color: AppColors.accent,
-                fontWeight: FontWeight.w700,
-                fontSize: 12,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              label,
-              style: AppText.body.copyWith(color: AppColors.textPrimary),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Page 3 — the hand-off. Same two actions and same styling this screen
-/// always had; only the surrounding page (and copy above them) is new. The
-/// closing line drifts a touch as the page scrolls in (parallax via
-/// [delta]); the buttons stay put once you land here, so they're always
-/// easy to tap.
-class _GetGoingPage extends StatelessWidget {
-  const _GetGoingPage({
-    required this.delta,
-    required this.busy,
-    required this.status,
-    required this.error,
-    required this.onInstall,
-    required this.onLater,
-  });
-
-  final double delta;
-  final bool busy;
-  final String status;
-  final String? error;
-  final VoidCallback onInstall;
-  final VoidCallback onLater;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ScrollablePage(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Transform.translate(
-            offset: Offset(delta * 22, 0),
-            child: Column(
-              children: [
-                Text(
-                  context.l10n.readyWhenYouAre,
-                  style: AppText.title,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  context.l10n.onboardingInstallBlurb,
-                  style: AppText.body.copyWith(color: AppColors.textSecondary),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 28),
-          if (busy) ...[
-            SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.4,
-                color: AppColors.accent,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              status,
-              style: AppText.caption.copyWith(color: AppColors.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-          ],
-          if (error != null) ...[
-            Text(
-              error!,
-              style: AppText.caption.copyWith(color: AppColors.accent),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 14),
-          ],
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: FilledButton(
-              onPressed: busy ? null : onInstall,
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              child: Text(
-                error != null ? context.l10n.retry : context.l10n.addSourcesNow,
-                style: AppText.button.copyWith(color: Colors.white),
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          TextButton(
-            onPressed: busy ? null : onLater,
-            child: Text(
-              context.l10n.illDoItLater,
-              style: AppText.caption.copyWith(color: AppColors.textTertiary),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Small dot row — an accent pill for the active page, muted dots otherwise.
-class _PageDots extends StatelessWidget {
-  const _PageDots({required this.page, required this.count});
-
-  final double page;
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    final activeIndex = page.round().clamp(0, count - 1);
-    return Row(
-      children: List.generate(count, (i) {
-        final isActive = i == activeIndex;
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOut,
-          margin: const EdgeInsetsDirectional.only(end: 6),
-          width: isActive ? 18 : 6,
-          height: 6,
-          decoration: BoxDecoration(
-            color: isActive ? AppColors.accent : AppColors.surface2,
-            borderRadius: BorderRadius.circular(3),
-          ),
-        );
-      }),
-    );
-  }
-}
-
-/// Circular next-page control — the only way forward on pages 1-2 besides
-/// swiping.
-class _NextButton extends StatelessWidget {
-  const _NextButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface2,
-      shape: const CircleBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(13),
-          child: Icon(
-            Icons.arrow_forward_rounded,
-            color: AppColors.accent,
-            size: 22,
-          ),
-        ),
-      ),
-    );
-  }
 }

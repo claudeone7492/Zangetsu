@@ -287,6 +287,10 @@ flutter:
     - extractors/mp4upload.js
     - extractors/streamlare.js
     - extractors/doodstream.js
+    # Bundled default provider pack. The app installs these on first launch so
+    # every source is pre-wired with nothing for the user to configure; the
+    # same files also stay published in provider-repo/ for community reuse.
+    - assets/providers/
     # Cheerio + htmlparser2 bundle for LNReader-style novel source scripts.
     - assets/js/lnreader_cheerio.js
     # require()/fetch shims + plugin loader that runs LNReader plugins on top.

@@ -3,25 +3,20 @@ import 'package:hive/hive.dart';
 
 import '../../core/app_config.dart';
 import '../../core/di/injector.dart';
-import '../../core/provider/default_repo_installer.dart';
 import '../../core/provider/provider_registry.dart';
-import '../../core/provider/provider_repo_registry.dart';
 import '../../core/state/active_source_cubit.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
-import '../../core/tv/tv_focusable.dart';
 import '../home/cubit/home_cubit.dart';
-import 'how_it_works.dart';
 import '../../l10n/l10n.dart';
 
 Future<void> _markOnboarded() =>
     Hive.box(ActiveSourceCubit.boxName).put('onboarded', true);
 
-/// TV-adapted first-run onboarding. Reuses the exact same state machine and
-/// source-install logic as the phone [OnboardingScreen] — only the interaction
-/// model changes: every action button is a [TvFocusable] so the D-pad reaches
-/// it and OK activates it. [HowItWorksView] is reused unchanged for the tips
-/// step.
+/// TV-adapted first-run onboarding. Like the phone [OnboardingScreen] it is a
+/// single automatic step: the sources are bundled and installed during boot, so
+/// this only activates the default source, primes Home, and hands off. There is
+/// nothing for the user to configure — no buttons to press.
 class OnboardingScreenTv extends StatefulWidget {
   const OnboardingScreenTv({super.key, required this.onDone});
 
@@ -32,56 +27,33 @@ class OnboardingScreenTv extends StatefulWidget {
 }
 
 class _OnboardingScreenTvState extends State<OnboardingScreenTv> {
-  bool _busy = false;
-  String? _error;
-  String _status = '';
-  bool _showTips = false;
-
-  /// Downloads every default provider repo and installs all of its sources,
-  /// then activates a well-populated default so Home is useful on first open.
-  /// A single source that fails is skipped rather than failing the whole run.
-  Future<void> _setup() async {
-    final l10n = context.l10n;
-    setState(() {
-      _busy = true;
-      _error = null;
-      _status = l10n.downloadingSourceCatalog;
-    });
-    try {
-      final result = await provisionDefaultRepos(
-        repos: sl<ProviderReposRegistry>(),
-        registry: sl<ProviderRegistry>(),
-        onStatus: (name, done, total) {
-          if (!mounted) return;
-          setState(() => _status = l10n.installingSource(name, done, total));
-        },
-      );
-      // New TV users default to AniKoto; fall back to the first installed source
-      // if it didn't install. Runs only on first-run onboarding — existing users
-      // keep their saved pick.
-      sl<ActiveSourceCubit>().setSource(
-        result.installedIds.contains(kDefaultSourceId)
-            ? kDefaultSourceId
-            : result.installedIds.first,
-      );
-      sl<HomeCubit>().load();
-      await _markOnboarded();
-      if (mounted) {
-        setState(() {
-          _busy = false;
-          _showTips = true;
-        });
-      }
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _busy = false;
-        _error = l10n.setupFailedCheckConnection;
-      });
-    }
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _setup());
   }
 
-  Future<void> _skip() async {
+  /// Activates a well-populated default so Home is useful on first open. The
+  /// sources themselves are already installed by the boot pass. Best-effort:
+  /// any failure still marks onboarding done so the user is never trapped.
+  Future<void> _setup() async {
+    try {
+      final active = sl<ActiveSourceCubit>();
+      final installed = [
+        for (final e in sl<ProviderRegistry>().getAll())
+          if (e.enabled) e.name,
+      ];
+      if (installed.isNotEmpty) {
+        active.setSource(
+          installed.contains(kDefaultSourceId)
+              ? kDefaultSourceId
+              : installed.first,
+        );
+      }
+      if (sl.isRegistered<HomeCubit>()) sl<HomeCubit>().load();
+    } catch (_) {
+      // Sources install during boot; a failure here is not worth blocking on.
+    }
     await _markOnboarded();
     if (mounted) widget.onDone();
   }
@@ -102,61 +74,8 @@ class _OnboardingScreenTvState extends State<OnboardingScreenTv> {
     ),
   );
 
-  /// Post-setup "how it works" guide — same content as the phone, button is
-  /// [TvFocusable] with autofocus so the D-pad lands on it immediately.
-  Widget _buildTips() => Scaffold(
-    backgroundColor: AppColors.bg,
-    body: SafeArea(
-      child: Center(
-        child: SizedBox(
-          width: 680,
-          child: Column(
-            children: [
-              const SizedBox(height: 40),
-              Text(
-                context.l10n.allSet,
-                style: AppText.title,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 6),
-              const Expanded(child: HowItWorksView()),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
-                child: TvFocusable(
-                  autofocus: true,
-                  onTap: widget.onDone,
-                  child: ExcludeFocus(
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: FilledButton(
-                        onPressed: widget.onDone,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.accent,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: Text(
-                          context.l10n.startWatching,
-                          style: AppText.button.copyWith(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-
   @override
   Widget build(BuildContext context) {
-    if (_showTips) return _buildTips();
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
@@ -197,81 +116,20 @@ class _OnboardingScreenTvState extends State<OnboardingScreenTv> {
                   ],
                 ),
                 const Spacer(flex: 3),
-                if (_error != null) ...[
-                  Text(
-                    _error!,
-                    style: AppText.caption.copyWith(color: AppColors.accent),
-                    textAlign: TextAlign.center,
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    color: AppColors.accent,
                   ),
-                  const SizedBox(height: 14),
-                ],
-                if (_busy)
-                  Column(
-                    children: [
-                      SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.4,
-                          color: AppColors.accent,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        _status,
-                        style: AppText.caption,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  )
-                else ...[
-                  TvFocusable(
-                    autofocus: true,
-                    onTap: _setup,
-                    child: ExcludeFocus(
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: FilledButton(
-                          onPressed: _setup,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.accent,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          child: Text(
-                            _error == null
-                                ? context.l10n.getStarted
-                                : context.l10n.retry,
-                            style: AppText.button.copyWith(color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TvFocusable(
-                    autofocus: false,
-                    onTap: _skip,
-                    child: ExcludeFocus(
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: TextButton(
-                          onPressed: _skip,
-                          child: Text(
-                            context.l10n.skipForNow,
-                            style: AppText.caption.copyWith(
-                              color: AppColors.textTertiary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  context.l10n.downloadingSourceCatalog,
+                  style: AppText.caption,
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 40),
               ],
             ),

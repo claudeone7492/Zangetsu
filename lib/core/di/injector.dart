@@ -58,6 +58,7 @@ import '../provider/cloudstream_provider.dart';
 import '../provider/provider_downloader.dart';
 import '../provider/provider_manager.dart';
 import '../share/open_link_service.dart';
+import '../provider/bundled_pack.dart';
 import '../provider/provider_registry.dart';
 import '../provider/provider_repo_registry.dart';
 import '../repository/catalogue_repository.dart';
@@ -895,11 +896,20 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
     await manager.loadExtractor(extractorId: ex, jsSource: js);
   }
 
-  // The app ships with NO built-in providers — every source comes from a repo
-  // (the Zangetsu repo is installed on first launch via onboarding). Drop any
-  // legacy `bundled://` entries left by older installs, then load the
-  // repo-installed providers persisted from previous launches.
+  // The default source pack is bundled in the APK, not fetched: a fresh
+  // install must be fully wired with nothing for the user to configure, and a
+  // network fetch of a manifest that has to exist on the right branch is
+  // exactly what silently left new installs with no working sources. Drop any
+  // legacy `bundled://` entries from older installs, seed the bundled pack
+  // (in-memory JS + persisted entries), then load everything below.
   await registry.purgeBundled();
+  try {
+    await installBundledPack(registry: registry, repos: repos);
+  } catch (e) {
+    // A pack failure must never block boot — the app still runs with whatever
+    // the user added themselves.
+    debugPrint('[boot] bundled pack install failed: $e');
+  }
   // Load repo-installed JS providers into the runtime. Bounded so a provider
   // whose JS HANGS (flutter_js can deadlock) can't trap the splash — the
   // reported "stuck on the splash for minutes":

@@ -304,13 +304,25 @@ class ProviderRegistry {
   /// Installs (or refreshes) a bundled provider straight from in-memory
   /// [jsSource]. Writes an enabled `bundled://` entry, caches the source
   /// for later reloads, and loads it into the runtime immediately.
+  ///
+  /// [repoUrl] groups the entry under a bundled pack (default [kBundledRepoUrl])
+  /// so the default pack's entries can be told apart from stray legacy ones.
+  ///
+  /// [load] controls whether the JS is evaluated into the runtime here. The
+  /// default-pack installer passes false: it seeds many sources in a row right
+  /// before [loadAll], which loads them all anyway — evaluating twice would run
+  /// every provider's QuickJS setup twice on the splash.
   Future<ProviderRegistryEntry> installFromBundled({
     required String name,
     required String jsSource,
     String displayName = 'Bundled',
+    String repoUrl = kBundledRepoUrl,
+    String version = '1.0.0',
+    String logoUrl = '',
+    bool load = true,
   }) async {
     _bundledJs[name] = jsSource;
-    final key = providerKey(kBundledRepoUrl, name);
+    final key = providerKey(repoUrl, name);
     final existing = _box.get(key);
     // Preserve a user's enabled toggle across re-seeds; default enabled.
     final enabled = existing == null
@@ -322,15 +334,17 @@ class ProviderRegistry {
       name: name,
       url: '$kBundledRepoUrl$name',
       enabled: enabled,
-      originRepoUrl: kBundledRepoUrl,
+      originRepoUrl: repoUrl,
       displayName: displayName,
+      version: version,
+      logoUrl: logoUrl,
     );
     await _box.put(key, entry.toJson());
-    if (enabled) {
+    if (enabled && load) {
       await _manager.load(
         sourceId: name,
         jsSource: jsSource,
-        originRepoUrl: kBundledRepoUrl,
+        originRepoUrl: repoUrl,
         displayName: displayName,
       );
     }
@@ -387,6 +401,43 @@ class ProviderRegistry {
       _bundledJs.remove(sourceId);
       await _box.delete(k);
     }
+  }
+
+  /// Drops every installed entry whose sourceId the bundled pack also
+  /// provides, EXCEPT the pack's own entry. Returns how many were removed.
+  ///
+  /// The runtime has ONE slot per sourceId (`__providers[sourceId]`), so two
+  /// entries sharing an id cannot be live at once — the last one loaded wins,
+  /// and [loadAll] walks entries in composite-key order, where the pack's
+  /// `bundled://official-pack::…` key sorts BEFORE a repo's `https://…::…`.
+  /// A device that installed `anikoto` from a community repo before that
+  /// source shipped in the pack therefore keeps both, loads the repo copy
+  /// last, and runs the OLD JS — the reported "Auto Resolve is still using
+  /// the old providers that do not work, making the player show not available
+  /// try again later". The pack was current; the runtime was not.
+  ///
+  /// The pack is the app's own curated, verified set, so it wins: a community
+  /// copy of the same id is dropped rather than left as a duplicate the user
+  /// can never actually reach. Ids the pack does NOT provide are untouched, so
+  /// anything the user added themselves still works.
+  Future<int> pruneSupersededByPack(Iterable<String> packSourceIds) async {
+    final packIds = packSourceIds.toSet();
+    if (packIds.isEmpty) return 0;
+    var removed = 0;
+    for (final entry in getAll()) {
+      if (entry.isBundled) continue;
+      if (!packIds.contains(entry.name)) continue;
+      await _box.delete(providerKey(entry.originRepoUrl, entry.name));
+      await _downloader.remove(entry.name);
+      removed++;
+    }
+    if (removed > 0) {
+      debugPrint(
+        '[ProviderRegistry] pruned $removed stale source(s) superseded by the '
+        'bundled pack',
+      );
+    }
+    return removed;
   }
 
   /// Removes the entry at composite [key] and drops it from the runtime

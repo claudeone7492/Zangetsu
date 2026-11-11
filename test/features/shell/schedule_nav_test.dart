@@ -465,15 +465,20 @@ void main() {
   );
 
   // Schedule left the dock for the card row on Home, beside the Manga/Novel
-  // mode cards — two doors to one screen was the point of removing it — and
-  // Sources took the slot it left, moved down from the Home header.
-  testWidgets('the phone dock swapped Schedule for Sources', (tester) async {
+  // mode cards — two doors to one screen was the point of removing it. The
+  // Sources tab that briefly took its slot is gone too: the app installs and
+  // manages its own sources (Settings → Providers), so there is nothing for
+  // the user to do here. Shorts took the slot.
+  testWidgets('the phone dock swapped Schedule for Shorts, not Sources', (
+    tester,
+  ) async {
     sl.registerSingleton<AppMode>(const AppMode(isTv: false));
     await tester.pumpWidget(wrap(const RootShell()));
     await tester.pumpAndSettle();
 
     expect(dockLabel('Schedule'), findsNothing);
-    expect(dockLabel('Sources'), findsOneWidget);
+    expect(dockLabel('Sources'), findsNothing);
+    expect(dockLabel('Shorts'), findsOneWidget);
   });
 
   testWidgets('the phone Profile tab opens the viewer overview', (
@@ -574,7 +579,7 @@ void main() {
     // A name a screen reader can read. The visible Text is excluded from
     // semantics and folds to zero height when the dock collapses, so the name
     // has to come from the item itself.
-    for (final name in const ['Home', 'My List', 'Sources', 'Profile']) {
+    for (final name in const ['Home', 'My List', 'Shorts', 'Profile']) {
       expect(
         find.descendant(of: dock, matching: find.bySemanticsLabel(name)),
         findsWidgets,

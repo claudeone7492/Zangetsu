@@ -270,6 +270,30 @@ class ProviderReposRegistry {
     }
   }
 
+  /// Parses a manifest body (no network) into a [ProviderRepo] keyed by [url].
+  ///
+  /// Shared by [fetchAndCache] and the bundled-pack installer so both read a
+  /// manifest identically — the bundled pack's `file` values are bare asset
+  /// filenames and resolve against [kBundledPackRepoUrl] the same way a remote
+  /// manifest's resolve against its own directory.
+  static ProviderRepo parseManifest(String url, String body) {
+    final json = jsonDecode(body) as Map<String, dynamic>;
+    return ProviderRepo(
+      url: url,
+      name: (json['name'] as String?) ?? 'Unnamed repo',
+      description: (json['description'] as String?) ?? '',
+      sources: ((json['sources'] as List<dynamic>?) ?? const [])
+          .whereType<Map>()
+          .map((m) => RepoSource.fromJson(Map<String, dynamic>.from(m)))
+          .toList(),
+      lastSyncedAt: DateTime.now(),
+    );
+  }
+
+  /// Persists [repo]'s manifest without touching the network. Used to cache the
+  /// bundled pack so the source picker renders its names/logos/types.
+  Future<void> cacheManifest(ProviderRepo repo) => _box.put(repo.url, repo.toJson());
+
   /// Removes a repo from the registry. Already-installed sources from
   /// that repo are NOT uninstalled — they stay in the user's library
   /// until they manually remove them.

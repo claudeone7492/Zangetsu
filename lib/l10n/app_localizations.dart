@@ -465,6 +465,12 @@ abstract class AppLocalizations {
   /// **'Live'**
   String get live;
 
+  /// No description provided for @liveTv.
+  ///
+  /// In en, this message translates to:
+  /// **'Live TV'**
+  String get liveTv;
+
   /// No description provided for @sub.
   ///
   /// In en, this message translates to:
@@ -6333,6 +6339,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sources'**
   String get sources;
+
+  /// No description provided for @shorts.
+  ///
+  /// In en, this message translates to:
+  /// **'Shorts'**
+  String get shorts;
 
   /// No description provided for @normalSpeed.
   ///

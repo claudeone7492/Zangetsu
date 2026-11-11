@@ -183,6 +183,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get live => 'Canlı';
 
   @override
+  String get liveTv => 'Live TV';
+
+  @override
   String get sub => 'Altyazılı';
 
   @override
@@ -3430,6 +3433,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get sources => 'Kaynaklar';
+
+  @override
+  String get shorts => 'Shorts';
 
   @override
   String get normalSpeed => 'Normal';

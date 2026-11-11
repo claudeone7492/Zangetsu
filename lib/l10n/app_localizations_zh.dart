@@ -183,6 +183,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get live => '居住';
 
   @override
+  String get liveTv => 'Live TV';
+
+  @override
   String get sub => '子';
 
   @override
@@ -3331,6 +3334,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sources => '来源';
+
+  @override
+  String get shorts => 'Shorts';
 
   @override
   String get normalSpeed => '普通的';

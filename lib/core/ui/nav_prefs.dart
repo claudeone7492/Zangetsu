@@ -14,7 +14,7 @@ enum DockTab {
   myList('My List'),
   downloads('Downloads'),
   history('History'),
-  sources('Sources'),
+  shorts('Shorts'),
   search('Search'),
   profile('Profile');
 
@@ -59,14 +59,15 @@ class NavPrefs extends ChangeNotifier {
 
   /// What the dock shipped with, and what a corrupt or empty value falls back
   /// to. Search lives in the Home header and Schedule on the Home card row,
-  /// so neither is here. Sources moved down from the Home header, where a
-  /// small icon was doing the work of a destination; the mode switcher sits
-  /// between My List and Sources as the dock's centre button rather than a
-  /// tab, so these four names fill all five icon slots.
+  /// so neither is here. Sources used to sit here, but the app installs and
+  /// manages its own sources — the user has nothing to do with them — so the
+  /// tab is gone; source management lives under Settings → Providers. The mode
+  /// switcher sits between My List and Downloads as the dock's centre button
+  /// rather than a tab, so these four names fill all five icon slots.
   static const List<DockTab> defaultTabs = [
     DockTab.home,
     DockTab.myList,
-    DockTab.sources,
+    DockTab.shorts,
     DockTab.profile,
   ];
 
@@ -90,11 +91,19 @@ class NavPrefs extends ChangeNotifier {
     if (raw is! List || raw.isEmpty) return defaultTabs;
     final out = <DockTab>[];
     for (final name in raw) {
-      final tab = DockTab.values.where((t) => t.name == name).firstOrNull;
+      final renamed = _renamedTabs[name];
+      final tab = DockTab.values
+          .where((t) => t.name == (renamed ?? name))
+          .firstOrNull;
       if (tab != null && !out.contains(tab)) out.add(tab);
     }
     return _sanitize(out);
   }
+
+  /// Tab ids that were renamed across versions. A stored dock that still names
+  /// an old id is mapped to its replacement so an upgrade keeps the user's
+  /// layout instead of silently dropping a slot.
+  static const Map<String, String> _renamedTabs = {'sources': 'shorts'};
 
   Future<void> setTabs(List<DockTab> tabs) async {
     final clean = _sanitize(tabs);

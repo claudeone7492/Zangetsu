@@ -1,5 +1,6 @@
 {
   "ar": [
+    "liveTv",
     "customRange",
     "discordActivityStatus",
     "presenceOnline",
@@ -82,6 +83,7 @@
     "keepDockExpandedSubtitle",
     "favourites",
     "allowNotificationsForAlerts",
+    "shorts",
     "downloadSizeEstimate",
     "storageLowTitle",
     "storageLowBody",
@@ -155,6 +157,7 @@
   ],
 
   "de": [
+    "liveTv",
     "customRange",
     "searchOk",
     "discordActivityStatus",
@@ -277,6 +280,7 @@
     "markedUnread",
     "markedChaptersAsRead",
     "allowNotificationsForAlerts",
+    "shorts",
     "downloadSizeEstimate",
     "storageLowTitle",
     "storageLowBody",
@@ -424,6 +428,7 @@
   ],
 
   "es": [
+    "liveTv",
     "customRange",
     "searchOk",
     "discordActivityStatus",
@@ -546,6 +551,7 @@
     "markedUnread",
     "markedChaptersAsRead",
     "allowNotificationsForAlerts",
+    "shorts",
     "downloadSizeEstimate",
     "storageLowTitle",
     "storageLowBody",
@@ -693,6 +699,7 @@
   ],
 
   "fr": [
+    "liveTv",
     "customRange",
     "searchOk",
     "discordActivityStatus",
@@ -815,6 +822,7 @@
     "markedUnread",
     "markedChaptersAsRead",
     "allowNotificationsForAlerts",
+    "shorts",
     "downloadSizeEstimate",
     "storageLowTitle",
     "storageLowBody",
@@ -962,6 +970,7 @@
   ],
 
   "id": [
+    "liveTv",
     "customRange",
     "discordActivityStatus",
     "presenceOnline",
@@ -1044,6 +1053,7 @@
     "keepDockExpandedSubtitle",
     "favourites",
     "allowNotificationsForAlerts",
+    "shorts",
     "downloadSizeEstimate",
     "storageLowTitle",
     "storageLowBody",
@@ -1117,6 +1127,7 @@
   ],
 
   "it": [
+    "liveTv",
     "customRange",
     "searchOk",
     "discordActivityStatus",
@@ -1239,6 +1250,7 @@
     "markedUnread",
     "markedChaptersAsRead",
     "allowNotificationsForAlerts",
+    "shorts",
     "downloadSizeEstimate",
     "storageLowTitle",
     "storageLowBody",
@@ -1386,6 +1398,7 @@
   ],
 
   "ja": [
+    "liveTv",
     "customRange",
     "searchOk",
     "discordActivityStatus",
@@ -1508,6 +1521,7 @@
     "markedUnread",
     "markedChaptersAsRead",
     "allowNotificationsForAlerts",
+    "shorts",
     "downloadSizeEstimate",
     "storageLowTitle",
     "storageLowBody",
@@ -1655,6 +1669,7 @@
   ],
 
   "pt": [
+    "liveTv",
     "customRange",
     "discordActivityStatus",
     "presenceOnline",
@@ -1737,6 +1752,7 @@
     "keepDockExpandedSubtitle",
     "favourites",
     "allowNotificationsForAlerts",
+    "shorts",
     "downloadSizeEstimate",
     "storageLowTitle",
     "storageLowBody",
@@ -1810,6 +1826,7 @@
   ],
 
   "tr": [
+    "liveTv",
     "customRange",
     "discordActivityStatus",
     "presenceOnline",
@@ -1892,6 +1909,7 @@
     "keepDockExpandedSubtitle",
     "favourites",
     "allowNotificationsForAlerts",
+    "shorts",
     "downloadSizeEstimate",
     "storageLowTitle",
     "storageLowBody",
@@ -1965,6 +1983,7 @@
   ],
 
   "zh": [
+    "liveTv",
     "customRange",
     "searchOk",
     "discordActivityStatus",
@@ -2087,6 +2106,7 @@
     "markedUnread",
     "markedChaptersAsRead",
     "allowNotificationsForAlerts",
+    "shorts",
     "downloadSizeEstimate",
     "storageLowTitle",
     "storageLowBody",
@@ -2234,6 +2254,7 @@
   ],
 
   "zh_TW": [
+    "liveTv",
     "customRange",
     "searchOk",
     "discordActivityStatus",
@@ -2356,6 +2377,7 @@
     "markedUnread",
     "markedChaptersAsRead",
     "allowNotificationsForAlerts",
+    "shorts",
     "downloadSizeEstimate",
     "storageLowTitle",
     "storageLowBody",

@@ -60,14 +60,14 @@ void main() {
     });
 
     // Search is opt-in (header icon while it's off the bar); Schedule left
-    // for the card row on Home. Sources went the other way — it was a header
-    // icon and is now a destination, which is why Downloads is no longer a
-    // default.
+    // for the card row on Home. Sources was removed entirely — the app
+    // installs and manages its own sources, so the tab the user saw only ever
+    // read "no sources installed". Shorts took its slot.
     test('the default dock has neither Search nor Schedule', () {
       expect(NavPrefs.defaultTabs, [
         DockTab.home,
         DockTab.myList,
-        DockTab.sources,
+        DockTab.shorts,
         DockTab.profile,
       ]);
     });
@@ -214,7 +214,7 @@ void main() {
     // Launch has to land somewhere the dock can navigate away from. A tab
     // that is no longer on the bar has no dock entry to return to.
     test('a landing tab that was since hidden falls back', () async {
-      await NavPrefs().setStartTab(DockTab.sources);
+      await NavPrefs().setStartTab(DockTab.shorts);
       await NavPrefs().setTabs([DockTab.home, DockTab.myList, DockTab.profile]);
 
       expect(NavPrefs().startTab, DockTab.home);

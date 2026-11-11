@@ -52,6 +52,7 @@ import '../../core/announce/announcement.dart';
 import '../announce/announcement_sheet.dart';
 import '../community/community_sheet.dart';
 import '../downloads/downloads_screen.dart';
+import '../live/live_tv_screen.dart';
 import '../notify/subscriptions_screen.dart';
 import '../reader/manga_reader_screen.dart';
 import '../reader/novel_reader_screen.dart';
@@ -853,6 +854,7 @@ class _HomeViewState extends State<_HomeView>
                 );
           final actions = [
             HomeDownloadsAction(edgeBanner: edgeBanner),
+            HomeLiveTvAction(edgeBanner: edgeBanner),
             _notificationBell(context, edgeBanner: edgeBanner),
             HomeSearchAction(
               edgeBanner: edgeBanner,
@@ -2283,6 +2285,30 @@ ButtonStyle _edgeHeaderButtonStyle() => IconButton.styleFrom(
   backgroundColor: Colors.black.withValues(alpha: 0.5),
   shape: const CircleBorder(),
 );
+
+/// Header shortcut into [LiveTvScreen] — the way in for the dock style, which
+/// has no menu button (the liquid dock carries the entry in its glass menu).
+class HomeLiveTvAction extends StatelessWidget {
+  const HomeLiveTvAction({super.key, this.edgeBanner = false});
+
+  final bool edgeBanner;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: Icon(
+        Icons.live_tv_rounded,
+        color: edgeBanner ? Colors.white : AppColors.textSecondary,
+        size: 22,
+      ),
+      tooltip: context.l10n.liveTv,
+      style: edgeBanner ? _edgeHeaderButtonStyle() : null,
+      onPressed: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const LiveTvScreen()),
+      ),
+    );
+  }
+}
 
 /// The header's source switcher. Hidden while Z Mode is on — the active
 /// source doesn't affect anything on screen there (Home is metadata-driven)

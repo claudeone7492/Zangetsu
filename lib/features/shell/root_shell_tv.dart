@@ -24,6 +24,7 @@ import '../auth/auth_cubit.dart';
 import '../auth/auth_screens_tv.dart';
 import '../auth/reconnect.dart';
 import '../downloads/downloads_screen.dart';
+import '../live/live_tv_screen.dart';
 import '../../l10n/l10n.dart';
 import '../home/cubit/home_cubit.dart';
 import '../schedule/schedule_screen.dart';
@@ -68,7 +69,7 @@ class _RailItem {
 
 enum _AvatarAction { changeProfile, logOut }
 
-const int _kRailItemCount = 6;
+const int _kRailItemCount = 7;
 const int _kMyListRailItem = 2;
 
 List<_RailItem> _railItems(BuildContext context) {
@@ -79,6 +80,7 @@ List<_RailItem> _railItems(BuildContext context) {
     _RailItem(label: l.myList, iconAsset: 'bookmark'),
     _RailItem(label: l.downloads, iconAsset: 'download'),
     _RailItem(label: l.schedule, iconAsset: 'calendar-days'),
+    _RailItem(label: l.liveTv, iconAsset: 'tv'),
     _RailItem(label: l.settingsTitle, iconAsset: 'settings'),
   ];
 }
@@ -452,6 +454,7 @@ class _RootShellTvState extends State<RootShellTv> with WidgetsBindingObserver {
       ...shared.sublist(0, 3), // Home, Search, My List
       const DownloadsScreen(),
       const ScheduleScreen(),
+      const LiveTvScreen(showBack: false),
       shared[3], // Settings; the phone Profile tab uses the same destination.
     ];
     final profileId = sl.isRegistered<ViewerProfileStore>()

@@ -9,7 +9,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
-import '../search/browse_sources_screen.dart';
+import '../shorts/shorts_screen.dart';
+import '../live/live_tv_screen.dart';
 import '../home/home_catalogue_prefs.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
@@ -349,7 +350,7 @@ class _RootShellState extends State<RootShell>
             // whole screen, so their own back affordance is suppressed.
             DockTab.downloads => const DownloadsScreen(showBack: false),
             DockTab.history => const HistoryScreen(showBack: false),
-            DockTab.sources => const BrowseSourcesScreen(),
+            DockTab.shorts => const ShortsScreen(),
           },
         ),
     ];
@@ -752,6 +753,22 @@ class _LiquidNavDock extends StatelessWidget {
                             onTap: () =>
                                 onModeSelected(choice.mode, choice.kind),
                           ),
+                      const GlassMenuDivider(),
+                      GlassMenuItem(
+                        title: context.l10n.liveTv,
+                        icon: const Icon(Icons.live_tv_rounded),
+                        iconColor: AppColors.textPrimary,
+                        titleStyle: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        height: 48,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const LiveTvScreen(),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -1038,7 +1055,7 @@ class _FloatingDock extends StatelessWidget {
 (IconData, IconData)? _iconFor(DockTab t) => switch (t) {
   DockTab.downloads => (Icons.download_outlined, Icons.download_rounded),
   DockTab.history => (Icons.history_outlined, Icons.history_rounded),
-  DockTab.sources => (Icons.extension_outlined, Icons.extension_rounded),
+  DockTab.shorts => (Icons.bolt_outlined, Icons.bolt_rounded),
   _ => null,
 };
 

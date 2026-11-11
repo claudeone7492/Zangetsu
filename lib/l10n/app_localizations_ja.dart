@@ -183,6 +183,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get live => 'ライブ';
 
   @override
+  String get liveTv => 'Live TV';
+
+  @override
   String get sub => 'サブ';
 
   @override
@@ -3349,6 +3352,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get sources => '出典';
+
+  @override
+  String get shorts => 'Shorts';
 
   @override
   String get normalSpeed => '普通';

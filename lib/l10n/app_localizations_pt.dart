@@ -183,6 +183,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get live => 'Ao vivo';
 
   @override
+  String get liveTv => 'Live TV';
+
+  @override
   String get sub => 'Legendado';
 
   @override
@@ -3453,6 +3456,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get sources => 'Fontes';
+
+  @override
+  String get shorts => 'Shorts';
 
   @override
   String get normalSpeed => 'Normal';

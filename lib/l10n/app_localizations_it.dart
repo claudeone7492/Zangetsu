@@ -183,6 +183,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get live => 'VIVERE';
 
   @override
+  String get liveTv => 'Live TV';
+
+  @override
   String get sub => 'SUB';
 
   @override
@@ -3441,6 +3444,9 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get sources => 'Fonti';
+
+  @override
+  String get shorts => 'Shorts';
 
   @override
   String get normalSpeed => 'Normale';
