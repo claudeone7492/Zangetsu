@@ -15,6 +15,9 @@
     <!-- Foreground service so HLS downloads continue in the background. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <!-- Foreground media-playback service: keeps the phone player's audio
+         running while the app is backgrounded or in picture-in-picture. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
     <!-- Saving player screenshots to the gallery (gal); Android 10+ needs none. -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
     <!-- Android TV leanback: required=false so the app still installs on phones. -->
@@ -247,13 +250,24 @@
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" />
         <!-- Native phone video player (PhonePlayerActivity). The phone's
             orientation preference controls its initial layout and rotation.
-            This is scoped to this Activity; TV keeps its fixed orientation. -->
+            This is scoped to this Activity; TV keeps its fixed orientation.
+            supportsPictureInPicture lets the player shrink to a floating
+            window; the Activity enters it itself (PipController) on the PiP
+            control or automatically when the user leaves the app. -->
         <activity
             android:name=".PhonePlayerActivity"
             android:exported="false"
             android:screenOrientation="unspecified"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" />
+            android:supportsPictureInPicture="true"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" />
+        <!-- Keeps the native phone player's audio running (and its media
+            notification alive) while the app is backgrounded or the player is
+            in PiP. mediaPlayback type so Android 14+ accepts it for playback. -->
+        <service
+            android:name=".PhonePlaybackService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
         <!-- Google Cast Framework configuration. -->
         <meta-data
             android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"

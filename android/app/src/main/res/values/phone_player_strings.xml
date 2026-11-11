@@ -57,6 +57,14 @@
     <string name="phone_player_version_sub">Sub</string>
     <string name="phone_player_version_dub">Dub</string>
     <string name="phone_player_arrange_controls">Arrange player controls</string>
+    <string name="phone_player_menu_pip">Picture-in-picture</string>
+    <!-- Background-playback foreground service. -->
+    <string name="phone_player_bg_channel_name">Playback</string>
+    <string name="phone_player_bg_channel_desc">Keeps video playing in the background</string>
+    <string name="phone_player_bg_action_stop">Close</string>
+    <string name="phone_player_bg_action_play">Play</string>
+    <string name="phone_player_bg_action_pause">Pause</string>
+    <string name="phone_player_bg_unknown_title">Playing</string>
     <string name="phone_player_lock_controls">Lock controls</string>
     <string name="phone_player_unlock_controls">Tap to unlock</string>
     <string name="phone_player_controls_top">Top bar</string>

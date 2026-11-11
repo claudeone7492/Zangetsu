@@ -2,6 +2,7 @@
 <resources>
     <item name="fullscreen_top_actions" type="id" />
     <item name="quick_more" type="id" />
+    <item name="quick_pip" type="id" />
     <item name="quick_cast" type="id" />
     <item name="quick_info" type="id" />
     <item name="btn_controls_lock" type="id" />
