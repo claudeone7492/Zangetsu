@@ -257,6 +257,11 @@ class _FakeProviderRegistry implements ProviderRegistry {
 
   @override
   List<ProviderRegistryEntry> getAll() => const [];
+
+  // Added with the manifest-backed mode resolver: content_mode.dart reads the
+  // declared type of every source through this map to classify plain JS ids.
+  @override
+  Map<String, String> typeMapOf() => const {};
 }
 
 class _FakeCloudStreamManager extends ChangeNotifier
