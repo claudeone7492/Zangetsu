@@ -77,6 +77,7 @@ import '../../core/metadata/title_logo_service.dart';
 import 'metadata_switch_sheet.dart';
 import 'home_banner_header.dart';
 import 'home_catalogue_prefs.dart';
+import 'movies_tv_submenu.dart';
 import 'source_catalogue_home_content.dart';
 import '../../core/ui/list_status_sheet.dart';
 import '../../core/ui/media_info_sheet.dart';
@@ -1444,30 +1445,52 @@ class _HomeViewState extends State<_HomeView>
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              for (final m in others) ...[
-                Expanded(child: _modeCard(m, orBorrow(_modeArt(m)))),
-                const SizedBox(width: 12),
-              ],
-              // Even halves with Genres beside it. Alone it still fills the
-              // row, so the old flex:2 (which existed to beat the switcher
-              // cards to a readable width) no longer buys anything.
-              Expanded(child: _hubCard(orBorrow(_modeArt(ContentMode.anime)))),
-              // Genres only means something on a catalogue that can actually
-              // narrow itself. MAL and Simkl take the parameter and answer
-              // with the same unfiltered list, so the card is not offered
-              // there rather than opening onto a screen that lies.
-              //
-              // isRegistered, not a bare sl<>: this row builds before the
-              // repository exists in some shells (and in every test that only
-              // cares about the dock), and a missing card is a better answer
-              // there than throwing the whole Home tree away.
-              if (sl.isRegistered<MetadataRepository>() &&
-                  sl<MetadataRepository>().supportsFilters) ...[
-                const SizedBox(width: 12),
-                Expanded(child: _genresCard(orBorrow(_genresArt()))),
-              ],
+              Row(
+                children: [
+                  for (final m in others) ...[
+                    Expanded(child: _modeCard(m, orBorrow(_modeArt(m)))),
+                    const SizedBox(width: 12),
+                  ],
+                  // Even halves with Genres beside it. Alone it still fills the
+                  // row, so the old flex:2 (which existed to beat the switcher
+                  // cards to a readable width) no longer buys anything.
+                  Expanded(
+                    child: _hubCard(orBorrow(_modeArt(ContentMode.anime))),
+                  ),
+                  // Genres only means something on a catalogue that can actually
+                  // narrow itself. MAL and Simkl take the parameter and answer
+                  // with the same unfiltered list, so the card is not offered
+                  // there rather than opening onto a screen that lies.
+                  //
+                  // isRegistered, not a bare sl<>: this row builds before the
+                  // repository exists in some shells (and in every test that only
+                  // cares about the dock), and a missing card is a better answer
+                  // there than throwing the whole Home tree away.
+                  if (sl.isRegistered<MetadataRepository>() &&
+                      sl<MetadataRepository>().supportsFilters) ...[
+                    const SizedBox(width: 12),
+                    Expanded(child: _genresCard(orBorrow(_genresArt()))),
+                  ],
+                ],
+              ),
+              // Movies & TV sub-menu. Z Mode only (the bar swaps the metadata
+              // movie Home), and only while the Movie/TV stream kind is active.
+              // Reactive to the stream-kind revision so flipping Anime ↔
+              // Movie/TV shows/hides it without rebuilding all of Home.
+              if (ZModePrefs.enabled)
+                ValueListenableBuilder<int>(
+                  valueListenable: ZModePrefs.revision,
+                  builder: (context, _, _) =>
+                      ZModePrefs.streamKind == StreamKind.movie
+                      ? const Padding(
+                          padding: EdgeInsets.only(top: 8),
+                          child: MoviesTvRegionBar(),
+                        )
+                      : const SizedBox.shrink(),
+                ),
             ],
           ),
         );
@@ -2045,11 +2068,11 @@ class _HomeViewState extends State<_HomeView>
                       _sourceCatalogueSelected || ZModePrefs.enabled
                       ? false
                       : switch (sl<ContentModeCubit>().state) {
-                          ContentMode.manga => !sourceIdMatchesContentMode(
+                          ContentMode.manga => !sourceMatchesContentMode(
                             activeId,
                             ContentMode.manga,
                           ),
-                          ContentMode.novel => !sourceIdMatchesContentMode(
+                          ContentMode.novel => !sourceMatchesContentMode(
                             activeId,
                             ContentMode.novel,
                           ),

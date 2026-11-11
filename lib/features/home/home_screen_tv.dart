@@ -3,6 +3,7 @@ import '../../core/zmode/metadata_provider_prefs.dart';
 import '../../core/zmode/tmdb_catalogue.dart';
 import '../settings/streaming_services_screen_tv.dart';
 import 'cubit/home_rows_composer.dart';
+import 'movies_tv_submenu.dart';
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -314,12 +315,24 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
     );
   }
 
-  Widget _homeHeaderSliver() => SliverToBoxAdapter(
+  Widget _homeHeaderSliver({StreamKind? kind}) => SliverToBoxAdapter(
     child: SafeArea(
       bottom: false,
       child: Padding(
         padding: const EdgeInsets.only(top: 12, bottom: 8),
-        child: _homeCatalogueToolbar(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _homeCatalogueToolbar(),
+            // The Movies & TV sub-menu: region/category chips that swap the
+            // whole movie Home for that dataset. Only on the Movie/TV pane, and
+            // only while browsing the catalogue (not the Source Catalogue tab).
+            if (kind == StreamKind.movie && !_sourceCatalogueSelected) ...[
+              const SizedBox(height: 8),
+              const MoviesTvRegionBar(),
+            ],
+          ],
+        ),
       ),
     ),
   );
@@ -713,11 +726,11 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
     final noSourceForMode = ZModePrefs.enabled
         ? false
         : switch (mode) {
-            ContentMode.manga => !sourceIdMatchesContentMode(
+            ContentMode.manga => !sourceMatchesContentMode(
               activeId,
               ContentMode.manga,
             ),
-            ContentMode.novel => !sourceIdMatchesContentMode(
+            ContentMode.novel => !sourceMatchesContentMode(
               activeId,
               ContentMode.novel,
             ),
@@ -906,7 +919,7 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
     final heroItem = heroItems.isNotEmpty ? heroItems.first : null;
     return CustomScrollView(
       slivers: [
-        _homeHeaderSliver(),
+        _homeHeaderSliver(kind: kind),
         if (heroItem != null)
           SliverToBoxAdapter(
             child: _TvHero(

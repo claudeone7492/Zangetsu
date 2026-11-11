@@ -9,6 +9,7 @@ import '../models/provider_info.dart';
 import '../ui/streaming_prefs.dart';
 import 'video_catalogue.dart';
 import 'metadata_filters.dart';
+import 'movie_regions.dart';
 import 'zmode_ids.dart';
 
 typedef TmdbGet =
@@ -124,6 +125,68 @@ class TmdbCatalogue implements VideoCatalogue {
   static const String wpPrefix = 'wp:';
 
   static String wpRowId(int providerId) => '$wpPrefix$providerId';
+
+  /// Row-id prefix for a Movies & TV sub-menu discover row: `disc:<region>:<i>`.
+  /// The index resolves back to the region's fixed [MovieRow] so the "See all"
+  /// grid pages the exact discover query Home showed.
+  static const String discPrefix = 'disc:';
+
+  static String discRowId(MovieRegion region, int index) =>
+      '$discPrefix${region.name}:$index';
+
+  /// Home rows for a Movies & TV sub-menu cut. [MovieRegion.all] returns null —
+  /// the caller keeps the plain [home] rows for it — so a caller can write
+  /// `await catalogue.homeForRegion(r) ?? catalogue.home()`.
+  Future<List<HomeSection>?> homeForRegion(MovieRegion region) async {
+    final rows = region.rows;
+    if (rows == null || rows.isEmpty) return null;
+    final sections = await Future.wait([
+      for (var i = 0; i < rows.length; i++) _fetchDiscoverRow(region, i, rows[i]),
+    ]);
+    return [for (final s in sections) ?s];
+  }
+
+  Future<HomeSection?> _fetchDiscoverRow(
+    MovieRegion region,
+    int index,
+    MovieRow row,
+  ) async {
+    // Discover endpoints are film-only, so `forcedTv: false` and no page param
+    // (page 1 is the home row; paging lives in [browseDiscoverRow]).
+    final items = _items(
+      await _get(row.path, Map<String, dynamic>.from(row.params)),
+      forcedTv: false,
+    );
+    if (items.isEmpty) return null;
+    return HomeSection(
+      title: row.title,
+      items: items,
+      more: BrowseMore(
+        sourceId: ZmodeIds.sourceId,
+        kind: 'zm_video',
+        categoryId: discRowId(region, index),
+      ),
+    );
+  }
+
+  /// Next page of one sub-menu discover row (see [discRowId]).
+  Future<List<MediaItem>> browseDiscoverRow(String rowId, int page) async {
+    final parts = rowId.split(':');
+    if (parts.length != 3 || parts[0] != 'disc') return const [];
+    final region = MovieRegion.values
+        .where((r) => r.name == parts[1])
+        .firstOrNull;
+    final index = int.tryParse(parts[2]);
+    final rows = region?.rows;
+    if (rows == null || index == null || index < 0 || index >= rows.length) {
+      return const [];
+    }
+    final row = rows[index];
+    return _items(
+      await _get(row.path, {...row.params, 'page': page}),
+      forcedTv: false,
+    );
+  }
 
   /// Browse one service while preserving TMDB's server-side filters.
   Future<MediaItemPage> browseProvider(
