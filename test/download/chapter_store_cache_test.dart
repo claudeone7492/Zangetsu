@@ -47,7 +47,9 @@ void main() {
       store.all();
     }
     second.stop();
+    // ignore: avoid_print
     print('  cold all(): ${first.elapsedMicroseconds}us');
+    // ignore: avoid_print
     print('  50x cached: ${second.elapsedMicroseconds}us');
     // 50 cached reads must cost less than one cold parse.
     expect(second.elapsedMicroseconds, lessThan(first.elapsedMicroseconds));
@@ -62,7 +64,9 @@ void main() {
     final count = Stopwatch()..start();
     store.countDone(ContentMode.manga);
     count.stop();
+    // ignore: avoid_print
     print('  parse+filter: ${parse.elapsedMicroseconds}us');
+    // ignore: avoid_print
     print('  countDone   : ${count.elapsedMicroseconds}us');
     expect(store.countDone(ContentMode.manga), 2000);
     expect(count.elapsedMicroseconds, lessThan(parse.elapsedMicroseconds));

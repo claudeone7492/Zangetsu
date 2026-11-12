@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/tracker/tracker_item_url.dart';
@@ -1120,7 +1121,7 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
           );
         }
         return GridView.builder(
-          key: ValueKey('${view.id}|${_sort?.name}|$_sortDesc'),
+          scrollCacheExtent: ScrollCacheExtent.pixels(800), key: ValueKey('${view.id}|${_sort?.name}|$_sortDesc'),
           // Bottom: clear the floating dock, which overlays content
           // (extendBody reserves it no space of its own).
           padding: EdgeInsets.fromLTRB(
@@ -1130,7 +1131,6 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
             MediaQuery.paddingOf(context).bottom,
           ),
           physics: const AlwaysScrollableScrollPhysics(),
-          cacheExtent: 800,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: posterGridColumns(context),
             childAspectRatio: posterGridAspect(context),

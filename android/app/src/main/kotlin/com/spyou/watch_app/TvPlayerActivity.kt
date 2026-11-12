@@ -450,7 +450,7 @@ class TvPlayerActivity : Activity() {
                 // Autoplay the next episode when this one finishes. Honour
                 // auto-skip filler the same way the Flutter player does.
                 if (state == Player.STATE_ENDED && !switching && currentIndex < episodeCount - 1) {
-                    loadEpisode(nextAutoplayIndex())
+                    loadEpisode(nextAutoplayIndex(), completed = true)
                 }
             }
             // PlayerView also writes cues; we register after it so this wins and
@@ -536,7 +536,7 @@ class TvPlayerActivity : Activity() {
     }
 
     // ── Episode switching (via the native→Dart bridge) ───────────────────────
-    private fun loadEpisode(index: Int) {
+    private fun loadEpisode(index: Int, completed: Boolean = false) {
         if (index < 0 || index >= episodeCount || switching) return
         val bridge = MainActivity.tvBridge ?: return
         // Persist the outgoing episode before leaving it.
@@ -548,6 +548,7 @@ class TvPlayerActivity : Activity() {
                     "index" to currentIndex,
                     "positionMs" to p.currentPosition,
                     "durationMs" to p.duration,
+                    "completed" to completed,
                 ),
             )
         }
@@ -1880,7 +1881,7 @@ class TvPlayerActivity : Activity() {
         toast("Searching subtitles…")
         bridge.invokeMethod(
             "searchSubtitles",
-            emptyMap<String, Any?>(),
+            mapOf("index" to currentIndex),
             object : MethodChannel.Result {
                 override fun success(result: Any?) {
                     @Suppress("UNCHECKED_CAST")
@@ -1902,8 +1903,10 @@ class TvPlayerActivity : Activity() {
             results.forEachIndexed { i, r ->
                 val name = r["name"] as? String ?: "Subtitle ${i + 1}"
                 val lang = r["language"] as? String
-                val label = if (lang.isNullOrBlank()) name else "$name  ·  ${langName(lang) ?: lang}"
-                option(label, selected = false) { downloadSubtitle(i) }
+                val src = r["source"] as? String
+                val langLabel = if (lang.isNullOrBlank()) "" else "  ·  ${langName(lang) ?: lang}"
+                val srcLabel = if (src.isNullOrBlank()) "" else "  ·  $src"
+                option("$name$langLabel$srcLabel", selected = false) { downloadSubtitle(i) }
             }
         }
     }

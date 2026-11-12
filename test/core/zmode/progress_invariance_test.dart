@@ -37,16 +37,22 @@ class _Src implements SourceRepository {
   @override
   bool hasSource(String sourceId) => bySource.containsKey(sourceId);
   @override
-  Future<List<MediaItem>> search(String q, {String category = 'sub', String? sourceId}) async =>
-      bySource[sourceId] ?? const [];
+  Future<List<MediaItem>> search(
+    String q, {
+    String category = 'sub',
+    String? sourceId,
+  }) async => bySource[sourceId] ?? const [];
 }
 
 MediaItem _hit(String src, String title) => MediaItem(
-  id: title.toLowerCase(), title: title, url: 'https://$src/$title',
-  type: ProviderType.anime, sourceId: src);
+  id: title.toLowerCase(),
+  title: title,
+  url: 'https://$src/$title',
+  type: ProviderType.anime,
+  sourceId: src,
+);
 
 void main() {
-  late ZSourcePrefs prefs;
   late Directory dir;
   const c = ZCanonical(ZKind.anime, 'mal:5114');
 
@@ -59,71 +65,90 @@ void main() {
     await dir.delete(recursive: true);
   });
 
-  test('the zm:// identity a title plays under never depends on the matched source', () async {
-    // What PlayerController/ResumeStore/WatchHistory actually key on for a
-    // Z Mode item: ZmodeIds.sourceId ('zm') + the canonical's own zm:// urls.
-    final sourceIdBefore = ZmodeIds.sourceId;
-    final showUrlBefore = ZmodeIds.showUrl(c);
-    final episodeUrlBefore = ZmodeIds.episodeUrl(c, 7);
+  test(
+    'the zm:// identity a title plays under never depends on the matched source',
+    () async {
+      // What PlayerController/ResumeStore/WatchHistory actually key on for a
+      // Z Mode item: ZmodeIds.sourceId ('zm') + the canonical's own zm:// urls.
+      final sourceIdBefore = ZmodeIds.sourceId;
+      final showUrlBefore = ZmodeIds.showUrl(c);
+      final episodeUrlBefore = ZmodeIds.episodeUrl(c, 7);
 
-    final store = await MatchStore.open();
+      final store = await MatchStore.open();
 
-    final prefs = await ZSourcePrefs.open();
-    final src = _Src({
-      'allanime': [_hit('allanime', 'Fullmetal Alchemist Brotherhood')],
-      'hianime': [_hit('hianime', 'Fullmetal Alchemist Brotherhood')],
-    });
-    final matcher = SourceMatcher(
-      sources: src,
-      store: store, prefs: prefs,
-      candidates: (_) => [(id: 'allanime', name: 'AllAnime'), (id: 'hianime', name: 'HiAnime')],
-    );
+      final prefs = await ZSourcePrefs.open();
+      final src = _Src({
+        'allanime': [_hit('allanime', 'Fullmetal Alchemist Brotherhood')],
+        'hianime': [_hit('hianime', 'Fullmetal Alchemist Brotherhood')],
+      });
+      final matcher = SourceMatcher(
+        sources: src,
+        store: store,
+        prefs: prefs,
+        candidates: (_) => [
+          (id: 'allanime', name: 'AllAnime'),
+          (id: 'hianime', name: 'HiAnime'),
+        ],
+      );
 
-    // A realistic sequence: auto-resolve, switch source, pin a correction —
-    // everything this task's selector/"Wrong title?" can do to a title.
-    await matcher.resolve(c, title: 'Fullmetal Alchemist: Brotherhood');
-    // Nothing was CHOSEN yet, so nothing is stored — the effective source is
-    // just the first candidate. Only an explicit pick is persisted.
-    expect(prefs.get(c.kind), isNull);
-    // Auto Resolve: nothing chosen means nothing selected, rather than the
-    // first candidate standing in as a default.
-    expect(matcher.selectedFor(c.kind), isNull);
+      // A realistic sequence: auto-resolve, switch source, pin a correction —
+      // everything this task's selector/"Wrong title?" can do to a title.
+      await matcher.resolve(c, title: 'Fullmetal Alchemist: Brotherhood');
+      // Nothing was CHOSEN yet, so nothing is stored — the effective source is
+      // just the first candidate. Only an explicit pick is persisted.
+      expect(prefs.get(c.kind), isNull);
+      // Auto Resolve: nothing chosen means nothing selected, rather than the
+      // first candidate standing in as a default.
+      expect(matcher.selectedFor(c.kind), isNull);
 
-    await prefs.set(c.kind, 'hianime');
-    await matcher.resolve(c, title: 'Fullmetal Alchemist: Brotherhood');
-    expect(prefs.get(c.kind), 'hianime');
+      await prefs.set(c.kind, 'hianime');
+      await matcher.resolve(c, title: 'Fullmetal Alchemist: Brotherhood');
+      expect(prefs.get(c.kind), 'hianime');
 
-    await matcher.pinManual(c, _hit('allanime', 'Fullmetal Alchemist Brotherhood (2003)'));
-    // The correction pins THIS title to allanime and leaves the kind default
-    // where it was — one show's fix is not a choice about the whole library.
-    expect(matcher.sourceForTitle(c), 'allanime');
-    expect(prefs.get(c.kind), 'hianime');
+      await matcher.pinManual(
+        c,
+        _hit('allanime', 'Fullmetal Alchemist Brotherhood (2003)'),
+      );
+      // The correction pins THIS title to allanime and leaves the kind default
+      // where it was — one show's fix is not a choice about the whole library.
+      expect(matcher.sourceForTitle(c), 'allanime');
+      expect(prefs.get(c.kind), 'hianime');
 
-    // None of that touched the identity progress is keyed on.
-    expect(ZmodeIds.sourceId, sourceIdBefore);
-    expect(ZmodeIds.showUrl(c), showUrlBefore);
-    expect(ZmodeIds.episodeUrl(c, 7), episodeUrlBefore);
-    // And that identity depends only on the canonical, never on the resolved
-    // SourceMatch — a fresh ZCanonical with no MatchStore entry at all
-    // produces byte-identical urls to the one that's been switched/pinned
-    // three times over.
-    const fresh = ZCanonical(ZKind.anime, 'mal:5114');
-    expect(ZmodeIds.showUrl(fresh), showUrlBefore);
-    expect(ZmodeIds.episodeUrl(fresh, 7), episodeUrlBefore);
-  });
+      // None of that touched the identity progress is keyed on.
+      expect(ZmodeIds.sourceId, sourceIdBefore);
+      expect(ZmodeIds.showUrl(c), showUrlBefore);
+      expect(ZmodeIds.episodeUrl(c, 7), episodeUrlBefore);
+      // And that identity depends only on the canonical, never on the resolved
+      // SourceMatch — a fresh ZCanonical with no MatchStore entry at all
+      // produces byte-identical urls to the one that's been switched/pinned
+      // three times over.
+      const fresh = ZCanonical(ZKind.anime, 'mal:5114');
+      expect(ZmodeIds.showUrl(fresh), showUrlBefore);
+      expect(ZmodeIds.episodeUrl(fresh, 7), episodeUrlBefore);
+    },
+  );
 
-  test('resolve()/pinManual() never mutate the canonical they are given', () async {
-    // A structural guarantee behind the above: SourceMatcher only ever reads
-    // c.kind/c.id (via c.key) — ZCanonical has no mutable fields for it to
-    // change, so "the title" can never drift as a side effect of matching.
-    final store = await MatchStore.open();
-    final prefs = await ZSourcePrefs.open();
-    final src = _Src({'allanime': [_hit('allanime', 'FMA')]});
-    final matcher = SourceMatcher(
-        sources: src, store: store, prefs: prefs, candidates: (_) => [(id: 'allanime', name: 'AllAnime')]);
-    final keyBefore = c.key;
-    await matcher.resolve(c, title: 'FMA');
-    await matcher.pinManual(c, _hit('allanime', 'FMA'));
-    expect(c.key, keyBefore);
-  });
+  test(
+    'resolve()/pinManual() never mutate the canonical they are given',
+    () async {
+      // A structural guarantee behind the above: SourceMatcher only ever reads
+      // c.kind/c.id (via c.key) — ZCanonical has no mutable fields for it to
+      // change, so "the title" can never drift as a side effect of matching.
+      final store = await MatchStore.open();
+      final prefs = await ZSourcePrefs.open();
+      final src = _Src({
+        'allanime': [_hit('allanime', 'FMA')],
+      });
+      final matcher = SourceMatcher(
+        sources: src,
+        store: store,
+        prefs: prefs,
+        candidates: (_) => [(id: 'allanime', name: 'AllAnime')],
+      );
+      final keyBefore = c.key;
+      await matcher.resolve(c, title: 'FMA');
+      await matcher.pinManual(c, _hit('allanime', 'FMA'));
+      expect(c.key, keyBefore);
+    },
+  );
 }

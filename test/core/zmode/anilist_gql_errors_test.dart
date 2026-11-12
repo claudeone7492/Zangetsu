@@ -20,8 +20,11 @@ class _FailingAdapter implements HttpClientAdapter {
   @override
   void close({bool force = false}) {}
   @override
-  Future<ResponseBody> fetch(RequestOptions options, Stream<List<int>>? s, Future<void>? f) async =>
-      throw error;
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<List<int>>? s,
+    Future<void>? f,
+  ) async => throw error;
 }
 
 Dio _dioThatAnswers(int status, dynamic body) {
@@ -37,14 +40,17 @@ class _AnsweringAdapter implements HttpClientAdapter {
   @override
   void close({bool force = false}) {}
   @override
-  Future<ResponseBody> fetch(RequestOptions options, Stream<List<int>>? s, Future<void>? f) async =>
-      ResponseBody.fromString(
-        body is String ? body : '$body',
-        status,
-        headers: {
-          Headers.contentTypeHeader: [Headers.jsonContentType],
-        },
-      );
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<List<int>>? s,
+    Future<void>? f,
+  ) async => ResponseBody.fromString(
+    body is String ? body : '$body',
+    status,
+    headers: {
+      Headers.contentTypeHeader: [Headers.jsonContentType],
+    },
+  );
 }
 
 RequestOptions get _opts => RequestOptions(path: 'https://graphql.anilist.co');

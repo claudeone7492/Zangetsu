@@ -213,6 +213,8 @@ Map<String, dynamic> phonePlayerArgs({
   List<String>? availableCategories,
   String category = 'sub',
   int sessionId = 0,
+  bool autoPip = true,
+  bool backgroundPlayback = true,
 }) {
   final mime = source == null ? null : phoneMimeFor(source);
   return <String, dynamic>{
@@ -260,6 +262,8 @@ Map<String, dynamic> phonePlayerArgs({
     'availableCategories': availableCategories ?? const <String>[],
     'category': category,
     'sessionId': sessionId,
+    'autoPip': autoPip,
+    'backgroundPlayback': backgroundPlayback,
   };
 }
 
@@ -569,6 +573,8 @@ class PhoneNativePlayer {
       availableCategories: _availableCategories,
       category: _category,
       sessionId: _sessionId,
+      autoPip: prefs.autoPip,
+      backgroundPlayback: prefs.backgroundPlayback,
     );
 
     _closed = Completer<Map<String, dynamic>?>();

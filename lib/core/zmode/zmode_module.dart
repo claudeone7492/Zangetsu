@@ -27,6 +27,7 @@ import 'zmode_source_prefs.dart';
 import 'metadata_repository.dart';
 import 'source_matcher.dart';
 import 'tmdb_catalogue.dart';
+import 'tmdb_filter_options.dart';
 import 'zmode_ids.dart';
 import 'zmode_prefs.dart';
 
@@ -62,6 +63,12 @@ Future<void> registerZangetsuMode(GetIt sl) async {
   // interceptor, so neither of them ever passes `api_key` by hand.
   sl.registerLazySingleton<StreamingProvidersService>(
     () => StreamingProvidersService(TmdbCatalogue.dioGet(sl<Dio>())),
+  );
+
+  // Filter choices TMDB only serves from its own reference endpoints (services
+  // per region, age ratings per country). Same transport, cached per region.
+  sl.registerLazySingleton<TmdbFilterOptions>(
+    () => TmdbFilterOptions(TmdbCatalogue.dioGet(sl<Dio>())),
   );
 
   sl.registerSingleton<MetadataRepository>(
@@ -161,9 +168,10 @@ List<({String id, String name})> candidatesForKind(
     ZKind.novel => ContentMode.novel,
     _ => ContentMode.anime,
   };
+  final types = manifestSourceTypes();
   return [
     for (final s in all)
-      if (sourceIdMatchesContentMode(s.id, mode)) s,
+      if (sourceInMode(s.id, mode, types)) s,
   ];
 }
 

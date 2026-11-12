@@ -3,6 +3,7 @@ import '../../core/zmode/metadata_provider_prefs.dart';
 import '../../core/zmode/tmdb_catalogue.dart';
 import '../settings/streaming_services_screen_tv.dart';
 import 'cubit/home_rows_composer.dart';
+import 'movies_tv_submenu.dart';
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -100,12 +101,13 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
   @override
   void initState() {
     super.initState();
-    _sourceCatalogueSelected = HomeCataloguePrefs.sourceSelected;
+    _sourceCatalogueSelected = HomeCataloguePrefs.catalogueShown;
     _sourceCatalogueSourceId = HomeCataloguePrefs.sourceIdFor(
       sl<ContentModeCubit>().state,
     );
     _sourceCatalogueSelection = HomeCataloguePrefs.sourceSelection
       ..addListener(_onSourceCatalogueSelectionChanged);
+    HomeCataloguePrefs.revision.addListener(_onCatalogueRevision);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (isAppleTv) setState(() => _historyLive = true);
@@ -125,22 +127,39 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
     _sourceCatalogueSelection.removeListener(
       _onSourceCatalogueSelectionChanged,
     );
+    HomeCataloguePrefs.revision.removeListener(_onCatalogueRevision);
     super.dispose();
   }
 
   void _onSourceCatalogueSelectionChanged() {
-    final selected = _sourceCatalogueSelection.value;
-    if (!mounted || selected == _sourceCatalogueSelected) return;
+    _refreshCatalogueSelection();
+  }
+
+  void _onCatalogueRevision() {
+    _refreshCatalogueSelection();
+  }
+
+  void _refreshCatalogueSelection() {
+    if (!mounted) return;
+    final selected = HomeCataloguePrefs.catalogueShown;
+    final sourceId = HomeCataloguePrefs.sourceIdFor(
+      sl<ContentModeCubit>().state,
+    );
+    if (selected == _sourceCatalogueSelected &&
+        sourceId == _sourceCatalogueSourceId) {
+      return;
+    }
     setState(() {
       _sourceCatalogueSelected = selected;
       _sourceCatalogueSections = const [];
-      if (selected) {
+      _sourceCatalogueSourceId = sourceId;
+      if (selected && sourceId == null) {
         final activeId = context.read<ActiveSourceCubit>().state;
         if (sl.isRegistered<SourceRepository>() &&
             sl<SourceRepository>().loadedSources.any(
               (source) => source.id == activeId,
             )) {
-          _sourceCatalogueSourceId ??= activeId;
+          _sourceCatalogueSourceId = activeId;
         }
       }
     });
@@ -158,10 +177,7 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
       _sourceCatalogueSections = const [];
     });
     unawaited(
-      HomeCataloguePrefs.setSourceIdFor(
-        sl<ContentModeCubit>().state,
-        sourceId,
-      ),
+      HomeCataloguePrefs.setSourceIdFor(sl<ContentModeCubit>().state, sourceId),
     );
   }
 
@@ -173,6 +189,9 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
   List<MediaItem> get _sourceCatalogueHeroItems {
     final sections = _sourceCatalogueSections;
     if (sections.isEmpty) return const [];
+    if (_sourceCatalogueSourceId == 'stremio') {
+      return stremioHeroItems(sections);
+    }
     for (final section in sections) {
       if (section.title.startsWith('Trending')) return section.items;
     }
@@ -260,7 +279,9 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
                   ),
                 ],
               ),
-              if (_sourceCatalogueSelected && sourceIsAvailable)
+              if (_sourceCatalogueSelected &&
+                  sourceIsAvailable &&
+                  !HomeCataloguePrefs.stremioSelected)
                 Align(
                   alignment: Alignment.centerRight,
                   child: Row(
@@ -294,12 +315,24 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
     );
   }
 
-  Widget _homeHeaderSliver() => SliverToBoxAdapter(
+  Widget _homeHeaderSliver({StreamKind? kind}) => SliverToBoxAdapter(
     child: SafeArea(
       bottom: false,
       child: Padding(
         padding: const EdgeInsets.only(top: 12, bottom: 8),
-        child: _homeCatalogueToolbar(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _homeCatalogueToolbar(),
+            // The Movies & TV sub-menu: region/category chips that swap the
+            // whole movie Home for that dataset. Only on the Movie/TV pane, and
+            // only while browsing the catalogue (not the Source Catalogue tab).
+            if (kind == StreamKind.movie && !_sourceCatalogueSelected) ...[
+              const SizedBox(height: 8),
+              const MoviesTvRegionBar(),
+            ],
+          ],
+        ),
       ),
     ),
   );
@@ -693,11 +726,11 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
     final noSourceForMode = ZModePrefs.enabled
         ? false
         : switch (mode) {
-            ContentMode.manga => !sourceIdMatchesContentMode(
+            ContentMode.manga => !sourceMatchesContentMode(
               activeId,
               ContentMode.manga,
             ),
-            ContentMode.novel => !sourceIdMatchesContentMode(
+            ContentMode.novel => !sourceMatchesContentMode(
               activeId,
               ContentMode.novel,
             ),
@@ -886,7 +919,7 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
     final heroItem = heroItems.isNotEmpty ? heroItems.first : null;
     return CustomScrollView(
       slivers: [
-        _homeHeaderSliver(),
+        _homeHeaderSliver(kind: kind),
         if (heroItem != null)
           SliverToBoxAdapter(
             child: _TvHero(
@@ -954,7 +987,13 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
     Widget sourceCatalogueContent(ContentMode contentMode) =>
         SourceCatalogueHomeContent(
           controller: _sourceCatalogueController,
-          initialSourceId: HomeCataloguePrefs.sourceIdFor(contentMode),
+          // Hand the child our tracked id when we have one: the widget is
+          // re-inserted on every rebuild (mode/catalogue swaps) and would
+          // otherwise re-resolve `initialSourceId: null` back to the active
+          // source, silently discarding a pick the user just made here.
+          initialSourceId:
+              _sourceCatalogueSourceId ??
+              HomeCataloguePrefs.sourceIdFor(contentMode),
           mode: contentMode,
           onSourceSelected: (sourceId) {
             _sourceCatalogueSourceId = sourceId;

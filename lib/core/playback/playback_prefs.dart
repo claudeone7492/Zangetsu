@@ -336,6 +336,14 @@ class PlaybackPrefs {
   bool get autoPip => _box.get('autoPip', defaultValue: true) as bool;
   Future<void> setAutoPip(bool value) => _box.put('autoPip', value);
 
+  /// Keep playing (audio and video) when the app is backgrounded, with an
+  /// ongoing notification for transport. The native phone player honours it
+  /// through a foreground media-playback service.
+  bool get backgroundPlayback =>
+      _box.get('backgroundPlayback', defaultValue: true) as bool;
+  Future<void> setBackgroundPlayback(bool value) =>
+      _box.put('backgroundPlayback', value);
+
   /// Route TV playback to the fully-native player (TvPlayerActivity, real-window
   /// SurfaceView) instead of the Flutter platform-view player. Default ON on TV:
   /// the platform-view surface black-screens on some TVs, and the native window
@@ -1064,6 +1072,14 @@ class PlaybackPrefs {
       _box.get('autoTranslateSubtitles', defaultValue: false) as bool;
   Future<void> setAutoTranslateSubtitles(bool value) =>
       _box.put('autoTranslateSubtitles', value);
+
+  /// Whether to strip hearing-impaired annotations — `[CROWD CHEERING]`,
+  /// `♪ music ♪` — from a cue before translating it. Off by default, so the
+  /// stage directions a viewer chose to see are not silently dropped.
+  bool get removeHearingImpaired =>
+      _box.get('removeHearingImpaired', defaultValue: false) as bool;
+  Future<void> setRemoveHearingImpaired(bool value) =>
+      _box.put('removeHearingImpaired', value);
 
   /// The preference as a *language* code only: '' for Auto or Off, else the
   /// iso1. Callers that want a language (online-search default, Settings label)

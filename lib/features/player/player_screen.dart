@@ -40,11 +40,15 @@ import '../../core/models/video_source.dart';
 import '../../core/playback/resume_store.dart';
 import '../../core/playback/tv_track_helpers.dart' show tvEpisodeUrl;
 import '../../core/ui/episode_player_sheet.dart' show showMirrorSheet;
+import '../../core/stremio/stremio_manager.dart';
+import '../../core/stremio/stremio_ref.dart';
+import '../../core/stremio/stremio_stream_mapping.dart';
+import '../detail/stremio_episode_links_sheet.dart';
 import '../../core/ui/app_toast.dart';
 import '../../core/playback/skip_service.dart';
 import '../../core/playback/source_selection.dart';
+import '../../core/playback/online_subtitle_search.dart';
 import '../../core/playback/subtitle_language.dart';
-import '../../core/playback/subtitle_search_service.dart';
 import '../../core/playback/watch_history.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
@@ -57,12 +61,14 @@ import '../../core/ui/subtitle_language_picker.dart';
 import '../detail/cubit/detail_cubit.dart' show seasonOf, seasonsOf;
 import '../../core/cast/cast_controller.dart';
 import '../../core/cast/cast_proxy.dart';
+import '../../core/discord/discord_presence.dart';
 import '../watch_together/watch_together_controller.dart';
 import '../watch_together/ui/room_panel.dart';
 import '../../core/app_mode.dart';
 import '../../core/tv/tv_focusable.dart';
 import '../settings/settings_screen.dart';
 import 'player_controller.dart';
+import 'episode_comments_sheet.dart';
 import 'player_watch_page.dart';
 import 'watch_page_motion.dart';
 import 'watch_page_info.dart';
@@ -333,8 +339,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
   /// the initState hand-off, the header-gated proxy path, and the launch call.
   /// Reading prefs directly in each is how an override gets honoured by two of
   /// them and silently dropped by the third.
-  String get _chosenPlayer =>
-      widget.playerOverride ?? sl<PlaybackPrefs>().externalPlayerPackage;
+  String get _chosenPlayer => stremioPlayerPackage(
+    widget.sourceId,
+    widget.initialSource,
+    widget.playerOverride ?? sl<PlaybackPrefs>().externalPlayerPackage,
+  );
 
   late final PlayerCubit _c;
   final WatchTogetherController _room = sl<WatchTogetherController>();
@@ -1160,7 +1169,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
         if (i >= 0) idx = i;
       }
       final ep = eps[idx.clamp(0, eps.length - 1)];
-      final sources = await widget.resolveSources(ep.url);
+      final sources =
+          stremioSeedSources(widget.sourceId, widget.initialSource) ??
+          await widget.resolveSources(ep.url);
       final prefer = widget.category == 'dub' ? AudioKind.dub : AudioKind.sub;
       final src = pickDefault(sources, prefer: prefer);
       if (src == null) throw StateError('no source');
@@ -1295,8 +1306,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
   // never-played mpv screen. mpv itself is untouched — it just never opens a DRM url.
   bool _drmHandedOff = false;
   Future<void> _handoffToNativeDrm(VideoSource drm) async {
-    if (_drmHandedOff)
+    if (_drmHandedOff) {
       return; // _open can fire more than once (switch/failover)
+    }
     _drmHandedOff = true;
     await _c.player
         .pause(); // don't buffer the idle mpv player behind the DRM one
@@ -1374,8 +1386,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
         if (i < 0 && r.episodeNumber != null) {
           i = _c.episodes.indexWhere((e) => e.number == r.episodeNumber);
         }
-        if (i >= 0 && i != _c.state.currentIndex)
+        if (i >= 0 && i != _c.state.currentIndex) {
           _c.openEpisode(i, fromRoom: true);
+        }
       },
       content: {
         'sourceId': _c.sourceId,
@@ -2536,37 +2549,24 @@ class _PlayerScreenState extends State<PlayerScreen> {
     autoSkipFiller: sl<PlaybackPrefs>().autoSkipFiller,
   );
 
-  void _openComingSoonSheet() {
-    _sheet<void>(
-      _SheetSurface(
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.chat_bubble_outline_rounded,
-                  color: AppColors.accent,
-                  size: 28,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  context.l10n.watchComments,
-                  style: AppText.title.copyWith(color: Colors.white),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  context.l10n.watchComingSoon,
-                  style: AppText.body.copyWith(color: AppColors.textSecondary),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+  void _openCommentsSheet() {
+    final episodes = _c.episodes;
+    final idx = _c.state.currentIndex;
+    if (idx < 0 || idx >= episodes.length) return;
+    final ep = episodes[idx];
+    showEpisodeCommentsSheet(
+      context,
+      sourceId: widget.sourceId,
+      // The download icon's id is the stable show identity; fall back to the
+      // show URL (then source id) exactly as it does, so a stream and its
+      // downloaded copy share one thread.
+      showId:
+          widget.downloadShowId ??
+          _resolvedWatchDownloadId ??
+          widget.showUrl ??
+          widget.sourceId,
+      episodeId: ep.id,
+      episodeLabel: discordEpisodeLabel(ep, fallbackNumber: idx + 1),
     );
   }
 
@@ -2915,7 +2915,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         setState(() => _watchSeason = seasonOf(_c.episodes[i]));
         _c.openEpisode(i);
       },
-      onComments: _openComingSoonSheet,
+      onComments: _openCommentsSheet,
       onAutoplayChanged: _setAutoplayNext,
     );
   }
@@ -3147,6 +3147,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 : sl<PlaybackPrefs>().preferredSubtitleLanguage,
             imdbId: widget.imdbId,
             tmdbId: widget.tmdbId,
+            mediaType: widget.episodes.isNotEmpty ? 'tv' : 'movie',
+            season: seasonOf(_c.currentEpisode),
+            episode: _c.currentEpisode.number?.round(),
             onApply: (path) async {
               await _c.setSubtitleFromFile(path);
               _bumpControls();
@@ -3211,7 +3214,31 @@ class _PlayerScreenState extends State<PlayerScreen> {
     _sheet<void>(_SheetColumn(header: context.l10n.quality, children: rows));
   }
 
+  Future<void> _openStremioSourceSheet() async {
+    final index = _c.state.currentIndex;
+    final episode = _c.currentEpisode;
+    final picked = await showStremioEpisodeLinksSheet(
+      context,
+      manager: sl<StremioManager>(),
+      ref: StremioRef.parse(episode.url),
+      title: episode.title,
+    );
+    if (picked == null ||
+        !mounted ||
+        _c.isClosed ||
+        _c.state.currentIndex != index) {
+      return;
+    }
+    await _c.selectSource(picked);
+    await _maybeRecast();
+    _bumpControls();
+  }
+
   void _openSourceSheet() {
+    if (widget.sourceId == stremioSourceId && !widget.localOnly) {
+      unawaited(_openStremioSourceSheet());
+      return;
+    }
     final kinds = availableKinds(_c.state.sources);
     _sheet<void>(
       _SheetColumn(

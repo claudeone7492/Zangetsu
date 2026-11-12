@@ -18,6 +18,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get save => 'Salvar';
 
   @override
+  String get saved => 'Saved';
+
+  @override
   String get close => 'Fechar';
 
   @override
@@ -49,6 +52,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get share => 'Compartilhar';
+
+  @override
+  String get comments => 'Comments';
 
   @override
   String get copy => 'Copiar';
@@ -181,6 +187,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get live => 'Ao vivo';
+
+  @override
+  String get liveTv => 'Live TV';
 
   @override
   String get sub => 'Legendado';
@@ -1185,6 +1194,54 @@ class AppLocalizationsPt extends AppLocalizations {
   String get watchComments => 'Comments';
 
   @override
+  String get commentsEmpty => 'No comments yet — start the conversation.';
+
+  @override
+  String get commentsSignInToComment => 'Sign in to join the conversation.';
+
+  @override
+  String get commentsPlaceholder => 'Add a comment…';
+
+  @override
+  String get commentsPost => 'Post';
+
+  @override
+  String get commentsEdited => 'edited';
+
+  @override
+  String get commentsYou => 'You';
+
+  @override
+  String get commentsDelete => 'Delete comment';
+
+  @override
+  String get commentsDeleteConfirm => 'Delete this comment?';
+
+  @override
+  String get commentsLoadFailed => 'Couldn\'t load comments';
+
+  @override
+  String get commentsPostFailed => 'Couldn\'t post your comment';
+
+  @override
+  String get commentsJustNow => 'just now';
+
+  @override
+  String commentsMinutesAgo(int count) {
+    return '${count}m ago';
+  }
+
+  @override
+  String commentsHoursAgo(int count) {
+    return '${count}h ago';
+  }
+
+  @override
+  String commentsDaysAgo(int count) {
+    return '${count}d ago';
+  }
+
+  @override
   String get watchEpisodes => 'Episodes';
 
   @override
@@ -1490,6 +1547,13 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get shrinkToAFloatingWindowWhenYouLeaveTheApp =>
       'Reduzir a uma janela flutuante quando você sair do app';
+
+  @override
+  String get backgroundPlayback => 'Background playback';
+
+  @override
+  String get keepPlayingAudioWhenYouLeaveTheApp =>
+      'Keep playing with a notification when you leave the app';
 
   @override
   String get showQualityLabel => 'Mostrar rótulo de qualidade';
@@ -2005,6 +2069,29 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get loadFromFile => 'Carregar de um arquivo…';
+
+  @override
+  String get exportSubtitle => 'Export subtitle…';
+
+  @override
+  String get exportSubtitleSubtitle =>
+      'Save the loaded caption as an .srt in Downloads';
+
+  @override
+  String get subtitleSavedToDownloads => 'Subtitle saved to Downloads';
+
+  @override
+  String get couldNotSaveSubtitle => 'Couldn\'t save the subtitle';
+
+  @override
+  String get noSubtitleToExport => 'No subtitle loaded to export';
+
+  @override
+  String get removeHearingImpaired => 'Remove sound effects';
+
+  @override
+  String get removeHearingImpairedSubtitle =>
+      'Strip [sound effects] and ♪ music ♪ before translating';
 
   @override
   String get translateSubtitles => 'Traduzir legendas…';
@@ -2654,6 +2741,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get addRepo => 'Adicionar repo';
+
+  @override
+  String get communityRepos => 'Community repos';
 
   @override
   String get noProvidersInstalled => 'Nenhum provedor instalado.';
@@ -3402,6 +3492,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get sources => 'Fontes';
+
+  @override
+  String get shorts => 'Shorts';
 
   @override
   String get normalSpeed => 'Normal';
@@ -5451,6 +5544,51 @@ class AppLocalizationsPt extends AppLocalizations {
   String get sortNewest => 'Mais recentes';
 
   @override
+  String get sortOldest => 'Oldest';
+
+  @override
+  String get yearFrom => 'Year from';
+
+  @override
+  String get yearTo => 'Year to';
+
+  @override
+  String get runtime => 'Runtime';
+
+  @override
+  String get originCountry => 'Country';
+
+  @override
+  String get streamingService => 'Service';
+
+  @override
+  String get certification => 'Certification';
+
+  @override
+  String get minimumVotes => 'Min votes';
+
+  @override
+  String get originalLanguage => 'Language';
+
+  @override
+  String get matchAllGenres => 'Match all genres';
+
+  @override
+  String get matchAnyGenre => 'Match any genre';
+
+  @override
+  String get excludeGenres => 'Exclude genres';
+
+  @override
+  String get network => 'Network';
+
+  @override
+  String get showStatus => 'Show status';
+
+  @override
+  String get showType => 'Show type';
+
+  @override
   String get sortTitle => 'A-Z';
 
   @override
@@ -5737,4 +5875,41 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get mangaTranslationShowTranslations => 'Show translations';
+
+  @override
+  String get allSet => 'You\'re all set!';
+
+  @override
+  String get startWatching => 'Start watching';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get skipForNow => 'Skip for now';
+
+  @override
+  String get multipleStreamingSources => 'Multiple streaming sources';
+
+  @override
+  String get upTo4kHdrStreams => 'Up to 4K / HDR streams';
+
+  @override
+  String get autoUpdatingNoAppUpdate => 'Auto-updating, no app update needed';
+
+  @override
+  String get downloadingSourceCatalog => 'Downloading source catalog…';
+
+  @override
+  String installingSource(String name, int done, int total) {
+    return 'Installing $name… ($done/$total)';
+  }
+
+  @override
+  String get setupFailedCheckConnection =>
+      'Setup failed — check your connection and try again.';
+
+  @override
+  String get onboardingInstallBlurb =>
+      'To get started we\'ll install the official source catalog — you can add, update or remove sources any time in Settings → Providers.';
 }

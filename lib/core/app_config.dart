@@ -19,6 +19,38 @@ String kAppBuild = '';
 /// checked by the repo guard so a manga-only (Sozo) repo can't be added.
 const String kAppId = 'watch_app';
 
+/// Default provider repos, installed on first launch via onboarding. The app
+/// ships with NO built-in providers — every source comes from these manifests.
+///
+/// Order matters: the first repo is the streaming pack the default source is
+/// drawn from. Only sources that resolve fully (browse, search, detail, and
+/// playback/reader) ship here — dead upstreams are dropped rather than handed
+/// to a new user as an empty Home. Each repo installs independently — a repo
+/// that is unreachable is skipped rather than failing the whole run.
+///
+/// The curated first-party pack carries the verified anime, movie, manga and
+/// novel sources (it vendors the working subset of the community packs). The
+/// Spyou repos stay reachable through the community directory
+/// ([kSourceDirectoryUrl]) so a user can still add anything we dropped.
+const List<String> kDefaultRepoUrls = [
+  // First-party pack — every source here is verified end-to-end.
+  'https://raw.githubusercontent.com/claudeone7492/Zangetsu/main/provider-repo/index.json',
+];
+
+/// Content source activated for a NEW user at the end of first-run onboarding.
+/// Must be an id present in one of [kDefaultRepoUrls]' manifests. Existing
+/// users are never affected — onboarding runs once and their pick is already
+/// persisted; if this source fails to install, onboarding falls back to the
+/// first source that did.
+const String kDefaultSourceId = 'anikoto';
+
+/// Public directory of community source repos (Sozo Read format:
+/// `{entries:[{name,author,repoUrl,description,tags,verified}]}`). Browsed from
+/// Providers → Add repo so a user can discover community packs in one tap.
+/// Optional: a fetch failure simply hides the discovery list.
+const String kSourceDirectoryUrl =
+    'https://raw.githubusercontent.com/Spyou/sozoread-directory/main/index.json';
+
 /// Manifest schema version this app speaks. Repos below this are rejected.
 const int kManifestSchemaVersion = 2;
 

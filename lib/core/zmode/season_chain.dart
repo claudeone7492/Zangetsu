@@ -135,7 +135,7 @@ class SeasonChain {
   /// next to a guessed one and there would be no way to tell which was which.
   Future<List<SeasonEntry>> _numbered(
     List<({int id, int? idMal, String title, String? cover, int? episodes})>
-        ordered,
+    ordered,
     int currentAnilistId,
   ) async {
     SeasonEntry entry(
@@ -188,23 +188,40 @@ class SeasonChain {
     final numbers = byNumber.keys.toList()..sort();
     return [
       for (final n in numbers)
-        entry(n, ordered[byNumber[n]!], ordered[byNumber[n]!].id == currentAnilistId),
+        entry(
+          n,
+          ordered[byNumber[n]!],
+          ordered[byNumber[n]!].id == currentAnilistId,
+        ),
     ];
   }
 
   /// Follows [relation] from [startId] until it runs out, loops, or hits the
   /// cap. Returns nearest-first.
-  Future<List<({int id, int? idMal, String title, String? cover, int? episodes})>>
-      _walk(int startId, String relation) async {
-    final out = <({int id, int? idMal, String title, String? cover, int? episodes})>[];
+  Future<
+    List<({int id, int? idMal, String title, String? cover, int? episodes})>
+  >
+  _walk(int startId, String relation) async {
+    final out =
+        <({int id, int? idMal, String title, String? cover, int? episodes})>[];
     // A franchise CAN link back on itself (a sequel whose prequel is a
     // different entry than the one you came from). Without this the walk
     // would loop until the cap every time.
     final seen = <int>{startId};
     var id = startId;
     while (out.length < maxSeasons) {
-      final List<({String relation, int id, int? idMal, String? format,
-          String title, String? cover, int? episodes})> neighbours;
+      final List<
+        ({
+          String relation,
+          int id,
+          int? idMal,
+          String? format,
+          String title,
+          String? cover,
+          int? episodes,
+        })
+      >
+      neighbours;
       try {
         neighbours = await _api.seasonNeighbours(id);
       } catch (e) {

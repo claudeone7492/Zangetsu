@@ -78,7 +78,7 @@ class TvBackHeader extends StatelessWidget {
             ),
           ] else
             const Spacer(),
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
     );

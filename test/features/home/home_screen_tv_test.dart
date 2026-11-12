@@ -17,6 +17,8 @@ import 'package:watch_app/core/provider/provider_manager.dart';
 import 'package:watch_app/core/provider/provider_registry.dart';
 import 'package:watch_app/core/repository/catalogue_repository.dart';
 import 'package:watch_app/core/repository/source_repository.dart';
+import 'package:watch_app/core/mode/content_mode.dart';
+import 'package:watch_app/core/mode/content_mode_cubit.dart';
 import 'package:watch_app/core/state/active_source_cubit.dart';
 import 'package:watch_app/core/theme/app_colors.dart';
 import 'package:watch_app/core/supabase/supabase_service.dart';
@@ -143,6 +145,13 @@ class _FakeAuthCubit extends Cubit<AuthState> implements AuthCubit {
   Future<bool> ensureSourceLoaded(String sourceId) async => true;
 }
 
+class _FakeContentModeCubit extends Cubit<ContentMode>
+    implements ContentModeCubit {
+  _FakeContentModeCubit(super.initial);
+  @override
+  noSuchMethod(Invocation i) => super.noSuchMethod(i);
+}
+
 Widget _homeApp(HomeCubit cubit, {ActiveSourceCubit? activeSource}) =>
     MultiBlocProvider(
       providers: [
@@ -188,6 +197,12 @@ void main() {
       sl.unregister<CatalogueRepository>();
     }
     sl.registerSingleton<CatalogueRepository>(repo);
+    if (sl.isRegistered<ContentModeCubit>()) {
+      sl.unregister<ContentModeCubit>();
+    }
+    sl.registerSingleton<ContentModeCubit>(
+      _FakeContentModeCubit(ContentMode.anime),
+    );
     // Load populates the cubit state before the widget is pumped.
     await cubit.load();
   });

@@ -23,6 +23,7 @@ import 'package:watch_app/core/models/media_item.dart';
 import 'package:watch_app/core/playback/list_status_store.dart';
 import 'package:watch_app/core/playback/my_list.dart';
 import 'package:watch_app/core/playback/playback_prefs.dart';
+import 'package:watch_app/core/playback/resume_store.dart';
 import 'package:watch_app/core/playback/search_history.dart';
 import 'package:watch_app/core/playback/search_prefs.dart';
 import 'package:watch_app/core/playback/search_source_prefs.dart';
@@ -43,6 +44,7 @@ import 'package:watch_app/core/state/active_source_cubit.dart';
 import 'package:watch_app/core/supabase/supabase_service.dart';
 import 'package:watch_app/core/theme/app_colors.dart';
 import 'package:watch_app/core/theme/theme_controller.dart';
+import 'package:watch_app/core/ui/nav_prefs.dart';
 import 'package:watch_app/core/tracker/mal_service.dart';
 import 'package:watch_app/core/tracker/simkl_service.dart';
 import 'package:watch_app/core/tracker/tracker_hub.dart';
@@ -69,9 +71,9 @@ List<Color> _cardFill(WidgetTester tester, String key) {
 }
 
 MigrationBridge _fakeBridge() => MigrationBridge(
-  invoke: (_, __) async => const {'ok': false},
-  signInPassword: (_, __) async => false,
-  verifyOtp: (_, __) async => false,
+  invoke: (_, _) async => const {'ok': false},
+  signInPassword: (_, _) async => false,
+  verifyOtp: (_, _) async => false,
 );
 
 // ── Minimal fakes (same shape as root_shell_tv_test.dart's harness) ────────
@@ -112,8 +114,6 @@ class _FakeMyListStore implements MyListStore {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   List<MediaItem> all() => const [];
@@ -130,8 +130,6 @@ class _FakeSearchHistory implements SearchHistory {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   List<String> recent() => const [];
@@ -142,8 +140,6 @@ class _FakeSearchPrefs extends ChangeNotifier implements SearchPrefs {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   SearchLayout get layout => SearchLayout.vertical;
@@ -168,6 +164,21 @@ class _FakeSearchPrefs extends ChangeNotifier implements SearchPrefs {
 
   @override
   bool get currentSourceOnly => true;
+
+  @override
+  String get tvSearchStyle => 'classic';
+
+  @override
+  Future<void> setTvSearchStyle(String style) async {}
+}
+
+/// The dock chrome (`_FloatingDock`, keyed `dockPill`) only renders in the
+/// classic dock style; the shipped default is the liquid bar. These tests pin
+/// the dock on purpose — they assert its tap targets, blur and semantics — so
+/// they need a NavPrefs that reports the dock style rather than the default.
+class _DockStyleNavPrefs extends NavPrefs {
+  @override
+  NavBarStyle get style => NavBarStyle.dock;
 }
 
 class _FakeSearchSourcePrefs extends ChangeNotifier
@@ -176,8 +187,6 @@ class _FakeSearchSourcePrefs extends ChangeNotifier
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   Set<String> get excluded => const {};
@@ -191,8 +200,6 @@ class _FakeProviderRegistry implements ProviderRegistry {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   List<ProviderRegistryEntry> getAll() => const [];
@@ -215,8 +222,6 @@ class _FakeAniListService extends ChangeNotifier implements AniListService {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   bool get isConnected => false;
@@ -236,8 +241,6 @@ class _FakeMalService extends ChangeNotifier implements MalService {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   bool get isConnected => false;
@@ -257,8 +260,6 @@ class _FakeSimklService extends ChangeNotifier implements SimklService {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   bool get isConnected => false;
@@ -369,6 +370,11 @@ void main() {
     final fakeRepo = _FakeSourceRepository();
     activeSource = ActiveSourceCubit();
     authCubit = AuthCubit(SupabaseService(), AppwriteService(), _fakeBridge());
+    // The dock's Profile tab is built eagerly by the IndexedStack, and
+    // ViewerProfileHomeScreen paints a spinner while auth is still `unknown`.
+    // Nothing in this suite calls restore(), so settle on signed-out or every
+    // pumpAndSettle would spin forever on that indeterminate progress bar.
+    authCubit.emit(const AuthState(status: AuthStatus.unauthenticated));
     // This suite reuses a fixed on-disk Hive dir (not a fresh temp dir) across
     // runs, so a mode persisted by an earlier run would otherwise leak in here
     // and start tests in the wrong mode.
@@ -388,6 +394,15 @@ void main() {
     if (!sl.isRegistered<ChapterDownloadStore>()) {
       sl.registerSingleton<ChapterDownloadStore>(ChapterDownloadStore());
     }
+    // DownloadsScreen also reads ResumeStore while building (its TV list and
+    // the phone "continue" strip), so it has to be registered too.
+    await ResumeStore.init();
+    if (!sl.isRegistered<ResumeStore>()) {
+      sl.registerSingleton<ResumeStore>(ResumeStore());
+    }
+    // These tests assert the classic dock chrome (`dockPill`), which the
+    // shipped liquid default no longer renders; pin the dock style here.
+    sl.registerSingleton<NavPrefs>(_DockStyleNavPrefs());
 
     sl.registerSingleton<HomeCubit>(HomeCubit(fakeRepo));
     sl.registerSingleton<ContentModeCubit>(contentMode);
@@ -450,15 +465,20 @@ void main() {
   );
 
   // Schedule left the dock for the card row on Home, beside the Manga/Novel
-  // mode cards — two doors to one screen was the point of removing it — and
-  // Sources took the slot it left, moved down from the Home header.
-  testWidgets('the phone dock swapped Schedule for Sources', (tester) async {
+  // mode cards — two doors to one screen was the point of removing it. The
+  // Sources tab that briefly took its slot is gone too: the app installs and
+  // manages its own sources (Settings → Providers), so there is nothing for
+  // the user to do here. Shorts took the slot.
+  testWidgets('the phone dock swapped Schedule for Shorts, not Sources', (
+    tester,
+  ) async {
     sl.registerSingleton<AppMode>(const AppMode(isTv: false));
     await tester.pumpWidget(wrap(const RootShell()));
     await tester.pumpAndSettle();
 
     expect(dockLabel('Schedule'), findsNothing);
-    expect(dockLabel('Sources'), findsOneWidget);
+    expect(dockLabel('Sources'), findsNothing);
+    expect(dockLabel('Shorts'), findsOneWidget);
   });
 
   testWidgets('the phone Profile tab opens the viewer overview', (
@@ -559,7 +579,7 @@ void main() {
     // A name a screen reader can read. The visible Text is excluded from
     // semantics and folds to zero height when the dock collapses, so the name
     // has to come from the item itself.
-    for (final name in const ['Home', 'My List', 'Sources', 'Profile']) {
+    for (final name in const ['Home', 'My List', 'Shorts', 'Profile']) {
       expect(
         find.descendant(of: dock, matching: find.bySemanticsLabel(name)),
         findsWidgets,
@@ -850,8 +870,6 @@ class _FiltersRepo implements MetadataRepository {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 }
 
 class _TestViewerProfileStore extends ViewerProfileStore {

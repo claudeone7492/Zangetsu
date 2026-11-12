@@ -550,8 +550,9 @@ class CastProxyServer {
       );
       // Pass 1: a real Wi-Fi interface with a private LAN IP.
       for (final i in ifaces) {
-        if (!isUsableCastInterface(i.name) || !_isWifiInterface(i.name))
+        if (!isUsableCastInterface(i.name) || !_isWifiInterface(i.name)) {
           continue;
+        }
         for (final a in i.addresses) {
           if (isPrivateLanIp(a.address)) return a.address;
         }

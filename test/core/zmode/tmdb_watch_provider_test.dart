@@ -218,7 +218,8 @@ void main() {
         filters: const MetaFilters(
           format: MetaFormat.tv,
           genres: ['Action'],
-          year: 2024,
+          yearFrom: 2024,
+          yearTo: 2024,
           minScore: 80,
           sort: MetaSort.score,
         ),
@@ -228,7 +229,8 @@ void main() {
       expect(calls.single.$1, '/discover/tv');
       expect(calls.single.$2, containsPair('with_watch_providers', '8'));
       expect(calls.single.$2, containsPair('watch_region', 'IN'));
-      expect(calls.single.$2, containsPair('first_air_date_year', 2024));
+      expect(calls.single.$2, containsPair('first_air_date.gte', '2024-01-01'));
+      expect(calls.single.$2, containsPair('first_air_date.lte', '2024-12-31'));
       expect(calls.single.$2, containsPair('vote_average.gte', 8.0));
       expect(calls.single.$2, containsPair('page', 2));
     },

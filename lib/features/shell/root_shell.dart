@@ -9,7 +9,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
-import '../search/browse_sources_screen.dart';
+import '../shorts/shorts_screen.dart';
+import '../live/live_tv_screen.dart';
 import '../home/home_catalogue_prefs.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
@@ -81,7 +82,7 @@ List<Widget> buildShellPages(
 /// [SearchScreen] recreates its bloc on scope change, so the tab follows
 /// catalogue picks with no extra plumbing.
 String? dockSearchFixedSourceId([ContentMode? mode]) {
-  if (!HomeCataloguePrefs.sourceSelected) return null;
+  if (!HomeCataloguePrefs.catalogueShown) return null;
   final m =
       mode ??
       (sl.isRegistered<ContentModeCubit>()
@@ -349,7 +350,7 @@ class _RootShellState extends State<RootShell>
             // whole screen, so their own back affordance is suppressed.
             DockTab.downloads => const DownloadsScreen(showBack: false),
             DockTab.history => const HistoryScreen(showBack: false),
-            DockTab.sources => const BrowseSourcesScreen(),
+            DockTab.shorts => ShortsScreen(active: _tab == DockTab.shorts),
           },
         ),
     ];
@@ -599,25 +600,26 @@ class _LiquidNavDock extends StatelessWidget {
           ? sl<ViewerProfileStore>().activeProfile
           : null;
       if (profile != null) {
-        // Hero landing spot for the profile-picker avatar flight — the old
-        // dock has the same tag, so the flight works on both navbars. Only
-        // one of icon/activeIcon is ever mounted, so the tag stays unique.
-        return Hero(
-          tag: viewerProfileHeroTag(profile.id),
-          child: ClipOval(
-            child: ProfileAvatarFace(
+        final face = ClipOval(
+          child: ProfileAvatarFace(
+            profile: profile,
+            photoUrl: profilePhotoForFace(
               profile: profile,
-              photoUrl: profilePhotoForFace(
-                profile: profile,
-                accountPhotoUrl: sl.isRegistered<AuthCubit>()
-                    ? sl<AuthCubit>().state.avatarUrl
-                    : null,
-              ),
-              iconSize: 18,
-              photoDiameter: 26,
+              accountPhotoUrl: sl.isRegistered<AuthCubit>()
+                  ? sl<AuthCubit>().state.avatarUrl
+                  : null,
             ),
+            iconSize: 18,
+            photoDiameter: 26,
           ),
         );
+        // The liquid tab bar mounts the unselected layer AND the selected
+        // overlay at the same time, so a Hero on both would share one tag and
+        // Hero throws. The unselected layer renders every tab, so it is the
+        // one that carries the flight; the overlay gets the bare face.
+        return selected
+            ? face
+            : Hero(tag: viewerProfileHeroTag(profile.id), child: face);
       }
       return Icon(Icons.person_outline_rounded, color: color);
     }
@@ -751,6 +753,22 @@ class _LiquidNavDock extends StatelessWidget {
                             onTap: () =>
                                 onModeSelected(choice.mode, choice.kind),
                           ),
+                      const GlassMenuDivider(),
+                      GlassMenuItem(
+                        title: context.l10n.liveTv,
+                        icon: const Icon(Icons.live_tv_rounded),
+                        iconColor: AppColors.textPrimary,
+                        titleStyle: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        height: 48,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const LiveTvScreen(),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -1037,7 +1055,7 @@ class _FloatingDock extends StatelessWidget {
 (IconData, IconData)? _iconFor(DockTab t) => switch (t) {
   DockTab.downloads => (Icons.download_outlined, Icons.download_rounded),
   DockTab.history => (Icons.history_outlined, Icons.history_rounded),
-  DockTab.sources => (Icons.extension_outlined, Icons.extension_rounded),
+  DockTab.shorts => (Icons.bolt_outlined, Icons.bolt_rounded),
   _ => null,
 };
 

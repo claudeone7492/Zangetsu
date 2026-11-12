@@ -211,6 +211,11 @@ final settingsLeaves = <SettingsLeaf>[
   ),
   SettingsLeaf(
     LeafParent.playback,
+    (l) => l.backgroundPlayback,
+    keywords: 'background audio notification keep playing',
+  ),
+  SettingsLeaf(
+    LeafParent.playback,
     (l) => l.playerInfoOverlay,
     keywords: 'stats debug hud',
   ),
@@ -293,6 +298,11 @@ final settingsLeaves = <SettingsLeaf>[
     LeafParent.playback,
     (l) => l.translateSubtitlesTo,
     keywords: 'subs language translate',
+  ),
+  SettingsLeaf(
+    LeafParent.playback,
+    (l) => l.tvDecoderMode,
+    keywords: 'android tv hardware software decoder codec',
   ),
 
   // Reading → ReaderSettingsScreen
@@ -396,6 +406,21 @@ final settingsLeaves = <SettingsLeaf>[
     (l) => l.paginated,
     keywords: 'novel pages scroll book',
   ),
+  SettingsLeaf(
+    LeafParent.reader,
+    (l) => l.showPageNumber,
+    keywords: 'page counter number indicator',
+  ),
+  SettingsLeaf(
+    LeafParent.reader,
+    (l) => l.mangaTranslationSettings,
+    keywords: 'ocr translate language scanlate',
+  ),
+  SettingsLeaf(
+    LeafParent.reader,
+    (l) => l.mangaTranslationAppearance,
+    keywords: 'translated text font overlay style',
+  ),
 
   // Interface → AppearanceScreen
   SettingsLeaf(
@@ -429,6 +454,11 @@ final settingsLeaves = <SettingsLeaf>[
     keywords:
         'home screen rows reorder hide customize arrangement sections '
         'discover tracker continue watching',
+  ),
+  SettingsLeaf(
+    LeafParent.appearance,
+    (l) => l.customColour,
+    keywords: 'accent seed colour color theme tint',
   ),
 
   // Advanced → PrivacySettingsScreen

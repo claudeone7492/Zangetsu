@@ -22,6 +22,7 @@ import '../playback/playback_prefs.dart';
 import '../profiles/viewer_profile.dart';
 import 'metadata_filters.dart';
 import 'metadata_provider_prefs.dart';
+import 'movie_regions.dart';
 import 'simkl_catalogue.dart';
 import 'video_catalogue.dart';
 import 'match_store.dart';
@@ -89,9 +90,10 @@ class MetadataRepository implements CatalogueRepository {
       ZKind.novel => ContentMode.novel,
       _ => ContentMode.anime,
     };
+    final types = manifestSourceTypes();
     return [
       for (final s in all)
-        if (sourceIdMatchesContentMode(s.id, mode)) s,
+        if (sourceInMode(s.id, mode, types)) s,
     ];
   };
 
@@ -467,6 +469,20 @@ class MetadataRepository implements CatalogueRepository {
   static bool _homeFailed(List<HomeSection> rows) => rows.isEmpty;
 
   Future<List<HomeSection>> _homeForKind(ZKind k) async {
+    // Movies & TV sub-menu: a region cut replaces the whole movie Home with a
+    // fixed TMDB discover dataset. It goes straight to [_tmdb] rather than
+    // through [_viaVideo] on purpose — the rows ARE a TMDB discover query
+    // (region + original language), so a Simkl-primary install must not have
+    // the pick silently swapped for Simkl's unrelated default rows. `all`
+    // (and every non-movie kind) keeps the provider's own rows below.
+    if (k == ZKind.movie && !MovieRegionPrefs.region.isAll) {
+      final rows =
+          await _tmdb.homeForRegion(MovieRegionPrefs.region) ?? const [];
+      for (final r in rows) {
+        r.items.forEach(_remember);
+      }
+      return rows;
+    }
     final rows = _isTmdb(k)
         ? await _viaVideo((c) => c.home(), treatAsFailure: _homeFailed)
         : await _viaAnime((c) => c.home(k), treatAsFailure: _homeFailed);
@@ -626,6 +642,13 @@ class MetadataRepository implements CatalogueRepository {
   Future<List<MediaItem>> browseMore(BrowseMore more, int page) async {
     final rowId = more.categoryId;
     if (rowId == null || rowId.isEmpty) return const [];
+    // Movies & TV sub-menu rows are TMDB discover queries; page them straight
+    // against TMDB so a Simkl-primary install pages the same dataset Home showed.
+    if (rowId.startsWith(TmdbCatalogue.discPrefix)) {
+      final items = await _tmdb.browseDiscoverRow(rowId, page);
+      items.forEach(_remember);
+      return items;
+    }
     final items = switch (more.kind) {
       'zm_video' => await _viaVideo((c) => c.browseRow(rowId, page)),
       'zm_anime' => await _viaAnime(
@@ -913,6 +936,11 @@ class MetadataRepository implements CatalogueRepository {
       // leaves the toggle hidden, exactly as before.
       subCount: srcDetail.subCount,
       dubCount: srcDetail.dubCount,
+      // TorBox (and similar) resolve TMDB ids for Torrentio; the catalogue
+      // (AniList) does not. Episode synopses for S02+ need TMDB season fetches.
+      tmdbId: srcDetail.tmdbId ?? d.tmdbId,
+      tmdbIsTv: srcDetail.tmdbIsTv || d.tmdbIsTv,
+      imdbId: srcDetail.imdbId ?? d.imdbId,
       episodes: [
         for (var i = 0; i < count; i++)
           if (i < srcEpisodes.length)
@@ -951,8 +979,9 @@ class MetadataRepository implements CatalogueRepository {
     if (firstUnaired != null && n >= firstUnaired) {
       // An exact date only for the very next one — anything beyond it would be
       // us guessing at a schedule we were never told.
-      if (n == firstUnaired && airsAt != null)
+      if (n == firstUnaired && airsAt != null) {
         return 'Airs ${_shortDate(airsAt)}';
+      }
       return 'Not out yet';
     }
     return checkedSource == null ? 'Not available' : 'Not on $checkedSource';
@@ -1103,7 +1132,8 @@ class MetadataRepository implements CatalogueRepository {
 
   void _remember(MediaItem i) {
     final c = ZmodeIds.parseShow(i.url);
-    if (c != null)
+    if (c != null) {
       _titles[c.key] = (title: i.title, alt: i.englishTitle, malId: i.malId);
+    }
   }
 }

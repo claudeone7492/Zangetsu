@@ -135,6 +135,12 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get save;
 
+  /// No description provided for @saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get saved;
+
   /// No description provided for @close.
   ///
   /// In en, this message translates to:
@@ -200,6 +206,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share'**
   String get share;
+
+  /// No description provided for @comments.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get comments;
 
   /// No description provided for @copy.
   ///
@@ -464,6 +476,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Live'**
   String get live;
+
+  /// No description provided for @liveTv.
+  ///
+  /// In en, this message translates to:
+  /// **'Live TV'**
+  String get liveTv;
 
   /// No description provided for @sub.
   ///
@@ -2265,6 +2283,90 @@ abstract class AppLocalizations {
   /// **'Comments'**
   String get watchComments;
 
+  /// No description provided for @commentsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet — start the conversation.'**
+  String get commentsEmpty;
+
+  /// No description provided for @commentsSignInToComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to join the conversation.'**
+  String get commentsSignInToComment;
+
+  /// No description provided for @commentsPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a comment…'**
+  String get commentsPlaceholder;
+
+  /// No description provided for @commentsPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Post'**
+  String get commentsPost;
+
+  /// No description provided for @commentsEdited.
+  ///
+  /// In en, this message translates to:
+  /// **'edited'**
+  String get commentsEdited;
+
+  /// No description provided for @commentsYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get commentsYou;
+
+  /// No description provided for @commentsDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete comment'**
+  String get commentsDelete;
+
+  /// No description provided for @commentsDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this comment?'**
+  String get commentsDeleteConfirm;
+
+  /// No description provided for @commentsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load comments'**
+  String get commentsLoadFailed;
+
+  /// No description provided for @commentsPostFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t post your comment'**
+  String get commentsPostFailed;
+
+  /// No description provided for @commentsJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get commentsJustNow;
+
+  /// No description provided for @commentsMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}m ago'**
+  String commentsMinutesAgo(int count);
+
+  /// No description provided for @commentsHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}h ago'**
+  String commentsHoursAgo(int count);
+
+  /// No description provided for @commentsDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}d ago'**
+  String commentsDaysAgo(int count);
+
   /// No description provided for @watchEpisodes.
   ///
   /// In en, this message translates to:
@@ -2834,6 +2936,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Shrink to a floating window when you leave the app'**
   String get shrinkToAFloatingWindowWhenYouLeaveTheApp;
+
+  /// No description provided for @backgroundPlayback.
+  ///
+  /// In en, this message translates to:
+  /// **'Background playback'**
+  String get backgroundPlayback;
+
+  /// No description provided for @keepPlayingAudioWhenYouLeaveTheApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep playing with a notification when you leave the app'**
+  String get keepPlayingAudioWhenYouLeaveTheApp;
 
   /// No description provided for @showQualityLabel.
   ///
@@ -3801,6 +3915,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Load from file…'**
   String get loadFromFile;
+
+  /// No description provided for @exportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Export subtitle…'**
+  String get exportSubtitle;
+
+  /// No description provided for @exportSubtitleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save the loaded caption as an .srt in Downloads'**
+  String get exportSubtitleSubtitle;
+
+  /// No description provided for @subtitleSavedToDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitle saved to Downloads'**
+  String get subtitleSavedToDownloads;
+
+  /// No description provided for @couldNotSaveSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the subtitle'**
+  String get couldNotSaveSubtitle;
+
+  /// No description provided for @noSubtitleToExport.
+  ///
+  /// In en, this message translates to:
+  /// **'No subtitle loaded to export'**
+  String get noSubtitleToExport;
+
+  /// No description provided for @removeHearingImpaired.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove sound effects'**
+  String get removeHearingImpaired;
+
+  /// No description provided for @removeHearingImpairedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Strip [sound effects] and ♪ music ♪ before translating'**
+  String get removeHearingImpairedSubtitle;
 
   /// No description provided for @translateSubtitles.
   ///
@@ -5032,6 +5188,12 @@ abstract class AppLocalizations {
   /// **'Add repo'**
   String get addRepo;
 
+  /// No description provided for @communityRepos.
+  ///
+  /// In en, this message translates to:
+  /// **'Community repos'**
+  String get communityRepos;
+
   /// No description provided for @noProvidersInstalled.
   ///
   /// In en, this message translates to:
@@ -6243,6 +6405,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sources'**
   String get sources;
+
+  /// No description provided for @shorts.
+  ///
+  /// In en, this message translates to:
+  /// **'Shorts'**
+  String get shorts;
 
   /// No description provided for @normalSpeed.
   ///
@@ -9364,6 +9532,96 @@ abstract class AppLocalizations {
   /// **'Newest'**
   String get sortNewest;
 
+  /// No description provided for @sortOldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest'**
+  String get sortOldest;
+
+  /// No description provided for @yearFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Year from'**
+  String get yearFrom;
+
+  /// No description provided for @yearTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Year to'**
+  String get yearTo;
+
+  /// No description provided for @runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'Runtime'**
+  String get runtime;
+
+  /// No description provided for @originCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
+  String get originCountry;
+
+  /// No description provided for @streamingService.
+  ///
+  /// In en, this message translates to:
+  /// **'Service'**
+  String get streamingService;
+
+  /// No description provided for @certification.
+  ///
+  /// In en, this message translates to:
+  /// **'Certification'**
+  String get certification;
+
+  /// No description provided for @minimumVotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Min votes'**
+  String get minimumVotes;
+
+  /// No description provided for @originalLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get originalLanguage;
+
+  /// No description provided for @matchAllGenres.
+  ///
+  /// In en, this message translates to:
+  /// **'Match all genres'**
+  String get matchAllGenres;
+
+  /// No description provided for @matchAnyGenre.
+  ///
+  /// In en, this message translates to:
+  /// **'Match any genre'**
+  String get matchAnyGenre;
+
+  /// No description provided for @excludeGenres.
+  ///
+  /// In en, this message translates to:
+  /// **'Exclude genres'**
+  String get excludeGenres;
+
+  /// No description provided for @network.
+  ///
+  /// In en, this message translates to:
+  /// **'Network'**
+  String get network;
+
+  /// No description provided for @showStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Show status'**
+  String get showStatus;
+
+  /// No description provided for @showType.
+  ///
+  /// In en, this message translates to:
+  /// **'Show type'**
+  String get showType;
+
   /// No description provided for @sortTitle.
   ///
   /// In en, this message translates to:
@@ -9885,6 +10143,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show translations'**
   String get mangaTranslationShowTranslations;
+
+  /// No description provided for @allSet.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re all set!'**
+  String get allSet;
+
+  /// No description provided for @startWatching.
+  ///
+  /// In en, this message translates to:
+  /// **'Start watching'**
+  String get startWatching;
+
+  /// No description provided for @getStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// No description provided for @skipForNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip for now'**
+  String get skipForNow;
+
+  /// No description provided for @multipleStreamingSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiple streaming sources'**
+  String get multipleStreamingSources;
+
+  /// No description provided for @upTo4kHdrStreams.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to 4K / HDR streams'**
+  String get upTo4kHdrStreams;
+
+  /// No description provided for @autoUpdatingNoAppUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-updating, no app update needed'**
+  String get autoUpdatingNoAppUpdate;
+
+  /// No description provided for @downloadingSourceCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading source catalog…'**
+  String get downloadingSourceCatalog;
+
+  /// No description provided for @installingSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing {name}… ({done}/{total})'**
+  String installingSource(String name, int done, int total);
+
+  /// No description provided for @setupFailedCheckConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup failed — check your connection and try again.'**
+  String get setupFailedCheckConnection;
+
+  /// No description provided for @onboardingInstallBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'To get started we\'ll install the official source catalog — you can add, update or remove sources any time in Settings → Providers.'**
+  String get onboardingInstallBlurb;
 }
 
 class _AppLocalizationsDelegate

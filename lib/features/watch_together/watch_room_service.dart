@@ -61,8 +61,9 @@ class WatchRoomService {
     final ch = _channels[code];
     if (ch == null) return;
     final token = _c.auth.currentSession?.accessToken;
-    if (token != null && token.isNotEmpty)
+    if (token != null && token.isNotEmpty) {
       unawaited(_c.realtime.setAuth(token));
+    }
     if (_c.realtime.isConnected) {
       _doSubscribe(code);
     } else {

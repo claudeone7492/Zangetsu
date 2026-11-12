@@ -32,7 +32,12 @@ class _FakeAniList implements HttpClientAdapter {
         jsonEncode({
           'episodes': season == null
               ? <String, dynamic>{}
-              : {'1': {'seasonNumber': season, 'title': {'en': 'x'}}},
+              : {
+                  '1': {
+                    'seasonNumber': season,
+                    'title': {'en': 'x'},
+                  },
+                },
         }),
         200,
         headers: {
@@ -50,7 +55,8 @@ class _FakeAniList implements HttpClientAdapter {
     final id = (body['variables'] as Map)['id'] as int;
     asked.add(id);
     final edges = [
-      for (final n in graph[id] ?? const <({String rel, int id, String format})>[])
+      for (final n
+          in graph[id] ?? const <({String rel, int id, String format})>[])
         {
           'relationType': n.rel,
           'node': {
@@ -58,7 +64,11 @@ class _FakeAniList implements HttpClientAdapter {
             'idMal': n.id + 1000,
             'format': n.format,
             'episodes': 12,
-            'title': {'romaji': 'Season ${n.id}', 'english': null, 'native': null},
+            'title': {
+              'romaji': 'Season ${n.id}',
+              'english': null,
+              'native': null,
+            },
             'coverImage': {'medium': 'https://img/${n.id}.jpg'},
           },
         },
@@ -117,13 +127,20 @@ void main() {
       expect(seasons.map((s) => s.number), [1, 2, 3]);
       expect(seasons.map((s) => s.anilistId), [1, 2, 3]);
       expect(seasons.singleWhere((s) => s.isCurrent).number, 2);
-      expect(seasons[1].title, 'S2', reason: 'the open title keeps its own name');
+      expect(
+        seasons[1].title,
+        'S2',
+        reason: 'the open title keeps its own name',
+      );
     });
 
     test('a title with no prequel and no sequel gets no section', () async {
       // Most titles. An empty list is what tells the UI to draw nothing.
       final fake = _FakeAniList({1: []});
-      expect(await _chain(fake).of(anilistId: 1, currentTitle: 'Solo'), isEmpty);
+      expect(
+        await _chain(fake).of(anilistId: 1, currentTitle: 'Solo'),
+        isEmpty,
+      );
     });
 
     test('movies, specials and OVAs stay out of the numbering', () async {
@@ -220,25 +237,34 @@ void main() {
     );
 
     test('five chain entries become three seasons', () async {
-      final seasons = await _chain(splitCour())
-          .of(anilistId: 5, currentTitle: 'S3', currentMalId: 1005);
-      expect(seasons.map((s) => s.number), [1, 2, 3],
-          reason: 'position numbering would say 1,2,3,4,5');
+      final seasons = await _chain(
+        splitCour(),
+      ).of(anilistId: 5, currentTitle: 'S3', currentMalId: 1005);
+      expect(
+        seasons.map((s) => s.number),
+        [1, 2, 3],
+        reason: 'position numbering would say 1,2,3,4,5',
+      );
       expect(seasons.length, 3);
     });
 
     test('a collapsed season points at its FIRST cour', () async {
-      final seasons = await _chain(splitCour())
-          .of(anilistId: 5, currentTitle: 'S3', currentMalId: 1005);
-      expect(seasons.firstWhere((s) => s.number == 2).anilistId, 3,
-          reason: 'season 2 starts at its first cour, not its second');
+      final seasons = await _chain(
+        splitCour(),
+      ).of(anilistId: 5, currentTitle: 'S3', currentMalId: 1005);
+      expect(
+        seasons.firstWhere((s) => s.number == 2).anilistId,
+        3,
+        reason: 'season 2 starts at its first cour, not its second',
+      );
     });
 
     test('but points at the cour you are actually on', () async {
       // Opened on the SECOND cour of season 2 — "you are here" has to land on
       // that card, not send you back to cour one.
-      final seasons = await _chain(splitCour())
-          .of(anilistId: 4, currentTitle: 'S2 Part 2', currentMalId: 1004);
+      final seasons = await _chain(
+        splitCour(),
+      ).of(anilistId: 4, currentTitle: 'S2 Part 2', currentMalId: 1004);
       final s2 = seasons.firstWhere((s) => s.number == 2);
       expect(s2.anilistId, 4);
       expect(s2.isCurrent, isTrue);
@@ -255,8 +281,9 @@ void main() {
         },
         seasonOf: {1001: 1}, // 1002 missing — AniZip lags on new seasons
       );
-      final seasons =
-          await _chain(fake).of(anilistId: 1, currentTitle: 'S1', currentMalId: 1001);
+      final seasons = await _chain(
+        fake,
+      ).of(anilistId: 1, currentTitle: 'S1', currentMalId: 1001);
       expect(seasons.map((s) => s.number), [1, 2]);
     });
 
@@ -265,8 +292,9 @@ void main() {
         1: [(rel: 'SEQUEL', id: 2, format: 'TV')],
         2: [(rel: 'PREQUEL', id: 1, format: 'TV')],
       });
-      final seasons =
-          await _chain(fake).of(anilistId: 1, currentTitle: 'S1', currentMalId: 1001);
+      final seasons = await _chain(
+        fake,
+      ).of(anilistId: 1, currentTitle: 'S1', currentMalId: 1001);
       expect(seasons.map((s) => s.number), [1, 2]);
     });
   });

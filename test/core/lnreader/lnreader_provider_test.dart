@@ -1,3 +1,8 @@
+@Tags(['ffi'])
+library;
+// Runs the native QuickJS bridge; skipped on the host runner (see
+// dart_test.yaml). Run on-device with `flutter test --tags ffi`.
+
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';

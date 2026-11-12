@@ -215,8 +215,6 @@ class _FakeMyListStore implements MyListStore {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   bool contains(MediaItem m) => false;
@@ -230,8 +228,6 @@ class _FakeListStatusStore implements ListStatusStore {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   WatchStatus? statusOf(MediaItem m) => null;
@@ -245,8 +241,6 @@ class _FakeResumeStore implements ResumeStore {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   ResumeMark? get(String sourceId, String showId, String episodeId) => null;
@@ -257,14 +251,17 @@ class _FakeProviderRegistry implements ProviderRegistry {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   ProviderRegistryEntry? entryFor(String sourceId) => null;
 
   @override
   List<ProviderRegistryEntry> getAll() => const [];
+
+  // Added with the manifest-backed mode resolver: content_mode.dart reads the
+  // declared type of every source through this map to classify plain JS ids.
+  @override
+  Map<String, String> typeMapOf() => const {};
 }
 
 class _FakeCloudStreamManager extends ChangeNotifier
@@ -273,8 +270,6 @@ class _FakeCloudStreamManager extends ChangeNotifier
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   BaseProvider? get(String sourceId) => null;
@@ -291,8 +286,6 @@ class _FakeDownloadManager extends ChangeNotifier implements DownloadManager {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   DownloadRecord? recordFor(String sourceId, String showId, String episodeId) =>

@@ -43,6 +43,7 @@ internal data class PhonePlayerControlLayout(
             "lock" to 0xf887,
             "unlock" to 0xf889,
             "settings" to 0xf0164,
+            "pip" to 0xe4c2,
         )
 
         fun fromJson(raw: String?): PhonePlayerControlLayout {

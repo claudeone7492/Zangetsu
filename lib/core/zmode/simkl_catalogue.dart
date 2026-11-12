@@ -120,10 +120,7 @@ class SimklCatalogue implements VideoCatalogue {
         }
       }),
     );
-    return [
-      for (final s in sections)
-        if (s != null) s,
-    ];
+    return [for (final s in sections) ?s];
   }
 
   /// The file holds the whole list, so paging is a local slice — no second
@@ -167,13 +164,16 @@ class SimklCatalogue implements VideoCatalogue {
   /// Simkl keeps movies and shows in separate catalogues, so a single query is
   /// two calls; results are interleaved movies-first the way TMDB's mixed
   /// `/search/multi` comes back.
+  ///
+  /// `limit` is 50 per side (Simkl's practical ceiling), so one query yields up
+  /// to 100 results — enough to fill a source's row on the search screen.
   @override
   Future<List<MediaItem>> search(String q) async {
     final res = await Future.wait([
-      _get('/search/movie', {'q': q, 'extended': _listExtended, 'limit': 20})
+      _get('/search/movie', {'q': q, 'extended': _listExtended, 'limit': 50})
           .then<List<MediaItem>>((r) => _items(r.data, isTv: false))
           .catchError((_) => <MediaItem>[]),
-      _get('/search/tv', {'q': q, 'extended': _listExtended, 'limit': 20})
+      _get('/search/tv', {'q': q, 'extended': _listExtended, 'limit': 50})
           .then<List<MediaItem>>((r) => _items(r.data, isTv: true))
           .catchError((_) => <MediaItem>[]),
     ]);
@@ -372,7 +372,10 @@ class SimklCatalogue implements VideoCatalogue {
       // title later costs one call instead of two. `simkl_id` in the data
       // files and /search/*, `simkl` on the sync payloads; both spellings
       // appear, so read either.
-      rememberSimklId(tmdbId, ids is Map ? (ids['simkl_id'] ?? ids['simkl']) : null);
+      rememberSimklId(
+        tmdbId,
+        ids is Map ? (ids['simkl_id'] ?? ids['simkl']) : null,
+      );
       final title = (row['title'] as String? ?? '').trim();
       if (title.isEmpty) continue;
       final c = ZCanonical(isTv ? ZKind.tv : ZKind.movie, 'tmdb:$tmdbId');
@@ -394,6 +397,7 @@ class SimklCatalogue implements VideoCatalogue {
     }
     return out;
   }
+
   /// 1..total_episodes for a series, one entry for a film. Simkl exposes a
   /// real per-episode endpoint (`/tv/episodes/{id}`) with titles and seasons,
   /// but it costs a second round-trip for names the matched source overwrites
@@ -425,5 +429,4 @@ class SimklCatalogue implements VideoCatalogue {
         ),
     ];
   }
-
 }

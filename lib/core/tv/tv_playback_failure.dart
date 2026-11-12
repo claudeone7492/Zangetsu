@@ -106,15 +106,16 @@ bool hasInstalledPlaybackSources(ContentMode mode) {
     '${registryIds.length > 5 ? "…" : ""})',
   );
 
+  final types = manifestSourceTypes();
   final result = switch (mode) {
     ContentMode.manga => allIds.any(
-      (id) => sourceIdMatchesContentMode(id, ContentMode.manga),
+      (id) => sourceInMode(id, ContentMode.manga, types),
     ),
     ContentMode.novel => allIds.any(
-      (id) => sourceIdMatchesContentMode(id, ContentMode.novel),
+      (id) => sourceInMode(id, ContentMode.novel, types),
     ),
     ContentMode.anime => allIds.any(
-      (id) => sourceIdMatchesContentMode(id, ContentMode.anime),
+      (id) => sourceInMode(id, ContentMode.anime, types),
     ),
   };
   debugPrint(

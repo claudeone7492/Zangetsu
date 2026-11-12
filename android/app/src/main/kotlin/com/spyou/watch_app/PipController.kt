@@ -47,6 +47,13 @@ class PipController(private val activity: Activity) {
     /** Channel to Dart; set by MainActivity once the engine exists. */
     var channel: MethodChannel? = null
 
+    /**
+     * Direct sink for hosts that aren't the Flutter engine — the native
+     * [PhonePlayerActivity] owns its own ExoPlayer and handles these controls
+     * in-process. Both sinks are optional; the broadcast still fires once.
+     */
+    var onAction: ((String) -> Unit)? = null
+
     private var playing = true
     private var aspect = Rational(16, 9)
     private var receiverRegistered = false
@@ -63,6 +70,7 @@ class PipController(private val activity: Activity) {
                 playing = !playing
                 applyParams()
             }
+            onAction?.invoke(control)
             channel?.invokeMethod(control, null)
         }
     }
@@ -115,6 +123,9 @@ class PipController(private val activity: Activity) {
             activity.enterPictureInPictureMode(buildParams(sourceRect).build())
         }.getOrDefault(false)
     }
+
+    /** Whether the platform supports PiP at all (API 26+). */
+    fun isAvailable(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
 
     /** Re-push the current params — actions, aspect, everything. */
     fun applyParams(sourceRect: Rect? = null) {

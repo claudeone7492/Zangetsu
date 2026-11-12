@@ -71,6 +71,11 @@ class SubtitleSearchService {
 
   PlaybackPrefs get _prefs => sl<PlaybackPrefs>();
 
+  /// Whether an API key is set, so a caller can skip a search that would only
+  /// fail. Kept here rather than read from prefs at each call site because the
+  /// prefs box is the single source of truth for the key.
+  bool get hasApiKey => _prefs.subtitleApiKey.trim().isNotEmpty;
+
   String get _apiKey {
     final key = _prefs.subtitleApiKey.trim();
     if (key.isEmpty) {

@@ -160,7 +160,11 @@ function wrapProvider(sourceId, src) {
       getDetail:typeof getDetail==='function'?getDetail:null,
       getEpisodes:typeof getEpisodes==='function'?getEpisodes:null,
       getVideoSources:typeof getVideoSources==='function'?getVideoSources:null,
-      getSettings:typeof getSettings==='function'?getSettings:null
+      getSettings:typeof getSettings==='function'?getSettings:null,
+      getPages:typeof getPages==='function'?getPages:null,
+      getText:typeof getText==='function'?getText:null,
+      getChapters:typeof getChapters==='function'?getChapters:null,
+      getChapterContent:typeof getChapterContent==='function'?getChapterContent:null
     };
   })();`;
 }

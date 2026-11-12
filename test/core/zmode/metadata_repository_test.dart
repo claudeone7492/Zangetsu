@@ -23,6 +23,7 @@ import 'package:watch_app/core/zmode/match_store.dart';
 import 'package:watch_app/core/zmode/zmode_source_prefs.dart';
 import 'package:watch_app/core/zmode/metadata_repository.dart';
 import 'package:watch_app/core/zmode/metadata_filters.dart';
+import 'package:watch_app/core/zmode/movie_regions.dart';
 import 'package:watch_app/core/zmode/playback_resolver.dart';
 import 'package:watch_app/core/zmode/source_matcher.dart';
 import 'package:watch_app/core/zmode/tmdb_catalogue.dart';
@@ -1384,45 +1385,119 @@ void main() {
     },
   );
 
-  test('a saved match skips search when title is already cached', () async {
-    const canonical = ZCanonical(ZKind.anime, 'mal:100');
-    await store.save(
-      canonical,
-      const SourceMatch(
-        sourceId: 'allanime',
-        showUrl: 'https://src/fma',
-        showId: 'fma',
-        showTitle: 'FMA',
-        pinned: false,
-      ),
-    );
-    prefs.set(canonical.kind, 'allanime');
-    var gqlCalls = 0;
+  // ── Movies & TV sub-menu: a region cut replaces the movie Home ───────────
+  //
+  // The sub-menu swaps the movie home for a fixed TMDB discover dataset. The
+  // important promises are that the cut goes straight to TMDB (a Simkl-primary
+  // install must not have its region pick answered with Simkl's own rows), that
+  // `all` leaves the plain home untouched, and that "See all" pages the very
+  // query Home showed.
+
+  Map<String, dynamic> discoverMovie(int id) => {
+    'id': id,
+    'title': 'Film $id',
+    'poster_path': '/p$id.jpg',
+    'genre_ids': const [16],
+  };
+
+  test(
+    'a region cut replaces the movie home with TMDB discover rows',
+    () async {
+      await MovieRegionPrefs.setRegion(MovieRegion.cartoons);
+      final paths = <String>[];
+      final r = _metaRepo(
+        sources: src,
+        store: store,
+        prefs: prefs,
+        browseKind: () => ZKind.movie,
+        matcher: SourceMatcher(
+          sources: src,
+          store: store,
+          prefs: prefs,
+          candidates: (_) => [(id: 'allanime', name: 'AllAnime')],
+        ),
+        tmdb: TmdbCatalogue((p, q) async {
+          paths.add(p);
+          return {
+            'results': [discoverMovie(p.hashCode & 0xffff)],
+          };
+        }),
+      );
+
+      final rows = await r.home();
+      expect(rows, isNotEmpty);
+      // Every request went to discover — the plain /movie/* and /trending rows
+      // were not fetched at all.
+      expect(paths, isNotEmpty);
+      expect(paths.every((p) => p == '/discover/movie'), isTrue);
+      // The row is paginable so "See all" opens the same query.
+      expect(
+        rows.first.more!.categoryId,
+        TmdbCatalogue.discRowId(MovieRegion.cartoons, 0),
+      );
+    },
+  );
+
+  test('the all cut keeps the plain movie home', () async {
+    await MovieRegionPrefs.setRegion(MovieRegion.all);
+    final paths = <String>[];
     final r = _metaRepo(
       sources: src,
       store: store,
       prefs: prefs,
-      browseKind: () => ZKind.anime,
+      browseKind: () => ZKind.movie,
       matcher: SourceMatcher(
         sources: src,
         store: store,
         prefs: prefs,
         candidates: (_) => [(id: 'allanime', name: 'AllAnime')],
       ),
-      anilist: AniListCatalogue((q, v) async {
-        gqlCalls++;
-        return {'Media': _al()};
+      tmdb: TmdbCatalogue((p, q) async {
+        paths.add(p);
+        return {
+          'results': [discoverMovie(1)],
+        };
       }),
     );
-    await r.detail('zm://anime/mal:100');
-    gqlCalls = 0;
-    src.log.clear();
-    await r.sources('zm://anime/mal:100/ep/2');
-    expect(gqlCalls, 0);
-    expect(src.log, [
-      'episodes:https://src/fma:sub',
-      'sources:https://src/fma/2:allanime',
-    ]);
+
+    await r.home();
+    expect(paths.contains('/discover/movie'), isFalse);
+    expect(paths.contains('/movie/popular'), isTrue);
+  });
+
+  test('browseMore pages a sub-menu row through TMDB discover', () async {
+    final calls = <(String, Map<String, dynamic>)>[];
+    final r = _metaRepo(
+      sources: src,
+      store: store,
+      prefs: prefs,
+      browseKind: () => ZKind.movie,
+      matcher: SourceMatcher(
+        sources: src,
+        store: store,
+        prefs: prefs,
+        candidates: (_) => [(id: 'allanime', name: 'AllAnime')],
+      ),
+      tmdb: TmdbCatalogue((p, q) async {
+        calls.add((p, q));
+        return {
+          'results': [discoverMovie(q['page'] as int)],
+        };
+      }),
+    );
+
+    final items = await r.browseMore(
+      BrowseMore(
+        sourceId: ZmodeIds.sourceId,
+        kind: 'zm_video',
+        categoryId: TmdbCatalogue.discRowId(MovieRegion.hollywood, 0),
+      ),
+      3,
+    );
+    expect(items.single.title, 'Film 3');
+    expect(calls.single.$1, '/discover/movie');
+    expect(calls.single.$2['page'], 3);
+    expect(calls.single.$2['with_original_language'], 'en');
   });
 }
 

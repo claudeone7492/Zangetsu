@@ -405,7 +405,6 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {}
 
     private var playerOrientationObserver: PhoneOrientationObserver? = null
-    private var discordPresence: DiscordPresenceBridge? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         // FlutterActivity.configureFlutterEngine did this for us; FlutterFragment
@@ -426,7 +425,6 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
                     playerOrientationObserver = null
                 }
             })
-        discordPresence = DiscordPresenceBridge(this, flutterEngine.dartExecutor.binaryMessenger)
 
         // Bridge mega-repo plugins → our repo list: when a plugin's load() calls
         // RepositoryManager.addRepository(...), forward each URL to Dart so it
@@ -584,6 +582,21 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
                         } else {
                             Thread {
                                 val ok = com.spyou.watch_app.download.TsRemuxer.remux(input, output)
+                                runOnUiThread { result.success(ok) }
+                            }.start()
+                        }
+                    }
+                    // Mux a DASH episode's separately-downloaded fMP4 video and
+                    // audio tracks into one playable MP4 (MediaMuxer stream-copy).
+                    "muxDashToMp4" -> {
+                        val video = call.argument<String>("video")
+                        val audio = call.argument<String>("audio")
+                        val output = call.argument<String>("output")
+                        if (video.isNullOrEmpty() || output.isNullOrEmpty()) {
+                            result.error("BAD_ARGS", "video/output required", null)
+                        } else {
+                            Thread {
+                                val ok = com.spyou.watch_app.download.DashMuxer.mux(video, audio, output)
                                 runOnUiThread { result.success(ok) }
                             }.start()
                         }
@@ -2012,8 +2025,6 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
     override fun onDestroy() {
         playerOrientationObserver?.disable()
         playerOrientationObserver = null
-        discordPresence?.dispose()
-        discordPresence = null
         phoneVoiceSearch?.dispose()
         phoneVoiceSearch = null
         pip.unregister()

@@ -123,7 +123,7 @@ class TvPairingService {
     final data = await _invoke({
       'action': 'approve',
       'code': _norm(code),
-      if (trackerBlob != null) 'trackerBlob': trackerBlob,
+      'trackerBlob': ?trackerBlob,
       if (trackersOnly) 'trackersOnly': true,
     });
     return data['ok'] == true;

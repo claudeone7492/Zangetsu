@@ -30,14 +30,16 @@ void main() {
     expect(store.plays('animecube'), 1);
   });
 
-  test('counts survive a reopen — ranking would reset every launch otherwise',
-      () async {
-    await store.bump('hianime');
-    await Hive.close();
-    Hive.init(dir.path);
-    final again = await SourceScoreStore.open();
-    expect(again.plays('hianime'), 1);
-  });
+  test(
+    'counts survive a reopen — ranking would reset every launch otherwise',
+    () async {
+      await store.bump('hianime');
+      await Hive.close();
+      Hive.init(dir.path);
+      final again = await SourceScoreStore.open();
+      expect(again.plays('hianime'), 1);
+    },
+  );
 
   test('clear wipes every count', () async {
     await store.bump('hianime');

@@ -386,7 +386,12 @@ void main() {
 
       final pages = await repo.pages('/c1', sourceId: 'mihon:7');
 
-      expect(log.single.method, 'getPages');
+      expect(
+        log.map((c) => c.method),
+        containsAllInOrder(['getPages', 'imageCookie']),
+      );
+      expect(log.first.method, 'getPages');
+      expect(log.first.arguments, {'sourceId': 7, 'url': '/c1'});
       expect(pages.map((p) => p.url), [
         'https://cdn/p1.jpg',
         'https://cdn/p2.jpg',

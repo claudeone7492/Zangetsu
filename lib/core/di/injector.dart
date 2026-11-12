@@ -58,11 +58,14 @@ import '../provider/cloudstream_provider.dart';
 import '../provider/provider_downloader.dart';
 import '../provider/provider_manager.dart';
 import '../share/open_link_service.dart';
+import '../provider/bundled_pack.dart';
 import '../provider/provider_registry.dart';
 import '../provider/provider_repo_registry.dart';
 import '../repository/catalogue_repository.dart';
 import '../repository/provider_settings_repository.dart';
 import '../repository/source_domain_overrides.dart';
+import '../stremio/stremio_manager.dart';
+import '../stremio/stremio_provider.dart';
 import '../repository/source_repository.dart';
 import '../state/active_source_cubit.dart';
 import '../locale/locale_controller.dart';
@@ -105,6 +108,9 @@ import '../download/chapter_downloader.dart';
 import '../download/download_manager.dart';
 import '../download/download_prefs.dart';
 import '../download/download_service.dart';
+import '../debrid/debrid_prefs.dart';
+import '../debrid/debrid_resolver.dart';
+import '../debrid/playable_torrent.dart';
 import '../torrent/torrent_download_service.dart';
 import '../torrent/torrent_prefs.dart';
 import '../torrent/torrent_service.dart';
@@ -131,6 +137,7 @@ import '../../features/watch_together/watch_room_service.dart';
 import '../../features/watch_together/watch_together_controller.dart';
 import '../cast/cast_controller.dart';
 import '../cast/cast_proxy.dart';
+import '../comments/episode_comments_service.dart';
 import '../supabase/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show OtpType;
 
@@ -260,6 +267,9 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   // Supabase is already Supabase.initialize()d in main.dart; this is just the
   // thin client wrapper the stores/services depend on.
   sl.registerSingleton<SupabaseService>(SupabaseService());
+  sl.registerLazySingleton<EpisodeCommentsService>(
+    () => EpisodeCommentsService(sl<SupabaseService>()),
+  );
   sl.registerLazySingleton<TvPairingService>(
     () => TvPairingService(sl<SupabaseService>()),
   );
@@ -482,6 +492,16 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   sl.registerSingleton<TorrentPrefs>(TorrentPrefs());
   sl.registerSingleton<TorrentService>(TorrentService());
   sl.registerSingleton<TorrentDownloadService>(TorrentDownloadService());
+  await DebridPrefs.init();
+  sl.registerSingleton<DebridPrefs>(DebridPrefs());
+  sl.registerSingleton<DebridResolver>(DebridResolver(prefs: sl<DebridPrefs>()));
+  sl.registerSingleton<PlayableTorrent>(
+    PlayableTorrent(
+      debrid: sl<DebridResolver>(),
+      torrents: sl<TorrentService>(),
+      torrentPrefs: sl<TorrentPrefs>(),
+    ),
+  );
   await SearchHistory.init();
   sl.registerSingleton<SearchHistory>(SearchHistory());
   await AnimationPrefs.init(); // list/grid reveal toggle (phone/iOS only)
@@ -600,7 +620,14 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   // text when absent). Cached per title (in-memory + a persisted Hive box, so
   // the logo doesn't re-resolve / pop-in on later launches).
   await TitleLogoService.init();
-  sl.registerSingleton<TitleLogoService>(TitleLogoService(dio));
+  sl.registerSingleton<TitleLogoService>(
+    TitleLogoService(
+      dio,
+      addonLogoFor: (item) => sl.isRegistered<StremioProvider>()
+          ? sl<StremioProvider>().titleLogoFor(item)
+          : Future.value(null),
+    ),
+  );
 
   // Accurate OP/ED skip times for anime (AniList → MAL id → AniSkip).
   sl.registerSingleton<SkipService>(SkipService(dio));
@@ -869,11 +896,20 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
     await manager.loadExtractor(extractorId: ex, jsSource: js);
   }
 
-  // The app ships with NO built-in providers — every source comes from a repo
-  // (the Zangetsu repo is installed on first launch via onboarding). Drop any
-  // legacy `bundled://` entries left by older installs, then load the
-  // repo-installed providers persisted from previous launches.
+  // The default source pack is bundled in the APK, not fetched: a fresh
+  // install must be fully wired with nothing for the user to configure, and a
+  // network fetch of a manifest that has to exist on the right branch is
+  // exactly what silently left new installs with no working sources. Drop any
+  // legacy `bundled://` entries from older installs, seed the bundled pack
+  // (in-memory JS + persisted entries), then load everything below.
   await registry.purgeBundled();
+  try {
+    await installBundledPack(registry: registry, repos: repos);
+  } catch (e) {
+    // A pack failure must never block boot — the app still runs with whatever
+    // the user added themselves.
+    debugPrint('[boot] bundled pack install failed: $e');
+  }
   // Load repo-installed JS providers into the runtime. Bounded so a provider
   // whose JS HANGS (flutter_js can deadlock) can't trap the splash — the
   // reported "stuck on the splash for minutes":
@@ -1108,6 +1144,13 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
     await ContentModeCubit.create(sl<ActiveSourceCubit>()),
   );
 
+  // Addon settings are local; configured URLs stay in secure storage.
+  final stremioManager = StremioManager();
+  await stremioManager.init();
+  await stremioManager.ensureDefaultMetadata();
+  sl.registerSingleton<StremioManager>(stremioManager);
+  sl.registerSingleton<StremioProvider>(StremioProvider(stremioManager));
+
   sl.registerSingleton<SourceRepository>(
     SourceRepository(
       manager: manager,
@@ -1169,7 +1212,12 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   await DownloadManager.init();
   await DownloadService.initialize(); // configure the foreground-service host
   sl.registerSingleton<DownloadManager>(
-    DownloadManager(sl<CatalogueRepository>(), sl<DownloadPrefs>())..setup(),
+    DownloadManager(
+      sl<CatalogueRepository>(),
+      sl<DownloadPrefs>(),
+      sl<TorrentDownloadService>(),
+      sl<DebridResolver>(),
+    )..setup(),
   );
 
   // Offline manga/novel chapters. Foreground-only, so no service to start —

@@ -29,17 +29,20 @@ class _Src implements SourceRepository {
   @override
   Future<bool> ensureSourceLoaded(String sourceId) async => true;
   @override
-  Future<List<MediaItem>> search(String q, {String category = 'sub', String? sourceId}) async =>
-      bySource[sourceId] ?? const [];
+  Future<List<MediaItem>> search(
+    String q, {
+    String category = 'sub',
+    String? sourceId,
+  }) async => bySource[sourceId] ?? const [];
 }
 
 MediaItem _hit(String src, String title) => MediaItem(
-      id: title.toLowerCase(),
-      title: title,
-      url: 'https://$src/$title',
-      type: ProviderType.anime,
-      sourceId: src,
-    );
+  id: title.toLowerCase(),
+  title: title,
+  url: 'https://$src/$title',
+  type: ProviderType.anime,
+  sourceId: src,
+);
 
 void main() {
   late Directory dir;
@@ -75,28 +78,56 @@ void main() {
 
   group('MatchStore.pinnedFor', () {
     test('is null until the user chooses', () async {
-      await store.save(fma, const SourceMatch(
-        sourceId: 'allanime', showUrl: 'https://a/fma', showId: 'fma',
-        showTitle: 'FMA', pinned: false));
+      await store.save(
+        fma,
+        const SourceMatch(
+          sourceId: 'allanime',
+          showUrl: 'https://a/fma',
+          showId: 'fma',
+          showTitle: 'FMA',
+          pinned: false,
+        ),
+      );
       expect(store.pinnedFor(fma), isNull);
     });
 
     test('finds a pin on ANY source, not just the default one', () async {
-      await store.pin(fma, const SourceMatch(
-        sourceId: 'hianime', showUrl: 'https://h/fma', showId: 'fma-h',
-        showTitle: 'FMA', pinned: false));
+      await store.pin(
+        fma,
+        const SourceMatch(
+          sourceId: 'hianime',
+          showUrl: 'https://h/fma',
+          showId: 'fma-h',
+          showTitle: 'FMA',
+          pinned: false,
+        ),
+      );
       expect(store.pinnedFor(fma)?.sourceId, 'hianime');
     });
 
     test('a second pin replaces the first, never leaves two', () async {
       // Two pinned entries would make the answer depend on Hive key order,
       // so the title would follow whichever source the box happened to list.
-      await store.pin(fma, const SourceMatch(
-        sourceId: 'hianime', showUrl: 'https://h/fma', showId: 'h',
-        showTitle: 'FMA', pinned: false));
-      await store.pin(fma, const SourceMatch(
-        sourceId: 'allanime', showUrl: 'https://a/fma', showId: 'a',
-        showTitle: 'FMA', pinned: false));
+      await store.pin(
+        fma,
+        const SourceMatch(
+          sourceId: 'hianime',
+          showUrl: 'https://h/fma',
+          showId: 'h',
+          showTitle: 'FMA',
+          pinned: false,
+        ),
+      );
+      await store.pin(
+        fma,
+        const SourceMatch(
+          sourceId: 'allanime',
+          showUrl: 'https://a/fma',
+          showId: 'a',
+          showTitle: 'FMA',
+          pinned: false,
+        ),
+      );
 
       expect(store.pinnedFor(fma)?.sourceId, 'allanime');
       expect(store.get(fma, 'hianime')?.pinned, isFalse);
@@ -105,16 +136,30 @@ void main() {
     });
 
     test('a pin belongs to one title only', () async {
-      await store.pin(fma, const SourceMatch(
-        sourceId: 'hianime', showUrl: 'https://h/fma', showId: 'h',
-        showTitle: 'FMA', pinned: false));
+      await store.pin(
+        fma,
+        const SourceMatch(
+          sourceId: 'hianime',
+          showUrl: 'https://h/fma',
+          showId: 'h',
+          showTitle: 'FMA',
+          pinned: false,
+        ),
+      );
       expect(store.pinnedFor(other), isNull);
     });
 
     test('unpinAll hands the title back to the kind default', () async {
-      await store.pin(fma, const SourceMatch(
-        sourceId: 'hianime', showUrl: 'https://h/fma', showId: 'h',
-        showTitle: 'FMA', pinned: false));
+      await store.pin(
+        fma,
+        const SourceMatch(
+          sourceId: 'hianime',
+          showUrl: 'https://h/fma',
+          showId: 'h',
+          showTitle: 'FMA',
+          pinned: false,
+        ),
+      );
       await store.unpinAll(fma);
       expect(store.pinnedFor(fma), isNull);
       expect(store.get(fma, 'hianime')?.showUrl, 'https://h/fma');

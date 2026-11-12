@@ -175,6 +175,7 @@ class AniListCatalogue implements AnimeCatalogue {
   /// one per entry in [_rows] — instead of a round-trip per row. A malformed
   /// or partial response (missing alias, non-list `media`, or no response at
   /// all) just drops that row rather than throwing.
+  @override
   Future<List<HomeSection>> home(ZKind kind) async {
     final rows = _rows(kind);
     final query = rows.indexed
@@ -215,6 +216,7 @@ class AniListCatalogue implements AnimeCatalogue {
     return _itemsFromPage(data?['Page'], kind);
   }
 
+  @override
   Future<List<MediaItem>> search(String q, ZKind kind) =>
       searchFiltered(q, kind);
 
@@ -282,15 +284,37 @@ class AniListCatalogue implements AnimeCatalogue {
       ],
     ].where((a) => a.isNotEmpty).join(',');
 
-    final vars = <String, dynamic>{'n': 30};
-    final decl = q.trim().isEmpty ? r'($n:Int)' : r'($q:String,$n:Int)';
-    if (q.trim().isNotEmpty) vars['q'] = q;
+    Future<List<MediaItem>> onePage(int page, int perPage) {
+      final vars = <String, dynamic>{'n': perPage};
+      final decl = q.trim().isEmpty ? r'($n:Int)' : r'($q:String,$n:Int)';
+      if (q.trim().isNotEmpty) vars['q'] = q;
+      final full =
+          'query$decl{ Page(page:$page,perPage:\$n){ '
+          'media($args){ $_listFields } } }';
+      return _gql(full, vars).then((d) => _items(d, kind));
+    }
 
-    final full =
-        'query$decl{ Page(page:$page,perPage:\$n){ '
-        'media($args){ $_listFields } } }';
-    return _items(await _gql(full, vars), kind);
+    // Browse (no query) keeps its single page of 30 — the grid pages it itself.
+    // A continuation page (the grid asking for page 2) is likewise one request.
+    if (q.trim().isEmpty || page > 1) return onePage(page, 30);
+
+    // A query aims for [searchResultTarget] results so one source's row on the
+    // search screen fills. AniList caps perPage at 50, so that is two pages.
+    final out = <MediaItem>[];
+    final seen = <String>{};
+    for (var p = 1; p <= 2; p++) {
+      final items = await onePage(p, 50);
+      for (final i in items) {
+        if (seen.add(i.url)) out.add(i);
+      }
+      if (items.length < 50 || out.length >= searchResultTarget) break;
+    }
+    return out;
   }
+
+  /// Results a query aims to return per provider, so the search screen's
+  /// per-source row has enough to swipe through.
+  static const int searchResultTarget = 100;
 
   static String? _alFormat(MetaFormat? f) => switch (f) {
     null => null,
@@ -316,9 +340,11 @@ class AniListCatalogue implements AnimeCatalogue {
     MetaSort.score => 'SCORE_DESC',
     MetaSort.trending => 'TRENDING_DESC',
     MetaSort.newest => 'START_DATE_DESC',
+    MetaSort.oldest => 'START_DATE_ASC',
     MetaSort.title => 'TITLE_ROMAJI',
   };
 
+  @override
   Future<MediaDetail> detail(ZCanonical c) async {
     final (arg, vars) = _idArg(c);
     final q =
@@ -369,6 +395,7 @@ class AniListCatalogue implements AnimeCatalogue {
     );
   }
 
+  @override
   Future<List<Episode>> episodes(ZCanonical c) async =>
       (await detail(c)).episodes;
 

@@ -8,6 +8,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../platform/apple_tv.dart';
+import 'dash_downloader.dart';
 import 'download_prefs.dart';
 import 'hls_download_journal.dart';
 import 'hls_downloader.dart';
@@ -86,6 +87,7 @@ void downloadServiceOnStart(ServiceInstance service) async {
     ),
   );
   final hls = HlsDownloader(dio);
+  final dash = DashDownloader(dio);
   final queue = <Map<String, dynamic>>[];
   final canceled = <String>{};
   final queuedIds = <String>{};
@@ -129,23 +131,50 @@ void downloadServiceOnStart(ServiceInstance service) async {
       await setNotif('Downloading $showTitle', '$label · 0%');
       service.invoke('progress', {'id': id, 'progress': 0.0});
 
+      final isDash = (job['kind'] as String?) == 'dash';
       var lastPct = -1;
-      final failReason = await hls.download(
-        url: url,
-        headers: headers,
-        outputPath: outputPath,
-        preferredQuality: quality,
-        connections: connections,
-        onProgress: (p) {
-          service.invoke('progress', {'id': id, 'progress': p});
-          final pct = (p * 100).floor();
-          if (pct != lastPct) {
-            lastPct = pct;
-            setNotif('Downloading $showTitle', '$label · $pct%');
-          }
-        },
-        canceled: () => canceled.contains(id),
-      );
+      void onProgress(double p) {
+        service.invoke('progress', {'id': id, 'progress': p});
+        final pct = (p * 100).floor();
+        if (pct != lastPct) {
+          lastPct = pct;
+          setNotif('Downloading $showTitle', '$label · $pct%');
+        }
+      }
+
+      // The local track file(s) handed back to the main isolate to finalize.
+      // HLS produces one concatenated TS; DASH produces a video (and usually a
+      // separate audio) fMP4 the main isolate muxes.
+      String? resultPath = outputPath;
+      String? resultAudio;
+      String? failReason;
+      if (isDash) {
+        final res = await dash.download(
+          url: url,
+          headers: headers,
+          outputPath: outputPath,
+          preferredQuality: quality,
+          connections: connections,
+          onProgress: onProgress,
+          canceled: () => canceled.contains(id),
+        );
+        if (res.isOk) {
+          resultPath = res.videoPath ?? res.audioPath;
+          resultAudio = res.videoPath == null ? null : res.audioPath;
+        } else {
+          failReason = res.error;
+        }
+      } else {
+        failReason = await hls.download(
+          url: url,
+          headers: headers,
+          outputPath: outputPath,
+          preferredQuality: quality,
+          connections: connections,
+          onProgress: onProgress,
+          canceled: () => canceled.contains(id),
+        );
+      }
 
       if (canceled.remove(id)) {
         await _writeResult(id, status: 'canceled');
@@ -161,14 +190,17 @@ void downloadServiceOnStart(ServiceInstance service) async {
       }
 
       // Hand the local temp back to the main isolate to FINALIZE: remux the
-      // concatenated TS into a real MP4 (Android MediaMuxer) and move it into
-      // shared storage / the user's SAF tree. Neither MediaMuxer nor the SAF/
-      // MediaStore move is reachable from this background isolate.
+      // concatenated TS (HLS) or mux the split tracks (DASH) into a real MP4
+      // (Android MediaMuxer) and move it into shared storage / the user's SAF
+      // tree. Neither the muxer nor the SAF/MediaStore move is reachable from
+      // this background isolate.
       final customUri = job['customUri'] as String?;
       await _writeResult(
         id,
         status: 'done',
-        filePath: outputPath,
+        filePath: resultPath,
+        audioPath: resultAudio,
+        dash: isDash,
         needsFinalize: true,
         customUri: customUri,
         sharedSubDir: sharedSubDir,
@@ -176,7 +208,9 @@ void downloadServiceOnStart(ServiceInstance service) async {
       await journal.remove(id);
       service.invoke('done', {
         'id': id,
-        'filePath': outputPath,
+        'filePath': resultPath,
+        'audioPath': resultAudio,
+        'dash': isDash,
         'needsFinalize': true,
         'customUri': customUri,
         'sharedSubDir': sharedSubDir,
@@ -320,6 +354,8 @@ Future<void> _writeResult(
   String id, {
   required String status,
   String? filePath,
+  String? audioPath,
+  bool dash = false,
   String? error,
   bool needsFinalize = false,
   String? customUri,
@@ -337,6 +373,8 @@ Future<void> _writeResult(
         'id': id,
         'status': status,
         'filePath': filePath,
+        'audioPath': audioPath,
+        'dash': dash,
         'error': error,
         'needsFinalize': needsFinalize,
         'customUri': customUri,

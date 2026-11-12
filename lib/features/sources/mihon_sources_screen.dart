@@ -569,9 +569,12 @@ class _MihonSourceRowState extends State<_MihonSourceRow> {
     // for why the order matters). Returns a reason instead of swallowing it —
     // the APK outliving the uninstall is what made sources reappear after a
     // restart, silently.
-    final failure = await MihonExtensionService.uninstall(pkg);
-
+    // Drop the manager entry before the (possibly slow, possibly failing)
+    // APK delete so the source leaves the list immediately. Same reasoning as
+    // the box entry inside the service: an orphaned APK is recoverable, a
+    // source stuck in the list because the delete never returned is not.
     sl<MihonManager>().removeWhere((p) => p.pkg == pkg);
+    final failure = await MihonExtensionService.uninstall(pkg);
 
     if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context)..clearSnackBars();
@@ -656,7 +659,7 @@ class _MihonSourceRowState extends State<_MihonSourceRow> {
               ),
             ),
             child: Text(
-              context.l10n.updateArrowVersion('${update.availableVersion}'),
+              context.l10n.updateArrowVersion(update.availableVersion),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

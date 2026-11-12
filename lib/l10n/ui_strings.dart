@@ -6,7 +6,6 @@ import '../core/playback/search_prefs.dart';
 import '../core/playback/source_health_store.dart' show SourceOutcome;
 import '../core/theme/theme_controller.dart';
 import '../core/ui/nav_prefs.dart';
-import 'app_localizations.dart';
 import 'l10n.dart';
 
 /// Localized dock tab label (phone bottom bar).
@@ -16,7 +15,7 @@ extension DockTabL10n on DockTab {
         DockTab.myList => context.l10n.myList,
         DockTab.downloads => context.l10n.downloads,
         DockTab.history => context.l10n.history,
-        DockTab.sources => context.l10n.sources,
+        DockTab.shorts => context.l10n.shorts,
         DockTab.search => context.l10n.search,
         DockTab.profile => context.l10n.profile,
       };

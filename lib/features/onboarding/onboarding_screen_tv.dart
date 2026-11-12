@@ -2,20 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 import '../../core/app_config.dart';
+import '../../core/di/injector.dart';
+import '../../core/provider/provider_registry.dart';
 import '../../core/state/active_source_cubit.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
-import '../../core/tv/tv_focusable.dart';
-import '../sources/providers_hub_screen.dart';
+import '../home/cubit/home_cubit.dart';
 import '../../l10n/l10n.dart';
 
 Future<void> _markOnboarded() =>
     Hive.box(ActiveSourceCubit.boxName).put('onboarded', true);
 
-/// TV-adapted first-run onboarding. Same no-install, "add your own sources"
-/// copy as the phone [OnboardingScreen] — only the interaction model changes:
-/// every action button is a [TvFocusable] so the D-pad reaches it and OK
-/// activates it.
+/// TV-adapted first-run onboarding. Like the phone [OnboardingScreen] it is a
+/// single automatic step: the sources are bundled and installed during boot, so
+/// this only activates the default source, primes Home, and hands off. There is
+/// nothing for the user to configure — no buttons to press.
 class OnboardingScreenTv extends StatefulWidget {
   const OnboardingScreenTv({super.key, required this.onDone});
 
@@ -26,19 +27,33 @@ class OnboardingScreenTv extends StatefulWidget {
 }
 
 class _OnboardingScreenTvState extends State<OnboardingScreenTv> {
-  /// Marks onboarding done, hands off to the app, then opens Providers so the
-  /// user lands right where they add a repository. No network call, no
-  /// install — the app just navigates.
-  Future<void> _addSourcesNow() async {
-    await _markOnboarded();
-    if (!mounted) return;
-    widget.onDone();
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const ProvidersHubScreen()));
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _setup());
   }
 
-  Future<void> _later() async {
+  /// Activates a well-populated default so Home is useful on first open. The
+  /// sources themselves are already installed by the boot pass. Best-effort:
+  /// any failure still marks onboarding done so the user is never trapped.
+  Future<void> _setup() async {
+    try {
+      final active = sl<ActiveSourceCubit>();
+      final installed = [
+        for (final e in sl<ProviderRegistry>().getAll())
+          if (e.enabled) e.name,
+      ];
+      if (installed.isNotEmpty) {
+        active.setSource(
+          installed.contains(kDefaultSourceId)
+              ? kDefaultSourceId
+              : installed.first,
+        );
+      }
+      if (sl.isRegistered<HomeCubit>()) sl<HomeCubit>().load();
+    } catch (_) {
+      // Sources install during boot; a failure here is not worth blocking on.
+    }
     await _markOnboarded();
     if (mounted) widget.onDone();
   }
@@ -86,70 +101,34 @@ class _OnboardingScreenTvState extends State<OnboardingScreenTv> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _bullet(Icons.explore_outlined, context.l10n.openProviders),
                     _bullet(
-                      Icons.category_outlined,
-                      context.l10n.onboardingPickEcosystem,
+                      Icons.dns_rounded,
+                      context.l10n.multipleStreamingSources,
                     ),
                     _bullet(
-                      Icons.link_rounded,
-                      context.l10n.onboardingAddRepository,
+                      Icons.high_quality_rounded,
+                      context.l10n.upTo4kHdrStreams,
                     ),
                     _bullet(
-                      Icons.download_outlined,
-                      context.l10n.onboardingBrowseAndInstall,
+                      Icons.cloud_download_outlined,
+                      context.l10n.autoUpdatingNoAppUpdate,
                     ),
                   ],
                 ),
                 const Spacer(flex: 3),
-                TvFocusable(
-                  autofocus: true,
-                  onTap: _addSourcesNow,
-                  // ExcludeFocus: a Flutter button is focusable in its own
-                  // right, so without this the D-pad stops on the inner button
-                  // as well as the TvFocusable around it — down from here would
-                  // land on itself instead of the next action. Every other TV
-                  // screen wraps a plain Container for the same reason.
-                  child: ExcludeFocus(
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: FilledButton(
-                        onPressed: _addSourcesNow,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.accent,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: Text(
-                          context.l10n.addSourcesNow,
-                          style: AppText.button.copyWith(color: Colors.white),
-                        ),
-                      ),
-                    ),
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    color: AppColors.accent,
                   ),
                 ),
                 const SizedBox(height: 12),
-                TvFocusable(
-                  autofocus: false,
-                  onTap: _later,
-                  child: ExcludeFocus(
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: TextButton(
-                        onPressed: _later,
-                        child: Text(
-                          context.l10n.illDoItLater,
-                          style: AppText.caption.copyWith(
-                            color: AppColors.textTertiary,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                Text(
+                  context.l10n.downloadingSourceCatalog,
+                  style: AppText.caption,
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 40),
               ],

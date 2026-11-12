@@ -13,8 +13,8 @@ class ZCanonical {
   String get key => '${kind.name}:$id';
 
   @override
-  bool operator ==(Object o) =>
-      o is ZCanonical && o.kind == kind && o.id == id;
+  bool operator ==(Object other) =>
+      other is ZCanonical && other.kind == kind && other.id == id;
   @override
   int get hashCode => Object.hash(kind, id);
   @override

@@ -86,7 +86,7 @@ void main() {
           'poster': poster,
           'date': date,
           'ids': {'simkl_id': 2732099, 'tmdb': tmdb, 'imdb': 'tt0000'},
-          if (episode != null) 'episode': episode,
+          'episode': ?episode,
         };
 
     test('maps a TV airing, with its episode label', () {

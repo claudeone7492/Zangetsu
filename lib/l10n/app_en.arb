@@ -3,6 +3,7 @@
 	"cancel": "Cancel",
 	"ok": "OK",
 	"save": "Save",
+	"saved": "Saved",
 	"close": "Close",
 	"retry": "Retry",
 	"search": "Search",
@@ -14,6 +15,7 @@
 	"edit": "Edit",
 	"delete": "Delete",
 	"share": "Share",
+	"comments": "Comments",
 	"copy": "Copy",
 	"play": "Play",
 	"pause": "Pause",
@@ -58,6 +60,7 @@
 	"read": "Read",
 	"web": "Web",
 	"live": "Live",
+	"liveTv": "Live TV",
 	"sub": "Sub",
 	"dub": "Dub",
 	"nsfw": "NSFW",
@@ -461,7 +464,42 @@
 			}
 		}
 	},
-	"watchComments": "Comments",
+        "watchComments": "Comments",
+        "commentsEmpty": "No comments yet — start the conversation.",
+        "commentsSignInToComment": "Sign in to join the conversation.",
+        "commentsPlaceholder": "Add a comment…",
+        "commentsPost": "Post",
+        "commentsEdited": "edited",
+        "commentsYou": "You",
+        "commentsDelete": "Delete comment",
+        "commentsDeleteConfirm": "Delete this comment?",
+        "commentsLoadFailed": "Couldn't load comments",
+        "commentsPostFailed": "Couldn't post your comment",
+        "commentsJustNow": "just now",
+        "commentsMinutesAgo": "{count}m ago",
+        "@commentsMinutesAgo": {
+                "placeholders": {
+                        "count": {
+                                "type": "int"
+                        }
+                }
+        },
+        "commentsHoursAgo": "{count}h ago",
+        "@commentsHoursAgo": {
+                "placeholders": {
+                        "count": {
+                                "type": "int"
+                        }
+                }
+        },
+        "commentsDaysAgo": "{count}d ago",
+        "@commentsDaysAgo": {
+                "placeholders": {
+                        "count": {
+                                "type": "int"
+                        }
+                }
+        },
 	"watchEpisodes": "Episodes",
 	"watchComingSoon": "Coming soon",
 	"watchAutoplay": "Auto-play",
@@ -557,6 +595,8 @@
 	"thumbnailsWhileScrubbingStreamsCostsExtraData": "Thumbnails while scrubbing streams — costs extra data",
 	"autoPictureInPicture": "Auto picture-in-picture",
 	"shrinkToAFloatingWindowWhenYouLeaveTheApp": "Shrink to a floating window when you leave the app",
+	"backgroundPlayback": "Background playback",
+	"keepPlayingAudioWhenYouLeaveTheApp": "Keep playing with a notification when you leave the app",
 	"showQualityLabel": "Show quality label",
 	"plainQualityTextEG1080pOnTheTopBarRight": "Plain quality text (e.g. 1080p) on the top-bar right",
 	"gestureControls": "Gesture controls",
@@ -718,6 +758,13 @@
 	"audioNormalization": "Audio normalization",
 	"searchSubtitlesOnline": "Search subtitles online",
 	"loadFromFile": "Load from file…",
+	"exportSubtitle": "Export subtitle…",
+	"exportSubtitleSubtitle": "Save the loaded caption as an .srt in Downloads",
+	"subtitleSavedToDownloads": "Subtitle saved to Downloads",
+	"couldNotSaveSubtitle": "Couldn't save the subtitle",
+	"noSubtitleToExport": "No subtitle loaded to export",
+	"removeHearingImpaired": "Remove sound effects",
+	"removeHearingImpairedSubtitle": "Strip [sound effects] and ♪ music ♪ before translating",
 	"translateSubtitles": "Translate subtitles…",
 	"language": "Language:",
 	"movieOrShowTitle": "Movie or show title",
@@ -922,7 +969,8 @@
 	"removeRepository": "Remove repository",
 	"noSourcesInThisRepo": "No sources in this repo.",
 	"zangetsuProviders": "Zangetsu providers",
-	"addRepo": "Add repo",
+	        "addRepo": "Add repo",
+        "communityRepos": "Community repos",
 	"noProvidersInstalled": "No providers installed.",
 	"noSourcesInThisRepoYet": "No sources in this repo yet.",
 	"leaveBlankToUseTheRepoSOwnName": "Leave blank to use the repo's own name",
@@ -1421,6 +1469,7 @@
 	"playbackSpeed": "Playback Speed",
 	"quality": "Quality",
 	"sources": "Sources",
+	"shorts": "Shorts",
 	"normalSpeed": "Normal",
 	"subtitles": "Subtitles",
 	"preferredLanguageColon": "Preferred language: {name}",
@@ -3077,6 +3126,21 @@
 	"sortScore": "Top rated",
 	"sortTrending": "Trending",
 	"sortNewest": "Newest",
+	"sortOldest": "Oldest",
+	"yearFrom": "Year from",
+	"yearTo": "Year to",
+	"runtime": "Runtime",
+	"originCountry": "Country",
+	"streamingService": "Service",
+	"certification": "Certification",
+	"minimumVotes": "Min votes",
+	"originalLanguage": "Language",
+	"matchAllGenres": "Match all genres",
+	"matchAnyGenre": "Match any genre",
+	"excludeGenres": "Exclude genres",
+	"network": "Network",
+	"showStatus": "Show status",
+	"showType": "Show type",
 	"sortTitle": "A-Z",
 	"filtersNeedProvider": "Filters need {provider}. Switch it in Settings.",
 	"@filtersNeedProvider": {"placeholders": {"provider": {"type": "String"}}},
@@ -3167,5 +3231,23 @@
 	"mangaTranslationPreview": "Translation preview",
 	"mangaTranslationAppearanceFitNote": "Long text may scale down to stay inside its detected area and avoid overlap.",
 	"mangaTranslationShowOriginal": "Show original page",
-	"mangaTranslationShowTranslations": "Show translations"
+	"mangaTranslationShowTranslations": "Show translations",
+	"allSet": "You're all set!",
+	"startWatching": "Start watching",
+	"getStarted": "Get Started",
+	"skipForNow": "Skip for now",
+	"multipleStreamingSources": "Multiple streaming sources",
+	"upTo4kHdrStreams": "Up to 4K / HDR streams",
+	"autoUpdatingNoAppUpdate": "Auto-updating, no app update needed",
+	"downloadingSourceCatalog": "Downloading source catalog…",
+	"installingSource": "Installing {name}… ({done}/{total})",
+	"@installingSource": {
+		"placeholders": {
+			"name": { "type": "String" },
+			"done": { "type": "int" },
+			"total": { "type": "int" }
+		}
+	},
+	"setupFailedCheckConnection": "Setup failed — check your connection and try again.",
+	"onboardingInstallBlurb": "To get started we'll install the official source catalog — you can add, update or remove sources any time in Settings → Providers."
 }

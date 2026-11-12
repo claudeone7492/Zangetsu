@@ -74,4 +74,28 @@ void main() {
     // TMDB has no adult genre to filter on — only an include_adult flag.
     expect(find.text(kAdultGenre), findsNothing);
   });
+
+  testWidgets('movie/TV get the TMDB-only filters, anime does not', (t) async {
+    await openSheet(t, adult: false, kind: ZKind.movie);
+    // These narrow TMDB's /discover; AniList has none of them.
+    expect(find.text('EXCLUDE GENRES'), findsOneWidget);
+    expect(find.text('COUNTRY'), findsOneWidget);
+    expect(find.text('LANGUAGE'), findsOneWidget);
+    expect(find.text('RUNTIME'), findsOneWidget);
+    expect(find.text('SERVICE'), findsOneWidget);
+  });
+
+  testWidgets('anime keeps the sheet to the fields AniList honours', (t) async {
+    await openSheet(t, adult: false, kind: ZKind.anime);
+    expect(find.text('EXCLUDE GENRES'), findsNothing);
+    expect(find.text('COUNTRY'), findsNothing);
+    expect(find.text('RUNTIME'), findsNothing);
+  });
+
+  testWidgets('certifications show for movies, networks for TV', (t) async {
+    await openSheet(t, adult: false, kind: ZKind.movie);
+    // Format defaults to unset, so neither side of the movie/TV pair shows.
+    expect(find.text('CERTIFICATION'), findsNothing);
+    expect(find.text('NETWORK'), findsNothing);
+  });
 }

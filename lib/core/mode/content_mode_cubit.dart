@@ -47,10 +47,6 @@ class ContentModeCubit extends Cubit<ContentMode> {
     return sl<SourceRepository>().loadedSources.any((s) => s.id == id);
   }
 
-  /// Cheap ID-only mode check; Mangayomi's key encodes its declared type.
-  static bool _sourceInMode(String id, ContentMode m) =>
-      sourceIdMatchesContentMode(id, m);
-
   /// No valid remembered source for [m] — don't leave a source from another
   /// mode active (the "enter Novel and the header still shows an anime source"
   /// bug). Keep the current pick if it already fits [m], otherwise land on the
@@ -59,9 +55,12 @@ class ContentModeCubit extends Cubit<ContentMode> {
   /// source alone.
   void _fallBackToModeSource(ContentMode m) {
     if (!sl.isRegistered<SourceRepository>()) return;
-    if (_sourceInMode(_active.state, m)) return; // already fits — keep it
-    for (final s in sl<SourceRepository>().loadedSources) {
-      if (_sourceInMode(s.id, m)) {
+    final sources = sl<SourceRepository>().loadedSources;
+    // One manifest pass for the whole scan instead of one per candidate.
+    final types = manifestSourceTypes();
+    if (sourceInMode(_active.state, m, types)) return; // fits — keep it
+    for (final s in sources) {
+      if (sourceInMode(s.id, m, types)) {
         _active.setSource(s.id);
         return;
       }

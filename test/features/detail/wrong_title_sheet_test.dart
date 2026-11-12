@@ -23,6 +23,22 @@ import 'package:watch_app/core/zmode/zmode_ids.dart';
 import 'package:watch_app/features/detail/cubit/detail_cubit.dart';
 import 'package:watch_app/features/detail/wrong_title_sheet.dart';
 
+/// Polls [done] on the real event loop until it holds, then returns. The
+/// picker's pin is a real async Hive put; under a loaded full-suite run it can
+/// take longer than a fixed delay to land, so wait for the write itself rather
+/// than guessing a duration — the following assertion is then deterministic and
+/// no put is left in flight to hit a box the tearDown has already closed.
+Future<void> _awaitWrite(bool Function() done, {int tries = 400}) async {
+  for (var i = 0; i < tries; i++) {
+    if (done()) {
+      // Let the cubit's post-await emit run before runAsync exits.
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      return;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+  }
+}
+
 class _Src implements SourceRepository {
   _Src(this.bySource);
   final Map<String, List<MediaItem>> bySource;
@@ -81,8 +97,6 @@ class _Repo implements CatalogueRepository {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
   // Added with the on-demand resolver: SourceMatcher now asks whether a JS
   // provider is loaded before searching it. These fakes are already "loaded".
-  @override
-  Future<bool> ensureSourceLoaded(String sourceId) async => true;
 
   @override
   Future<void> clearHttpCache() async {}
@@ -232,7 +246,7 @@ void main() {
 
     await t.runAsync(() async {
       await t.tap(find.textContaining('HiAnime'));
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await _awaitWrite(() => sl<MatchStore>().get(fma, 'ani:2')?.pinned == true);
     });
     await t.pumpAndSettle();
 
@@ -263,7 +277,7 @@ void main() {
 
     await t.runAsync(() async {
       await t.tap(find.text('Fullmetal Alchemist (2003)').last);
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await _awaitWrite(() => sl<MatchStore>().get(fma, 'ani:1')?.pinned == true);
     });
     await t.pumpAndSettle();
 
@@ -301,7 +315,11 @@ void main() {
 
     await t.runAsync(() async {
       await t.tap(find.text('Fullmetal Alchemist (2003)').last);
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await _awaitWrite(() => sl<MatchStore>().get(fma, 'ani:1')?.pinned == true);
+      // The pin lands before the sheet's confirmation resumes to fire the
+      // refresh, and that refresh is itself async. Wait for the reload too,
+      // or a loaded full-suite run can assert while it is still in flight.
+      await _awaitWrite(() => repo.detailCalls > 0);
     });
     await t.pumpAndSettle();
 
@@ -387,7 +405,7 @@ void main() {
 
     await t.runAsync(() async {
       await t.tap(find.textContaining('HiAnime'));
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await _awaitWrite(() => sl<MatchStore>().get(fma, 'ani:2')?.pinned == true);
     });
     await t.pumpAndSettle();
 
@@ -453,7 +471,10 @@ void main() {
     await t.pumpAndSettle();
     await t.runAsync(() async {
       await t.tap(find.textContaining('HiAnime'));
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await _awaitWrite(() => sl<MatchStore>().get(manga, 'ani:2') != null);
+      // The reload the switch triggers is async; wait for it so a loaded run
+      // cannot assert while it is still in flight (same race as above).
+      await _awaitWrite(() => repo.detailCalls > 0);
     });
     await t.pumpAndSettle();
 

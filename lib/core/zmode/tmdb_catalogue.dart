@@ -9,6 +9,7 @@ import '../models/provider_info.dart';
 import '../ui/streaming_prefs.dart';
 import 'video_catalogue.dart';
 import 'metadata_filters.dart';
+import 'movie_regions.dart';
 import 'zmode_ids.dart';
 
 typedef TmdbGet =
@@ -22,6 +23,12 @@ typedef TmdbGet =
 class TmdbCatalogue implements VideoCatalogue {
   TmdbCatalogue(this._get);
   final TmdbGet _get;
+
+  /// Results a search aims to return per provider. TMDB answers 20 per page, so
+  /// five pages make 100 — a single page leaves the per-source row on the
+  /// search screen visibly short.
+  static const int searchResultTarget = 100;
+  static const int _searchPageCap = 5;
 
   /// Search checks are requested only after the user submits a query. Keeping
   /// provider availability for a title avoids repeating one TMDB request per
@@ -66,6 +73,7 @@ class TmdbCatalogue implements VideoCatalogue {
   /// waits for the slowest row, not the sum of all of them. `Future.wait`
   /// keeps the results in the same order as [_rows] regardless of which
   /// finishes first.
+  @override
   Future<List<HomeSection>> home() async {
     final sections = await Future.wait(_rows.map(_fetchRow));
     return [for (final s in sections) ?s];
@@ -124,6 +132,69 @@ class TmdbCatalogue implements VideoCatalogue {
 
   static String wpRowId(int providerId) => '$wpPrefix$providerId';
 
+  /// Row-id prefix for a Movies & TV sub-menu discover row: `disc:<region>:<i>`.
+  /// The index resolves back to the region's fixed [MovieRow] so the "See all"
+  /// grid pages the exact discover query Home showed.
+  static const String discPrefix = 'disc:';
+
+  static String discRowId(MovieRegion region, int index) =>
+      '$discPrefix${region.name}:$index';
+
+  /// Home rows for a Movies & TV sub-menu cut. [MovieRegion.all] returns null —
+  /// the caller keeps the plain [home] rows for it — so a caller can write
+  /// `await catalogue.homeForRegion(r) ?? catalogue.home()`.
+  Future<List<HomeSection>?> homeForRegion(MovieRegion region) async {
+    final rows = region.rows;
+    if (rows == null || rows.isEmpty) return null;
+    final sections = await Future.wait([
+      for (var i = 0; i < rows.length; i++)
+        _fetchDiscoverRow(region, i, rows[i]),
+    ]);
+    return [for (final s in sections) ?s];
+  }
+
+  Future<HomeSection?> _fetchDiscoverRow(
+    MovieRegion region,
+    int index,
+    MovieRow row,
+  ) async {
+    // Discover endpoints are film-only, so `forcedTv: false` and no page param
+    // (page 1 is the home row; paging lives in [browseDiscoverRow]).
+    final items = _items(
+      await _get(row.path, Map<String, dynamic>.from(row.params)),
+      forcedTv: false,
+    );
+    if (items.isEmpty) return null;
+    return HomeSection(
+      title: row.title,
+      items: items,
+      more: BrowseMore(
+        sourceId: ZmodeIds.sourceId,
+        kind: 'zm_video',
+        categoryId: discRowId(region, index),
+      ),
+    );
+  }
+
+  /// Next page of one sub-menu discover row (see [discRowId]).
+  Future<List<MediaItem>> browseDiscoverRow(String rowId, int page) async {
+    final parts = rowId.split(':');
+    if (parts.length != 3 || parts[0] != 'disc') return const [];
+    final region = MovieRegion.values
+        .where((r) => r.name == parts[1])
+        .firstOrNull;
+    final index = int.tryParse(parts[2]);
+    final rows = region?.rows;
+    if (rows == null || index == null || index < 0 || index >= rows.length) {
+      return const [];
+    }
+    final row = rows[index];
+    return _items(
+      await _get(row.path, {...row.params, 'page': page}),
+      forcedTv: false,
+    );
+  }
+
   /// Browse one service while preserving TMDB's server-side filters.
   Future<MediaItemPage> browseProvider(
     int providerId,
@@ -168,23 +239,13 @@ class TmdbCatalogue implements VideoCatalogue {
     if (filters.genres.any((genre) => tmdbGenreId(genre, isTv: isTv) == null)) {
       return const MediaItemPage(items: [], hasMore: false);
     }
-    final ids = filters.genres
-        .map((genre) => tmdbGenreId(genre, isTv: isTv))
-        .whereType<int>()
-        .toSet();
-    final params = <String, dynamic>{
-      'page': page,
-      'include_adult': filters.adult,
-      'with_watch_providers': '$providerId',
-      'watch_region': region,
-      'sort_by': _sortValue(filters.sort, isTv: isTv),
-      if (ids.isNotEmpty) 'with_genres': ids.join(','),
-      if (filters.year != null)
-        (isTv ? 'first_air_date_year' : 'primary_release_year'): filters.year,
-      if (filters.sort == MetaSort.score || filters.minScore != null)
-        'vote_count.gte': 200,
-      if (filters.minScore != null) 'vote_average.gte': filters.minScore! / 10,
-    };
+    final params = tmdbDiscoverParams(
+      filters,
+      isTv: isTv,
+      page: page,
+      watchProviderOverride: '$providerId',
+      watchRegion: region,
+    );
     return _safePage(
       () => _get('/discover/${isTv ? 'tv' : 'movie'}', params),
       forcedTv: isTv,
@@ -310,27 +371,22 @@ class TmdbCatalogue implements VideoCatalogue {
     if (mediaType != 'movie' && !isTv) return false;
     if (filters.format == MetaFormat.tv && !isTv) return false;
     if (filters.format == MetaFormat.movie && isTv) return false;
-    if (filters.minScore != null) {
-      final score = (item['vote_average'] as num?)?.toDouble() ?? 0;
-      final votes = (item['vote_count'] as num?)?.toInt() ?? 0;
-      if (score < filters.minScore! / 10 || votes < 200) return false;
-    }
-    if (filters.year != null) {
-      final date = isTv ? item['first_air_date'] : item['release_date'];
-      if (date is! String || !date.startsWith('${filters.year}-')) return false;
-    }
-    if (filters.genres.isNotEmpty) {
-      final rawGenres = item['genre_ids'];
-      if (rawGenres is! List) return false;
-      final genreIds = rawGenres.whereType<int>().toSet();
-      final wanted = filters.genres
-          .map((genre) => tmdbGenreId(genre, isTv: isTv))
-          .toList();
-      if (wanted.any((id) => id == null || !genreIds.contains(id))) {
-        return false;
-      }
-    }
-    return true;
+    final date = isTv ? item['first_air_date'] : item['release_date'];
+    final year = (date is String && date.length >= 4)
+        ? int.tryParse(date.substring(0, 4))
+        : null;
+    final genreIds = item['genre_ids'] is List
+        ? (item['genre_ids'] as List).whereType<int>().toList()
+        : const <int>[];
+    return tmdbItemMatchesFilters(
+      filters,
+      isTv: isTv,
+      genreIds: genreIds,
+      year: year,
+      voteAverage: (item['vote_average'] as num?)?.toDouble() ?? 0,
+      voteCount: (item['vote_count'] as num?)?.toInt() ?? 0,
+      language: item['original_language'] as String?,
+    );
   }
 
   static int _compareSearchResults(
@@ -344,6 +400,7 @@ class TmdbCatalogue implements VideoCatalogue {
           ((b['name'] ?? b['title']) as String? ?? '').toLowerCase(),
         ),
       MetaSort.newest => _dateValue(b).compareTo(_dateValue(a)),
+      MetaSort.oldest => _dateValue(a).compareTo(_dateValue(b)),
       MetaSort.score =>
         ((b['vote_average'] as num?)?.toDouble() ?? 0).compareTo(
           (a['vote_average'] as num?)?.toDouble() ?? 0,
@@ -360,15 +417,6 @@ class TmdbCatalogue implements VideoCatalogue {
         (item['first_air_date'] ?? item['release_date']) as String? ?? '',
       )?.millisecondsSinceEpoch ??
       0;
-
-  static String _sortValue(MetaSort sort, {required bool isTv}) =>
-      switch (sort) {
-        MetaSort.score => 'vote_average.desc',
-        MetaSort.newest =>
-          isTv ? 'first_air_date.desc' : 'primary_release_date.desc',
-        MetaSort.title => isTv ? 'name.asc' : 'title.asc',
-        _ => 'popularity.desc',
-      };
 
   /// One page of what [providerId] carries in the user's region.
   ///
@@ -413,8 +461,33 @@ class TmdbCatalogue implements VideoCatalogue {
     return out;
   }
 
-  Future<List<MediaItem>> search(String q) async =>
-      _items(await _get('/search/multi', {'query': q}), forcedTv: null);
+  @override
+  Future<List<MediaItem>> search(String q) =>
+      _searchAllPages((page) => {'query': q, 'page': page}, forcedTv: null);
+
+  /// Pages `/search/multi` until the target is reached (or the catalogue runs
+  /// out), so one source's row on the search screen fills instead of stopping
+  /// at TMDB's 20-per-page. Pages run sequentially: the first is what the user
+  /// sees, and a page is only worth asking for if the one before it was full.
+  ///
+  /// De-duplicated by canonical url — TMDB repeats a title across pages when
+  /// its popularity shifts between requests.
+  Future<List<MediaItem>> _searchAllPages(
+    Map<String, dynamic> Function(int page) params, {
+    required bool? forcedTv,
+  }) async {
+    final out = <MediaItem>[];
+    final seen = <String>{};
+    for (var page = 1; page <= _searchPageCap; page++) {
+      final items = _items(await _get('/search/multi', params(page)),
+          forcedTv: forcedTv);
+      for (final i in items) {
+        if (seen.add(i.url)) out.add(i);
+      }
+      if (items.length < 20 || out.length >= searchResultTarget) break;
+    }
+    return out;
+  }
 
   @override
   bool get supportsFilters => true;
@@ -439,40 +512,27 @@ class TmdbCatalogue implements VideoCatalogue {
     // and come back empty. No query means browse, and browsing is /discover's
     // job whatever the filters say.
     if (q.trim().isNotEmpty && !f.narrowsCatalogue) {
-      return _items(
-        await _get('/search/multi', {
-          'query': q,
-          'page': page,
-          'include_adult': f.adult,
-        }),
+      // A continuation page (the grid asking for page 2) is one request, not a
+      // re-run of the whole fan-out.
+      if (page > 1) {
+        return _items(
+          await _get('/search/multi', {
+            'query': q,
+            'page': page,
+            'include_adult': f.adult,
+          }),
+          forcedTv: null,
+        );
+      }
+      return _searchAllPages(
+        (p) => {'query': q, 'page': p, 'include_adult': f.adult},
         forcedTv: null,
       );
     }
     // One side at a time: /discover is per-media-type, and a TV request with a
     // movie-only genre id returns nothing rather than an error.
     final isTv = f.format == MetaFormat.tv;
-    final ids = f.genres
-        .map((g) => tmdbGenreId(g, isTv: isTv))
-        .whereType<int>()
-        .toSet();
-    final params = <String, dynamic>{
-      'page': page,
-      'include_adult': f.adult,
-      'sort_by': switch (f.sort) {
-        MetaSort.score => 'vote_average.desc',
-        MetaSort.newest =>
-          isTv ? 'first_air_date.desc' : 'primary_release_date.desc',
-        MetaSort.title => 'title.asc',
-        _ => 'popularity.desc',
-      },
-      if (ids.isNotEmpty) 'with_genres': ids.join(','),
-      if (f.year != null)
-        (isTv ? 'first_air_date_year' : 'primary_release_year'): f.year,
-      // Sorting by score with no vote floor surfaces titles with one 10/10
-      // vote, which reads as broken rather than as a top-rated list.
-      if (f.sort == MetaSort.score || f.minScore != null) 'vote_count.gte': 200,
-      if (f.minScore != null) 'vote_average.gte': f.minScore! / 10,
-    };
+    final params = tmdbDiscoverParams(f, isTv: isTv, page: page);
     final items = _items(
       await _get('/discover/${isTv ? 'tv' : 'movie'}', params),
       forcedTv: isTv,
@@ -484,6 +544,7 @@ class TmdbCatalogue implements VideoCatalogue {
         .toList(growable: false);
   }
 
+  @override
   Future<MediaDetail> detail(ZCanonical c) async {
     final isTv = c.kind == ZKind.tv;
     final id = c.id.split(':').last;

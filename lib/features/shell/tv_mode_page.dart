@@ -27,7 +27,7 @@ class TvStreamKindRailToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
       valueListenable: ZModePrefs.revision,
-      builder: (context, _, __) {
+      builder: (context, _, _) {
         final l10n = context.l10n;
         final isAnime = ZModePrefs.streamKind == StreamKind.anime;
         final icon = isAnime ? Icons.play_circle_rounded : Icons.movie;

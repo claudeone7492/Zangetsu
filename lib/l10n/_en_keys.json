@@ -816,5 +816,7 @@
   "presenceButtonLabelHint": "Open in Zangetsu",
   "presenceShowWhenPaused": "Show when paused",
   "presenceBrowsingTitle": "Show browsing title",
-  "presencePreview": "Preview"
+  "presencePreview": "Preview",
+  "comments": "Comments",
+  "saved": "Saved"
 }

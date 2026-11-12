@@ -101,4 +101,5 @@ HomeLayout? homeLayoutFor(String key) {
 /// both named accounts. TMDB is a catalogue with no account behind it, so its
 /// name matches no tracker and the pick falls through to whichever one can
 /// answer — as it does for any provider you aren't signed into.
-String? layoutTrackerName(String layoutKey) => homeLayoutFor(layoutKey)?.provider;
+String? layoutTrackerName(String layoutKey) =>
+    homeLayoutFor(layoutKey)?.provider;

@@ -14,8 +14,11 @@ import 'package:watch_app/core/zmode/zmode_ids.dart';
 
 const _show = ZCanonical(ZKind.anime, 'mal:100');
 
-String _ago(int days) =>
-    DateTime.now().subtract(Duration(days: days)).toIso8601String().split('T').first;
+String _ago(int days) => DateTime.now()
+    .subtract(Duration(days: days))
+    .toIso8601String()
+    .split('T')
+    .first;
 
 MalCatalogue _mal({
   required String status,
@@ -29,7 +32,7 @@ MalCatalogue _mal({
         'title': 'A Show',
         'num_episodes': episodes,
         'status': status,
-        if (startDate != null) 'start_date': startDate,
+        'start_date': ?startDate,
       },
     );
   return MalCatalogue(dio);
@@ -59,7 +62,10 @@ void main() {
   });
 
   test('an airing show with no start date claims nothing', () async {
-    final d = await _mal(status: 'currently_airing', episodes: 13).detail(_show);
+    final d = await _mal(
+      status: 'currently_airing',
+      episodes: 13,
+    ).detail(_show);
     expect(d.nextEpisode, isNull);
   });
 
@@ -73,16 +79,18 @@ void main() {
     expect(d.nextEpisode, isNull);
   });
 
-  test('a show that has finished airing its announced count claims nothing',
-      () async {
-    // Past the end: every episode is out, so nothing is pending.
-    final d = await _mal(
-      status: 'currently_airing',
-      episodes: 13,
-      startDate: _ago(200),
-    ).detail(_show);
-    expect(d.nextEpisode, isNull);
-  });
+  test(
+    'a show that has finished airing its announced count claims nothing',
+    () async {
+      // Past the end: every episode is out, so nothing is pending.
+      final d = await _mal(
+        status: 'currently_airing',
+        episodes: 13,
+        startDate: _ago(200),
+      ).detail(_show);
+      expect(d.nextEpisode, isNull);
+    },
+  );
 }
 
 class _Adapter implements HttpClientAdapter {
@@ -90,7 +98,7 @@ class _Adapter implements HttpClientAdapter {
   final Map<String, dynamic> Function(Map<String, dynamic>) respond;
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options, _, __) async {
+  Future<ResponseBody> fetch(RequestOptions options, _, _) async {
     final body = respond(Map<String, dynamic>.from(options.queryParameters));
     return ResponseBody.fromString(
       const JsonEncoder().convert(body),

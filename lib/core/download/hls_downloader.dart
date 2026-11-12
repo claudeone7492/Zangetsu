@@ -1013,7 +1013,7 @@ String hlsExtinfFingerprint(List<HlsMediaSegment> segs) {
   var bestAt = 0.0;
   for (var i = 0; i < segs.length; i++) {
     if (segs[i].discontinuity) {
-      discs.add('${t.toStringAsFixed(1)}s#${i}');
+      discs.add('${t.toStringAsFixed(1)}s#$i');
     }
     if (i > 0) {
       if ((durs[i] - durs[i - 1]).abs() <= 0.05) {

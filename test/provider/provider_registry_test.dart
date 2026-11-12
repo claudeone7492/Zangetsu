@@ -135,4 +135,52 @@ void main() {
     expect(loaded.length, 2);
     expect(manager.loaded, containsAll(['allanime', 'netmirror_nf']));
   });
+
+  test('pruneSupersededByPack drops a stale repo copy of a pack source',
+      () async {
+    // A device that installed `anikoto` from a community repo before the pack
+    // shipped it: the pack entry AND the repo entry both exist. Only one can
+    // be live in the runtime, and the repo copy used to win (its key sorts
+    // later), so Auto Resolve ran stale JS.
+    await registry.install(
+      sourceId: 'anikoto',
+      fileUrl: 'https://example.test/anikoto.js',
+      repoUrl: 'https://raw.githubusercontent.com/Spyou/zangetsu-providers/main/index.json',
+      displayName: 'AniKoto (old)',
+    );
+    await registry.installFromBundled(
+      name: 'anikoto',
+      jsSource: '// anikoto v2',
+      repoUrl: 'bundled://official-pack',
+    );
+
+    expect(registry.getAll().length, 2);
+
+    final removed = await registry.pruneSupersededByPack(['anikoto']);
+
+    expect(removed, 1);
+    final left = registry.getAll();
+    expect(left.length, 1);
+    expect(left.single.isBundled, isTrue);
+    expect(left.single.originRepoUrl, 'bundled://official-pack');
+  });
+
+  test('pruneSupersededByPack leaves user sources the pack does not provide',
+      () async {
+    await registry.install(
+      sourceId: 'customsource',
+      fileUrl: 'https://example.test/custom.js',
+      repoUrl: 'https://example.test/repo/index.json',
+    );
+    await registry.installFromBundled(
+      name: 'anikoto',
+      jsSource: '// anikoto',
+      repoUrl: 'bundled://official-pack',
+    );
+
+    final removed = await registry.pruneSupersededByPack(['anikoto']);
+
+    expect(removed, 0);
+    expect(registry.entryFor('customsource'), isNotNull);
+  });
 }

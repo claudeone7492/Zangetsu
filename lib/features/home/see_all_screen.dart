@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
@@ -296,9 +297,8 @@ class _SeeAllScreenState extends State<SeeAllScreen> {
               ),
             )
           : GridView.builder(
-              controller: paginating ? _controller : null,
+              scrollCacheExtent: ScrollCacheExtent.pixels(800), controller: paginating ? _controller : null,
               padding: const EdgeInsets.all(16),
-              cacheExtent: 800,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: posterGridColumns(context),
                 childAspectRatio: posterGridAspect(context),

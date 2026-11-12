@@ -21,7 +21,7 @@ class _Adapter implements HttpClientAdapter {
   final seen = <Uri>[];
 
   @override
-  Future<ResponseBody> fetch(RequestOptions o, _, __) async {
+  Future<ResponseBody> fetch(RequestOptions o, _, _) async {
     seen.add(o.uri);
     // Simkl translates an external id with a 301 whose Location carries it —
     // `redirect:<simkl id>` from [respond] stands in for that.
@@ -321,7 +321,7 @@ class _Recorder implements HttpClientAdapter {
   final void Function(String body) onBody;
 
   @override
-  Future<ResponseBody> fetch(RequestOptions o, _, __) async {
+  Future<ResponseBody> fetch(RequestOptions o, _, _) async {
     onBody(o.data is String ? o.data as String : jsonEncode(o.data));
     return ResponseBody.fromString(
       jsonEncode({'data': {'Media': null}}),

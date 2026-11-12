@@ -201,8 +201,9 @@ class _TvFocusableState extends State<TvFocusable> {
       final receivedPress = _okHeld;
       _okHeld = false;
       _cancelLongPressTimer();
-      if (widget.requireKeyDown && !receivedPress)
+      if (widget.requireKeyDown && !receivedPress) {
         return KeyEventResult.handled;
+      }
       if (!_longPressFired) _activate();
       return KeyEventResult.handled;
     }

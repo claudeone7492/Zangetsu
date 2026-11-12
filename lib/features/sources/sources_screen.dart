@@ -301,7 +301,7 @@ class _AniSourceRowState extends State<_AniSourceRow> {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-          child: Text(context.l10n.updateArrowVersion('${update.availableVersion}')),
+          child: Text(context.l10n.updateArrowVersion(update.availableVersion)),
         ),
       );
     }

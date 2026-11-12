@@ -210,6 +210,14 @@ object PhonePlayerBridge {
                 (call.argument<Number>("sessionId") ?: 0).toLong(),
             )
             i.putExtra(
+                PhonePlayerIntent.EXTRA_AUTO_PIP,
+                call.argument<Boolean>("autoPip") ?: true,
+            )
+            i.putExtra(
+                PhonePlayerIntent.EXTRA_BACKGROUND_PLAYBACK,
+                call.argument<Boolean>("backgroundPlayback") ?: true,
+            )
+            i.putExtra(
                 PhonePlayerIntent.EXTRA_COVER_HEADERS,
                 PhonePlayerIntent.headersToArray(
                     call.argument<Map<String, String>>("coverHeaders"),

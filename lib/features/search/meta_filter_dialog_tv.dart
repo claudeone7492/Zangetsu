@@ -183,7 +183,7 @@ class _MetaFilterDialogTvState extends State<_MetaFilterDialogTv> {
                             onPicked: (v) => setState(
                               () => _f = v == null
                                   ? _f.copyWith(clearYear: true)
-                                  : _f.copyWith(year: v),
+                                  : _f.copyWith(yearFrom: v, yearTo: v),
                             ),
                           ),
                         ),
@@ -655,6 +655,7 @@ String metaSortLabel(BuildContext c, MetaSort s) => switch (s) {
   MetaSort.score => c.l10n.sortScore,
   MetaSort.trending => c.l10n.sortTrending,
   MetaSort.newest => c.l10n.sortNewest,
+  MetaSort.oldest => c.l10n.sortOldest,
   MetaSort.title => c.l10n.sortTitle,
 };
 

@@ -1,10 +1,15 @@
 package com.spyou.watch_app
 
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Matrix
+import android.graphics.Rect
 import android.media.AudioManager
 import android.os.Bundle
 import android.provider.Settings
@@ -30,6 +35,7 @@ import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.Tracks
+import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
@@ -214,6 +220,28 @@ class PhonePlayerActivity : Activity() {
     private var resizeIndex = 0
     private var controlLayout = PhonePlayerControlLayout()
     private var controlsLocked = false
+
+    // ── Picture-in-Picture + background playback ─────────────────────────
+    // PiP params/actions/animation live in [PipController], shared with the
+    // Flutter player's MainActivity. `autoPip` mirrors the Settings toggle;
+    // the manual PiP control works regardless. Background playback keeps the
+    // audio going when the app is left (or when PiP is up) via a foreground
+    // service, so leaving the app no longer pauses the stream.
+    private val pip by lazy { PipController(this) }
+    private var autoPip = true
+    private var backgroundPlayback = true
+    private var inPip = false
+    private var pipReceiverRegistered = false
+    private val pipControlReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action != PhonePlaybackService.ACTION_CONTROL) return
+            when (intent.getStringExtra(PhonePlaybackService.EXTRA_CONTROL)) {
+                PhonePlaybackService.CONTROL_PLAY -> player?.play()
+                PhonePlaybackService.CONTROL_PAUSE -> player?.pause()
+                PhonePlaybackService.CONTROL_TOGGLE -> togglePlay()
+            }
+        }
+    }
     private var unlockControl: View? = null
     private val controlIconFont by lazy {
         runCatching {
@@ -401,6 +429,16 @@ class PhonePlayerActivity : Activity() {
         playerView.useController = false
         active = this
 
+        // PiP + background playback. Read the two Settings toggles the player
+        // screen already owns; both default on. Arming auto-PiP here means
+        // leaving the app mid-playback shrinks to a window instead of dropping
+        // the stream, and the foreground service keeps the audio alive when it
+        // doesn't (background-playback toggle, or a device without PiP).
+        autoPip = intent.getBooleanExtra(PhonePlayerIntent.EXTRA_AUTO_PIP, true)
+        backgroundPlayback =
+            intent.getBooleanExtra(PhonePlayerIntent.EXTRA_BACKGROUND_PLAYBACK, true)
+        setupPip()
+
         val exo = ExoPlayer.Builder(this, renderersFactory())
             .setLoadControl(
                 BufferPresets.loadControl(
@@ -450,6 +488,7 @@ class PhonePlayerActivity : Activity() {
                     mapOf("index" to currentIndex),
                 )
                 hideLoading()
+                updateBackgroundService()
             }
 
             override fun onPlaybackStateChanged(state: Int) {
@@ -469,6 +508,10 @@ class PhonePlayerActivity : Activity() {
                 ) {
                     loadEpisode(currentIndex + 1)
                 }
+            }
+
+            override fun onVideoSizeChanged(videoSize: VideoSize) {
+                updatePipState()
             }
 
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
@@ -494,6 +537,8 @@ class PhonePlayerActivity : Activity() {
                 updateKeepScreenOn()
                 syncPlayIcon()
                 bumpControls()
+                updatePipState()
+                updateBackgroundService()
             }
         })
 
@@ -616,6 +661,7 @@ class PhonePlayerActivity : Activity() {
         "fit" -> Triple(R.id.quick_display, R.string.phone_player_menu_display, { cycleDisplayMode() })
         "cast" -> if (castSupported) Triple(R.id.quick_cast, R.string.phone_player_menu_cast, { pickCast() }) else null
         "info" -> Triple(R.id.quick_info, R.string.phone_player_title_playback_info, { showInfo() })
+        "pip" -> if (pip.isAvailable()) Triple(R.id.quick_pip, R.string.phone_player_menu_pip, { enterPip() }) else null
         "lock" -> Triple(R.id.btn_controls_lock, R.string.phone_player_lock_controls, { setControlsLocked(true) })
         "settings" -> Triple(R.id.btn_controls_settings, R.string.phone_player_arrange_controls, { showControlArrangement() })
         else -> null
@@ -653,6 +699,7 @@ class PhonePlayerActivity : Activity() {
             "rotate" -> R.drawable.phone_player_rotate
             "fit" -> R.drawable.phone_player_display
             "cast" -> R.drawable.phone_player_cast
+            "pip" -> R.drawable.phone_player_pip
             "info" -> R.drawable.phone_player_info
             "lock" -> android.R.drawable.ic_lock_lock
             else -> android.R.drawable.ic_menu_preferences
@@ -711,8 +758,9 @@ class PhonePlayerActivity : Activity() {
 
     private fun showControlArrangement() {
         handler.removeCallbacks(hideRunnable)
-        val keys = listOf("speed", "tracks", "quality", "sources", "more", "episodes", "rotate", "fit", "cast", "info")
+        val keys = listOf("speed", "tracks", "quality", "sources", "pip", "more", "episodes", "rotate", "fit", "cast", "info")
             .filter { it != "episodes" || !isMovie }
+            .filter { it != "pip" || pip.isAvailable() }
         val labels = keys.map { key ->
             val label = when (key) {
                 "cast" -> getString(R.string.phone_player_menu_cast)
@@ -1923,6 +1971,11 @@ class PhonePlayerActivity : Activity() {
         labels += getString(R.string.phone_player_menu_rotate)
         icons += R.drawable.phone_player_rotate
         actions += { toggleRotation() }
+        if (pip.isAvailable()) {
+            labels += getString(R.string.phone_player_menu_pip)
+            icons += R.drawable.phone_player_pip
+            actions += { enterPip() }
+        }
         if (castSupported) {
             labels += getString(R.string.phone_player_menu_cast)
             icons += R.drawable.phone_player_cast
@@ -1987,6 +2040,9 @@ class PhonePlayerActivity : Activity() {
                 0 -> "PLAYBACK"
                 3 -> "WATCH NEXT"
                 5 -> "SCREEN & DEVICE"
+                // Index 8 is the PiP row exactly when PiP is available; the
+                // header is emitted only then so the groups stay aligned.
+                8 -> if (pip.isAvailable()) "PICTURE-IN-PICTURE" else null
                 else -> null
             }
             if (group != null) {
@@ -2136,6 +2192,28 @@ class PhonePlayerActivity : Activity() {
         if (p.isPlaying) p.pause() else p.play()
         syncPlayIcon()
         bumpControls()
+    }
+
+    /** PiP window buttons, arriving from PipController as the same control
+     * names the Flutter player uses. */
+    fun onPipAction(control: String) {
+        when (control) {
+            PipController.PLAY_PAUSE -> togglePlay()
+            PipController.REWIND -> seekBy(-10_000L)
+            PipController.FORWARD -> seekBy(10_000L)
+        }
+        updateBackgroundService()
+    }
+
+    /** PiP aspect + play/pause icon: only meaningful while the window is up. */
+    private fun updatePipState() {
+        if (!inPip) return
+        val size = player?.videoSize
+        pip.setState(
+            player?.isPlaying == true,
+            size?.width ?: 0,
+            size?.height ?: 0,
+        )
     }
 
     private fun seekBy(deltaMs: Long) {
@@ -2727,13 +2805,14 @@ class PhonePlayerActivity : Activity() {
         )
     }
 
-    // A phone gets interrupted by calls and notifications; the TV player never
-    // had to handle this. Pause on the way out and leave resuming to the user.
+    // A phone gets interrupted by calls and notifications. Leave the stream
+    // running when the viewer deliberately left it: in PiP (the whole point) or
+    // with background playback on. Otherwise pause as before.
     override fun onPause() {
         orientationObserver?.disable()
         super.onPause()
         sendProgress()
-        player?.pause()
+        if (!keepsPlayingOffscreen()) player?.pause()
         updateKeepScreenOn()
         handler.removeCallbacks(ticker)
     }
@@ -2746,6 +2825,104 @@ class PhonePlayerActivity : Activity() {
         orientationObserver?.enable()
         updateKeepScreenOn()
         handler.post(ticker)
+    }
+
+    /** Whether leaving the foreground should NOT pause the player. */
+    private fun keepsPlayingOffscreen(): Boolean =
+        inPip || (backgroundPlayback && playbackStarted && player?.isPlaying == true)
+
+    // ── PiP + background playback ────────────────────────────────────────
+
+    /** Arm auto-PiP and register the notification transport. Called once. */
+    private fun setupPip() {
+        pip.autoEnter = autoPip
+        pip.channel = null
+        // The native player handles the window's buttons in-process: it owns
+        // the ExoPlayer that Dart never sees.
+        pip.onAction = { control -> onPipAction(control) }
+        runCatching { pip.register() }
+        if (!pipReceiverRegistered) {
+            runCatching {
+                val filter = IntentFilter(PhonePlaybackService.ACTION_CONTROL)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                    registerReceiver(pipControlReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+                } else {
+                    @Suppress("UnspecifiedRegisterReceiverFlag")
+                    registerReceiver(pipControlReceiver, filter)
+                }
+                pipReceiverRegistered = true
+            }
+        }
+    }
+
+    /** Manual PiP entry (the PiP control / more-menu row). */
+    private fun enterPip() {
+        if (inPip) return
+        if (!pip.enter(sourceRectHint())) {
+            toast(getString(R.string.phone_player_menu_pip))
+        }
+    }
+
+    /** A rough on-screen rect for the video, so the window animates from it. */
+    private fun sourceRectHint(): Rect {
+        val view = playerView
+        if (view.width == 0 || view.height == 0) return Rect()
+        val loc = IntArray(2)
+        view.getLocationOnScreen(loc)
+        return Rect(loc[0], loc[1], loc[0] + view.width, loc[1] + view.height)
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (autoPip && playbackStarted && !inPip && pip.isAvailable()) enterPip()
+    }
+
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration,
+    ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        inPip = isInPictureInPictureMode
+        if (inPip) {
+            // A window holds only the video; drop the chrome and every dialog
+            // so nothing is left floating over the frame.
+            handler.removeCallbacks(hideRunnable)
+            controls.visibility = View.GONE
+            setBuffering(false)
+            moreDialog?.dismiss()
+            moreDialog = null
+            pip.applyParams()
+        } else {
+            // The window is expanding back into the Activity.
+            goImmersive()
+            showControls()
+        }
+        updateBackgroundService()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+    }
+
+    /** Start/refresh/stop the foreground service to match the live player. */
+    private fun updateBackgroundService() {
+        val shouldRun = playbackStarted && (inPip || backgroundPlayback)
+        if (shouldRun) {
+            val title = if (isMovie) {
+                titleText.text?.toString().orEmpty()
+            } else {
+                (titleText.text?.toString().orEmpty() + " · " + episodeText.text).trim(' ', '·')
+            }
+            val playing = player?.isPlaying == true
+            if (PhonePlaybackService.running) {
+                PhonePlaybackService.update(this, title, playing)
+            } else {
+                PhonePlaybackService.start(this, title, playing)
+            }
+        } else if (PhonePlaybackService.running) {
+            PhonePlaybackService.stop(this)
+        }
     }
 
     override fun onDestroy() {
@@ -2763,6 +2940,12 @@ class PhonePlayerActivity : Activity() {
         active = null
         castManager?.release()
         castManager = null
+        if (pipReceiverRegistered) {
+            runCatching { unregisterReceiver(pipControlReceiver) }
+            pipReceiverRegistered = false
+        }
+        runCatching { pip.unregister() }
+        PhonePlaybackService.stop(this)
         player?.release()
         player = null
         super.onDestroy()

@@ -1,0 +1,1 @@
+../../providers/mangakakalot.js

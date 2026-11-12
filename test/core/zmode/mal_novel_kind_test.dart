@@ -45,8 +45,11 @@ void main() {
 
     final titles = rows.expand((r) => r.items).map((i) => i.title).toSet();
     expect(titles, {'A Light Novel', 'A Novel'});
-    expect(titles, isNot(contains('A Manga')),
-        reason: 'this is the bug: manga showing up under Novel');
+    expect(
+      titles,
+      isNot(contains('A Manga')),
+      reason: 'this is the bug: manga showing up under Novel',
+    );
   });
 
   test('manga mode returns no novels', () async {
@@ -78,7 +81,7 @@ class _Adapter implements HttpClientAdapter {
   final Map<String, dynamic> Function(Map<String, dynamic>) respond;
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options, _, __) async {
+  Future<ResponseBody> fetch(RequestOptions options, _, _) async {
     final body = respond(Map<String, dynamic>.from(options.queryParameters));
     return ResponseBody.fromString(
       _encode(body),

@@ -57,7 +57,9 @@ void main() {
 
   /// [only] names the sources that actually have the title.
   SourceMatcher matcherWith(List<String> only) => SourceMatcher(
-    sources: _Src({for (final s in only) s: [_hit(s, title)]}),
+    sources: _Src({
+      for (final s in only) s: [_hit(s, title)],
+    }),
     store: store,
     prefs: prefs,
     candidates: (_) => const [
@@ -104,7 +106,10 @@ void main() {
       await m.pinTitleToSource(novel, 'lnr:a', title: title);
       await m.pinTitleToSource(novel, 'lnr:b', title: title);
 
-      expect((await m.resolve(novel, title: title))!.showUrl, contains('lnr:b'));
+      expect(
+        (await m.resolve(novel, title: title))!.showUrl,
+        contains('lnr:b'),
+      );
     });
   });
 
@@ -131,17 +136,19 @@ void main() {
       expect(after, isNull);
     });
 
-    test('the choice survives, so it does not sweep back to the old one',
-        () async {
-      final m = matcherWith(['mihon:dex']);
+    test(
+      'the choice survives, so it does not sweep back to the old one',
+      () async {
+        final m = matcherWith(['mihon:dex']);
 
-      await m.pinTitleToSource(manga, 'mihon:dex', title: title);
-      await m.pinTitleToSource(manga, 'mihon:nato', title: title);
+        await m.pinTitleToSource(manga, 'mihon:dex', title: title);
+        await m.pinTitleToSource(manga, 'mihon:nato', title: title);
 
-      // Not "unpin and fall back to Auto Resolve" — that sweeps and lands on
-      // MangaDex again, which is the thing the user just moved away from.
-      expect(m.sourceForTitle(manga), 'mihon:nato');
-    });
+        // Not "unpin and fall back to Auto Resolve" — that sweeps and lands on
+        // MangaDex again, which is the thing the user just moved away from.
+        expect(m.sourceForTitle(manga), 'mihon:nato');
+      },
+    );
 
     test('it asks again next time rather than caching the nothing', () async {
       // A source that gains the title later (or was just blocked at that

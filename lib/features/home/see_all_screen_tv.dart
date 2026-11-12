@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 
 import '../../core/models/media_item.dart';
 import '../../core/theme/app_colors.dart';
@@ -331,9 +332,8 @@ class _SeeAllScreenTvState extends State<SeeAllScreenTv> {
             ),
           if (_items.isNotEmpty)
             GridView.builder(
-              controller: paginating ? _controller : null,
+              scrollCacheExtent: ScrollCacheExtent.pixels(800), controller: paginating ? _controller : null,
               padding: const EdgeInsets.fromLTRB(40, 8, 40, 40),
-              cacheExtent: 800,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: tvPosterGridColumns(context),
                 // Match the grid geometry to the chosen title placement.

@@ -10,7 +10,7 @@ enum DownloadStatus {
   paused,
   done,
   failed,
-  unsupported, // no direct-file (e.g. HLS-only) source — phase 2
+  unsupported, // no downloadable source for this episode at all
   canceled,
 }
 

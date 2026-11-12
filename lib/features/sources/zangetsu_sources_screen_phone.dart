@@ -907,6 +907,35 @@ class _ZAddRepoDialogState extends State<_ZAddRepoDialog> {
   bool _loading = false;
   String? _error;
 
+  /// Community repos from [kSourceDirectoryUrl], shown as one-tap suggestions.
+  /// Empty while loading, on failure, or when the user already tracks them all
+  /// — the section simply doesn't render in that case.
+  List<SourceDirectoryEntry> _suggestions = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSuggestions();
+  }
+
+  Future<void> _loadSuggestions() async {
+    final entries = await sl<ProviderReposRegistry>().fetchDirectory(
+      kSourceDirectoryUrl,
+    );
+    if (!mounted) return;
+    setState(() => _suggestions = entries);
+  }
+
+  /// Fills the form from a directory entry so the user reviews before adding —
+  /// safer than silently installing a third-party repo on a stray tap.
+  void _useSuggestion(SourceDirectoryEntry e) {
+    setState(() {
+      _urlCtrl.text = e.repoUrl;
+      if (_nameCtrl.text.trim().isEmpty) _nameCtrl.text = e.name;
+      _error = null;
+    });
+  }
+
   @override
   void dispose() {
     _urlCtrl.dispose();
@@ -978,6 +1007,40 @@ class _ZAddRepoDialogState extends State<_ZAddRepoDialog> {
             ),
             const SizedBox(height: 10),
             Text(context.l10n.pasteRepoIndexJsonUrl, style: AppText.caption),
+            if (_suggestions.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Text(
+                context.l10n.communityRepos,
+                style: AppText.overline.copyWith(
+                  color: AppColors.textTertiary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: AppColors.bg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    for (var i = 0; i < _suggestions.length; i++) ...[
+                      if (i > 0)
+                        const Divider(
+                          height: 0.5,
+                          thickness: 0.5,
+                          color: AppColors.hairline,
+                        ),
+                      _ZSuggestionRow(
+                        entry: _suggestions[i],
+                        enabled: !_loading,
+                        onTap: () => _useSuggestion(_suggestions[i]),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
             if (_error != null) ...[
               const SizedBox(height: 8),
               Text(
@@ -1014,6 +1077,76 @@ class _ZAddRepoDialogState extends State<_ZAddRepoDialog> {
               : Text(context.l10n.navTabsAdd),
         ),
       ],
+    );
+  }
+}
+
+/// One tappable community-repo suggestion inside the add-repo dialog. Fills the
+/// form (it doesn't install) so the user confirms the URL/name before adding.
+class _ZSuggestionRow extends StatelessWidget {
+  const _ZSuggestionRow({
+    required this.entry,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final SourceDirectoryEntry entry;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final subtitle = [
+      if (entry.author.isNotEmpty) entry.author,
+      if (entry.description.isNotEmpty) entry.description,
+    ].join(' · ');
+    return InkWell(
+      onTap: enabled ? onTap : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            Icon(
+              entry.verified
+                  ? Icons.verified_rounded
+                  : Icons.folder_copy_rounded,
+              size: 18,
+              color: entry.verified
+                  ? AppColors.accent
+                  : AppColors.textTertiary,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    entry.name,
+                    style: AppText.body.copyWith(color: AppColors.textPrimary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: AppText.caption,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.north_east_rounded,
+              size: 16,
+              color: AppColors.textTertiary,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

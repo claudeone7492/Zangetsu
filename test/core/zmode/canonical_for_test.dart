@@ -82,7 +82,8 @@ class _MalAdapter implements HttpClientAdapter {
   final String title;
 
   @override
-  Future<ResponseBody> fetch(RequestOptions o, _, __) async => ResponseBody.fromString(
+  Future<ResponseBody> fetch(RequestOptions o, _, _) async =>
+      ResponseBody.fromString(
         jsonEncode({
           'data': [
             {
@@ -124,7 +125,9 @@ void main() {
       anilist: AniListCatalogue((q, v) async {
         anilistQueries.add(q);
         if (anilistThrows) throw Exception('AniList is down');
-        return {'Page': {'media': anilistResults}};
+        return {
+          'Page': {'media': anilistResults},
+        };
       }),
       tmdb: TmdbCatalogue((p, q) async {
         tmdbPaths.add(p);
@@ -167,8 +170,10 @@ void main() {
 
   test('the English title counts too', () async {
     final repo = build(anilistResults: [_al()]);
-    expect((await repo.canonicalFor(_fromSource('FMA')))?.url,
-        'zm://anime/mal:100');
+    expect(
+      (await repo.canonicalFor(_fromSource('FMA')))?.url,
+      'zm://anime/mal:100',
+    );
   });
 
   test('a different show is NOT accepted', () async {
@@ -187,7 +192,9 @@ void main() {
   test('a MAL id on the source item beats the title', () async {
     // Sources that expose a MAL id are exact, so a title that reads nothing
     // like the catalogue's still resolves.
-    final repo = build(anilistResults: [_al(romaji: 'Hagane no Renkinjutsushi')]);
+    final repo = build(
+      anilistResults: [_al(romaji: 'Hagane no Renkinjutsushi')],
+    );
     final hit = await repo.canonicalFor(
       _fromSource('FMA:B 2009 [Dual Audio]', malId: 100),
     );
@@ -205,9 +212,16 @@ void main() {
   });
 
   test('a movie item goes to TMDB, not AniList', () async {
-    final repo = build(tmdbResults: [
-      {'id': 55, 'title': 'Dune', 'poster_path': '/p.jpg', 'media_type': 'movie'},
-    ]);
+    final repo = build(
+      tmdbResults: [
+        {
+          'id': 55,
+          'title': 'Dune',
+          'poster_path': '/p.jpg',
+          'media_type': 'movie',
+        },
+      ],
+    );
     final hit = await repo.canonicalFor(
       _fromSource('Dune', type: ProviderType.movie),
     );
@@ -220,31 +234,40 @@ void main() {
     // The shared title matcher strips "Season 3" before comparing, which is
     // right when hunting a known title on a source and wrong here: linking
     // this would file season 3's progress under season 1 and scrobble it.
-    final repo = build(anilistResults: [
-      _al(romaji: 'Attack on Titan', english: null),
-    ]);
-    expect(await repo.canonicalFor(_fromSource('Attack on Titan Season 3')),
-        isNull);
+    final repo = build(
+      anilistResults: [_al(romaji: 'Attack on Titan', english: null)],
+    );
+    expect(
+      await repo.canonicalFor(_fromSource('Attack on Titan Season 3')),
+      isNull,
+    );
   });
 
   test('a remake does NOT inherit the original', () async {
-    final repo = build(anilistResults: [
-      _al(romaji: 'Fruits Basket', english: null),
-    ]);
-    expect(await repo.canonicalFor(_fromSource('Fruits Basket (2019)')), isNull);
+    final repo = build(
+      anilistResults: [_al(romaji: 'Fruits Basket', english: null)],
+    );
+    expect(
+      await repo.canonicalFor(_fromSource('Fruits Basket (2019)')),
+      isNull,
+    );
   });
 
   test('wrapper and quality noise is still stripped', () async {
     // "Watch … Online HD" carries no identity, so it must not cost a match.
-    final repo = build(anilistResults: [_al(romaji: 'One Piece', english: null)]);
-    expect((await repo.canonicalFor(_fromSource('Watch One Piece Online HD')))?.url,
-        'zm://anime/mal:100');
+    final repo = build(
+      anilistResults: [_al(romaji: 'One Piece', english: null)],
+    );
+    expect(
+      (await repo.canonicalFor(_fromSource('Watch One Piece Online HD')))?.url,
+      'zm://anime/mal:100',
+    );
   });
 
   test('a MAL id still wins over decorations', () async {
-    final repo = build(anilistResults: [
-      _al(romaji: 'Shingeki no Kyojin', english: null),
-    ]);
+    final repo = build(
+      anilistResults: [_al(romaji: 'Shingeki no Kyojin', english: null)],
+    );
     final hit = await repo.canonicalFor(
       _fromSource('Attack on Titan Season 3 [1080p]', malId: 100),
     );

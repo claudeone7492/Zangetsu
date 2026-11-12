@@ -15,17 +15,14 @@ String _ago(int days) => DateTime.now()
     .toIso8601String()
     .split('T')
     .first;
-String _ahead(int days) => DateTime.now()
-    .add(Duration(days: days))
-    .toIso8601String()
-    .split('T')
-    .first;
+String _ahead(int days) =>
+    DateTime.now().add(Duration(days: days)).toIso8601String().split('T').first;
 
 Map<String, dynamic> _node(int id, String title, String? start) => {
   'node': {
     'id': id,
     'title': title,
-    if (start != null) 'start_date': start,
+    'start_date': ?start,
     'main_picture': {'large': 'https://x/$id.jpg'},
   },
 };
@@ -84,17 +81,19 @@ void main() {
     expect(titles, contains('Newest This Season'));
   });
 
-  test('Recently released is newest first, and only what is actually out',
-      () async {
-    final rows = await catalogue().home(ZKind.anime);
-    final recent = rows.firstWhere((r) => r.title == 'Recently released');
-    expect(recent.items.first.title, 'Newest This Season');
-    expect(recent.items.map((i) => i.title), isNot(contains('Not Out Yet')));
-    // No start date means we can't place it, so it isn't claimed as recent.
-    expect(recent.items.map((i) => i.title), isNot(contains('Undated')));
-    // One Piece is out, so it belongs — just last, being the oldest.
-    expect(recent.items.last.title, 'Conan');
-  });
+  test(
+    'Recently released is newest first, and only what is actually out',
+    () async {
+      final rows = await catalogue().home(ZKind.anime);
+      final recent = rows.firstWhere((r) => r.title == 'Recently released');
+      expect(recent.items.first.title, 'Newest This Season');
+      expect(recent.items.map((i) => i.title), isNot(contains('Not Out Yet')));
+      // No start date means we can't place it, so it isn't claimed as recent.
+      expect(recent.items.map((i) => i.title), isNot(contains('Undated')));
+      // One Piece is out, so it belongs — just last, being the oldest.
+      expect(recent.items.last.title, 'Conan');
+    },
+  );
 
   test('both seasonal rows come from ONE request', () async {
     await catalogue().home(ZKind.anime);
@@ -107,7 +106,7 @@ class _Adapter implements HttpClientAdapter {
   final Map<String, dynamic> Function(String path) respond;
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options, _, __) async {
+  Future<ResponseBody> fetch(RequestOptions options, _, _) async {
     return ResponseBody.fromString(
       const JsonEncoder().convert(respond(options.path)),
       200,

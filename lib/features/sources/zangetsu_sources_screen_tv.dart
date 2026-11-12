@@ -1041,6 +1041,32 @@ class _ZTvAddRepoDialogState extends State<_ZTvAddRepoDialog> {
   bool _loading = false;
   String? _error;
 
+  /// Community repos from [kSourceDirectoryUrl], shown as D-pad-reachable
+  /// suggestions. Empty while loading / on failure / when all are tracked.
+  List<SourceDirectoryEntry> _suggestions = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSuggestions();
+  }
+
+  Future<void> _loadSuggestions() async {
+    final entries = await sl<ProviderReposRegistry>().fetchDirectory(
+      kSourceDirectoryUrl,
+    );
+    if (!mounted) return;
+    setState(() => _suggestions = entries);
+  }
+
+  void _useSuggestion(SourceDirectoryEntry e) {
+    setState(() {
+      _urlCtrl.text = e.repoUrl;
+      if (_nameCtrl.text.trim().isEmpty) _nameCtrl.text = e.name;
+      _error = null;
+    });
+  }
+
   @override
   void dispose() {
     _urlCtrl.dispose();
@@ -1079,44 +1105,83 @@ class _ZTvAddRepoDialogState extends State<_ZTvAddRepoDialog> {
     return AlertDialog(
       backgroundColor: AppColors.surface,
       title: Text(context.l10n.addRepo, style: AppText.headline),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // TvTextField: focus without opening IME; OK/Select shows the keyboard
-          // (bare TextField autofocus eats the remote and often never shows IME on TV).
-          TvTextField(
-            controller: _nameCtrl,
-            enabled: !_loading,
-            textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              labelText: context.l10n.customNameOptional,
-              hintText: context.l10n.leaveBlankToUseTheRepoSOwnName,
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // TvTextField: focus without opening IME; OK/Select shows the keyboard
+            // (bare TextField autofocus eats the remote and often never shows IME on TV).
+            TvTextField(
+              controller: _nameCtrl,
+              enabled: !_loading,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                labelText: context.l10n.customNameOptional,
+                hintText: context.l10n.leaveBlankToUseTheRepoSOwnName,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          TvTextField(
-            controller: _urlCtrl,
-            autofocus: true,
-            enabled: !_loading,
-            keyboardType: TextInputType.url,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => _submit(),
-            decoration: InputDecoration(
-              labelText: context.l10n.manifestUrl,
-              hintText: context.l10n.manifestUrlHint,
+            const SizedBox(height: 12),
+            TvTextField(
+              controller: _urlCtrl,
+              autofocus: true,
+              enabled: !_loading,
+              keyboardType: TextInputType.url,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _submit(),
+              decoration: InputDecoration(
+                labelText: context.l10n.manifestUrl,
+                hintText: context.l10n.manifestUrlHint,
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Text(context.l10n.pasteRepoIndexJsonUrlShort, style: AppText.caption),
-          if (_error != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
-              _error!,
-              style: AppText.caption.copyWith(color: AppColors.accent),
+              context.l10n.pasteRepoIndexJsonUrlShort,
+              style: AppText.caption,
             ),
+            if (_suggestions.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Text(
+                context.l10n.communityRepos,
+                style: AppText.overline.copyWith(
+                  color: AppColors.textTertiary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: AppColors.bg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    for (var i = 0; i < _suggestions.length; i++) ...[
+                      if (i > 0)
+                        const Divider(
+                          height: 0.5,
+                          thickness: 0.5,
+                          color: AppColors.hairline,
+                        ),
+                      _ZTvSuggestionRow(
+                        entry: _suggestions[i],
+                        enabled: !_loading,
+                        onTap: () => _useSuggestion(_suggestions[i]),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+            if (_error != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _error!,
+                style: AppText.caption.copyWith(color: AppColors.accent),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
       actions: [
         TvListFocusable(
@@ -1156,6 +1221,81 @@ class _ZTvAddRepoDialogState extends State<_ZTvAddRepoDialog> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// TV variant of the community-repo suggestion row — the whole row is a
+/// [TvListFocusable] so the D-pad reaches it and OK fills the form.
+class _ZTvSuggestionRow extends StatelessWidget {
+  const _ZTvSuggestionRow({
+    required this.entry,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final SourceDirectoryEntry entry;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final subtitle = [
+      if (entry.author.isNotEmpty) entry.author,
+      if (entry.description.isNotEmpty) entry.description,
+    ].join(' · ');
+    return TvListFocusable(
+      onTap: enabled ? onTap : () {},
+      semanticLabel: entry.name,
+      child: ExcludeSemantics(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              Icon(
+                entry.verified
+                    ? Icons.verified_rounded
+                    : Icons.folder_copy_rounded,
+                size: 18,
+                color: entry.verified
+                    ? AppColors.accent
+                    : AppColors.textTertiary,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      entry.name,
+                      style: AppText.body.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (subtitle.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: AppText.caption,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.north_east_rounded,
+                size: 16,
+                color: AppColors.textTertiary,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

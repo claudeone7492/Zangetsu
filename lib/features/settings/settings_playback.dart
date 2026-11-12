@@ -979,6 +979,17 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
                     if (mounted) setState(() {});
                   },
                 ),
+              if (Platform.isAndroid && !sl<AppMode>().isTv)
+                _toggleRow(
+                  icon: Icons.headphones_outlined,
+                  title: context.l10n.backgroundPlayback,
+                  subtitle: context.l10n.keepPlayingAudioWhenYouLeaveTheApp,
+                  value: _prefs.backgroundPlayback,
+                  onChanged: (v) async {
+                    await _prefs.setBackgroundPlayback(v);
+                    if (mounted) setState(() {});
+                  },
+                ),
               SettingsTile(
                 icon: Icons.info_outline_rounded,
                 title: context.l10n.playerInfoOverlay,

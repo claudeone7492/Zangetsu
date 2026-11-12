@@ -46,15 +46,18 @@ void main() {
     expect(prefs.get(ZKind.novel), 'lnr:3');
   });
 
-  test('anime, movie and tv share one pick, because they share one pool', () async {
-    await prefs.set(ZKind.movie, 'cs:4K HDHUB');
-    // candidatesForKind offers the same streaming sources for all three, so a
-    // separate pick per kind would just be three ways to say the same thing.
-    expect(prefs.get(ZKind.anime), 'cs:4K HDHUB');
-    expect(prefs.get(ZKind.tv), 'cs:4K HDHUB');
-    expect(prefs.get(ZKind.movie), 'cs:4K HDHUB');
-    expect(prefs.get(ZKind.manga), isNull);
-  });
+  test(
+    'anime, movie and tv share one pick, because they share one pool',
+    () async {
+      await prefs.set(ZKind.movie, 'cs:4K HDHUB');
+      // candidatesForKind offers the same streaming sources for all three, so a
+      // separate pick per kind would just be three ways to say the same thing.
+      expect(prefs.get(ZKind.anime), 'cs:4K HDHUB');
+      expect(prefs.get(ZKind.tv), 'cs:4K HDHUB');
+      expect(prefs.get(ZKind.movie), 'cs:4K HDHUB');
+      expect(prefs.get(ZKind.manga), isNull);
+    },
+  );
 
   test('clearing one kind leaves the others alone', () async {
     await prefs.set(ZKind.anime, 'ani:1');

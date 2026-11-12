@@ -648,7 +648,7 @@ void main() {
 
     test('leaving mid-sweep stops the pile growing', () async {
       var searches = 0;
-      final repo = _countingSources(onSearch: () => searches++);
+      final repo = _CountingSources(onSearch: () => searches++);
       final m = SourceMatcher(
         sources: repo,
         store: store,
@@ -676,8 +676,8 @@ void main() {
 
 /// Searches nothing on any source, so a sweep walks its whole candidate list and
 /// the between-sources abandonment check is the only thing that can end it.
-class _countingSources implements SourceRepository {
-  _countingSources({required this.onSearch});
+class _CountingSources implements SourceRepository {
+  _CountingSources({required this.onSearch});
   final void Function() onSearch;
 
   @override

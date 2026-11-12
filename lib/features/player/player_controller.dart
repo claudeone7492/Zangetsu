@@ -1,17 +1,19 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:background_downloader/background_downloader.dart';
 import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:gal/gal.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart' show rootBundle, PlatformException;
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import '../../core/platform/app_paths.dart';
+import '../../core/platform/apple_tv.dart';
 import 'package:path_provider/path_provider.dart';
-
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
 import '../../core/discord/discord_presence.dart';
@@ -30,7 +32,7 @@ import '../../core/playback/source_health_store.dart';
 import '../../core/playback/filler_service.dart';
 import '../../core/playback/skip_service.dart';
 import '../../core/playback/subtitle_language.dart';
-import '../../core/torrent/torrent_prefs.dart';
+import '../../core/debrid/playable_torrent.dart';
 import '../../core/torrent/torrent_service.dart';
 import '../../core/torrent/torrent_util.dart';
 import '../../core/playback/resume_store.dart';
@@ -38,10 +40,14 @@ import '../../core/playback/source_selection.dart';
 import '../../core/playback/title_prefs.dart';
 import '../../core/playback/watch_history.dart';
 import '../../core/playback/subtitle_download_service.dart';
+import '../../core/playback/subtitle_exporter.dart';
+import '../../core/playback/subtitle_text_codec.dart';
 import '../../core/playback/subtitle_translate_service.dart';
 import 'mpv_player_pool.dart';
 import '../../core/repository/catalogue_repository.dart';
 import '../../core/repository/source_repository.dart';
+import '../../core/stremio/stremio_provider.dart';
+import '../../core/stremio/stremio_ref.dart';
 import '../../core/zmode/playback_resolver.dart';
 import '../../core/zmode/source_matcher.dart';
 import '../../core/zmode/zmode_ids.dart';
@@ -1787,7 +1793,24 @@ class PlayerCubit extends Cubit<PlayerState> {
         if (!isCurrent()) return;
         // Keep the real extension so mpv picks the matching subtitle reader.
         final out = File('${dir.path}/softsub_${url.hashCode}${_subExt(url)}');
-        await out.writeAsBytes(bytes, flush: true);
+        // Caption sites serve legacy single-byte encodings (windows-125x,
+        // iso-8859-2) with no charset, which mpv would render as mojibake. Decode
+        // to text and write UTF-8; an HTML error page or a JSON payload decodes to
+        // something that is not a subtitle at all, so fall back to the plain
+        // remote uri rather than writing markup.
+        final prepared = prepareSubtitleBytes(
+          bytes,
+          declaredCharset: resp.headers.value('content-type') == null
+              ? null
+              : SubtitleTextCodec.charsetFromContentType(
+                  resp.headers.value('content-type'),
+                ),
+        );
+        if (prepared == null) {
+          await loadRemote();
+          return;
+        }
+        await out.writeAsBytes(prepared, flush: true);
         if (!isCurrent()) return;
         local = out.path;
         _localSubCache[url] = local;
@@ -1834,7 +1857,11 @@ class PlayerCubit extends Cubit<PlayerState> {
     String content;
     try {
       if (id != null && File(id).existsSync()) {
-        content = await File(id).readAsString();
+        // Decode rather than readAsString: a caption the user picked from disk
+        // may be in a legacy single-byte encoding, which readAsString (UTF-8)
+        // would turn into mojibake before it is translated.
+        final bytes = await File(id).readAsBytes();
+        content = decodeSubtitleText(bytes) ?? '';
       } else {
         // The active soft-sub, else the first available one.
         Subtitle? target;
@@ -1850,15 +1877,23 @@ class PlayerCubit extends Cubit<PlayerState> {
           return;
         }
         if (target.url != id) await setSoftSub(target); // select it first
-        final resp = await _dio.get<String>(
+        final resp = await _dio.get<List<int>>(
           target.url,
           options: Options(
-            responseType: ResponseType.plain,
+            responseType: ResponseType.bytes,
             headers: state.active?.headers,
             validateStatus: (_) => true,
           ),
         );
-        content = resp.data ?? '';
+        final contentType = resp.headers.value('content-type');
+        content =
+            decodeSubtitleText(
+              resp.data ?? const [],
+              declaredCharset: SubtitleTextCodec.charsetFromContentType(
+                contentType,
+              ),
+            ) ??
+            '';
       }
     } catch (_) {
       _toast('Couldn\'t load the subtitle');
@@ -1874,6 +1909,7 @@ class PlayerCubit extends Cubit<PlayerState> {
       final srt = await SubtitleTranslateService.instance.translate(
         content,
         targetIso,
+        stripHearingImpaired: sl<PlaybackPrefs>().removeHearingImpaired,
         onProgress: (p) {
           final pct = (p * 100).round();
           if (pct != lastPct) {
@@ -1899,6 +1935,109 @@ class PlayerCubit extends Cubit<PlayerState> {
       _toast('Subtitles translated');
     } catch (_) {
       _toast('Couldn\'t translate subtitles');
+    }
+  }
+
+  /// The title to name an exported caption after: the show title when known,
+  /// else the episode title, else a generic.
+  String get _exportTitle {
+    final show = showTitle?.trim();
+    if (show != null && show.isNotEmpty) return show;
+    final ep = currentEpisode.title.trim();
+    if (ep.isNotEmpty) return ep;
+    return 'subtitles';
+  }
+
+  /// Whether a caption is loaded that could be exported (a source soft-sub, a
+  /// file the user picked, or a translation the app produced).
+  bool get canExportSub {
+    final id = _wantedSubId;
+    if (id == null || id == 'no') return false;
+    return softSubs.any((s) => s.url == id) || File(id).existsSync();
+  }
+
+  /// Writes the currently loaded caption out as an `.srt` the viewer keeps.
+  ///
+  /// This is the counterpart to "Load from file": a caption the app produced — a
+  /// translation — lives only in memory, so without this it is lost the moment
+  /// the player closes. The file goes to the public Downloads folder so it is
+  /// reachable from any file manager, not to app-private storage.
+  Future<void> exportCurrentSub() async {
+    final id = _wantedSubId;
+    String content;
+    try {
+      if (id != null && File(id).existsSync()) {
+        content = decodeSubtitleText(await File(id).readAsBytes()) ?? '';
+      } else {
+        Subtitle? target;
+        for (final s in softSubs) {
+          if (s.url == id) {
+            target = s;
+            break;
+          }
+        }
+        target ??= softSubs.isNotEmpty ? softSubs.first : null;
+        if (target == null) {
+          // No BuildContext here; mirrors AppLocalizationsEn.noSubtitleToExport.
+          _toast('No subtitle loaded to export');
+          return;
+        }
+        final resp = await _dio.get<List<int>>(
+          target.url,
+          options: Options(
+            responseType: ResponseType.bytes,
+            headers: state.active?.headers,
+            validateStatus: (_) => true,
+          ),
+        );
+        final contentType = resp.headers.value('content-type');
+        content =
+            decodeSubtitleText(
+              resp.data ?? const [],
+              declaredCharset: SubtitleTextCodec.charsetFromContentType(
+                contentType,
+              ),
+            ) ??
+            '';
+      }
+    } catch (_) {
+      _toast('Couldn\'t load the subtitle');
+      return;
+    }
+    if (content.trim().isEmpty) {
+      _toast('Subtitle is empty');
+      return;
+    }
+    final path = await exportSubtitleText(content, _exportTitle);
+    _toast(
+      path == null
+          ? 'Couldn\'t save the subtitle'
+          : 'Subtitle saved to Downloads',
+    );
+  }
+
+  /// Converts [content] to SubRip and writes it into the public Downloads folder
+  /// (or the app's own storage when shared storage is unavailable, as on TV
+  /// boxes). Returns the saved path, or null when nothing was written.
+  Future<String?> exportSubtitleText(String content, String title) async {
+    final cues = SubtitleExporter.parseCues(content);
+    if (cues.isEmpty) return null;
+    final body = utf8.encode(SubtitleExporter.toSrt(cues));
+    final name = SubtitleExporter.fileName(title);
+    try {
+      final tmp = await getTemporaryDirectory();
+      final local = File('${tmp.path}/$name');
+      await local.writeAsBytes(body, flush: true);
+      if (isAppleTv) return local.path;
+      final shared = await FileDownloader().moveFileToSharedStorage(
+        local.path,
+        SharedStorage.downloads,
+        directory: 'Zangetsu',
+      );
+      if (shared != null && shared.isNotEmpty) return shared;
+      return local.path;
+    } catch (_) {
+      return null;
     }
   }
 
@@ -2360,8 +2499,9 @@ class PlayerCubit extends Cubit<PlayerState> {
     if (!_openedLocalFile) {
       unawaited(_pollForMoreSources(_episodeUrl(currentEpisode)));
     }
-    if (roomRole == RoomRole.host)
+    if (roomRole == RoomRole.host) {
       onLocalPlayback?.call('episode', Duration.zero);
+    }
     return true;
   }
 
@@ -2621,66 +2761,42 @@ class PlayerCubit extends Cubit<PlayerState> {
 
   // Active torrent stream (Phase 1: one at a time). Null for normal playback.
   String? _activeTorrentId;
-  StreamSubscription<TorrentProgress>? _torrentSub;
 
-  /// Streams a torrent [s] into a local http url, driving [PlayerState.torrentPhase]
-  /// as a buffering overlay. Returns a playable local-url source, or null if it
-  /// couldn't (a clean error is emitted, no throw). Stops any previous torrent.
+  /// Streams a torrent [s] into a playable HTTP url (debrid when configured,
+  /// otherwise the native engine), driving [PlayerState.torrentPhase] as a
+  /// buffering overlay. Returns a playable source, or null if it couldn't
+  /// (a clean error is emitted, no throw). Stops any previous torrent.
   Future<VideoSource?> _resolveTorrent(VideoSource s, int g) async {
     await _stopTorrent();
     emit(
       state.copyWith(torrentPhase: () => 'Finding peers…', error: () => null),
     );
-    _torrentSub = sl<TorrentService>().events().listen((p) {
-      if (g != _gen) return;
-      final txt = switch (p.state) {
-        TorrentState.finding => 'Finding peers…',
-        TorrentState.buffering =>
-          'Buffering ${(p.bufferPct * 100).clamp(0, 100).toStringAsFixed(0)}%'
-              '${p.peers > 0 ? ' · ${p.peers} peers' : ''}',
-        TorrentState.ready => 'Starting…',
-        TorrentState.error => 'Finding peers…',
-      };
-      emit(state.copyWith(torrentPhase: () => txt));
-    });
     try {
-      final t = await sl<TorrentService>().startStream(
-        s.url,
-        allowMobileData: sl<TorrentPrefs>().allowMobileData,
+      final result = await sl<PlayableTorrent>().resolve(
+        s,
+        onPhase: (txt) {
+          if (g != _gen) return;
+          emit(state.copyWith(torrentPhase: () => txt));
+        },
       );
-      await _torrentSub?.cancel();
-      _torrentSub = null;
       if (g != _gen) {
-        await _stopTorrent();
+        if (result.localTorrentId != null) {
+          try {
+            await sl<TorrentService>().stop(result.localTorrentId!);
+          } catch (_) {}
+        }
         return null;
       }
-      _activeTorrentId = t.id;
+      _activeTorrentId = result.localTorrentId;
       emit(state.copyWith(torrentPhase: () => null));
-      // A local progressive stream — treat as a plain file (mp4 tuning, no
-      // headers); keep the original quality/label/subs.
-      return VideoSource(
-        url: t.localUrl,
-        quality: s.quality,
-        label: s.label,
-        container: SourceContainer.mp4,
-        kind: s.kind,
-        audioLang: s.audioLang,
-        subtitles: s.subtitles,
-      );
-    } catch (e) {
-      await _torrentSub?.cancel();
-      _torrentSub = null;
+      return result.source;
+    } on PlayableTorrentException catch (e) {
       if (g != _gen) return null;
-      final msg = (e is PlatformException && e.code == 'wifi_only')
-          ? 'Torrents are set to Wi-Fi only. Turn on mobile data for torrents '
-                'in Settings › Torrents.'
-          : "Couldn't stream this torrent — no peers or it timed out. "
-                'Try another source.';
       emit(
         state.copyWith(
           torrentPhase: () => null,
           loadingSources: false,
-          error: () => msg,
+          error: () => e.message,
         ),
       );
       return null;
@@ -2691,8 +2807,6 @@ class PlayerCubit extends Cubit<PlayerState> {
   Future<void> _stopTorrent() async {
     final id = _activeTorrentId;
     _activeTorrentId = null;
-    await _torrentSub?.cancel();
-    _torrentSub = null;
     if (id != null) {
       try {
         await sl<TorrentService>().stop(id);
@@ -2736,8 +2850,9 @@ class PlayerCubit extends Cubit<PlayerState> {
     // ONLY torrent-specific code in the open path; direct urls skip it entirely.
     if (isTorrentUrl(s.url)) {
       final resolved = await _resolveTorrent(s, g);
-      if (g != _gen || resolved == null)
+      if (g != _gen || resolved == null) {
         return; // superseded or failed (error emitted)
+      }
       s = resolved;
     }
     _startTimer?.cancel();
@@ -3284,7 +3399,15 @@ class PlayerCubit extends Cubit<PlayerState> {
   Future<List<VideoSource>> _resolveNoted(String epUrl) async {
     final sw = Stopwatch()..start();
     try {
-      final out = await _resolveSources(epUrl);
+      final out =
+          sourceId == stremioSourceId &&
+              Platform.isAndroid &&
+              sl.isRegistered<StremioProvider>()
+          ? await sl<StremioProvider>().getVideoSources(
+              epUrl,
+              allowTorrent: true,
+            )
+          : await _resolveSources(epUrl);
       sw.stop();
       debugPrint(
         '[player-timing] resolve ${sw.elapsedMilliseconds}ms (${out.length} links)',
@@ -3836,8 +3959,9 @@ class PlayerCubit extends Cubit<PlayerState> {
     if (_goodPosMs > 0 && nowMs - _userSeekMs > 3000) {
       final elapsed = Duration(milliseconds: nowMs - _goodPosMs);
       final jump = _lastPos - _goodPos;
-      if (jump > elapsed * 4 + const Duration(seconds: 10))
+      if (jump > elapsed * 4 + const Duration(seconds: 10)) {
         return; // implausible
+      }
     }
     _goodPos = _lastPos;
     _goodPosMs = nowMs;

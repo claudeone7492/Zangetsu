@@ -28,10 +28,7 @@ void main() {
 
   test('falls back to the built-in list before anything is fetched', () {
     expect(GenreCatalog.cached, isEmpty);
-    expect(
-      GenreCatalog.genresFor(ZKind.anime),
-      metaGenresFor(ZKind.anime),
-    );
+    expect(GenreCatalog.genresFor(ZKind.anime), metaGenresFor(ZKind.anime));
   });
 
   test('prefers the fetched list once it exists', () async {

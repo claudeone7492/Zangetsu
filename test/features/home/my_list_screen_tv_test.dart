@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -65,7 +64,6 @@ class _FakeTracker extends ChangeNotifier implements Tracker {
     required this.name,
     this.connected = false,
     this.list = const [],
-    this.supportsReading = true,
   });
 
   final String name;
@@ -73,7 +71,7 @@ class _FakeTracker extends ChangeNotifier implements Tracker {
   final List<TrackerListItem> list;
 
   @override
-  final bool supportsReading;
+  final bool supportsReading = true;
 
   @override
   String get displayName => name;

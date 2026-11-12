@@ -2,18 +2,73 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:watch_app/core/discord/discord_gateway.dart';
+import 'package:watch_app/core/discord/discord_presence.dart';
 import 'package:watch_app/core/discord/discord_rpc.dart';
 import 'package:watch_app/core/privacy/incognito_mode.dart';
 
+/// Records every presence push the resolver would have sent over the gateway,
+/// so the adversarial ordering rules can be checked without a live socket.
+class _RecordingGateway extends DiscordGateway {
+  _RecordingGateway(this.updates, this.clears, this.closes)
+      : super('Bearer test');
+
+  final List<DiscordActivity> updates;
+  final List<void> clears;
+  final List<void> closes;
+
+  @override
+  void connect() {}
+
+  @override
+  void setPresence(DiscordActivity? activity, {String status = 'online'}) {
+    if (activity == null) {
+      clears.add(null);
+    } else {
+      updates.add(activity);
+    }
+  }
+
+  @override
+  Future<void> clearThenClose() async {
+    clears.add(null);
+    closes.add(null);
+  }
+
+  @override
+  Future<void> close() async => closes.add(null);
+
+  @override
+  void updateToken(String token) {}
+}
+
+/// Answers the external-assets endpoint so poster URLs map to a stable
+/// `mp:...` key instead of hitting the network.
+class _AssetAdapter implements HttpClientAdapter {
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async => ResponseBody.fromString(
+    '[{"external_asset_path": "ext/poster"}]',
+    200,
+    headers: {
+      Headers.contentTypeHeader: [Headers.jsonContentType],
+    },
+  );
+
+  @override
+  void close({bool force = false}) {}
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const channel = MethodChannel('zangetsu/discord_presence');
-  final messenger =
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
-  final calls = <MethodCall>[];
+  final updates = <DiscordActivity>[];
+  final clears = <void>[];
+  final closes = <void>[];
   late Directory directory;
   late DiscordRpc rpc;
   late Dio dio;
@@ -21,24 +76,20 @@ void main() {
   Future<void> settle() =>
       Future<void>.delayed(const Duration(milliseconds: 450));
 
-  List<Map> activities() => calls
-      .where((call) => call.method == 'update')
-      .map((call) => (call.arguments as Map)['activity'] as Map)
-      .toList();
-
   setUpAll(() async {
     directory = await Directory.systemTemp.createTemp('discord_adversarial');
     Hive.init(directory.path);
     await Hive.openBox(DiscordRpc.boxName);
-    dio = Dio();
-    rpc = DiscordRpc(dio);
-    messenger.setMockMethodCallHandler(channel, (call) async {
-      calls.add(call);
-      return null;
-    });
   });
 
   setUp(() async {
+    updates.clear();
+    clears.clear();
+    closes.clear();
+    dio = Dio()..httpClientAdapter = _AssetAdapter();
+    rpc = DiscordRpc(dio)
+      ..gatewayFactory = (token, {onAuthFailure}) =>
+          _RecordingGateway(updates, clears, closes);
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     IncognitoMode.notifier.value = false;
     await Hive.box(DiscordRpc.boxName).putAll({
@@ -52,21 +103,24 @@ void main() {
     });
     await rpc.getValidAccessToken();
     await rpc.setEnabled(true);
-    await Future<void>.delayed(Duration.zero);
-    calls.clear();
+    await settle();
+    updates.clear();
+    clears.clear();
+    closes.clear();
   });
 
   tearDown(() async {
     await rpc.setEnabled(false);
     await settle();
-    calls.clear();
+    updates.clear();
+    clears.clear();
+    closes.clear();
     IncognitoMode.notifier.value = false;
     debugDefaultTargetPlatformOverride = null;
+    dio.close();
   });
 
   tearDownAll(() async {
-    messenger.setMockMethodCallHandler(channel, null);
-    dio.close();
     await Hive.close();
     await directory.delete(recursive: true);
   });
@@ -79,13 +133,10 @@ void main() {
         posterUrl: 'https://example.com/a.jpg',
       );
       await settle();
-      final activity = activities().single;
-      expect(activity['details'], 'Looking at Title A');
-      expect(activity['type'], 0);
-      expect(
-        (activity['assets'] as Map)['large_image'],
-        'https://example.com/a.jpg',
-      );
+      final activity = updates.single;
+      expect(activity.details, 'Looking at Title A');
+      expect(activity.type, 0);
+      expect(activity.largeImage, 'mp:ext/poster');
     });
   }
 
@@ -95,7 +146,7 @@ void main() {
       await rpc.setPresencePref('browsingTitle', false);
       await rpc.setBrowsing(title: 'Private title');
       await settle();
-      expect(activities().single['details'], 'Browsing');
+      expect(updates.single.details, 'Browsing');
     },
   );
 
@@ -105,8 +156,8 @@ void main() {
       rpc.setBrowsing(title: 'Latest', posterUrl: 'https://example.com/b.jpg'),
     ]);
     await settle();
-    expect(activities(), hasLength(1));
-    expect(activities().single['details'], 'Looking at Latest');
+    expect(updates, hasLength(1));
+    expect(updates.single.details, 'Looking at Latest');
   });
 
   test('watching replaces pending browsing', () async {
@@ -121,8 +172,8 @@ void main() {
       ),
     ]);
     await settle();
-    expect(activities().single['type'], 3);
-    expect(activities().single['name'], 'Playing now');
+    expect(updates.single.type, 3);
+    expect(updates.single.name, 'Playing now');
   });
 
   test('clear cannot be undone by unfinished browsing work', () async {
@@ -130,7 +181,7 @@ void main() {
     rpc.clear();
     await pending;
     await settle();
-    expect(activities(), isEmpty);
+    expect(updates, isEmpty);
   });
 
   test('clear cannot be undone by unfinished watching work', () async {
@@ -138,7 +189,7 @@ void main() {
     rpc.clear();
     await pending;
     await settle();
-    expect(activities(), isEmpty);
+    expect(updates, isEmpty);
   });
 
   test('scheduled exit clear discards older unfinished browsing', () async {
@@ -146,15 +197,15 @@ void main() {
     rpc.clear(delay: const Duration(milliseconds: 50));
     await pending;
     await settle();
-    expect(activities(), isEmpty);
+    expect(updates, isEmpty);
   });
 
   test('new playback still cancels a scheduled exit clear', () async {
     rpc.clear(delay: const Duration(milliseconds: 50));
     await rpc.setWatching(title: 'Next episode');
     await settle();
-    expect(activities().single['name'], 'Next episode');
-    expect(calls.where((call) => call.method == 'clear'), isEmpty);
+    expect(updates.single.name, 'Next episode');
+    expect(clears, isEmpty);
   });
 
   test('older slow browsing cannot replace newer watching', () async {
@@ -166,22 +217,22 @@ void main() {
       ),
     ]);
     await settle();
-    expect(activities().single['type'], 3);
-    expect(activities().single['name'], 'Playing now');
+    expect(updates.single.type, 3);
+    expect(updates.single.name, 'Playing now');
   });
 
   test('disabled and incognito browsing never publish', () async {
     IncognitoMode.notifier.value = true;
     await rpc.setBrowsing(title: 'Hidden');
     await settle();
-    expect(activities(), isEmpty);
+    expect(updates, isEmpty);
     IncognitoMode.notifier.value = false;
     await rpc.setEnabled(false);
     await settle();
-    calls.clear();
+    updates.clear();
     await rpc.setBrowsing(title: 'Disabled');
     await settle();
-    expect(activities(), isEmpty);
+    expect(updates, isEmpty);
   });
 
   test('disable during browsing does not replay it when re-enabled', () async {
@@ -189,21 +240,20 @@ void main() {
     await rpc.setEnabled(false);
     await pending;
     await settle();
-    calls.clear();
+    updates.clear();
     await rpc.setEnabled(true);
     await settle();
-    expect(activities(), isEmpty);
+    expect(updates, isEmpty);
   });
 
   test('native-player lifecycle pause keeps watching activity', () async {
     await rpc.setWatching(title: 'Still playing');
     await settle();
-    calls.clear();
+    updates.clear();
+    clears.clear();
     rpc.onPaused();
     await settle();
-    expect(
-      calls.where((call) => call.method == 'clear' || call.method == 'close'),
-      isEmpty,
-    );
+    expect(clears, isEmpty);
+    expect(closes, isEmpty);
   });
 }
