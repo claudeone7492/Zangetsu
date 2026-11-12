@@ -161,6 +161,16 @@
       "file": "../providers/reelshort.js",
       "logo": "https://www.reelshort.com/favicon.ico",
       "nsfw": false
+    },
+    {
+      "id": "netshort",
+      "name": "NetShort",
+      "version": "1.0.0",
+      "type": "movie",
+      "lang": "en",
+      "file": "../providers/netshort.js",
+      "logo": "https://netshort.com/favicon.ico",
+      "nsfw": false
     }
   ]
 }
