@@ -72,6 +72,38 @@ function _userLangs() {
   return langs;
 }
 
+async function getHome(opts) {
+  // Sozo/CloudStream sources are expected to expose getHome; without it the
+  // Novels page has no shelves to show and renders empty even though search and
+  // the reader work. Gutenberg has no JSON feed, but its browse page is the
+  // same `booklink` markup search parses, so three sorted cuts give the page
+  // real rows.
+  opts = opts || {};
+  var langs = _userLangs();
+  var langParam = langs[0] ? '&lang=' + encodeURIComponent(langs[0]) : '';
+  var rows = [
+    { title: 'Most downloaded', sort: 'downloads' },
+    { title: 'Recently added', sort: 'release_date' },
+    { title: 'Popular classics', sort: '' },
+  ];
+  var sections = [];
+  for (var i = 0; i < rows.length; i++) {
+    var url = SITE + '/ebooks/search/?sort_order=' + rows[i].sort + langParam;
+    try {
+      var res = await fetch(url, { headers: { Referer: REFERER } });
+      if (res.status !== 200) {
+        console.log('gutenberg getHome HTTP', res.status, url);
+        continue;
+      }
+      var items = _parseSearchResults(res.body);
+      if (items.length) sections.push({ title: rows[i].title, items: items });
+    } catch (e) {
+      console.log('gutenberg getHome row failed: ' + rows[i].title + ' (' + e + ')');
+    }
+  }
+  return sections;
+}
+
 async function search(query, page, opts) {
   page = page || 1;
   opts = opts || {};
