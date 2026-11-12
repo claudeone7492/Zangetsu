@@ -45,8 +45,11 @@ void main() {
 
     final titles = rows.expand((r) => r.items).map((i) => i.title).toSet();
     expect(titles, {'A Light Novel', 'A Novel'});
-    expect(titles, isNot(contains('A Manga')),
-        reason: 'this is the bug: manga showing up under Novel');
+    expect(
+      titles,
+      isNot(contains('A Manga')),
+      reason: 'this is the bug: manga showing up under Novel',
+    );
   });
 
   test('manga mode returns no novels', () async {

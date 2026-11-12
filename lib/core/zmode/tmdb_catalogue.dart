@@ -141,7 +141,8 @@ class TmdbCatalogue implements VideoCatalogue {
     final rows = region.rows;
     if (rows == null || rows.isEmpty) return null;
     final sections = await Future.wait([
-      for (var i = 0; i < rows.length; i++) _fetchDiscoverRow(region, i, rows[i]),
+      for (var i = 0; i < rows.length; i++)
+        _fetchDiscoverRow(region, i, rows[i]),
     ]);
     return [for (final s in sections) ?s];
   }
@@ -232,23 +233,13 @@ class TmdbCatalogue implements VideoCatalogue {
     if (filters.genres.any((genre) => tmdbGenreId(genre, isTv: isTv) == null)) {
       return const MediaItemPage(items: [], hasMore: false);
     }
-    final ids = filters.genres
-        .map((genre) => tmdbGenreId(genre, isTv: isTv))
-        .whereType<int>()
-        .toSet();
-    final params = <String, dynamic>{
-      'page': page,
-      'include_adult': filters.adult,
-      'with_watch_providers': '$providerId',
-      'watch_region': region,
-      'sort_by': _sortValue(filters.sort, isTv: isTv),
-      if (ids.isNotEmpty) 'with_genres': ids.join(','),
-      if (filters.year != null)
-        (isTv ? 'first_air_date_year' : 'primary_release_year'): filters.year,
-      if (filters.sort == MetaSort.score || filters.minScore != null)
-        'vote_count.gte': 200,
-      if (filters.minScore != null) 'vote_average.gte': filters.minScore! / 10,
-    };
+    final params = tmdbDiscoverParams(
+      filters,
+      isTv: isTv,
+      page: page,
+      watchProviderOverride: '$providerId',
+      watchRegion: region,
+    );
     return _safePage(
       () => _get('/discover/${isTv ? 'tv' : 'movie'}', params),
       forcedTv: isTv,
@@ -374,27 +365,22 @@ class TmdbCatalogue implements VideoCatalogue {
     if (mediaType != 'movie' && !isTv) return false;
     if (filters.format == MetaFormat.tv && !isTv) return false;
     if (filters.format == MetaFormat.movie && isTv) return false;
-    if (filters.minScore != null) {
-      final score = (item['vote_average'] as num?)?.toDouble() ?? 0;
-      final votes = (item['vote_count'] as num?)?.toInt() ?? 0;
-      if (score < filters.minScore! / 10 || votes < 200) return false;
-    }
-    if (filters.year != null) {
-      final date = isTv ? item['first_air_date'] : item['release_date'];
-      if (date is! String || !date.startsWith('${filters.year}-')) return false;
-    }
-    if (filters.genres.isNotEmpty) {
-      final rawGenres = item['genre_ids'];
-      if (rawGenres is! List) return false;
-      final genreIds = rawGenres.whereType<int>().toSet();
-      final wanted = filters.genres
-          .map((genre) => tmdbGenreId(genre, isTv: isTv))
-          .toList();
-      if (wanted.any((id) => id == null || !genreIds.contains(id))) {
-        return false;
-      }
-    }
-    return true;
+    final date = isTv ? item['first_air_date'] : item['release_date'];
+    final year = (date is String && date.length >= 4)
+        ? int.tryParse(date.substring(0, 4))
+        : null;
+    final genreIds = item['genre_ids'] is List
+        ? (item['genre_ids'] as List).whereType<int>().toList()
+        : const <int>[];
+    return tmdbItemMatchesFilters(
+      filters,
+      isTv: isTv,
+      genreIds: genreIds,
+      year: year,
+      voteAverage: (item['vote_average'] as num?)?.toDouble() ?? 0,
+      voteCount: (item['vote_count'] as num?)?.toInt() ?? 0,
+      language: item['original_language'] as String?,
+    );
   }
 
   static int _compareSearchResults(
@@ -408,6 +394,7 @@ class TmdbCatalogue implements VideoCatalogue {
           ((b['name'] ?? b['title']) as String? ?? '').toLowerCase(),
         ),
       MetaSort.newest => _dateValue(b).compareTo(_dateValue(a)),
+      MetaSort.oldest => _dateValue(a).compareTo(_dateValue(b)),
       MetaSort.score =>
         ((b['vote_average'] as num?)?.toDouble() ?? 0).compareTo(
           (a['vote_average'] as num?)?.toDouble() ?? 0,
@@ -424,15 +411,6 @@ class TmdbCatalogue implements VideoCatalogue {
         (item['first_air_date'] ?? item['release_date']) as String? ?? '',
       )?.millisecondsSinceEpoch ??
       0;
-
-  static String _sortValue(MetaSort sort, {required bool isTv}) =>
-      switch (sort) {
-        MetaSort.score => 'vote_average.desc',
-        MetaSort.newest =>
-          isTv ? 'first_air_date.desc' : 'primary_release_date.desc',
-        MetaSort.title => isTv ? 'name.asc' : 'title.asc',
-        _ => 'popularity.desc',
-      };
 
   /// One page of what [providerId] carries in the user's region.
   ///
@@ -516,28 +494,7 @@ class TmdbCatalogue implements VideoCatalogue {
     // One side at a time: /discover is per-media-type, and a TV request with a
     // movie-only genre id returns nothing rather than an error.
     final isTv = f.format == MetaFormat.tv;
-    final ids = f.genres
-        .map((g) => tmdbGenreId(g, isTv: isTv))
-        .whereType<int>()
-        .toSet();
-    final params = <String, dynamic>{
-      'page': page,
-      'include_adult': f.adult,
-      'sort_by': switch (f.sort) {
-        MetaSort.score => 'vote_average.desc',
-        MetaSort.newest =>
-          isTv ? 'first_air_date.desc' : 'primary_release_date.desc',
-        MetaSort.title => 'title.asc',
-        _ => 'popularity.desc',
-      },
-      if (ids.isNotEmpty) 'with_genres': ids.join(','),
-      if (f.year != null)
-        (isTv ? 'first_air_date_year' : 'primary_release_year'): f.year,
-      // Sorting by score with no vote floor surfaces titles with one 10/10
-      // vote, which reads as broken rather than as a top-rated list.
-      if (f.sort == MetaSort.score || f.minScore != null) 'vote_count.gte': 200,
-      if (f.minScore != null) 'vote_average.gte': f.minScore! / 10,
-    };
+    final params = tmdbDiscoverParams(f, isTv: isTv, page: page);
     final items = _items(
       await _get('/discover/${isTv ? 'tv' : 'movie'}', params),
       forcedTv: isTv,

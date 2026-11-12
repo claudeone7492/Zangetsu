@@ -318,6 +318,7 @@ class AniListCatalogue implements AnimeCatalogue {
     MetaSort.score => 'SCORE_DESC',
     MetaSort.trending => 'TRENDING_DESC',
     MetaSort.newest => 'START_DATE_DESC',
+    MetaSort.oldest => 'START_DATE_ASC',
     MetaSort.title => 'TITLE_ROMAJI',
   };
 

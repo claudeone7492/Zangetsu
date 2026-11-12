@@ -25,8 +25,9 @@ class _FakeSources implements SourceRepository {
   @override
   List<({String id, String name})> get pickableSources => loadedSources;
   @override
-  List<({String id, String name})> get loadedSources =>
-      [for (final id in ids) (id: id, name: id)];
+  List<({String id, String name})> get loadedSources => [
+    for (final id in ids) (id: id, name: id),
+  ];
 }
 
 class _FakeScores implements SourceScoreStore {
@@ -109,8 +110,7 @@ void main() {
   // s19 sits last in the incoming pool (`_FakeSources` hands them out in
   // order s0..s19); only its play count sets it apart. Fails if `sweepList`
   // ever hands `.take(kAutoResolveCap)` the unranked list directly.
-  test('ranking actually runs: heavy history moves a source to the front',
-      () {
+  test('ranking actually runs: heavy history moves a source to the front', () {
     scores.seed('s19', 500);
     expect(sweepList(ZKind.anime).first.id, 's19');
   });
@@ -154,8 +154,11 @@ void main() {
 
   test('a cap outside 3..20 is clamped, never honoured', () {
     orderPrefs.setCap(ZKind.anime, 0);
-    expect(sweepList(ZKind.anime).length, SourceOrderPrefs.minCap,
-        reason: 'zero would mean Auto Resolve never tries anything');
+    expect(
+      sweepList(ZKind.anime).length,
+      SourceOrderPrefs.minCap,
+      reason: 'zero would mean Auto Resolve never tries anything',
+    );
     orderPrefs.setCap(ZKind.anime, 999);
     expect(sweepList(ZKind.anime).length, kAutoResolveCap);
   });
@@ -164,14 +167,19 @@ void main() {
   // but PlaybackResolver walked `orderedCandidates`, all 32 of them. "Try the
   // top 3 sources" meant 3 on the settings screen and 32 in the player, which
   // is the definition of a setting that is not one.
-  test('the playback sweep is bounded by the same number, not the full list',
-      () {
-    orderPrefs.setCap(ZKind.anime, 3);
-    expect(sweepList(ZKind.anime).length, 3);
-    // orderedCandidates stays whole — the picker and pin lookups need it.
-    expect(orderedCandidates(ZKind.anime).length, greaterThan(3),
-        reason: 'only the SWEEP is capped; the pickable list must stay full');
-  });
+  test(
+    'the playback sweep is bounded by the same number, not the full list',
+    () {
+      orderPrefs.setCap(ZKind.anime, 3);
+      expect(sweepList(ZKind.anime).length, 3);
+      // orderedCandidates stays whole — the picker and pin lookups need it.
+      expect(
+        orderedCandidates(ZKind.anime).length,
+        greaterThan(3),
+        reason: 'only the SWEEP is capped; the pickable list must stay full',
+      );
+    },
+  );
 
   // Switching a source off is gone: the limit and the order do that job now.
   // A stale exclude set from before must NOT keep a source out, or someone who

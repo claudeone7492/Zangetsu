@@ -375,7 +375,10 @@ class _SourceListViewState extends State<_SourceListView> {
         // swell somewhere to go, but a swollen letter floats over the list for
         // the moment it is swollen — padding the list out for it left a strip
         // of dead space beside every chevron, permanently.
-        Padding(padding: const EdgeInsetsDirectional.only(end: 24), child: list),
+        Padding(
+          padding: const EdgeInsetsDirectional.only(end: 24),
+          child: list,
+        ),
         Positioned(
           top: _railInset,
           bottom: bottomInset,

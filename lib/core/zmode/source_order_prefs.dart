@@ -128,7 +128,10 @@ List<({String id, String name})> applySourceOrder(
   // / TV rows keyed on id and assert. First occurrence wins.
   if (order.isEmpty) {
     final seen = <String>{};
-    return [for (final c in candidates) if (seen.add(c.id)) c];
+    return [
+      for (final c in candidates)
+        if (seen.add(c.id)) c,
+    ];
   }
   final byId = {for (final c in candidates) c.id: c};
   final ordered = <({String id, String name})>[];
@@ -207,7 +210,8 @@ List<({String id, String name})> rankByRecord(
 }) {
   // Decorate-sort-undecorate on the incoming index, so ties keep pool order.
   final indexed = [
-    for (var i = 0; i < pool.length; i++) (at: i, s: pool[i], r: recordOf(pool[i].id)),
+    for (var i = 0; i < pool.length; i++)
+      (at: i, s: pool[i], r: recordOf(pool[i].id)),
   ];
   indexed.sort((a, b) {
     // Dead sinks below everything, however good its history was. A source

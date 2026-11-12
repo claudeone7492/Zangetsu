@@ -120,10 +120,7 @@ class SimklCatalogue implements VideoCatalogue {
         }
       }),
     );
-    return [
-      for (final s in sections)
-        ?s,
-    ];
+    return [for (final s in sections) ?s];
   }
 
   /// The file holds the whole list, so paging is a local slice — no second
@@ -372,7 +369,10 @@ class SimklCatalogue implements VideoCatalogue {
       // title later costs one call instead of two. `simkl_id` in the data
       // files and /search/*, `simkl` on the sync payloads; both spellings
       // appear, so read either.
-      rememberSimklId(tmdbId, ids is Map ? (ids['simkl_id'] ?? ids['simkl']) : null);
+      rememberSimklId(
+        tmdbId,
+        ids is Map ? (ids['simkl_id'] ?? ids['simkl']) : null,
+      );
       final title = (row['title'] as String? ?? '').trim();
       if (title.isEmpty) continue;
       final c = ZCanonical(isTv ? ZKind.tv : ZKind.movie, 'tmdb:$tmdbId');
@@ -394,6 +394,7 @@ class SimklCatalogue implements VideoCatalogue {
     }
     return out;
   }
+
   /// 1..total_episodes for a series, one entry for a film. Simkl exposes a
   /// real per-episode endpoint (`/tv/episodes/{id}`) with titles and seasons,
   /// but it costs a second round-trip for names the matched source overwrites
@@ -425,5 +426,4 @@ class SimklCatalogue implements VideoCatalogue {
         ),
     ];
   }
-
 }

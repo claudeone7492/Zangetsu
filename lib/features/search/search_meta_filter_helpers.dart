@@ -35,11 +35,23 @@ String searchHintForScope(BuildContext context, SearchScope scope) {
 /// How many metadata filters are non-default (for badge counts).
 int metaFilterActiveCount(MetaFilters filters) {
   return (filters.genres.isNotEmpty ? 1 : 0) +
-      (filters.year != null ? 1 : 0) +
+      (filters.excludedGenres.isNotEmpty ? 1 : 0) +
+      (filters.hasYear ? 1 : 0) +
       (filters.season != null ? 1 : 0) +
       (filters.format != null ? 1 : 0) +
       (filters.status != null ? 1 : 0) +
       (filters.minScore != null ? 1 : 0) +
+      (filters.minVotes != null ? 1 : 0) +
+      (filters.runtimeMin != null || filters.runtimeMax != null ? 1 : 0) +
+      (filters.originCountry != null ? 1 : 0) +
+      (filters.originalLanguage != null ? 1 : 0) +
+      (filters.genreMatch != MetaGenreMatch.any ? 1 : 0) +
+      (filters.excludeOriginalLanguages != null ? 1 : 0) +
+      (filters.certifications.isNotEmpty ? 1 : 0) +
+      (filters.watchProviders.isNotEmpty ? 1 : 0) +
+      (filters.tvNetworks.isNotEmpty ? 1 : 0) +
+      (filters.tvStatuses.isNotEmpty ? 1 : 0) +
+      (filters.tvTypes.isNotEmpty ? 1 : 0) +
       (filters.sort != MetaSort.popularity ? 1 : 0);
 }
 

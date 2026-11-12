@@ -25,9 +25,7 @@ class _Cat implements AnimeCatalogue {
   Future<List<HomeSection>> home(ZKind kind) async {
     homeCalls++;
     if (broken) _fail();
-    return [
-      HomeSection(title: 'From $name', items: const []),
-    ];
+    return [HomeSection(title: 'From $name', items: const [])];
   }
 
   @override
@@ -117,8 +115,11 @@ void main() {
       await prefs.setAnime(AnimeProvider.mal);
       final after = MetadataProviderPrefs.revision.value;
       await prefs.setAnime(AnimeProvider.mal);
-      expect(MetadataProviderPrefs.revision.value, after,
-          reason: 'a no-op must not make every screen reload');
+      expect(
+        MetadataProviderPrefs.revision.value,
+        after,
+        reason: 'a no-op must not make every screen reload',
+      );
     });
 
     test('the choice survives a reopen', () async {
@@ -179,23 +180,38 @@ void main() {
       expect(mal.homeCalls, 0, reason: 'the backup must not be called at all');
     });
 
-    test('a broken primary falls through, and says which one answered',
-        () async {
-      final al = _Cat('AniList', broken: true), mal = _Cat('MAL');
-      String? told;
-      final rows = await viaAnime(al, mal, (c) => c.home(ZKind.anime),
-          onFallback: (n) => told = n);
-      expect(rows.single.title, 'From MAL');
-      expect(told, 'MAL', reason: 'silently swapping providers hides an outage');
-    });
+    test(
+      'a broken primary falls through, and says which one answered',
+      () async {
+        final al = _Cat('AniList', broken: true), mal = _Cat('MAL');
+        String? told;
+        final rows = await viaAnime(
+          al,
+          mal,
+          (c) => c.home(ZKind.anime),
+          onFallback: (n) => told = n,
+        );
+        expect(rows.single.title, 'From MAL');
+        expect(
+          told,
+          'MAL',
+          reason: 'silently swapping providers hides an outage',
+        );
+      },
+    );
 
     test('both down reports the CHOSEN provider, not the stand-in', () async {
       final al = _Cat('AniList', broken: true);
       final mal = _Cat('MAL', broken: true);
       await expectLater(
         viaAnime(al, mal, (c) => c.home(ZKind.anime)),
-        throwsA(isA<StateError>().having(
-            (e) => e.message, 'message', contains('AniList'))),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('AniList'),
+          ),
+        ),
       );
     });
   });

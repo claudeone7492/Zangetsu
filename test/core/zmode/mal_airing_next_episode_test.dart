@@ -14,8 +14,11 @@ import 'package:watch_app/core/zmode/zmode_ids.dart';
 
 const _show = ZCanonical(ZKind.anime, 'mal:100');
 
-String _ago(int days) =>
-    DateTime.now().subtract(Duration(days: days)).toIso8601String().split('T').first;
+String _ago(int days) => DateTime.now()
+    .subtract(Duration(days: days))
+    .toIso8601String()
+    .split('T')
+    .first;
 
 MalCatalogue _mal({
   required String status,
@@ -59,7 +62,10 @@ void main() {
   });
 
   test('an airing show with no start date claims nothing', () async {
-    final d = await _mal(status: 'currently_airing', episodes: 13).detail(_show);
+    final d = await _mal(
+      status: 'currently_airing',
+      episodes: 13,
+    ).detail(_show);
     expect(d.nextEpisode, isNull);
   });
 
@@ -73,16 +79,18 @@ void main() {
     expect(d.nextEpisode, isNull);
   });
 
-  test('a show that has finished airing its announced count claims nothing',
-      () async {
-    // Past the end: every episode is out, so nothing is pending.
-    final d = await _mal(
-      status: 'currently_airing',
-      episodes: 13,
-      startDate: _ago(200),
-    ).detail(_show);
-    expect(d.nextEpisode, isNull);
-  });
+  test(
+    'a show that has finished airing its announced count claims nothing',
+    () async {
+      // Past the end: every episode is out, so nothing is pending.
+      final d = await _mal(
+        status: 'currently_airing',
+        episodes: 13,
+        startDate: _ago(200),
+      ).detail(_show);
+      expect(d.nextEpisode, isNull);
+    },
+  );
 }
 
 class _Adapter implements HttpClientAdapter {

@@ -15,7 +15,9 @@ void main() {
     sent = [];
     return AniListCatalogue((q, v) async {
       sent.add(q);
-      return {'Page': {'media': []}};
+      return {
+        'Page': {'media': []},
+      };
     });
   }
 
@@ -30,14 +32,19 @@ void main() {
 
   test('filters become server-side clauses', () async {
     final c = catalogue();
-    await c.searchFiltered('', ZKind.anime, filters: const MetaFilters(
-      genres: ['Action', 'Comedy'],
-      year: 2023,
-      season: MetaSeason.summer,
-      status: MetaStatus.finished,
-      minScore: 80,
-      sort: MetaSort.score,
-    ));
+    await c.searchFiltered(
+      '',
+      ZKind.anime,
+      filters: const MetaFilters(
+        genres: ['Action', 'Comedy'],
+        yearFrom: 2023,
+        yearTo: 2023,
+        season: MetaSeason.summer,
+        status: MetaStatus.finished,
+        minScore: 80,
+        sort: MetaSort.score,
+      ),
+    );
 
     final q = sent.single;
     expect(q, contains('genre_in:["Action","Comedy"]'));
@@ -53,8 +60,11 @@ void main() {
 
   test('manga keeps its kind format instead of the picked one', () async {
     final c = catalogue();
-    await c.searchFiltered('', ZKind.manga,
-        filters: const MetaFilters(format: MetaFormat.tv));
+    await c.searchFiltered(
+      '',
+      ZKind.manga,
+      filters: const MetaFilters(format: MetaFormat.tv),
+    );
 
     final q = sent.single;
     // The kind already pins format; a second, contradicting clause would
@@ -65,8 +75,11 @@ void main() {
 
   test('novels stay novels', () async {
     final c = catalogue();
-    await c.searchFiltered('', ZKind.novel,
-        filters: const MetaFilters(genres: ['Fantasy']));
+    await c.searchFiltered(
+      '',
+      ZKind.novel,
+      filters: const MetaFilters(genres: ['Fantasy']),
+    );
 
     expect(sent.single, contains('format_in:[NOVEL]'));
     expect(sent.single, contains('genre_in:["Fantasy"]'));

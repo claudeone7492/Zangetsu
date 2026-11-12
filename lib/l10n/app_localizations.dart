@@ -9478,6 +9478,96 @@ abstract class AppLocalizations {
   /// **'Newest'**
   String get sortNewest;
 
+  /// No description provided for @sortOldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest'**
+  String get sortOldest;
+
+  /// No description provided for @yearFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Year from'**
+  String get yearFrom;
+
+  /// No description provided for @yearTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Year to'**
+  String get yearTo;
+
+  /// No description provided for @runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'Runtime'**
+  String get runtime;
+
+  /// No description provided for @originCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
+  String get originCountry;
+
+  /// No description provided for @streamingService.
+  ///
+  /// In en, this message translates to:
+  /// **'Service'**
+  String get streamingService;
+
+  /// No description provided for @certification.
+  ///
+  /// In en, this message translates to:
+  /// **'Certification'**
+  String get certification;
+
+  /// No description provided for @minimumVotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Min votes'**
+  String get minimumVotes;
+
+  /// No description provided for @originalLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get originalLanguage;
+
+  /// No description provided for @matchAllGenres.
+  ///
+  /// In en, this message translates to:
+  /// **'Match all genres'**
+  String get matchAllGenres;
+
+  /// No description provided for @matchAnyGenre.
+  ///
+  /// In en, this message translates to:
+  /// **'Match any genre'**
+  String get matchAnyGenre;
+
+  /// No description provided for @excludeGenres.
+  ///
+  /// In en, this message translates to:
+  /// **'Exclude genres'**
+  String get excludeGenres;
+
+  /// No description provided for @network.
+  ///
+  /// In en, this message translates to:
+  /// **'Network'**
+  String get network;
+
+  /// No description provided for @showStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Show status'**
+  String get showStatus;
+
+  /// No description provided for @showType.
+  ///
+  /// In en, this message translates to:
+  /// **'Show type'**
+  String get showType;
+
   /// No description provided for @sortTitle.
   ///
   /// In en, this message translates to:

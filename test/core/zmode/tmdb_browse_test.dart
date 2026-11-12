@@ -40,15 +40,18 @@ void main() {
     expect(sent.single['query'], 'bleach');
   });
 
-  test('a query with narrowing filters still discovers, then narrows', () async {
-    // Unchanged behaviour: /search/multi cannot express a genre, so the query
-    // is applied to the discover results afterwards.
-    await catalogue().searchFiltered(
-      'bleach',
-      filters: const MetaFilters(genres: ['Action']),
-    );
-    expect(paths.single, startsWith('/discover/'));
-  });
+  test(
+    'a query with narrowing filters still discovers, then narrows',
+    () async {
+      // Unchanged behaviour: /search/multi cannot express a genre, so the query
+      // is applied to the discover results afterwards.
+      await catalogue().searchFiltered(
+        'bleach',
+        filters: const MetaFilters(genres: ['Action']),
+      );
+      expect(paths.single, startsWith('/discover/'));
+    },
+  );
 
   test('sort choices reach discover', () async {
     await catalogue().searchFiltered(

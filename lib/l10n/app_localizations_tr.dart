@@ -5483,6 +5483,51 @@ class AppLocalizationsTr extends AppLocalizations {
   String get sortNewest => 'En yeni';
 
   @override
+  String get sortOldest => 'Oldest';
+
+  @override
+  String get yearFrom => 'Year from';
+
+  @override
+  String get yearTo => 'Year to';
+
+  @override
+  String get runtime => 'Runtime';
+
+  @override
+  String get originCountry => 'Country';
+
+  @override
+  String get streamingService => 'Service';
+
+  @override
+  String get certification => 'Certification';
+
+  @override
+  String get minimumVotes => 'Min votes';
+
+  @override
+  String get originalLanguage => 'Language';
+
+  @override
+  String get matchAllGenres => 'Match all genres';
+
+  @override
+  String get matchAnyGenre => 'Match any genre';
+
+  @override
+  String get excludeGenres => 'Exclude genres';
+
+  @override
+  String get network => 'Network';
+
+  @override
+  String get showStatus => 'Show status';
+
+  @override
+  String get showType => 'Show type';
+
+  @override
   String get sortTitle => 'A-Z';
 
   @override

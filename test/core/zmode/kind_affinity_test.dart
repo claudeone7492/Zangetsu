@@ -52,10 +52,11 @@ void main() {
     } catch (_) {}
   });
 
-  List<String> sweep(ZKind kind, {List<String> saved = const []}) =>
-      sweepOrder(candidatesForKind(repo, kind), kind, saved)
-          .map((s) => s.id)
-          .toList();
+  List<String> sweep(ZKind kind, {List<String> saved = const []}) => sweepOrder(
+    candidatesForKind(repo, kind),
+    kind,
+    saved,
+  ).map((s) => s.id).toList();
 
   test('candidatesForKind only filters — it does not reorder', () {
     // Affinity moved to the sweep layer; this list also feeds the per-title

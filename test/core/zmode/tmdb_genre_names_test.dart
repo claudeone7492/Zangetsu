@@ -9,10 +9,11 @@ import 'package:watch_app/core/zmode/metadata_filters.dart';
 void main() {
   group('tmdbGenreNames', () {
     test('maps movie ids to names', () {
-      expect(
-        tmdbGenreNames([28, 35, 27], isTv: false),
-        ['Action', 'Comedy', 'Horror'],
-      );
+      expect(tmdbGenreNames([28, 35, 27], isTv: false), [
+        'Action',
+        'Comedy',
+        'Horror',
+      ]);
     });
 
     test('uses the TV table for TV, which numbers things differently', () {

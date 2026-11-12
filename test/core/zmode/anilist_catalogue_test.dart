@@ -25,7 +25,11 @@ Map<String, dynamic> _media({
   'genres': ['Action'],
   'description': 'desc',
   'seasonYear': 2009,
-  'studios': {'nodes': [{'name': 'Bones'}]},
+  'studios': {
+    'nodes': [
+      {'name': 'Bones'},
+    ],
+  },
   'nextAiringEpisode': nextEp == null ? null : {'episode': nextEp},
 };
 
@@ -35,31 +39,39 @@ Map<String, dynamic> _media({
 /// response shape looks like for an aliased multi-query.
 Map<String, dynamic> _aliasedResponse(String query, {List<dynamic>? media}) {
   final aliases = RegExp(r'(r\d+):').allMatches(query).map((m) => m.group(1)!);
-  return {for (final a in aliases) a: {'media': media ?? [_media()]}};
+  return {
+    for (final a in aliases)
+      a: {
+        'media': media ?? [_media()],
+      },
+  };
 }
 
 void main() {
-  test('home issues exactly one request for every row and maps items', () async {
-    var calls = 0;
-    final cat = AniListCatalogue((q, v) async {
-      calls++;
-      return _aliasedResponse(q);
-    });
-    final rows = await cat.home(ZKind.anime);
-    expect(calls, 1); // one round-trip for the whole page, not one per row
-    expect(rows.length, 8); // Recently released, Trending, this season, next
-                             // season, all-time popular, top rated, Action,
-                             // Romance
-    expect(rows.first.title, 'Recently released');
-    final item = rows.first.items.single;
-    expect(item.url, 'zm://anime/mal:100');
-    expect(item.sourceId, ZmodeIds.sourceId);
-    expect(item.type, ProviderType.anime);
-    expect(item.malId, 100);
-    expect(item.title, 'Fullmetal Alchemist');
-    expect(item.englishTitle, 'FMA');
-    expect(item.banner, 'https://img/banner.jpg');
-  });
+  test(
+    'home issues exactly one request for every row and maps items',
+    () async {
+      var calls = 0;
+      final cat = AniListCatalogue((q, v) async {
+        calls++;
+        return _aliasedResponse(q);
+      });
+      final rows = await cat.home(ZKind.anime);
+      expect(calls, 1); // one round-trip for the whole page, not one per row
+      expect(rows.length, 8); // Recently released, Trending, this season, next
+      // season, all-time popular, top rated, Action,
+      // Romance
+      expect(rows.first.title, 'Recently released');
+      final item = rows.first.items.single;
+      expect(item.url, 'zm://anime/mal:100');
+      expect(item.sourceId, ZmodeIds.sourceId);
+      expect(item.type, ProviderType.anime);
+      expect(item.malId, 100);
+      expect(item.title, 'Fullmetal Alchemist');
+      expect(item.englishTitle, 'FMA');
+      expect(item.banner, 'https://img/banner.jpg');
+    },
+  );
 
   test('home for manga/novel also issues one request and maps items', () async {
     var calls = 0;
@@ -70,7 +82,7 @@ void main() {
     final rows = await cat.home(ZKind.manga);
     expect(calls, 1);
     expect(rows.length, 6); // Recently released, Trending, Popular,
-                            // Top rated, Action, Romance
+    // Top rated, Action, Romance
   });
 
   // START_DATE_DESC on its own sorts NOT_YET_RELEASED titles to the top —
@@ -106,10 +118,12 @@ void main() {
   // current month.
   test('novels use a lower popularity floor than manga', () async {
     int floorFor(List<dynamic> rows) {
-      final args = rows
-          .firstWhere((r) => r.title == 'Recently released')
-          .more!
-          .categoryId! as String;
+      final args =
+          rows
+                  .firstWhere((r) => r.title == 'Recently released')
+                  .more!
+                  .categoryId!
+              as String;
       return int.parse(
         RegExp(r'popularity_greater:(\d+)').firstMatch(args)!.group(1)!,
       );
@@ -122,21 +136,25 @@ void main() {
     );
   });
 
-  test('a malformed/partial multi-row response still yields the rows it can',
-      () async {
-    final cat = AniListCatalogue((q, v) async {
-      // r0 is fine, r1 is the wrong shape, r2 is simply missing — the rest
-      // (if any) never get a key either, which is the "missing" case too.
-      return {
-        'r0': {'media': [_media()]},
-        'r1': {'media': 'not-a-list'},
-      };
-    });
-    final rows = await cat.home(ZKind.anime);
-    expect(rows.length, 1);
-    // r0 is the opening row — the recently-released one.
-    expect(rows.single.title, 'Recently released');
-  });
+  test(
+    'a malformed/partial multi-row response still yields the rows it can',
+    () async {
+      final cat = AniListCatalogue((q, v) async {
+        // r0 is fine, r1 is the wrong shape, r2 is simply missing — the rest
+        // (if any) never get a key either, which is the "missing" case too.
+        return {
+          'r0': {
+            'media': [_media()],
+          },
+          'r1': {'media': 'not-a-list'},
+        };
+      });
+      final rows = await cat.home(ZKind.anime);
+      expect(rows.length, 1);
+      // r0 is the opening row — the recently-released one.
+      expect(rows.single.title, 'Recently released');
+    },
+  );
 
   test('a null response yields an empty home, not a throw', () async {
     final cat = AniListCatalogue((q, v) async => null);
@@ -144,26 +162,43 @@ void main() {
   });
 
   test('falls back to the AniList id when there is no MAL id', () async {
-    final cat = AniListCatalogue((q, v) async =>
-        {'Page': {'media': [_media(idMal: null, id: 77)]}});
+    final cat = AniListCatalogue(
+      (q, v) async => {
+        'Page': {
+          'media': [_media(idMal: null, id: 77)],
+        },
+      },
+    );
     final rows = await cat.search('x', ZKind.anime);
     expect(rows.single.url, 'zm://anime/al:77');
     expect(rows.single.malId, isNull);
   });
 
   test('manga and novel carry their own kind and type', () async {
-    final cat = AniListCatalogue((q, v) async =>
-        {'Page': {'media': [_media(chapters: 10, episodes: null)]}});
-    expect((await cat.search('x', ZKind.manga)).single.type, ProviderType.manga);
-    expect((await cat.search('x', ZKind.novel)).single.url,
-        'zm://novel/mal:100');
+    final cat = AniListCatalogue(
+      (q, v) async => {
+        'Page': {
+          'media': [_media(chapters: 10, episodes: null)],
+        },
+      },
+    );
+    expect(
+      (await cat.search('x', ZKind.manga)).single.type,
+      ProviderType.manga,
+    );
+    expect(
+      (await cat.search('x', ZKind.novel)).single.url,
+      'zm://novel/mal:100',
+    );
   });
 
   test('novel search asks AniList for the NOVEL format', () async {
     String? query;
     final cat = AniListCatalogue((q, v) async {
       query = q;
-      return {'Page': {'media': []}};
+      return {
+        'Page': {'media': []},
+      };
     });
     await cat.search('x', ZKind.novel);
     expect(query, contains('format_in:[NOVEL]'));
@@ -182,15 +217,19 @@ void main() {
   });
 
   test('an airing show lists only the episodes that are out', () async {
-    final cat = AniListCatalogue((q, v) async =>
-        {'Media': _media(episodes: null, status: 'RELEASING', nextEp: 8)});
+    final cat = AniListCatalogue(
+      (q, v) async => {
+        'Media': _media(episodes: null, status: 'RELEASING', nextEp: 8),
+      },
+    );
     final d = await cat.detail(const ZCanonical(ZKind.anime, 'mal:100'));
     expect(d.episodes.length, 7);
   });
 
   test('manga with no chapter count has no chapter list', () async {
-    final cat = AniListCatalogue((q, v) async =>
-        {'Media': _media(episodes: null, chapters: null)});
+    final cat = AniListCatalogue(
+      (q, v) async => {'Media': _media(episodes: null, chapters: null)},
+    );
     final d = await cat.detail(const ZCanonical(ZKind.manga, 'mal:100'));
     expect(d.episodes, isEmpty);
   });

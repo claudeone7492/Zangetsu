@@ -8,10 +8,16 @@ import 'zmode_prefs.dart';
 ///
 /// The stream kind (`movie`) already says "films and series"; this narrows it
 /// further to the datasets people actually browse by — Hollywood, Bollywood,
-/// Nollywood and Cartoons. Each is a fixed set of TMDB `/discover` rows (region
-/// + original language, plus the Animation genre for Cartoons), so selecting
-/// one swaps the whole movie Home for that cut rather than filtering a single
-/// row. `all` keeps TMDB's own curated rows.
+/// Nollywood and Cartoons. Each is a fixed set of TMDB `/discover` rows
+/// (`with_origin_country` + original language, plus the Animation genre for
+/// Cartoons), so selecting one swaps the whole movie Home for that cut rather
+/// than filtering a single row. `all` keeps TMDB's own curated rows.
+///
+/// `with_origin_country` — not `region` — is what actually filters by the
+/// film's country of origin. `region` only shifts release-date handling, so
+/// `region=NG` returned the whole English-language catalogue (20k titles) and
+/// the Nollywood shelf was just Hollywood. The origin filter returns the real
+/// ~1.1k Nigerian films.
 enum MovieRegion { all, hollywood, bollywood, nollywood, cartoons }
 
 /// One discover row: a title, the endpoint, and the params that make it that
@@ -41,8 +47,8 @@ extension MovieRegionX on MovieRegion {
         title: 'Popular in Hollywood',
         path: '/discover/movie',
         params: {
+          'with_origin_country': 'US',
           'with_original_language': 'en',
-          'region': 'US',
           'sort_by': 'popularity.desc',
         },
       ),
@@ -50,8 +56,8 @@ extension MovieRegionX on MovieRegion {
         title: 'Top rated Hollywood',
         path: '/discover/movie',
         params: {
+          'with_origin_country': 'US',
           'with_original_language': 'en',
-          'region': 'US',
           'sort_by': 'vote_average.desc',
           'vote_count.gte': '300',
         },
@@ -60,8 +66,8 @@ extension MovieRegionX on MovieRegion {
         title: 'New in Hollywood',
         path: '/discover/movie',
         params: {
+          'with_origin_country': 'US',
           'with_original_language': 'en',
-          'region': 'US',
           'sort_by': 'primary_release_date.desc',
         },
       ),
@@ -69,8 +75,8 @@ extension MovieRegionX on MovieRegion {
         title: 'Hollywood Action',
         path: '/discover/movie',
         params: {
+          'with_origin_country': 'US',
           'with_original_language': 'en',
-          'region': 'US',
           'with_genres': '28',
           'sort_by': 'popularity.desc',
         },
@@ -81,8 +87,8 @@ extension MovieRegionX on MovieRegion {
         title: 'Popular in Bollywood',
         path: '/discover/movie',
         params: {
+          'with_origin_country': 'IN',
           'with_original_language': 'hi',
-          'region': 'IN',
           'sort_by': 'popularity.desc',
         },
       ),
@@ -90,8 +96,8 @@ extension MovieRegionX on MovieRegion {
         title: 'Top rated Bollywood',
         path: '/discover/movie',
         params: {
+          'with_origin_country': 'IN',
           'with_original_language': 'hi',
-          'region': 'IN',
           'sort_by': 'vote_average.desc',
           'vote_count.gte': '100',
         },
@@ -100,8 +106,8 @@ extension MovieRegionX on MovieRegion {
         title: 'New in Bollywood',
         path: '/discover/movie',
         params: {
+          'with_origin_country': 'IN',
           'with_original_language': 'hi',
-          'region': 'IN',
           'sort_by': 'primary_release_date.desc',
         },
       ),
@@ -109,8 +115,8 @@ extension MovieRegionX on MovieRegion {
         title: 'Bollywood Drama',
         path: '/discover/movie',
         params: {
+          'with_origin_country': 'IN',
           'with_original_language': 'hi',
-          'region': 'IN',
           'with_genres': '18',
           'sort_by': 'popularity.desc',
         },
@@ -120,18 +126,13 @@ extension MovieRegionX on MovieRegion {
       (
         title: 'Popular in Nollywood',
         path: '/discover/movie',
-        params: {
-          'with_original_language': 'en',
-          'region': 'NG',
-          'sort_by': 'popularity.desc',
-        },
+        params: {'with_origin_country': 'NG', 'sort_by': 'popularity.desc'},
       ),
       (
         title: 'New in Nollywood',
         path: '/discover/movie',
         params: {
-          'with_original_language': 'en',
-          'region': 'NG',
+          'with_origin_country': 'NG',
           'sort_by': 'primary_release_date.desc',
         },
       ),
@@ -139,8 +140,7 @@ extension MovieRegionX on MovieRegion {
         title: 'Top rated Nollywood',
         path: '/discover/movie',
         params: {
-          'with_original_language': 'en',
-          'region': 'NG',
+          'with_origin_country': 'NG',
           'sort_by': 'vote_average.desc',
           'vote_count.gte': '20',
         },
@@ -149,8 +149,7 @@ extension MovieRegionX on MovieRegion {
         title: 'Nollywood Drama',
         path: '/discover/movie',
         params: {
-          'with_original_language': 'en',
-          'region': 'NG',
+          'with_origin_country': 'NG',
           'with_genres': '18',
           'sort_by': 'popularity.desc',
         },

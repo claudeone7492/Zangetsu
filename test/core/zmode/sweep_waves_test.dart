@@ -45,8 +45,9 @@ class _TimedSrc implements SourceRepository {
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
 
   @override
-  List<({String id, String name})> get loadedSources =>
-      [for (final id in ids) (id: id, name: id)];
+  List<({String id, String name})> get loadedSources => [
+    for (final id in ids) (id: id, name: id),
+  ];
 
   @override
   List<({String id, String name})> get pickableSources => loadedSources;
@@ -89,7 +90,12 @@ class _TimedSrc implements SourceRepository {
       return [
         Episode(id: '1', title: 'Ep 1', number: 1, url: 'https://$sourceId/1'),
         if (hasEpisode2.contains(sourceId))
-          Episode(id: '2', title: 'Ep 2', number: 2, url: 'https://$sourceId/2'),
+          Episode(
+            id: '2',
+            title: 'Ep 2',
+            number: 2,
+            url: 'https://$sourceId/2',
+          ),
       ];
     } finally {
       _active--;
@@ -148,28 +154,31 @@ void main() {
   // The whole point. Three sources that each take 200ms must be asked at the
   // same time, not one after another. Measured as real concurrency rather than
   // wall-clock time so the test cannot flake on a loaded CI runner.
-  test('a wave asks its sources at the same time, not one after another',
-      () async {
-    final src = _TimedSrc(
-      ids: const ['a', 'b', 'c'],
-      delay: const {
-        'a': Duration(milliseconds: 200),
-        'b': Duration(milliseconds: 200),
-        'c': Duration(milliseconds: 200),
-      },
-      // Only the last one can serve it, so all three are asked.
-      hasEpisode2: const {'c'},
-    );
-    final out = await build(src).sources(_ep2);
+  test(
+    'a wave asks its sources at the same time, not one after another',
+    () async {
+      final src = _TimedSrc(
+        ids: const ['a', 'b', 'c'],
+        delay: const {
+          'a': Duration(milliseconds: 200),
+          'b': Duration(milliseconds: 200),
+          'c': Duration(milliseconds: 200),
+        },
+        // Only the last one can serve it, so all three are asked.
+        hasEpisode2: const {'c'},
+      );
+      final out = await build(src).sources(_ep2);
 
-    expect(out, isNotEmpty);
-    expect(src.asked.length, 3, reason: 'all three were needed');
-    expect(
-      src.maxConcurrent,
-      3,
-      reason: 'a wave asks every candidate together; one at a time would be 1',
-    );
-  });
+      expect(out, isNotEmpty);
+      expect(src.asked.length, 3, reason: 'all three were needed');
+      expect(
+        src.maxConcurrent,
+        3,
+        reason:
+            'a wave asks every candidate together; one at a time would be 1',
+      );
+    },
+  );
 
   // Order is the viewer's own priority. Whichever source happens to answer
   // first must NOT win, or the ranking they set is quietly replaced by a race.

@@ -27,28 +27,41 @@ void main() {
     test('Hollywood is US/English, Bollywood is IN/Hindi', () {
       final hw = MovieRegion.hollywood.rows!.first;
       expect(hw.params['with_original_language'], 'en');
-      expect(hw.params['region'], 'US');
+      expect(hw.params['with_origin_country'], 'US');
+      // `region` only shifts release dates; it is NOT a country filter and
+      // must never stand in for one — it returned the whole catalogue.
+      expect(hw.params.containsKey('region'), isFalse);
 
       final bw = MovieRegion.bollywood.rows!.first;
       expect(bw.params['with_original_language'], 'hi');
-      expect(bw.params['region'], 'IN');
+      expect(bw.params['with_origin_country'], 'IN');
     });
 
-    test('Nollywood is Nigeria, Cartoons is the Animation genre', () {
-      final nw = MovieRegion.nollywood.rows!.first;
-      expect(nw.params['with_original_language'], 'en');
-      expect(nw.params['region'], 'NG');
+    test(
+      'Nollywood filters by Nigerian origin, Cartoons by the Animation genre',
+      () {
+        for (final row in MovieRegion.nollywood.rows!) {
+          expect(row.params['with_origin_country'], 'NG');
+          // Nigerian films span en/yo/ig/ha, so a language pin would drop the
+          // Yoruba and Igbo hits the shelf is meant to show.
+          expect(row.params.containsKey('with_original_language'), isFalse);
+          expect(row.params.containsKey('region'), isFalse);
+        }
 
-      for (final row in MovieRegion.cartoons.rows!) {
-        expect(row.params['with_genres'], startsWith('16'));
-      }
-    });
+        for (final row in MovieRegion.cartoons.rows!) {
+          expect(row.params['with_genres'], startsWith('16'));
+        }
+      },
+    );
 
     test('labels are the sub-menu chip text', () {
-      expect(
-        MovieRegion.values.map((r) => r.label).toList(),
-        ['All', 'Hollywood', 'Bollywood', 'Nollywood', 'Cartoons'],
-      );
+      expect(MovieRegion.values.map((r) => r.label).toList(), [
+        'All',
+        'Hollywood',
+        'Bollywood',
+        'Nollywood',
+        'Cartoons',
+      ]);
     });
   });
 
@@ -87,66 +100,75 @@ void main() {
       expect(await cat.homeForRegion(MovieRegion.all), isNull);
     });
 
-    test('fires one discover request per row, carrying the region params',
-        () async {
-      final calls = <(String, Map<String, dynamic>)>[];
-      final cat = TmdbCatalogue((p, q) async {
-        calls.add((p, q));
-        return {
-          'results': [
-            {
-              'id': 1,
-              'title': 'A Film',
-              'poster_path': '/p.jpg',
-              'genre_ids': const [16],
-            },
-          ],
-        };
-      });
+    test(
+      'fires one discover request per row, carrying the region params',
+      () async {
+        final calls = <(String, Map<String, dynamic>)>[];
+        final cat = TmdbCatalogue((p, q) async {
+          calls.add((p, q));
+          return {
+            'results': [
+              {
+                'id': 1,
+                'title': 'A Film',
+                'poster_path': '/p.jpg',
+                'genre_ids': const [16],
+              },
+            ],
+          };
+        });
 
-      final rows = await cat.homeForRegion(MovieRegion.cartoons);
-      expect(rows!.length, MovieRegion.cartoons.rows!.length);
-      expect(calls.length, rows.length);
-      for (final (path, params) in calls) {
-        expect(path, '/discover/movie');
-        expect(params['with_genres'], startsWith('16'));
-      }
-      expect(rows.first.title, 'Popular cartoons');
-      // Region discover responses are films; the item must be typed as one and
-      // carry the Animation genre name from its genre id.
-      final item = rows.first.items.single;
-      expect(item.type, ProviderType.movie);
-      expect(item.tmdbIsTv, isFalse);
-      expect(item.genres, contains('Animation'));
-      // The row must be paginable so "See all" pages the same query.
-      expect(rows.first.more!.kind, 'zm_video');
-      expect(rows.first.more!.categoryId, TmdbCatalogue.discRowId(MovieRegion.cartoons, 0));
-    });
+        final rows = await cat.homeForRegion(MovieRegion.cartoons);
+        expect(rows!.length, MovieRegion.cartoons.rows!.length);
+        expect(calls.length, rows.length);
+        for (final (path, params) in calls) {
+          expect(path, '/discover/movie');
+          expect(params['with_genres'], startsWith('16'));
+        }
+        expect(rows.first.title, 'Popular cartoons');
+        // Region discover responses are films; the item must be typed as one and
+        // carry the Animation genre name from its genre id.
+        final item = rows.first.items.single;
+        expect(item.type, ProviderType.movie);
+        expect(item.tmdbIsTv, isFalse);
+        expect(item.genres, contains('Animation'));
+        // The row must be paginable so "See all" pages the same query.
+        expect(rows.first.more!.kind, 'zm_video');
+        expect(
+          rows.first.more!.categoryId,
+          TmdbCatalogue.discRowId(MovieRegion.cartoons, 0),
+        );
+      },
+    );
 
-    test('drops an empty discover row rather than showing a blank shelf',
-        () async {
-      final cat = TmdbCatalogue((p, q) async => {'results': []});
-      final rows = await cat.homeForRegion(MovieRegion.hollywood);
-      expect(rows, isEmpty);
-    });
+    test(
+      'drops an empty discover row rather than showing a blank shelf',
+      () async {
+        final cat = TmdbCatalogue((p, q) async => {'results': []});
+        final rows = await cat.homeForRegion(MovieRegion.hollywood);
+        expect(rows, isEmpty);
+      },
+    );
 
-    test('browseDiscoverRow resolves the row id back to its query and pages it',
-        () async {
-      Map<String, dynamic>? lastParams;
-      String? lastPath;
-      final cat = TmdbCatalogue((p, q) async {
-        lastPath = p;
-        lastParams = q;
-        return {'results': []};
-      });
+    test(
+      'browseDiscoverRow resolves the row id back to its query and pages it',
+      () async {
+        Map<String, dynamic>? lastParams;
+        String? lastPath;
+        final cat = TmdbCatalogue((p, q) async {
+          lastPath = p;
+          lastParams = q;
+          return {'results': []};
+        });
 
-      final rowId = TmdbCatalogue.discRowId(MovieRegion.bollywood, 0);
-      await cat.browseDiscoverRow(rowId, 3);
-      expect(lastPath, '/discover/movie');
-      expect(lastParams!['page'], 3);
-      expect(lastParams!['with_original_language'], 'hi');
-      expect(lastParams!['region'], 'IN');
-    });
+        final rowId = TmdbCatalogue.discRowId(MovieRegion.bollywood, 0);
+        await cat.browseDiscoverRow(rowId, 3);
+        expect(lastPath, '/discover/movie');
+        expect(lastParams!['page'], 3);
+        expect(lastParams!['with_original_language'], 'hi');
+        expect(lastParams!['with_origin_country'], 'IN');
+      },
+    );
 
     test('browseDiscoverRow rejects a malformed or out-of-range id', () async {
       final cat = TmdbCatalogue((p, q) async => {'results': []});

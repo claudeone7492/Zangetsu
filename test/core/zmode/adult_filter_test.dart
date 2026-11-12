@@ -14,7 +14,9 @@ void main() {
     sent = [];
     return AniListCatalogue((q, v) async {
       sent.add(q);
-      return {'Page': {'media': []}};
+      return {
+        'Page': {'media': []},
+      };
     });
   }
 
@@ -59,16 +61,22 @@ void main() {
 
   test('excluded even with other filters set', () async {
     final c = catalogue();
-    await c.searchFiltered('', ZKind.anime,
-        filters: const MetaFilters(genres: ['Action']));
+    await c.searchFiltered(
+      '',
+      ZKind.anime,
+      filters: const MetaFilters(genres: ['Action']),
+    );
 
     expect(sent.single, contains('isAdult:false'));
   });
 
   test('adult on drops the clause rather than inverting it', () async {
     final c = catalogue();
-    await c.searchFiltered('', ZKind.anime,
-        filters: const MetaFilters(adult: true));
+    await c.searchFiltered(
+      '',
+      ZKind.anime,
+      filters: const MetaFilters(adult: true),
+    );
 
     // isAdult:true would return ONLY adult titles, which is not what "show
     // adult content" means — it means stop hiding them.
@@ -94,7 +102,10 @@ void main() {
     expect(const MetaFilters(adult: true).narrowsCatalogue, isFalse);
     expect(const MetaFilters().narrowsCatalogue, isFalse);
     expect(const MetaFilters(genres: ['Action']).narrowsCatalogue, isTrue);
-    expect(const MetaFilters(year: 2020).narrowsCatalogue, isTrue);
+    expect(
+      const MetaFilters(yearFrom: 2020, yearTo: 2020).narrowsCatalogue,
+      isTrue,
+    );
     expect(const MetaFilters(sort: MetaSort.score).narrowsCatalogue, isTrue);
   });
 }

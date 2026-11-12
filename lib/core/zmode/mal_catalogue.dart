@@ -117,12 +117,15 @@ class MalCatalogue implements AnimeCatalogue {
 
   static (int year, String season) _currentSeason([DateTime? now]) {
     final n = now ?? DateTime.now();
-    return (n.year, switch (n.month) {
-      1 || 2 || 3 => 'winter',
-      4 || 5 || 6 => 'spring',
-      7 || 8 || 9 => 'summer',
-      _ => 'fall',
-    });
+    return (
+      n.year,
+      switch (n.month) {
+        1 || 2 || 3 => 'winter',
+        4 || 5 || 6 => 'spring',
+        7 || 8 || 9 => 'summer',
+        _ => 'fall',
+      },
+    );
   }
 
   /// First day of the season [d] falls in — the cutoff that separates a show
@@ -190,9 +193,7 @@ class MalCatalogue implements AnimeCatalogue {
     final results = await Future.wait([
       for (final (_, rankingType) in rows)
         if (_isSeasonRow(rankingType))
-          Future.value(
-            _items({'data': _cutSeason(season, rankingType)}, kind),
-          )
+          Future.value(_items({'data': _cutSeason(season, rankingType)}, kind))
         else
           _get('/${_path(kind)}/ranking', {
                 'ranking_type': rankingType,

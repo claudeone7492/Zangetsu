@@ -88,10 +88,16 @@ void main() {
     expect(s.more, isNotNull);
     // The routing test is an id comparison: ZmodeIds.isZ checks for a zm://
     // URL, and a sourceId is never one.
-    expect(s.more!.sourceId, ZmodeIds.sourceId,
-        reason: 'See all routes on this to pick the right repository');
-    expect(ZmodeIds.isZ(s.more!.sourceId), isFalse,
-        reason: 'guards the mistake this test caught');
+    expect(
+      s.more!.sourceId,
+      ZmodeIds.sourceId,
+      reason: 'See all routes on this to pick the right repository',
+    );
+    expect(
+      ZmodeIds.isZ(s.more!.sourceId),
+      isFalse,
+      reason: 'guards the mistake this test caught',
+    );
     expect(s.more!.categoryId, '/movie/popular');
   });
 
@@ -115,7 +121,12 @@ void main() {
     );
     expect(unknown.kind.startsWith('zm_'), isTrue);
     expect(
-      const ['zm_video', 'zm_anime', 'zm_manga', 'zm_novel'].contains(unknown.kind),
+      const [
+        'zm_video',
+        'zm_anime',
+        'zm_manga',
+        'zm_novel',
+      ].contains(unknown.kind),
       isFalse,
     );
   });

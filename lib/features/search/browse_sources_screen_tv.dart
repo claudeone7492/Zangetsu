@@ -211,13 +211,24 @@ class _BrowseSourcesListTv extends StatelessWidget {
     final showManga = kind == SourceListKind.manga;
     final showNovel = kind == SourceListKind.novel;
 
-    final groups = <(String, List<({String id, String label, String? repo, String? icon})>)>[
-      if (showStreaming) (context.l10n.anime, b.anime.where(matches).toList()),
-      if (showStreaming)
-        (context.l10n.moviesSeries, b.movies.where(matches).toList()),
-      if (showManga) (context.l10n.modeManga, b.manga.where(matches).toList()),
-      if (showNovel) (context.l10n.modeNovel, b.novel.where(matches).toList()),
-    ].where((g) => g.$2.isNotEmpty).toList();
+    final groups =
+        <
+              (
+                String,
+                List<({String id, String label, String? repo, String? icon})>,
+              )
+            >[
+              if (showStreaming)
+                (context.l10n.anime, b.anime.where(matches).toList()),
+              if (showStreaming)
+                (context.l10n.moviesSeries, b.movies.where(matches).toList()),
+              if (showManga)
+                (context.l10n.modeManga, b.manga.where(matches).toList()),
+              if (showNovel)
+                (context.l10n.modeNovel, b.novel.where(matches).toList()),
+            ]
+            .where((g) => g.$2.isNotEmpty)
+            .toList();
 
     if (groups.isEmpty) {
       final nothingInstalled =

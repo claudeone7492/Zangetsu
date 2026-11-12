@@ -1400,40 +1400,43 @@ void main() {
     'genre_ids': const [16],
   };
 
-  test('a region cut replaces the movie home with TMDB discover rows', () async {
-    await MovieRegionPrefs.setRegion(MovieRegion.cartoons);
-    final paths = <String>[];
-    final r = _metaRepo(
-      sources: src,
-      store: store,
-      prefs: prefs,
-      browseKind: () => ZKind.movie,
-      matcher: SourceMatcher(
+  test(
+    'a region cut replaces the movie home with TMDB discover rows',
+    () async {
+      await MovieRegionPrefs.setRegion(MovieRegion.cartoons);
+      final paths = <String>[];
+      final r = _metaRepo(
         sources: src,
         store: store,
         prefs: prefs,
-        candidates: (_) => [(id: 'allanime', name: 'AllAnime')],
-      ),
-      tmdb: TmdbCatalogue((p, q) async {
-        paths.add(p);
-        return {
-          'results': [discoverMovie(p.hashCode & 0xffff)],
-        };
-      }),
-    );
+        browseKind: () => ZKind.movie,
+        matcher: SourceMatcher(
+          sources: src,
+          store: store,
+          prefs: prefs,
+          candidates: (_) => [(id: 'allanime', name: 'AllAnime')],
+        ),
+        tmdb: TmdbCatalogue((p, q) async {
+          paths.add(p);
+          return {
+            'results': [discoverMovie(p.hashCode & 0xffff)],
+          };
+        }),
+      );
 
-    final rows = await r.home();
-    expect(rows, isNotEmpty);
-    // Every request went to discover — the plain /movie/* and /trending rows
-    // were not fetched at all.
-    expect(paths, isNotEmpty);
-    expect(paths.every((p) => p == '/discover/movie'), isTrue);
-    // The row is paginable so "See all" opens the same query.
-    expect(
-      rows.first.more!.categoryId,
-      TmdbCatalogue.discRowId(MovieRegion.cartoons, 0),
-    );
-  });
+      final rows = await r.home();
+      expect(rows, isNotEmpty);
+      // Every request went to discover — the plain /movie/* and /trending rows
+      // were not fetched at all.
+      expect(paths, isNotEmpty);
+      expect(paths.every((p) => p == '/discover/movie'), isTrue);
+      // The row is paginable so "See all" opens the same query.
+      expect(
+        rows.first.more!.categoryId,
+        TmdbCatalogue.discRowId(MovieRegion.cartoons, 0),
+      );
+    },
+  );
 
   test('the all cut keeps the plain movie home', () async {
     await MovieRegionPrefs.setRegion(MovieRegion.all);
@@ -1451,7 +1454,9 @@ void main() {
       ),
       tmdb: TmdbCatalogue((p, q) async {
         paths.add(p);
-        return {'results': [discoverMovie(1)]};
+        return {
+          'results': [discoverMovie(1)],
+        };
       }),
     );
 

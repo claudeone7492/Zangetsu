@@ -476,7 +476,8 @@ class MetadataRepository implements CatalogueRepository {
     // the pick silently swapped for Simkl's unrelated default rows. `all`
     // (and every non-movie kind) keeps the provider's own rows below.
     if (k == ZKind.movie && !MovieRegionPrefs.region.isAll) {
-      final rows = await _tmdb.homeForRegion(MovieRegionPrefs.region) ?? const [];
+      final rows =
+          await _tmdb.homeForRegion(MovieRegionPrefs.region) ?? const [];
       for (final r in rows) {
         r.items.forEach(_remember);
       }
