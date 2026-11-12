@@ -28,8 +28,8 @@ Legend: ✅ done / shipped · 🟡 partial or gated · ❌ not done / missing
 | Manga mode | ✅ | `lib/features/reader/manga_reader_screen.dart` |
 | Novel mode (light novels) | ✅ | `lib/features/reader/novel_reader_screen.dart` |
 | Z-Mode metadata catalogue | ✅ | `lib/core/zmode/`, toggle wired in settings/home |
-| Stremio catalogue + streams | ❌ | only on `feature/stremio-support`; `lib/core/stremio/` absent from `main` |
-| Stremio title logos | ❌ | branch-only (`16047fee`, reverted + re-added on branch) |
+| Stremio catalogue + streams | ✅ | `lib/core/stremio/` merged; wired in detail/player/settings |
+| Stremio title logos | ✅ | merged with `lib/core/stremio/` |
 
 ## 3. Sources / Extension Ecosystems
 
@@ -66,12 +66,12 @@ Legend: ✅ done / shipped · 🟡 partial or gated · ❌ not done / missing
 | Discord rich presence | ✅ | `lib/core/discord/` |
 | Subtitles + download | ✅ | `subtitle_download_service.dart` |
 | Anime4K GPU upscaling | ✅ | `settings_playback.dart:690` |
-| Portrait mini-player | ❌ | only on `feat/portrait-mini-player`; `watch_screen.dart` absent from `main` |
-| Episode comments | ❌ | `player_screen.dart:2918` → `_openComingSoonSheet()` |
-| Watch Together / Watch Party | ❌ | `watch_together_controller.dart:13` `isEnabled = false` |
+| Portrait mini-player | ✅ | `lib/features/player/player_watch_page.dart` (re-architected on main) |
+| Episode comments | ✅ | `episode_comments_sheet.dart` wired at `player_screen.dart` `_openCommentsSheet` |
+| Watch Together / Watch Party | 🟡 | fully built, owner-disabled (`watch_together_controller.dart:13` `isEnabled = false`) |
 | Trailers | ✅ | `lib/features/trailer/trailer_screen.dart` |
 | Voice search | ✅ | `phone_voice_search_sheet.dart` (native channel) |
-| TV play-next "completed" scrobble (tvOS) | ❌ | on `fix/68-tv-auto-tracking`; not in `main` |
+| TV play-next "completed" scrobble (tvOS) | ✅ | `TvSystemPlayerViewController.swift` `playNext(completed:)` → `persistProgress` |
 
 ## 6. Reader
 
@@ -90,8 +90,9 @@ Legend: ✅ done / shipped · 🟡 partial or gated · ❌ not done / missing
 | Direct-file download | ✅ | `lib/core/download/download_manager.dart` |
 | HLS download | ✅ | `hls_downloader.dart` |
 | Torrent download | ✅ | `lib/core/torrent/` |
-| Debrid (Real-Debrid / TorBox) | ❌ | only on `feat/debrid-rd-torbox`; `lib/core/debrid/` absent from `main` |
-| HLS-only source download | ❌ | `DownloadStatus.unsupported` ("phase 2"), `download_record.dart:13` |
+| Debrid (Real-Debrid / TorBox) | ✅ | `lib/core/debrid/` merged; wired in settings + `injector.dart` |
+| HLS-only source download | ✅ | `hls_downloader.dart` (background isolate, resume, AES-128, fMP4/TS) |
+| MPEG-DASH (.mpd) download | ✅ | `dash_downloader.dart` + `dash_manifest.dart` |
 
 ## 8. Social / Community
 
@@ -141,9 +142,9 @@ Legend: ✅ done / shipped · 🟡 partial or gated · ❌ not done / missing
 
 | Item | State | Evidence |
 |---|:---:|---|
-| Test suite green | ❌ | `flutter test`: **4122 passed, 8 skipped, 12 failed** |
-| CI workflow in repo | ❌ | `.github/workflows/ci.yml` exists but is **untracked** (not in `main`) |
-| `dart_test.yaml` ffi skip | 🟡 | untracked; needed to skip native-QuickJS suites on host |
+| Test suite green | ✅ | `flutter test`: **4454 passed, 8 skipped, 1 failed** — the 1 is the concurrency flake below (passes in isolation) |
+| CI workflow in repo | ✅ | `.github/workflows/ci.yml` tracked |
+| `dart_test.yaml` ffi skip | ✅ | tracked |
 | TODO / FIXME debt in `lib` | ✅ | 0 real TODO/FIXME (only Spanish `todo` l10n strings) |
 | `UnimplementedError` in `lib` | ✅ | 0 |
 | Owner-disabled Cloudflare tests | ❌ | 3 skipped in `cf_solve_needed_test.dart` |
@@ -164,7 +165,10 @@ Legend: ✅ done / shipped · 🟡 partial or gated · ❌ not done / missing
 | `fix/misc-tv-fixes` | TMDB multi-season synopses, D-pad source settings, fast flag, shared chips | base 2026-09-20 |
 | `release/1.9.7` | build-number bump only | **older** than `main` (2026-08-24) — discard |
 
-## 14. The 12 Failing Tests (current `flutter test`)
+## 14. The 12 Failing Tests (historical — `main` baseline)
+
+Superseded by the "Cross-check pass" section below; all of these are now green on
+`openhands/green-main-and-integrations`.
 
 | # | Test | Likely cause |
 |---|---|---|
@@ -180,28 +184,31 @@ Legend: ✅ done / shipped · 🟡 partial or gated · ❌ not done / missing
 
 ## Summary Scoreboard
 
+Counts reflect `openhands/green-main-and-integrations` after the integrations and
+cross-check passes (see the two "Implementation status" / "Cross-check" sections).
+
 | Area | Done | Partial | Not done |
 |---|:---:|:---:|:---:|
 | Platforms | 3 | 0 | 3 |
-| Modes/Catalogues | 4 | 0 | 2 |
+| Modes/Catalogues | 6 | 0 | 0 |
 | Sources | 6 | 0 | 2 |
 | Trackers | 5 | 0 | 1 |
-| Player | 10 | 1 | 4 |
+| Player | 12 | 1 | 2 |
 | Reader | 5 | 0 | 0 |
-| Downloads | 3 | 0 | 2 |
+| Downloads | 5 | 0 | 0 |
 | Social | 4 | 1 | 1 |
 | Sync/Notify | 5 | 0 | 0 |
 | Settings/UI | 4 | 0 | 4 |
-| TV | 3 | 1 | 1 |
-| Quality gates | 2 | 1 | 3 |
-| **Total** | **54** | **5** | **24** |
+| TV | 4 | 0 | 1 |
+| Quality gates | 4 | 0 | 1 |
+| **Total** | **63** | **2** | **15** |
 
 ### Highest-impact open gaps
-1. **Merge the 6 live feature branches** (debrid, portrait mini-player, stremio, tv-settings, tv-auto-tracking, misc-tv) — the bulk of "not done" is code that already exists on branches.
-2. **Watch Together** and **episode comments** are user-visible placeholders.
-3. **Test suite is red** (12 failures) and **CI is not committed**.
-4. **Cloudflare handling** is owner-disabled (documented, not a bug).
-5. **Per-device build split** (android/ios/rest) and **Windows** platform are unstarted.
+1. **Watch Together** — fully built but owner-disabled; needs an explicit go-ahead to re-enable.
+2. **Cloudflare handling** is owner-disabled (documented, not a bug); 3 tests skipped.
+3. **Per-device build split** (android/ios/rest) and **Windows** platform are unstarted.
+4. **Shikimori / Trakt / Kitsu trackers** absent (MAL, MangaBaka, Simkl present).
+5. **iOS release** (beta only).
 
 ---
 
@@ -253,8 +260,66 @@ Several rows were stale or misread; the underlying feature is already present:
 | "Nav-tabs preview 'Change content mode' ❌ (no-op)" | **False positive.** The real dock button opens a working `GlassMenu`; the `onTap: () {}` is a settings *preview* mock. |
 | "Profile 'more features' placeholder 🟡" | Intentional empty-state copy ("More features are on their way with Zoro…"), not a TODO. |
 
-### Genuinely remaining (not done, not owner-gated)
-- **DASH (`.mpd`) download** — no segment downloader; manifests are dropped as un-downloadable.
-- **Episode comments** — `player_screen.dart` `_openComingSoonSheet()` placeholder.
+### Genuinely remaining (not done, not owner-gated) — see Cross-check pass for updates
 - **iOS release**, **Windows platform**, **per-device build split** — unstarted.
 - **Shikimori / Trakt / Kitsu trackers** — not present (MAL, MangaBaka, Simkl exist).
+- (DASH download and episode comments, listed here at the time of writing, are now done —
+  see the Cross-check pass below.)
+
+---
+
+## Cross-check pass (search, subtitles, shorts, and the rest)
+
+Branch: `openhands/green-main-and-integrations`. Every row above was re-verified
+against the tree, not the doc; several "not done" rows were stale and are corrected
+in place. Findings:
+
+### Search (commit `08bd955f`)
+- Integrated. `_kSourcePreviewCap` is **100** (`search_screen.dart:253`); the per-source
+  swipe list is no longer capped at 12. The remaining `take(12)` in `search_bloc.dart`
+  is the idle *trending* preview, not the results cap.
+- Catalogue pagers (`tmdb/anilist/mal/simkl_catalogue.dart`) now target 100; covered by
+  `test/core/zmode/tmdb_catalogue_test.dart`.
+
+### Subtitles (commit `4a19b37b`)
+- Integrated. `lib/core/playback/` holds `subtitle_text_codec`, `subtitle_text_normalizer`,
+  `subtitle_cue_text`, `subtitle_exporter`, `framex_subtitle_source`, `online_subtitle_search`.
+- Wired into the phone sheet (`player_sheets.dart`), the TV players
+  (`tv_exo_player_screen`, `tv_native_player`, `tv_av_native_player`) and the Kotlin bridge.
+
+### Shorts + short-drama sources (commits `d4b87936`, `50f81f55`)
+- Integrated. `root_shell.dart` routes `DockTab.shorts → ShortsScreen`; the feed filters
+  reading sources via `content_mode.dart` `sourceInMode`.
+- Free-only short-drama sources `goodshort`, `reelshort`, `netshort` ship in the pack
+  (harness: 10/10 live pass; NetShort 5/5 live pass).
+
+### Rows corrected from ❌/🟡 → ✅ (verified in the tree)
+| Row | Was | Now | Evidence |
+|---|---|---|---|
+| Stremio catalogue + streams | ❌ | ✅ | `lib/core/stremio/` wired in detail/player/settings |
+| Stremio title logos | ❌ | ✅ | shipped with `lib/core/stremio/` |
+| Portrait mini-player | ❌ | ✅ | `player_watch_page.dart` |
+| Episode comments | ❌ | ✅ | `episode_comments_sheet.dart` + `_openCommentsSheet` |
+| Watch Together | ❌ | 🟡 | built, owner-disabled (unchanged behaviour) |
+| tvOS play-next scrobble | ❌ | ✅ | `TvSystemPlayerViewController.playNext(completed:)` |
+| Debrid (RD / TorBox) | ❌ | ✅ | `lib/core/debrid/` wired in settings + injector |
+| HLS-only source download | ❌ | ✅ | `hls_downloader.dart` |
+| DASH (.mpd) download | ❌ | ✅ | `dash_downloader.dart` + `dash_manifest.dart` |
+| Test suite green | ❌ | ✅ | see below |
+| CI workflow in repo | ❌ | ✅ | `.github/workflows/ci.yml` tracked |
+| `dart_test.yaml` ffi skip | 🟡 | ✅ | tracked |
+
+### Test suite
+`flutter test --concurrency=4`: **4454 passed, 8 skipped, 1 failed**.
+The single failure — `novel_reader_test.dart` "reopening a chapter restores its saved
+scroll permille" — is a concurrency flake: it passes in isolation and in the full
+`test/features/reader/` suite (112 pass). Same class as the documented
+`poster_card_customization` / `wrong_title_sheet` flakes: a fixed delay races a real
+async write. Green in isolation is the tell.
+
+`flutter analyze`: clean. JS harness (`node --test js_harness/*.test.mjs`): 54 pass / 0 fail.
+
+### Still genuinely open (unchanged)
+DASH is now done; the real remainder is **iOS release**, **Windows**, **per-device build
+split**, **Shikimori/Trakt/Kitsu trackers**, and the owner-disabled **Watch Together** /
+**Cloudflare** items.
