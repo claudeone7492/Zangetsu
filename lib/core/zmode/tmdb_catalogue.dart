@@ -24,6 +24,12 @@ class TmdbCatalogue implements VideoCatalogue {
   TmdbCatalogue(this._get);
   final TmdbGet _get;
 
+  /// Results a search aims to return per provider. TMDB answers 20 per page, so
+  /// five pages make 100 — a single page leaves the per-source row on the
+  /// search screen visibly short.
+  static const int searchResultTarget = 100;
+  static const int _searchPageCap = 5;
+
   /// Search checks are requested only after the user submits a query. Keeping
   /// provider availability for a title avoids repeating one TMDB request per
   /// result when they refine or repeat that search.
@@ -456,8 +462,32 @@ class TmdbCatalogue implements VideoCatalogue {
   }
 
   @override
-  Future<List<MediaItem>> search(String q) async =>
-      _items(await _get('/search/multi', {'query': q}), forcedTv: null);
+  Future<List<MediaItem>> search(String q) =>
+      _searchAllPages((page) => {'query': q, 'page': page}, forcedTv: null);
+
+  /// Pages `/search/multi` until the target is reached (or the catalogue runs
+  /// out), so one source's row on the search screen fills instead of stopping
+  /// at TMDB's 20-per-page. Pages run sequentially: the first is what the user
+  /// sees, and a page is only worth asking for if the one before it was full.
+  ///
+  /// De-duplicated by canonical url — TMDB repeats a title across pages when
+  /// its popularity shifts between requests.
+  Future<List<MediaItem>> _searchAllPages(
+    Map<String, dynamic> Function(int page) params, {
+    required bool? forcedTv,
+  }) async {
+    final out = <MediaItem>[];
+    final seen = <String>{};
+    for (var page = 1; page <= _searchPageCap; page++) {
+      final items = _items(await _get('/search/multi', params(page)),
+          forcedTv: forcedTv);
+      for (final i in items) {
+        if (seen.add(i.url)) out.add(i);
+      }
+      if (items.length < 20 || out.length >= searchResultTarget) break;
+    }
+    return out;
+  }
 
   @override
   bool get supportsFilters => true;
@@ -482,12 +512,20 @@ class TmdbCatalogue implements VideoCatalogue {
     // and come back empty. No query means browse, and browsing is /discover's
     // job whatever the filters say.
     if (q.trim().isNotEmpty && !f.narrowsCatalogue) {
-      return _items(
-        await _get('/search/multi', {
-          'query': q,
-          'page': page,
-          'include_adult': f.adult,
-        }),
+      // A continuation page (the grid asking for page 2) is one request, not a
+      // re-run of the whole fan-out.
+      if (page > 1) {
+        return _items(
+          await _get('/search/multi', {
+            'query': q,
+            'page': page,
+            'include_adult': f.adult,
+          }),
+          forcedTv: null,
+        );
+      }
+      return _searchAllPages(
+        (p) => {'query': q, 'page': p, 'include_adult': f.adult},
         forcedTv: null,
       );
     }

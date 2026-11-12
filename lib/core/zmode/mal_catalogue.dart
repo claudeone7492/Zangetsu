@@ -289,7 +289,7 @@ class MalCatalogue implements AnimeCatalogue {
   Future<List<MediaItem>> search(String q, ZKind kind) async {
     final res = await _get('/${_path(kind)}', {
       'q': q,
-      'limit': 20,
+      'limit': 100,
       'fields': _listFields,
     });
     return _items(res.data, kind);

@@ -247,9 +247,10 @@ class _SearchView extends StatefulWidget {
 }
 
 /// Max posters shown in a per-source section before it collapses to a "See all"
-/// link. Picked to fill a few grid rows / a comfortable horizontal row without
-/// the section dominating the screen.
-const int _kSourcePreviewCap = 12;
+/// link. Raised from 12 so a source's horizontal row (the "swipe list") shows
+/// everything it returned — sources commonly answer with dozens, and stopping
+/// at 12 hid most of them behind "See all".
+const int _kSourcePreviewCap = 100;
 
 /// Plain-English reason a source failed, from the outcome the repository
 /// already classified (see `SourceRepository._outcomeFromError`).

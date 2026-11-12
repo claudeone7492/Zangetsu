@@ -164,13 +164,16 @@ class SimklCatalogue implements VideoCatalogue {
   /// Simkl keeps movies and shows in separate catalogues, so a single query is
   /// two calls; results are interleaved movies-first the way TMDB's mixed
   /// `/search/multi` comes back.
+  ///
+  /// `limit` is 50 per side (Simkl's practical ceiling), so one query yields up
+  /// to 100 results — enough to fill a source's row on the search screen.
   @override
   Future<List<MediaItem>> search(String q) async {
     final res = await Future.wait([
-      _get('/search/movie', {'q': q, 'extended': _listExtended, 'limit': 20})
+      _get('/search/movie', {'q': q, 'extended': _listExtended, 'limit': 50})
           .then<List<MediaItem>>((r) => _items(r.data, isTv: false))
           .catchError((_) => <MediaItem>[]),
-      _get('/search/tv', {'q': q, 'extended': _listExtended, 'limit': 20})
+      _get('/search/tv', {'q': q, 'extended': _listExtended, 'limit': 50})
           .then<List<MediaItem>>((r) => _items(r.data, isTv: true))
           .catchError((_) => <MediaItem>[]),
     ]);

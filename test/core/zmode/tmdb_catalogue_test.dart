@@ -162,6 +162,40 @@ void main() {
     expect(r.length, 1);
   });
 
+  test('search pages until it has 100 results', () async {
+    final pages = <int>[];
+    // Five full pages of 20 distinct movies = the 100 target.
+    final cat = TmdbCatalogue((p, q) async {
+      final page = (q['page'] as int?) ?? 1;
+      pages.add(page);
+      return {
+        'results': [
+          for (var i = 0; i < 20; i++) _movie(id: page * 1000 + i),
+        ],
+      };
+    });
+    final r = await cat.search('dune');
+    expect(pages, [1, 2, 3, 4, 5]);
+    expect(r.length, TmdbCatalogue.searchResultTarget);
+  });
+
+  test('search stops paging when a page is short', () async {
+    final pages = <int>[];
+    final cat = TmdbCatalogue((p, q) async {
+      final page = (q['page'] as int?) ?? 1;
+      pages.add(page);
+      // Page 1 is full, page 2 is the tail — no page 3.
+      return {
+        'results': [
+          for (var i = 0; i < (page == 1 ? 20 : 5); i++) _movie(id: page * 1000 + i),
+        ],
+      };
+    });
+    final r = await cat.search('dune');
+    expect(pages, [1, 2]);
+    expect(r.length, 25);
+  });
+
   test('movie detail is a single playable episode', () async {
     final cat = TmdbCatalogue((p, q) async => _movie());
     final d = await cat.detail(const ZCanonical(ZKind.movie, 'tmdb:438631'));
