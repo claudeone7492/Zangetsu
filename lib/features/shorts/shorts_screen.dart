@@ -6,6 +6,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/app_config.dart';
 import '../../core/comments/episode_comments_service.dart';
 import '../../core/di/injector.dart';
 import '../../core/mode/content_mode.dart';
@@ -21,6 +22,7 @@ import '../../core/ui/route_observer.dart';
 import '../../core/ui/states.dart';
 import '../../l10n/l10n.dart';
 import '../detail/detail_screen.dart';
+import '../home/provider_browse_route.dart' show isProviderExtensionUrl;
 import '../player/episode_comments_sheet.dart';
 import '../player/mpv_player_pool.dart';
 
@@ -114,19 +116,26 @@ class _ShortsScreenState extends State<ShortsScreen> {
     super.dispose();
   }
 
-  /// Video sources worth pulling a feed from, in install order. Reading sources
+  /// Video sources worth pulling a feed from, MovieBox first. Reading sources
   /// are skipped outright — a vertical "short" feed is a video idea, and
   /// manga/novel pages belong in their own readers, so there is no reason to
   /// even fetch their home rows.
+  ///
+  /// [kShortsDefaultSourceId] leads so the feed is dominated by the short-drama
+  /// catalogue even when other sources were installed earlier; the rest keep
+  /// install order behind it. The cap is applied after the reorder, so a late
+  /// MovieBox is never squeezed out by earlier sources.
   List<String> _candidateSourceIds(CatalogueRepository repo) {
     final types = manifestSourceTypes();
-    final out = <String>[];
-    for (final s in repo.loadedSources) {
-      if (out.length >= _maxSources) break;
-      if (!sourceInMode(s.id, ContentMode.anime, types)) continue;
-      out.add(s.id);
-    }
-    return out;
+    final video = repo.loadedSources
+        .where((s) => sourceInMode(s.id, ContentMode.anime, types))
+        .map((s) => s.id)
+        .toList();
+    final ordered = <String>[
+      if (video.contains(kShortsDefaultSourceId)) kShortsDefaultSourceId,
+      ...video.where((id) => id != kShortsDefaultSourceId),
+    ];
+    return ordered.take(_maxSources).toList();
   }
 
   Future<void> _load() async {
@@ -151,6 +160,10 @@ class _ShortsScreenState extends State<ShortsScreen> {
                 item.type == ProviderType.novel) {
               continue;
             }
+            // Provider-extension rows (a `browse:` platform/filter handle or a
+            // `live:` match) are navigation, not a short — they carry no
+            // episode to resolve, so they'd render as a dead poster.
+            if (isProviderExtensionUrl(item.url)) continue;
             if (seen.add('${item.sourceId}:${item.id}')) gathered.add(item);
           }
         }

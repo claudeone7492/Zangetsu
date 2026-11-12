@@ -29,6 +29,7 @@ import '../../core/zmode/zmode_ids.dart';
 import '../../core/zmode/zmode_prefs.dart';
 import '../../l10n/l10n.dart';
 import '../detail/detail_screen.dart';
+import '../home/provider_browse_route.dart';
 import '../home/see_all_screen.dart';
 import '../../core/aniyomi/aniyomi_filters.dart';
 import '../../core/mihon/mihon_filters.dart';
@@ -143,13 +144,20 @@ class _BrowseSourceViewState extends State<_BrowseSourceView> {
   late final SearchEcosystem _eco = ecosystemOf(widget.sourceId);
   late final String _ecosystem = _eco.label;
 
-  /// Only the extension ecosystems publish a filter schema. CloudStream and
-  /// Zangetsu sources have no such concept, so they get no filter button
-  /// rather than one that opens an empty sheet.
+  /// Only the extension ecosystems publish a filter schema — plus a plain
+  /// Zangetsu JS source that declares `getFilters` (MovieBox does; most don't).
+  /// CloudStream has no such concept, so it gets no filter button rather than
+  /// one that opens an empty sheet.
   bool get _canFilter =>
       _eco == SearchEcosystem.aniyomi ||
       _eco == SearchEcosystem.mihon ||
-      _eco == SearchEcosystem.mangayomi;
+      _eco == SearchEcosystem.mangayomi ||
+      (_eco == SearchEcosystem.zangetsu && _jsFilterSchema != null);
+
+  /// The generic filter schema a Zangetsu JS source declares, or null. Fetched
+  /// once in [initState]; null until it resolves (and for sources without one),
+  /// which keeps the filter button hidden rather than opening an empty sheet.
+  List<Map<String, dynamic>>? _jsFilterSchema;
   late final String _kind = sourceTypeOf(widget.sourceId).name;
   late final String? _language = sl<SourceRepository>().languageFor(
     widget.sourceId,
@@ -208,6 +216,24 @@ class _BrowseSourceViewState extends State<_BrowseSourceView> {
   );
 
   @override
+  void initState() {
+    super.initState();
+    _loadJsFilterSchema();
+  }
+
+  /// A plain Zangetsu JS source may declare its own filter schema (MovieBox
+  /// does). Fetched here so the AppBar's filter button appears once it is
+  /// known; a source without one leaves it hidden.
+  Future<void> _loadJsFilterSchema() async {
+    if (_eco != SearchEcosystem.zangetsu) return;
+    final schema = await sl<SourceRepository>().filterSchema(
+      sourceId: widget.sourceId,
+    );
+    if (!mounted || schema == null || schema.isEmpty) return;
+    setState(() => _jsFilterSchema = schema);
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     _focusNode.dispose();
@@ -228,6 +254,16 @@ class _BrowseSourceViewState extends State<_BrowseSourceView> {
   /// exactly as before — a source-only title stays fully watchable.
   Future<void> _openDetail(BuildContext context, MediaItem item) async {
     if (_opening) return; // a tap is already resolving
+    // A provider-extension row (a `browse:` platform/filter handle or a `live:`
+    // stream) is not a title — it opens its own listing/player instead of the
+    // canonical-title lookup below.
+    if (await openProviderExtensionItem(
+      context,
+      item,
+      repository: sl<SourceRepository>(),
+    )) {
+      return;
+    }
     _opening = true;
     final nav = Navigator.of(context);
     // A bar, not a barrier: the lookup is short and the screen stays usable —
@@ -413,7 +449,25 @@ class _BrowseSourceViewState extends State<_BrowseSourceView> {
       ? _openMihonFilters(stored)
       : _eco == SearchEcosystem.mangayomi
       ? _openMangayomiFilters(stored)
+      : _eco == SearchEcosystem.zangetsu
+      ? _openJsFilters(stored)
       : _openAniFilters(stored);
+
+  /// Zangetsu JS sources that declare `getFilters` (MovieBox today). The
+  /// selection is handed to [CatalogueRepository.browseCategory], which the
+  /// provider resolves through its own `browseFilter`.
+  Future<void> _openJsFilters(String stored) async {
+    final filters = stored.isNotEmpty
+        ? (jsonDecode(stored) as List)
+              .map((item) => Map<String, dynamic>.from(item as Map))
+              .toList()
+        : _jsFilterSchema;
+    if (filters == null) return;
+    if (!mounted || !_warnIfEmpty(filters)) return;
+    final result = await showMangayomiFilterSheet(context, filters);
+    if (result == null || !mounted) return;
+    await context.read<BrowseSourceCubit>().applyFilters(jsonEncode(result));
+  }
 
   Future<void> _openMangayomiFilters(String stored) async {
     final filters = stored.isNotEmpty

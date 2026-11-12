@@ -1159,6 +1159,75 @@ class JsProvider implements BaseProvider, ReadingProvider {
       return null;
     }
   }
+
+  /// Optional live-sports feed (`getLive`). Returns null when the JS file
+  /// doesn't define it, so callers can skip the feature rather than show an
+  /// empty error. MovieBox is the only source that has it today.
+  Future<List<MediaItem>?> getLive() async {
+    try {
+      final raw = await _call('getLive', [
+        const <String, Object?>{},
+      ], timeout: const Duration(seconds: 20));
+      final list = await _decodeBig(raw);
+      if (list is! List) return null;
+      return [
+        for (final e in list)
+          if (e is Map)
+            MediaItem.fromJson({
+              ...Map<String, dynamic>.from(e),
+              'sourceId': sourceId,
+            }),
+      ];
+    } catch (e) {
+      final msg = e is JsRuntimeException ? e.message : e.toString();
+      if (msg.contains('missing method: getLive')) return null;
+      rethrow;
+    }
+  }
+
+  /// Optional filter schema (`getFilters`), rendered as a browse sheet.
+  /// Returns null when absent.
+  Future<List<Map<String, dynamic>>?> getFilterSchema() async {
+    try {
+      final raw = await _call('getFilters', const []);
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return null;
+      return [
+        for (final e in decoded)
+          if (e is Map) Map<String, dynamic>.from(e),
+      ];
+    } catch (e) {
+      final msg = e is JsRuntimeException ? e.message : e.toString();
+      if (msg.contains('missing method: getFilters')) return null;
+      return null;
+    }
+  }
+
+  /// Optional browse listing (`browseFilter`). [categoryId] is either a
+  /// `platform|<name>` / `filter|<query>` spec from a home row, or a raw
+  /// selection JSON from the filter sheet. Returns null when absent.
+  Future<List<MediaItem>?> browseFilter(String categoryId, int page) async {
+    try {
+      final raw = await _call('browseFilter', [
+        categoryId,
+        page,
+      ], timeout: const Duration(seconds: 25));
+      final list = await _decodeBig(raw);
+      if (list is! List) return null;
+      return [
+        for (final e in list)
+          if (e is Map)
+            MediaItem.fromJson({
+              ...Map<String, dynamic>.from(e),
+              'sourceId': sourceId,
+            }),
+      ];
+    } catch (e) {
+      final msg = e is JsRuntimeException ? e.message : e.toString();
+      if (msg.contains('missing method: browseFilter')) return null;
+      rethrow;
+    }
+  }
 }
 
 /// Minimal contract the [ProviderRegistry] needs from a runtime host.

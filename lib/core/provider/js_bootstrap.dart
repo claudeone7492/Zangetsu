@@ -307,6 +307,11 @@ String wrapProviderSource(String sourceId, String providerJs) {
     getEpisodes:     typeof getEpisodes === 'function' ? getEpisodes : null,
     getVideoSources: typeof getVideoSources === 'function' ? getVideoSources : null,
     getSettings:     typeof getSettings === 'function' ? getSettings : null,
+    // Optional browse/live extensions (MovieBox). Absent on every other
+    // provider, where the wrapper exposes null and the app skips the feature.
+    getLive:         typeof getLive === 'function' ? getLive : null,
+    getFilters:      typeof getFilters === 'function' ? getFilters : null,
+    browseFilter:    typeof browseFilter === 'function' ? browseFilter : null,
     // Manga/novel leaf + Sozo Read compat names (Task E4). No anime/movie
     // provider's JS defines any of these, so they're always null there —
     // purely additive, zero behavior change for existing video sources.

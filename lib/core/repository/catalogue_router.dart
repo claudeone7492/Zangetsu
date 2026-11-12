@@ -132,4 +132,21 @@ class CatalogueRouter implements CatalogueRepository {
     String episodeUrl, {
     String? sourceId,
   }) => _forUrl(episodeUrl).polledSources(episodeUrl, sourceId: sourceId);
+
+  // Live / browse-extension calls name a source directly (never a zm:// url),
+  // so they always route to the source catalogue, even in Z Mode.
+  @override
+  Future<List<MediaItem>> live({String? sourceId}) =>
+      _source.live(sourceId: sourceId);
+
+  @override
+  Future<List<MediaItem>> browseCategory(
+    String categoryId, {
+    String? sourceId,
+    int page = 1,
+  }) => _source.browseCategory(categoryId, sourceId: sourceId, page: page);
+
+  @override
+  Future<List<Map<String, dynamic>>?> filterSchema({String? sourceId}) =>
+      _source.filterSchema(sourceId: sourceId);
 }

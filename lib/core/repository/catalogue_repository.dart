@@ -79,4 +79,23 @@ abstract interface class CatalogueRepository {
     String episodeUrl, {
     String? sourceId,
   });
+
+  /// Live-sports feed for [sourceId] — an optional provider extension
+  /// (`getLive`). Empty for every source that doesn't define it, so callers
+  /// can render the row only when it has items.
+  Future<List<MediaItem>> live({String? sourceId});
+
+  /// Resolves a provider browse category to a page of items. [categoryId] is a
+  /// `platform|<name>` / `filter|<spec>` handle from a home browse row, or a
+  /// raw filter-sheet selection JSON. Empty when the source has no
+  /// `browseFilter`.
+  Future<List<MediaItem>> browseCategory(
+    String categoryId, {
+    String? sourceId,
+    int page = 1,
+  });
+
+  /// The source's generic filter schema (as the browse filter sheet consumes
+  /// it), or null when the source declares none.
+  Future<List<Map<String, dynamic>>?> filterSchema({String? sourceId});
 }

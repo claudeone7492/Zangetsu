@@ -18,6 +18,7 @@ import '../detail/detail_screen.dart';
 import '../search/browse_source_screen.dart' show canonicalTargetFor;
 import '../sources/providers_hub_screen.dart';
 import 'cubit/home_rows_composer.dart' show providerRowSections;
+import 'provider_browse_route.dart';
 import 'see_all_screen.dart';
 
 /// Use the same metadata identity as source browsing, or keep source-only
@@ -236,6 +237,13 @@ class SourceCatalogueHomeContentState
     if (_openingItem) return;
     _openingItem = true;
     try {
+      if (await openProviderExtensionItem(
+        context,
+        item,
+        repository: _repository,
+      )) {
+        return;
+      }
       final target = await sourceCatalogueTargetFor(item);
       if (mounted) Navigator.of(context).push(DetailScreen.route(target));
     } finally {

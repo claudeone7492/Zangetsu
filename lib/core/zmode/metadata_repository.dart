@@ -1116,6 +1116,23 @@ class MetadataRepository implements CatalogueRepository {
   }) async =>
       _playback.polledSources(episodeUrl, category: _cutFor(episodeUrl));
 
+  // Live sports and provider browse categories are source-runtime extensions,
+  // not metadata concepts — they always go straight to the source catalogue.
+  @override
+  Future<List<MediaItem>> live({String? sourceId}) =>
+      _src.live(sourceId: sourceId);
+
+  @override
+  Future<List<MediaItem>> browseCategory(
+    String categoryId, {
+    String? sourceId,
+    int page = 1,
+  }) => _src.browseCategory(categoryId, sourceId: sourceId, page: page);
+
+  @override
+  Future<List<Map<String, dynamic>>?> filterSchema({String? sourceId}) =>
+      _src.filterSchema(sourceId: sourceId);
+
   /// Title metadata for play-time resolution — cached from detail/browse.
   Future<({String title, String? alt, int? malId})> titleFor(
     ZCanonical c,

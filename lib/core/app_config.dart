@@ -44,6 +44,12 @@ const List<String> kDefaultRepoUrls = [
 /// first source that did.
 const String kDefaultSourceId = 'anikoto';
 
+/// Source the vertical Shorts feed draws from first. MovieBox carries a
+/// dedicated short-drama catalogue ("Hot Short TV" / "Trending Short Drama"
+/// rails), so it leads the feed's source list; the remaining installed video
+/// sources fill in behind it. A missing/uninstalled id is simply skipped.
+const String kShortsDefaultSourceId = 'moviebox';
+
 /// Public directory of community source repos (Sozo Read format:
 /// `{entries:[{name,author,repoUrl,description,tags,verified}]}`). Browsed from
 /// Providers → Add repo so a user can discover community packs in one tap.

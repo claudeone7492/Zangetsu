@@ -26,10 +26,62 @@ test('getVideoSources needs a full episode url', async () => {
 live('getHome returns named rails of movie-shaped rows', async () => {
   const sections = JSON.parse(await callProvider('moviebox', 'getHome', [{}]));
   assert.ok(Array.isArray(sections) && sections.length >= 1, 'expected sections');
-  assert.ok(sections[0].title && sections[0].title.length > 0, 'section has a title');
-  const it = sections[0].items[0];
+  // Live-match rows lead the page and carry `live:` handles; the first
+  // title rail is the one that must be MediaItem-shaped with `mb:` urls.
+  const titleRail = sections.find(
+    (s) => s.items && s.items.length && s.items[0].url.startsWith('mb:'),
+  );
+  assert.ok(titleRail, 'expected a title rail of mb: items');
+  assert.ok(titleRail.title && titleRail.title.length > 0, 'rail has a title');
+  const it = titleRail.items[0];
   assert.ok(it.id && it.title && it.url, 'items are MediaItem-shaped');
   assert.ok(it.url.startsWith('mb:'), 'url carries the mb: prefix, got ' + it.url);
+  // Any live row must use the app's `live:` extension scheme, never `mb:`.
+  for (const s of sections) {
+    for (const i of s.items || []) {
+      if (i.url.startsWith('live:')) return;
+    }
+  }
+});
+
+live('getHome exposes a browse handle rail', async () => {
+  const sections = JSON.parse(await callProvider('moviebox', 'getHome', [{}]));
+  const browse = sections
+    .flatMap((s) => s.items || [])
+    .find((i) => i.url.startsWith('browse:'));
+  assert.ok(browse, 'expected at least one browse: handle (platform/filter rail)');
+});
+
+live('browseFilter honours a genre facet (flat params, not nested)', async () => {
+  const sections = JSON.parse(await callProvider('moviebox', 'getHome', [{}]));
+  const kdrama = sections
+    .flatMap((s) => s.items || [])
+    .find((i) => /K-Drama/i.test(i.title) && i.url.startsWith('browse:filter'));
+  assert.ok(kdrama, 'expected a K-Drama filter handle');
+
+  const rows = JSON.parse(await callProvider('moviebox', 'browseFilter', [kdrama.url, 1]));
+  assert.ok(Array.isArray(rows) && rows.length > 0, 'expected filtered rows');
+  assert.ok(rows[0].url.startsWith('mb:'), 'rows are playable mb: items');
+
+  // Facets must actually reach the server. A nested `filterType` body is
+  // ignored and silently returns an unrelated unfiltered feed, so selecting a
+  // genre must change the result set rather than echo the default one.
+  const sheetFor = async (genre) => {
+    const filters = JSON.parse(await callProvider('moviebox', 'getFilters', [{}]));
+    const g = filters.find((f) => f.name === 'Genre');
+    g.state = g.values.findIndex((v) => v.value === genre);
+    return JSON.parse(
+      await callProvider('moviebox', 'browseFilter', [JSON.stringify(filters), 1]),
+    );
+  };
+  const anime = await sheetFor('Anime');
+  const horror = await sheetFor('Horror');
+  assert.ok(anime.length > 0 && horror.length > 0, 'genre selections returned nothing');
+  const animeTitles = new Set(anime.map((r) => r.title));
+  assert.ok(
+    !horror.every((r) => animeTitles.has(r.title)),
+    'genre facet had no effect — likely a nested filterType body',
+  );
 });
 
 live('search returns hits for a keyword', async () => {

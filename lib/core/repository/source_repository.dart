@@ -862,6 +862,21 @@ class SourceRepository implements CatalogueRepository {
         );
       }
       final provider = await _providerReady(resolved);
+      // A JS source that declares `getFilters` (MovieBox) answers a filtered
+      // browse through its own `browseFilter`, not `search` — and a filter
+      // selection is exactly a filters-only request (empty query). Route it
+      // there so the browse screen's filter button and paging work.
+      if (provider is JsProvider &&
+          query.trim().isEmpty &&
+          filtersJson != null &&
+          filtersJson.isNotEmpty) {
+        final filtered = await provider.browseFilter(filtersJson, page) ??
+            const <MediaItem>[];
+        return (
+          items: filtered,
+          outcome: filtered.isEmpty ? SourceOutcome.empty : SourceOutcome.ok,
+        );
+      }
       final items = (_isAniyomi(resolved) && provider is AniyomiProvider)
           ? await provider.search(
               query,
@@ -1059,6 +1074,57 @@ class SourceRepository implements CatalogueRepository {
     return (await _providerReady(
       sourceId,
     )).getVideoSources(episodeUrl, fast: fast);
+  }
+
+  /// Live-sports feed — an optional provider extension. Only the JS runtime
+  /// exposes it (MovieBox today); every other source yields an empty list so
+  /// the caller drops the row. Never throws: a dead sports endpoint must not
+  /// take the home screen down with it.
+  @override
+  Future<List<MediaItem>> live({String? sourceId}) async {
+    final provider = await _providerReady(sourceId);
+    if (provider is! JsProvider) return const [];
+    try {
+      return await provider.getLive() ?? const [];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// Resolves one provider browse category (`platform|<name>` / `filter|<spec>`
+  /// from a home row, or a filter-sheet selection JSON). Empty for sources
+  /// without `browseFilter`. Never throws.
+  @override
+  Future<List<MediaItem>> browseCategory(
+    String categoryId, {
+    String? sourceId,
+    int page = 1,
+  }) async {
+    final provider = await _providerReady(sourceId);
+    if (provider is! JsProvider) return const [];
+    // The home row carries the app's `browse:` scheme; the provider's
+    // `browseFilter` wants the bare `platform|…`/`filter|…` spec (or a raw
+    // filter-sheet selection, which starts with `[`).
+    final spec = categoryId.startsWith('browse:')
+        ? categoryId.substring('browse:'.length)
+        : categoryId;
+    try {
+      return await provider.browseFilter(spec, page) ?? const [];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// The source's generic filter schema, or null when it declares none.
+  @override
+  Future<List<Map<String, dynamic>>?> filterSchema({String? sourceId}) async {
+    final provider = await _providerReady(sourceId);
+    if (provider is! JsProvider) return null;
+    try {
+      return await provider.getFilterSchema();
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Manga leaf — ordered page images for [chapterUrl]. No expiry cache here:
