@@ -141,6 +141,26 @@
       "file": "gutenberg.js",
       "logo": "https://www.gutenberg.org/gutenberg/pg-logo-129x80.png",
       "nsfw": false
+    },
+    {
+      "id": "goodshort",
+      "name": "GoodShort",
+      "version": "1.0.0",
+      "type": "movie",
+      "lang": "en",
+      "file": "goodshort.js",
+      "logo": "https://www.goodshort.com/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "reelshort",
+      "name": "ReelShort",
+      "version": "1.0.0",
+      "type": "movie",
+      "lang": "en",
+      "file": "reelshort.js",
+      "logo": "https://www.reelshort.com/favicon.ico",
+      "nsfw": false
     }
   ]
 }

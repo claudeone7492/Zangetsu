@@ -2,8 +2,14 @@
 // It never asks the user to pick one — it walks CatalogueRepository.loadedSources
 // and pulls each source's Home rows. These tests fake that repository and pin
 // the behaviour that matters: the feed renders what the sources returned, a
-// dead/empty catalogue degrades to the empty state (never a blank page), and
-// the vertical pager advances the position read-out.
+// dead/empty catalogue degrades to the empty state (never a blank page), the
+// vertical pager advances the position read-out, and every page carries the
+// TikTok-style action rail.
+//
+// Inline video is deliberately NOT exercised here: these fakes register no
+// MpvPlayerPool, so a page shows its poster and never touches media_kit. That
+// is the same guard that keeps a headless build off the decoder — see
+// _ShortPageState._activate.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -166,5 +172,26 @@ void main() {
     expect(find.text('Alpha'), findsOneWidget);
     expect(find.text('A Manga'), findsNothing);
     expect(find.text('1 / 1'), findsOneWidget);
+  });
+
+  testWidgets('every page carries the TikTok-style action rail', (
+    tester,
+  ) async {
+    sl.registerSingleton<CatalogueRepository>(
+      _FakeCatalogueRepository(
+        sections: [
+          HomeSection(title: 'Trending', items: [_item('a', 'Alpha')]),
+        ],
+      ),
+    );
+
+    await pumpShorts(tester);
+    await tester.pumpAndSettle();
+
+    // Save / comments / share / details — the four actions down the right edge.
+    expect(find.text('Save'), findsOneWidget);
+    expect(find.text('Comments'), findsOneWidget);
+    expect(find.text('Share'), findsOneWidget);
+    expect(find.text('Show details'), findsOneWidget);
   });
 }

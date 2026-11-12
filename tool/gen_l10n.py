@@ -34,6 +34,8 @@ EXPLICIT: list[tuple[str, str, dict]] = [
     ("cancel", "Cancel", {}),
     ("ok", "OK", {}),
     ("save", "Save", {}),
+    ("saved", "Saved", {}),
+    ("comments", "Comments", {}),
     ("close", "Close", {}),
     ("retry", "Retry", {}),
     ("search", "Search", {}),

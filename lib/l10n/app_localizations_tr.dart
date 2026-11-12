@@ -18,6 +18,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get save => 'Kaydet';
 
   @override
+  String get saved => 'Saved';
+
+  @override
   String get close => 'Kapat';
 
   @override
@@ -49,6 +52,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get share => 'Paylaş';
+
+  @override
+  String get comments => 'Comments';
 
   @override
   String get copy => 'Kopyala';

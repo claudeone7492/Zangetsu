@@ -18,6 +18,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get save => 'Simpan';
 
   @override
+  String get saved => 'Saved';
+
+  @override
   String get close => 'Tutup';
 
   @override
@@ -49,6 +52,9 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get share => 'Bagikan';
+
+  @override
+  String get comments => 'Comments';
 
   @override
   String get copy => 'Salin';

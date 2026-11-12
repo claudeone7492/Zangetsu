@@ -350,7 +350,7 @@ class _RootShellState extends State<RootShell>
             // whole screen, so their own back affordance is suppressed.
             DockTab.downloads => const DownloadsScreen(showBack: false),
             DockTab.history => const HistoryScreen(showBack: false),
-            DockTab.shorts => const ShortsScreen(),
+            DockTab.shorts => ShortsScreen(active: _tab == DockTab.shorts),
           },
         ),
     ];

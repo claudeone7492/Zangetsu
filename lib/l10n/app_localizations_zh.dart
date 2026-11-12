@@ -18,6 +18,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get save => '保存';
 
   @override
+  String get saved => 'Saved';
+
+  @override
   String get close => '关闭';
 
   @override
@@ -49,6 +52,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get share => '分享';
+
+  @override
+  String get comments => 'Comments';
 
   @override
   String get copy => '复制';

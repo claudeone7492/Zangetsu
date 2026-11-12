@@ -1,5 +1,7 @@
 {
   "ar": [
+    "saved",
+    "comments",
     "liveTv",
     "customRange",
     "discordActivityStatus",
@@ -181,6 +183,8 @@
   ],
 
   "de": [
+    "saved",
+    "comments",
     "liveTv",
     "customRange",
     "searchOk",
@@ -476,6 +480,8 @@
   ],
 
   "es": [
+    "saved",
+    "comments",
     "liveTv",
     "customRange",
     "searchOk",
@@ -771,6 +777,8 @@
   ],
 
   "fr": [
+    "saved",
+    "comments",
     "liveTv",
     "customRange",
     "searchOk",
@@ -1066,6 +1074,8 @@
   ],
 
   "id": [
+    "saved",
+    "comments",
     "liveTv",
     "customRange",
     "discordActivityStatus",
@@ -1247,6 +1257,8 @@
   ],
 
   "it": [
+    "saved",
+    "comments",
     "liveTv",
     "customRange",
     "searchOk",
@@ -1542,6 +1554,8 @@
   ],
 
   "ja": [
+    "saved",
+    "comments",
     "liveTv",
     "customRange",
     "searchOk",
@@ -1837,6 +1851,8 @@
   ],
 
   "pt": [
+    "saved",
+    "comments",
     "liveTv",
     "customRange",
     "discordActivityStatus",
@@ -2018,6 +2034,8 @@
   ],
 
   "tr": [
+    "saved",
+    "comments",
     "liveTv",
     "customRange",
     "discordActivityStatus",
@@ -2199,6 +2217,8 @@
   ],
 
   "zh": [
+    "saved",
+    "comments",
     "liveTv",
     "customRange",
     "searchOk",
@@ -2494,6 +2514,8 @@
   ],
 
   "zh_TW": [
+    "saved",
+    "comments",
     "liveTv",
     "customRange",
     "searchOk",

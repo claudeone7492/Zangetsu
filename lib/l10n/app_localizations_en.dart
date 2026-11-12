@@ -18,6 +18,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get save => 'Save';
 
   @override
+  String get saved => 'Saved';
+
+  @override
   String get close => 'Close';
 
   @override
@@ -49,6 +52,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get share => 'Share';
+
+  @override
+  String get comments => 'Comments';
 
   @override
   String get copy => 'Copy';
