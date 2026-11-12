@@ -8,10 +8,18 @@ import 'package:watch_app/core/playback/framex_subtitle_source.dart';
 /// Answers the FrameX endpoints from canned bodies, so the parse and failover
 /// logic runs without a network.
 class _FakeAdapter implements HttpClientAdapter {
-  _FakeAdapter({this.stream, this.subtitleBytes, this.failHosts = const {}});
+  _FakeAdapter({
+    this.stream,
+    this.subsEndpoint,
+    this.subtitleBytes,
+    this.failHosts = const {},
+  });
 
   /// The JSON body for `/api/stream`; null makes the host fail.
   final Map<String, dynamic>? stream;
+
+  /// The JSON body for the standalone `/api/subtitles` endpoint.
+  final Map<String, dynamic>? subsEndpoint;
 
   /// The bytes served for a subtitle fetch.
   final List<int>? subtitleBytes;
@@ -37,6 +45,15 @@ class _FakeAdapter implements HttpClientAdapter {
     if (url.contains('/api/stream')) {
       return ResponseBody.fromString(
         jsonEncode(stream ?? const {'subtitles': []}),
+        200,
+        headers: {
+          Headers.contentTypeHeader: ['application/json'],
+        },
+      );
+    }
+    if (url.contains('/api/subtitles') && !url.contains('/proxy')) {
+      return ResponseBody.fromString(
+        jsonEncode(subsEndpoint ?? const {'subtitles': []}),
         200,
         headers: {
           Headers.contentTypeHeader: ['application/json'],
@@ -105,8 +122,40 @@ void main() {
       final adapter = _FakeAdapter();
       final source = FrameXSubtitleSource(dio: _dioWith(adapter));
       await source.subtitlesFor('1399', type: 'tv', season: 2, episode: 5);
-      expect(adapter.requested.single, contains('season=2'));
-      expect(adapter.requested.single, contains('episode=5'));
+      expect(adapter.requested.first, contains('season=2'));
+      expect(adapter.requested.first, contains('episode=5'));
+    });
+
+    test('falls back to the standalone endpoint when the stream has none',
+        () async {
+      final adapter = _FakeAdapter(
+        stream: const {'subtitles': []},
+        subsEndpoint: {
+          'subtitles': [
+            {'url': 'https://x/y.vtt', 'language': 'English', 'source': 'opensubtitles'},
+          ],
+        },
+      );
+      final source = FrameXSubtitleSource(dio: _dioWith(adapter));
+      final subs = await source.subtitlesFor('603');
+      expect(subs.length, 1);
+      expect(subs.first.source, 'opensubtitles');
+      expect(adapter.requested.any((u) => u.contains('/api/subtitles?')), isTrue);
+    });
+
+    test('does not hit the standalone endpoint when the stream has subtitles',
+        () async {
+      final adapter = _FakeAdapter(
+        stream: {
+          'subtitles': [
+            {'url': 'https://x/stream.vtt', 'language': 'English'},
+          ],
+        },
+      );
+      final source = FrameXSubtitleSource(dio: _dioWith(adapter));
+      final subs = await source.subtitlesFor('603');
+      expect(subs.length, 1);
+      expect(adapter.requested.any((u) => u.contains('/api/subtitles?')), isFalse);
     });
 
     test('returns empty rather than throwing on a malformed body', () async {

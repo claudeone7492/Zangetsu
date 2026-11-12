@@ -125,6 +125,35 @@ class FrameXSubtitleSource {
     }
     try {
       final body = await _fetch('/api/stream?$query');
+      final subs = _parseSubtitles(body);
+      if (subs.isNotEmpty) return subs;
+    } catch (_) {
+      // Fall through to the dedicated endpoint below.
+    }
+    return _subtitlesFromEndpoint(id, type: type, season: season, episode: episode);
+  }
+
+  /// The provider's standalone subtitle endpoint, used when a stream response
+  /// carries none.
+  ///
+  /// `/api/stream` only returns the subtitles of the provider that answered, so
+  /// a title whose stream resolved without tracks still has a full set at
+  /// `/api/subtitles`. It keys on the same TMDB id and also accepts an IMDb id.
+  Future<List<FrameXSubtitle>> _subtitlesFromEndpoint(
+    String id, {
+    required String type,
+    int? season,
+    int? episode,
+  }) async {
+    final query = StringBuffer('id=${Uri.encodeQueryComponent(id.trim())}')
+      ..write('&type=${Uri.encodeQueryComponent(type)}');
+    if (type == 'tv' && season != null && episode != null) {
+      query
+        ..write('&season=$season')
+        ..write('&episode=$episode');
+    }
+    try {
+      final body = await _fetch('/api/subtitles?$query');
       return _parseSubtitles(body);
     } catch (_) {
       return const [];

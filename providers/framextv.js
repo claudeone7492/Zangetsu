@@ -192,39 +192,109 @@ function getEpisodes(url, opts) {
   return getDetail(url, opts).then(function (d) { return d.episodes; });
 }
 
+// The provider ids the backend can fan a stream out to. Fetched once per
+// session: the list is static, and re-reading it on every play would add a
+// round-trip to playback start.
+var _providerIdsCache = null;
+function _providerIds() {
+  if (_providerIdsCache) return Promise.resolve(_providerIdsCache);
+  return _get('/api/providers').then(function (j) {
+    var list = (j && j.providers) || [];
+    var ids = [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && list[i].id) ids.push(list[i].id);
+    }
+    _providerIdsCache = ids;
+    return ids;
+  }).catch(function () { return []; });
+}
+
+// A stream request that answers null instead of throwing, so one dead provider
+// in the fan-out can't reject the whole batch.
+function _streamOnce(path) {
+  return _get(path).then(function (j) { return j || null; })
+    .catch(function () { return null; });
+}
+
 // episodeUrl is `kind:id` (movie) or `kind:id:season:episode` (tv/anime).
+//
+// The backend fans a title out to ~25 upstream providers and answers with
+// whichever one it picked, the relays it recommends (`alternates`), and any
+// providers that failed (`errors`). The default answer alone is a single
+// provider's mirrors, so a title the picked provider can't serve returns
+// nothing even though others can. This queries the default first, then every
+// other provider in parallel, and merges everything into one source list.
 function getVideoSources(episodeUrl) {
   var parts = String(episodeUrl).split(':');
   var kind = parts[0] || 'movie';
   var id = parts[1];
-  var path = '/api/stream?type=' + kind + '&id=' + id;
-  if (parts.length >= 4) path += '&season=' + parts[2] + '&episode=' + parts[3];
-  return _get(path).then(function (j) {
-    if (!j || !j.success || !j.sources || !j.sources.length) return [];
-    var topSubs = _mapSubtitles(j.subtitles);
+  var base = '/api/stream?type=' + kind + '&id=' + id;
+  if (parts.length >= 4) base += '&season=' + parts[2] + '&episode=' + parts[3];
+
+  return _streamOnce(base).then(function (first) {
+    var primary = (first && first.provider) || null;
+    // The top-level subtitle list belongs to whichever provider answered, so
+    // it is the fallback for a source that carried none of its own.
+    var topSubs = _mapSubtitles(first && first.subtitles);
+
     var out = [];
-    for (var i = 0; i < j.sources.length; i++) {
-      var s = j.sources[i];
-      if (!s || !s.url) continue;
-      var subs = _mapSubtitles(s.subtitles);
-      out.push({
-        url: s.url,
-        quality: s.quality || null,
-        label: _label(j.provider, s),
-        container: _container(s.type, s.url),
-        headers: { 'User-Agent': UA, 'Referer': 'https://framextv.cc/' },
-        kind: s.audio === 'dub' ? 'dub' : (s.audio === 'sub' ? 'sub' : 'unknown'),
-        subtitles: subs.length ? subs : topSubs
-      });
+    var seen = {};
+    function add(list, providerId, subs) {
+      if (!list) return;
+      for (var i = 0; i < list.length; i++) {
+        var s = list[i];
+        if (!s || !s.url || seen[s.url]) continue;
+        seen[s.url] = 1;
+        var own = _mapSubtitles(s.subtitles);
+        out.push({
+          url: s.url,
+          quality: s.quality || null,
+          label: _label(providerId, s),
+          container: _container(s.type, s.url),
+          headers: { 'User-Agent': UA, 'Referer': 'https://framextv.cc/' },
+          kind: s.audio === 'dub' ? 'dub' : (s.audio === 'sub' ? 'sub' : 'unknown'),
+          subtitles: own.length ? own : subs
+        });
+      }
     }
-    return out;
-  });
+    add(first && first.sources, primary, topSubs);
+
+    // Every provider except the one that already answered: the backend's own
+    // relays first, then the full list. De-duplicated so a relay that is also
+    // in the list is only asked once.
+    var wanted = [];
+    var wantedSeen = {};
+    function want(pid) {
+      if (!pid || pid === primary || wantedSeen[pid]) return;
+      wantedSeen[pid] = 1; wanted.push(pid);
+    }
+    var alts = (first && first.alternates) || [];
+    for (var a = 0; a < alts.length; a++) want(alts[a]);
+
+    return _providerIds().then(function (ids) {
+      for (var k = 0; k < ids.length; k++) want(ids[k]);
+      var jobs = [];
+      for (var w = 0; w < wanted.length; w++) {
+        (function (pid) {
+          jobs.push(_streamOnce(base + '&provider=' + encodeURIComponent(pid))
+            .then(function (j) {
+              if (j && j.success) add(j.sources, pid, topSubs);
+            }));
+        })(wanted[w]);
+      }
+      return Promise.all(jobs).then(function () { return out; });
+    });
+  }).catch(function () { return []; });
 }
 
 function _label(provider, s) {
   var bits = [];
   if (provider) bits.push('frameXTV · ' + provider);
   if (s.server) bits.push(s.server);
+  if (s.quality) bits.push(s.quality);
+  if (s.hasMultipleAudio || (s.audioTracks && s.audioTracks.length > 1)) {
+    bits.push('multi-audio');
+  }
   return bits.join(' · ') || null;
 }
 
