@@ -292,6 +292,10 @@ in place. Findings:
   reading sources via `content_mode.dart` `sourceInMode`.
 - Free-only short-drama sources `goodshort`, `reelshort`, `netshort` ship in the pack
   (harness: 10/10 live pass; NetShort 5/5 live pass).
+- `moviebox` (MovieBox — `themoviebox.xyz`, player `mzfi.me`) ships in the pack too:
+  a self-contained aggregator for movies, series and short dramas that speaks the
+  `h5-api.aoneroom.com` API directly (guest token minted from the `x-user` response
+  header; the play endpoint is gated by the player-path referer). Harness: 6/6 live pass.
 
 ### Rows corrected from ❌/🟡 → ✅ (verified in the tree)
 | Row | Was | Now | Evidence |

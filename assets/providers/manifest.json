@@ -171,6 +171,16 @@
       "file": "netshort.js",
       "logo": "https://netshort.com/favicon.ico",
       "nsfw": false
+    },
+    {
+      "id": "moviebox",
+      "name": "MovieBox",
+      "version": "1.0.0",
+      "type": "movie",
+      "lang": "en",
+      "file": "moviebox.js",
+      "logo": "https://themoviebox.xyz/favicon.ico",
+      "nsfw": false
     }
   ]
 }
