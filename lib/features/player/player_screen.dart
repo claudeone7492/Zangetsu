@@ -47,8 +47,8 @@ import '../detail/stremio_episode_links_sheet.dart';
 import '../../core/ui/app_toast.dart';
 import '../../core/playback/skip_service.dart';
 import '../../core/playback/source_selection.dart';
+import '../../core/playback/online_subtitle_search.dart';
 import '../../core/playback/subtitle_language.dart';
-import '../../core/playback/subtitle_search_service.dart';
 import '../../core/playback/watch_history.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
@@ -3147,6 +3147,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 : sl<PlaybackPrefs>().preferredSubtitleLanguage,
             imdbId: widget.imdbId,
             tmdbId: widget.tmdbId,
+            mediaType: widget.episodes.isNotEmpty ? 'tv' : 'movie',
+            season: seasonOf(_c.currentEpisode),
+            episode: _c.currentEpisode.number?.round(),
             onApply: (path) async {
               await _c.setSubtitleFromFile(path);
               _bumpControls();

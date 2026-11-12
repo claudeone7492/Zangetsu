@@ -1073,6 +1073,14 @@ class PlaybackPrefs {
   Future<void> setAutoTranslateSubtitles(bool value) =>
       _box.put('autoTranslateSubtitles', value);
 
+  /// Whether to strip hearing-impaired annotations — `[CROWD CHEERING]`,
+  /// `♪ music ♪` — from a cue before translating it. Off by default, so the
+  /// stage directions a viewer chose to see are not silently dropped.
+  bool get removeHearingImpaired =>
+      _box.get('removeHearingImpaired', defaultValue: false) as bool;
+  Future<void> setRemoveHearingImpaired(bool value) =>
+      _box.put('removeHearingImpaired', value);
+
   /// The preference as a *language* code only: '' for Auto or Off, else the
   /// iso1. Callers that want a language (online-search default, Settings label)
   /// use this so the 'off' sentinel never leaks in as a language.

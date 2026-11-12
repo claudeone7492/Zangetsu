@@ -3904,6 +3904,48 @@ abstract class AppLocalizations {
   /// **'Load from file…'**
   String get loadFromFile;
 
+  /// No description provided for @exportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Export subtitle…'**
+  String get exportSubtitle;
+
+  /// No description provided for @exportSubtitleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save the loaded caption as an .srt in Downloads'**
+  String get exportSubtitleSubtitle;
+
+  /// No description provided for @subtitleSavedToDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitle saved to Downloads'**
+  String get subtitleSavedToDownloads;
+
+  /// No description provided for @couldNotSaveSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the subtitle'**
+  String get couldNotSaveSubtitle;
+
+  /// No description provided for @noSubtitleToExport.
+  ///
+  /// In en, this message translates to:
+  /// **'No subtitle loaded to export'**
+  String get noSubtitleToExport;
+
+  /// No description provided for @removeHearingImpaired.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove sound effects'**
+  String get removeHearingImpaired;
+
+  /// No description provided for @removeHearingImpairedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Strip [sound effects] and ♪ music ♪ before translating'**
+  String get removeHearingImpairedSubtitle;
+
   /// No description provided for @translateSubtitles.
   ///
   /// In en, this message translates to:

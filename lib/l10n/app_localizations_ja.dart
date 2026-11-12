@@ -1998,6 +1998,29 @@ class AppLocalizationsJa extends AppLocalizations {
   String get loadFromFile => 'ファイルから読み込む…';
 
   @override
+  String get exportSubtitle => 'Export subtitle…';
+
+  @override
+  String get exportSubtitleSubtitle =>
+      'Save the loaded caption as an .srt in Downloads';
+
+  @override
+  String get subtitleSavedToDownloads => 'Subtitle saved to Downloads';
+
+  @override
+  String get couldNotSaveSubtitle => 'Couldn\'t save the subtitle';
+
+  @override
+  String get noSubtitleToExport => 'No subtitle loaded to export';
+
+  @override
+  String get removeHearingImpaired => 'Remove sound effects';
+
+  @override
+  String get removeHearingImpairedSubtitle =>
+      'Strip [sound effects] and ♪ music ♪ before translating';
+
+  @override
   String get translateSubtitles => '字幕を翻訳…';
 
   @override

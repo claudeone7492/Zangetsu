@@ -127,8 +127,9 @@ void main() {
     'a malformed/missing response for one row still yields the rows that are fine',
     () async {
       final cat = TmdbCatalogue((p, q) async {
-        if (p == '/movie/popular')
+        if (p == '/movie/popular') {
           return {'results': 'not-a-list'}; // malformed
+        }
         if (p == '/tv/popular') return null; // missing entirely
         return {
           'results': [_movie()],

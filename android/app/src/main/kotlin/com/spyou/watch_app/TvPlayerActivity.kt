@@ -1881,7 +1881,7 @@ class TvPlayerActivity : Activity() {
         toast("Searching subtitles…")
         bridge.invokeMethod(
             "searchSubtitles",
-            emptyMap<String, Any?>(),
+            mapOf("index" to currentIndex),
             object : MethodChannel.Result {
                 override fun success(result: Any?) {
                     @Suppress("UNCHECKED_CAST")
@@ -1903,8 +1903,10 @@ class TvPlayerActivity : Activity() {
             results.forEachIndexed { i, r ->
                 val name = r["name"] as? String ?: "Subtitle ${i + 1}"
                 val lang = r["language"] as? String
-                val label = if (lang.isNullOrBlank()) name else "$name  ·  ${langName(lang) ?: lang}"
-                option(label, selected = false) { downloadSubtitle(i) }
+                val src = r["source"] as? String
+                val langLabel = if (lang.isNullOrBlank()) "" else "  ·  ${langName(lang) ?: lang}"
+                val srcLabel = if (src.isNullOrBlank()) "" else "  ·  $src"
+                option("$name$langLabel$srcLabel", selected = false) { downloadSubtitle(i) }
             }
         }
     }

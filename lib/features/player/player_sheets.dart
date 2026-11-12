@@ -161,6 +161,20 @@ class _AudioSubsSheetState extends State<_AudioSubsSheet> {
                       widget.onInteract();
                     },
                   ),
+                  _SheetRow(
+                    label: context.l10n.removeHearingImpaired,
+                    subtitle: context.l10n.removeHearingImpairedSubtitle,
+                    toggleValue: sl<PlaybackPrefs>().removeHearingImpaired,
+                    active: false,
+                    onTap: () async {
+                      final prefs = sl<PlaybackPrefs>();
+                      await prefs.setRemoveHearingImpaired(
+                        !prefs.removeHearingImpaired,
+                      );
+                      if (mounted) setState(() {});
+                      widget.onInteract();
+                    },
+                  ),
                 ],
               ],
             ),
@@ -316,6 +330,17 @@ class _AudioSubsSheetState extends State<_AudioSubsSheet> {
                   active: false,
                   onTap: widget.onLoadFile,
                 ),
+                if (c.canExportSub)
+                  _SheetRow(
+                    label: context.l10n.exportSubtitle,
+                    subtitle: context.l10n.exportSubtitleSubtitle,
+                    icon: Icons.download_rounded,
+                    active: false,
+                    onTap: () async {
+                      await c.exportCurrentSub();
+                      widget.onInteract();
+                    },
+                  ),
                 if (c.softSubs.isNotEmpty || c.canTranslateSub)
                   _SheetRow(
                     label: context.l10n.translateSubtitles,
@@ -332,10 +357,13 @@ class _AudioSubsSheetState extends State<_AudioSubsSheet> {
   }
 }
 
-/// Online subtitle search (OpenSubtitles). A query field (prefilled with the
-/// show title) + a results list; tapping a result downloads it and calls
-/// [onApply] with the local file path. Surfaces a loading state and readable
-/// errors (including the "add an API key" hint when no key is set).
+/// Online subtitle search. Two sources are merged: OpenSubtitles (needs an API
+/// key, keyed on IMDb/TMDB id for accuracy) and FrameX TV (keyless, keyed on
+/// TMDB id). FrameX rows appear first when no OpenSubtitles key is set, so the
+/// keyless path is the one a new user sees. A query field (prefilled with the
+/// show title) sits above a results list; tapping a result downloads it and
+/// calls [onApply] with the local file path. Surfaces a loading state and
+/// readable errors.
 class _OnlineSubtitleSheet extends StatefulWidget {
   const _OnlineSubtitleSheet({
     required this.initialQuery,
@@ -343,6 +371,9 @@ class _OnlineSubtitleSheet extends StatefulWidget {
     this.initialLanguage = '',
     this.imdbId,
     this.tmdbId,
+    this.mediaType = 'movie',
+    this.season,
+    this.episode,
   });
   final String initialQuery;
   final Future<void> Function(String localPath) onApply;
@@ -350,17 +381,23 @@ class _OnlineSubtitleSheet extends StatefulWidget {
   /// ISO-639-1 code pre-selected in the language picker ('' = any language).
   final String initialLanguage;
 
-  /// When non-null, passed to [SubtitleSearchService.search] for higher
-  /// accuracy (OpenSubtitles can search by IMDb/TMDB id in addition to title).
+  /// When non-null, passed to the OpenSubtitles search for higher accuracy
+  /// (it can search by IMDb/TMDB id in addition to title).
   final String? imdbId;
   final int? tmdbId;
+
+  /// 'movie' or 'tv', for the FrameX lookup, which keys an episode's subtitles
+  /// on the season and episode as well as the id.
+  final String mediaType;
+  final int? season;
+  final int? episode;
 
   @override
   State<_OnlineSubtitleSheet> createState() => _OnlineSubtitleSheetState();
 }
 
 class _OnlineSubtitleSheetState extends State<_OnlineSubtitleSheet> {
-  final _service = SubtitleSearchService();
+  final _search = OnlineSubtitleSearch();
   late final TextEditingController _query = TextEditingController(
     text: widget.initialQuery,
   );
@@ -371,13 +408,13 @@ class _OnlineSubtitleSheetState extends State<_OnlineSubtitleSheet> {
   bool _searching = false;
   bool _downloading = false;
   String? _error;
-  List<SubtitleSearchResult> _results = const [];
+  List<OnlineSubtitleHit> _results = const [];
 
   @override
   void initState() {
     super.initState();
     if (widget.initialQuery.trim().isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _search());
+      WidgetsBinding.instance.addPostFrameCallback((_) => _runSearch());
     }
   }
 
@@ -387,7 +424,11 @@ class _OnlineSubtitleSheetState extends State<_OnlineSubtitleSheet> {
     super.dispose();
   }
 
-  Future<void> _search() async {
+  /// Runs the merged search across every provider that can answer for this
+  /// title. A provider that could have answered but failed is surfaced as an
+  /// error only when no provider returned anything, so a partial failure does
+  /// not hide the rows that did come back.
+  Future<void> _runSearch() async {
     final q = _query.text.trim();
     if (q.isEmpty || _searching) return;
     FocusScope.of(context).unfocus();
@@ -396,40 +437,45 @@ class _OnlineSubtitleSheetState extends State<_OnlineSubtitleSheet> {
       _error = null;
       _results = const [];
     });
-    try {
-      final results = await _service.search(
-        q,
-        language: _selectedLang.isEmpty ? '' : _selectedLang,
-        imdbId: widget.imdbId,
-        tmdbId: widget.tmdbId,
-      );
-      if (!mounted) return;
-      setState(() {
-        _results = results;
-        _searching = false;
-        if (results.isEmpty) {
-          _error = context.l10n.noSubtitlesFoundFor(q);
-        }
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _searching = false;
-        _error = e is SubtitleSearchException
-            ? e.message
-            : context.l10n.searchFailedWithError('$e');
-      });
-    }
+
+    String? error;
+    final hits = await _search.search(
+      q,
+      language: _selectedLang,
+      imdbId: widget.imdbId,
+      tmdbId: widget.tmdbId,
+      mediaType: widget.mediaType,
+      season: widget.season,
+      episode: widget.episode,
+      onError: (m) => error = m,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _results = hits;
+      _searching = false;
+      _error = _results.isEmpty
+          ? (error ?? context.l10n.noSubtitlesFoundFor(q))
+          : error;
+    });
   }
 
-  Future<void> _pick(SubtitleSearchResult r) async {
+  Future<void> _pick(OnlineSubtitleHit r) async {
     if (_downloading) return;
     setState(() {
       _downloading = true;
       _error = null;
     });
     try {
-      final path = await _service.download(r);
+      final path = await r.download();
+      if (path == null) {
+        if (!mounted) return;
+        setState(() {
+          _downloading = false;
+          _error = context.l10n.downloadFailedWithError('unreadable file');
+        });
+        return;
+      }
       if (!mounted) return;
       await widget.onApply(path);
       if (mounted) Navigator.pop(context);
@@ -437,9 +483,7 @@ class _OnlineSubtitleSheetState extends State<_OnlineSubtitleSheet> {
       if (!mounted) return;
       setState(() {
         _downloading = false;
-        _error = e is SubtitleSearchException
-            ? e.message
-            : context.l10n.downloadFailedWithError('$e');
+        _error = context.l10n.downloadFailedWithError('$e');
       });
     }
   }
@@ -532,10 +576,10 @@ class _OnlineSubtitleSheetState extends State<_OnlineSubtitleSheet> {
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.arrow_forward_rounded, size: 20),
                   tooltip: context.l10n.search,
-                  onPressed: _search,
+                  onPressed: _runSearch,
                 ),
               ),
-              onSubmitted: (_) => _search(),
+              onSubmitted: (_) => _runSearch(),
             ),
           ),
           const SizedBox(height: 6),
@@ -593,8 +637,9 @@ class _OnlineSubtitleSheetState extends State<_OnlineSubtitleSheet> {
             for (final r in _results)
               _SheetRow(
                 label: r.language.isNotEmpty
-                    ? '[${r.language.toUpperCase()}] ${r.name}'
-                    : r.name,
+                    ? '[${r.language.toUpperCase()}] ${r.label}'
+                    : r.label,
+                subtitle: r.source,
                 active: false,
                 onTap: () => _pick(r),
               ),

@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:background_downloader/background_downloader.dart';
 import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:gal/gal.dart';
@@ -10,8 +12,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import '../../core/platform/app_paths.dart';
+import '../../core/platform/apple_tv.dart';
 import 'package:path_provider/path_provider.dart';
-
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
 import '../../core/discord/discord_presence.dart';
@@ -38,6 +40,8 @@ import '../../core/playback/source_selection.dart';
 import '../../core/playback/title_prefs.dart';
 import '../../core/playback/watch_history.dart';
 import '../../core/playback/subtitle_download_service.dart';
+import '../../core/playback/subtitle_exporter.dart';
+import '../../core/playback/subtitle_text_codec.dart';
 import '../../core/playback/subtitle_translate_service.dart';
 import 'mpv_player_pool.dart';
 import '../../core/repository/catalogue_repository.dart';
@@ -1789,7 +1793,24 @@ class PlayerCubit extends Cubit<PlayerState> {
         if (!isCurrent()) return;
         // Keep the real extension so mpv picks the matching subtitle reader.
         final out = File('${dir.path}/softsub_${url.hashCode}${_subExt(url)}');
-        await out.writeAsBytes(bytes, flush: true);
+        // Caption sites serve legacy single-byte encodings (windows-125x,
+        // iso-8859-2) with no charset, which mpv would render as mojibake. Decode
+        // to text and write UTF-8; an HTML error page or a JSON payload decodes to
+        // something that is not a subtitle at all, so fall back to the plain
+        // remote uri rather than writing markup.
+        final prepared = prepareSubtitleBytes(
+          bytes,
+          declaredCharset: resp.headers.value('content-type') == null
+              ? null
+              : SubtitleTextCodec.charsetFromContentType(
+                  resp.headers.value('content-type'),
+                ),
+        );
+        if (prepared == null) {
+          await loadRemote();
+          return;
+        }
+        await out.writeAsBytes(prepared, flush: true);
         if (!isCurrent()) return;
         local = out.path;
         _localSubCache[url] = local;
@@ -1836,7 +1857,11 @@ class PlayerCubit extends Cubit<PlayerState> {
     String content;
     try {
       if (id != null && File(id).existsSync()) {
-        content = await File(id).readAsString();
+        // Decode rather than readAsString: a caption the user picked from disk
+        // may be in a legacy single-byte encoding, which readAsString (UTF-8)
+        // would turn into mojibake before it is translated.
+        final bytes = await File(id).readAsBytes();
+        content = decodeSubtitleText(bytes) ?? '';
       } else {
         // The active soft-sub, else the first available one.
         Subtitle? target;
@@ -1852,15 +1877,23 @@ class PlayerCubit extends Cubit<PlayerState> {
           return;
         }
         if (target.url != id) await setSoftSub(target); // select it first
-        final resp = await _dio.get<String>(
+        final resp = await _dio.get<List<int>>(
           target.url,
           options: Options(
-            responseType: ResponseType.plain,
+            responseType: ResponseType.bytes,
             headers: state.active?.headers,
             validateStatus: (_) => true,
           ),
         );
-        content = resp.data ?? '';
+        final contentType = resp.headers.value('content-type');
+        content =
+            decodeSubtitleText(
+              resp.data ?? const [],
+              declaredCharset: SubtitleTextCodec.charsetFromContentType(
+                contentType,
+              ),
+            ) ??
+            '';
       }
     } catch (_) {
       _toast('Couldn\'t load the subtitle');
@@ -1876,6 +1909,7 @@ class PlayerCubit extends Cubit<PlayerState> {
       final srt = await SubtitleTranslateService.instance.translate(
         content,
         targetIso,
+        stripHearingImpaired: sl<PlaybackPrefs>().removeHearingImpaired,
         onProgress: (p) {
           final pct = (p * 100).round();
           if (pct != lastPct) {
@@ -1901,6 +1935,109 @@ class PlayerCubit extends Cubit<PlayerState> {
       _toast('Subtitles translated');
     } catch (_) {
       _toast('Couldn\'t translate subtitles');
+    }
+  }
+
+  /// The title to name an exported caption after: the show title when known,
+  /// else the episode title, else a generic.
+  String get _exportTitle {
+    final show = showTitle?.trim();
+    if (show != null && show.isNotEmpty) return show;
+    final ep = currentEpisode.title.trim();
+    if (ep.isNotEmpty) return ep;
+    return 'subtitles';
+  }
+
+  /// Whether a caption is loaded that could be exported (a source soft-sub, a
+  /// file the user picked, or a translation the app produced).
+  bool get canExportSub {
+    final id = _wantedSubId;
+    if (id == null || id == 'no') return false;
+    return softSubs.any((s) => s.url == id) || File(id).existsSync();
+  }
+
+  /// Writes the currently loaded caption out as an `.srt` the viewer keeps.
+  ///
+  /// This is the counterpart to "Load from file": a caption the app produced — a
+  /// translation — lives only in memory, so without this it is lost the moment
+  /// the player closes. The file goes to the public Downloads folder so it is
+  /// reachable from any file manager, not to app-private storage.
+  Future<void> exportCurrentSub() async {
+    final id = _wantedSubId;
+    String content;
+    try {
+      if (id != null && File(id).existsSync()) {
+        content = decodeSubtitleText(await File(id).readAsBytes()) ?? '';
+      } else {
+        Subtitle? target;
+        for (final s in softSubs) {
+          if (s.url == id) {
+            target = s;
+            break;
+          }
+        }
+        target ??= softSubs.isNotEmpty ? softSubs.first : null;
+        if (target == null) {
+          // No BuildContext here; mirrors AppLocalizationsEn.noSubtitleToExport.
+          _toast('No subtitle loaded to export');
+          return;
+        }
+        final resp = await _dio.get<List<int>>(
+          target.url,
+          options: Options(
+            responseType: ResponseType.bytes,
+            headers: state.active?.headers,
+            validateStatus: (_) => true,
+          ),
+        );
+        final contentType = resp.headers.value('content-type');
+        content =
+            decodeSubtitleText(
+              resp.data ?? const [],
+              declaredCharset: SubtitleTextCodec.charsetFromContentType(
+                contentType,
+              ),
+            ) ??
+            '';
+      }
+    } catch (_) {
+      _toast('Couldn\'t load the subtitle');
+      return;
+    }
+    if (content.trim().isEmpty) {
+      _toast('Subtitle is empty');
+      return;
+    }
+    final path = await exportSubtitleText(content, _exportTitle);
+    _toast(
+      path == null
+          ? 'Couldn\'t save the subtitle'
+          : 'Subtitle saved to Downloads',
+    );
+  }
+
+  /// Converts [content] to SubRip and writes it into the public Downloads folder
+  /// (or the app's own storage when shared storage is unavailable, as on TV
+  /// boxes). Returns the saved path, or null when nothing was written.
+  Future<String?> exportSubtitleText(String content, String title) async {
+    final cues = SubtitleExporter.parseCues(content);
+    if (cues.isEmpty) return null;
+    final body = utf8.encode(SubtitleExporter.toSrt(cues));
+    final name = SubtitleExporter.fileName(title);
+    try {
+      final tmp = await getTemporaryDirectory();
+      final local = File('${tmp.path}/$name');
+      await local.writeAsBytes(body, flush: true);
+      if (isAppleTv) return local.path;
+      final shared = await FileDownloader().moveFileToSharedStorage(
+        local.path,
+        SharedStorage.downloads,
+        directory: 'Zangetsu',
+      );
+      if (shared != null && shared.isNotEmpty) return shared;
+      return local.path;
+    } catch (_) {
+      return null;
     }
   }
 

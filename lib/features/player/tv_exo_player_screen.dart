@@ -29,7 +29,7 @@ import '../../core/playback/subtitle_download_service.dart';
 import '../../core/playback/subtitle_font_stage.dart';
 import 'subtitle_font_service.dart';
 import '../../core/playback/subtitle_language.dart';
-import '../../core/playback/subtitle_search_service.dart';
+import '../../core/playback/online_subtitle_search.dart';
 import '../../core/playback/title_prefs.dart';
 import '../../core/playback/tv_playback_tracker.dart';
 import '../../core/playback/tv_track_helpers.dart';
@@ -160,7 +160,7 @@ class _TvExoPlayerScreenState extends State<TvExoPlayerScreen> {
   final _subDownloads = <TvSubtitleConfig>[]; // sourced-in during playback
   String? _stagedFontPath;
   String _stagedFontFamily = '';
-  List<SubtitleSearchResult>? _searchResults;
+  List<OnlineSubtitleHit>? _searchResults;
 
   List<SkipInterval> _skips = const [];
   bool _skipsFetched = false;
@@ -1397,7 +1397,8 @@ class _TvExoPlayerScreenState extends State<TvExoPlayerScreen> {
 
   Future<void> _openSubtitleSearch() async {
     final query = widget.showTitle ?? '';
-    if (sl<PlaybackPrefs>().subtitleApiKey.isEmpty) {
+    final hasKey = sl<PlaybackPrefs>().subtitleApiKey.isNotEmpty;
+    if (!hasKey && !OnlineSubtitleSearch.canUseFrameX(widget.tmdbId)) {
       _toast('Add an OpenSubtitles API key in Settings to search.');
       return;
     }
@@ -1405,12 +1406,18 @@ class _TvExoPlayerScreenState extends State<TvExoPlayerScreen> {
     // (subtitlePreference is '' for Auto or 'off'); fall back to English.
     final pref = sl<PlaybackPrefs>().subtitlePreference;
     final lang = (pref.isEmpty || pref == 'off') ? 'en' : pref;
-    List<SubtitleSearchResult> results;
+    final ep = _ep;
+    List<OnlineSubtitleHit> results;
     try {
-      results = await SubtitleSearchService().search(query, language: lang);
-    } on SubtitleSearchException catch (e) {
-      _toast(e.toString());
-      return;
+      results = await OnlineSubtitleSearch().search(
+        query,
+        language: lang,
+        imdbId: widget.imdbId,
+        tmdbId: widget.tmdbId,
+        mediaType: widget.episodes.isNotEmpty ? 'tv' : 'movie',
+        season: ep == null ? null : episodeSeasonNumber(ep),
+        episode: ep?.number?.round(),
+      );
     } catch (_) {
       _toast('Subtitle search failed.');
       return;
@@ -1429,16 +1436,20 @@ class _TvExoPlayerScreenState extends State<TvExoPlayerScreen> {
     });
   }
 
-  Future<void> _applySearchResult(SubtitleSearchResult r) async {
+  Future<void> _applySearchResult(OnlineSubtitleHit r) async {
     setState(() => _searchResults = null);
     _rootFocus.requestFocus();
     try {
-      final path = await SubtitleSearchService().download(r);
+      final path = await r.download();
+      if (path == null) {
+        _toast('Couldn\'t download subtitle.');
+        return;
+      }
       final cfg = TvSubtitleConfig(
         url: path,
         lang: r.language,
-        label: r.name,
-        mime: subtitleMime(r.format, url: path),
+        label: r.label,
+        mime: subtitleMime(null, url: path),
       );
       _subDownloads.add(cfg);
       final src = _activeSource;
@@ -2209,8 +2220,10 @@ class _TvExoPlayerScreenState extends State<TvExoPlayerScreen> {
                   options: [
                     for (final r in _searchResults!)
                       TvMenuOption(
-                        label: r.name,
-                        trailing: r.language,
+                        label: r.label,
+                        trailing: r.language.isNotEmpty
+                            ? '${r.language} · ${r.source}'
+                            : r.source,
                         showCheck: false,
                         onSelect: () => _applySearchResult(r),
                       ),

@@ -20,7 +20,7 @@ import '../../core/playback/resume_store.dart';
 import '../../core/playback/skip_service.dart';
 import '../../core/playback/source_selection.dart';
 import '../../core/playback/subtitle_font_stage.dart';
-import '../../core/playback/subtitle_search_service.dart';
+import '../../core/playback/online_subtitle_search.dart';
 import '../../core/playback/subtitle_encode_skew.dart';
 import '../../core/playback/title_prefs.dart';
 import '../../core/playback/tv_playback_tracker.dart';
@@ -59,9 +59,12 @@ class TvAvNativePlayer {
   static String? _cover;
   static Map<String, String>? _coverHeaders;
   static int? _malId;
+  static int? _tmdbId;
+  static String? _imdbId;
+  static bool _isTv = false;
   static String? _skipTitle;
   static TvPlaybackTracker? _tracker;
-  static List<SubtitleSearchResult> _subResults = const [];
+  static List<OnlineSubtitleHit> _subResults = const [];
   static String _category = 'sub';
   static ResumeStore? _resume;
   static double _subtitleSkewSeconds = 0;
@@ -117,6 +120,9 @@ class TvAvNativePlayer {
     _cover = cover;
     _coverHeaders = coverHeaders;
     _malId = malId;
+    _tmdbId = tmdbId;
+    _imdbId = imdbId;
+    _isTv = tmdbIsTv;
     _skipTitle = scrobbleTitle;
     _category = category;
     _resume = resume;
@@ -386,30 +392,42 @@ class TvAvNativePlayer {
         await SubtitleFontService.instance.ensure(font);
         return await stageSubtitleFont(font);
       case 'searchSubtitles':
+        // Merged online search (OpenSubtitles when a key is set, plus the
+        // keyless FrameX TV) for the episode being shown.
+        final args = (call.arguments as Map?)?.cast<String, dynamic>() ?? {};
+        final index = (args['index'] as num?)?.toInt() ?? -1;
+        final ep = (index >= 0 && index < _episodes.length)
+            ? _episodes[index]
+            : null;
         final pref = sl<PlaybackPrefs>().subtitlePreference;
         final lang = (pref.isEmpty || pref == 'off') ? 'en' : pref;
-        try {
-          _subResults = await SubtitleSearchService().search(
-            _showTitle,
-            language: lang,
-          );
-        } catch (_) {
-          _subResults = const [];
-        }
+        _subResults = await OnlineSubtitleSearch().search(
+          _showTitle,
+          language: lang,
+          imdbId: _imdbId,
+          tmdbId: _tmdbId,
+          mediaType: _isTv ? 'tv' : 'movie',
+          season: ep == null ? null : episodeSeasonNumber(ep),
+          episode: ep?.number?.round(),
+        );
         return [
-          for (final r in _subResults) {'name': r.name, 'language': r.language},
+          for (final r in _subResults) {
+            'name': r.label,
+            'language': r.language,
+            'source': r.source,
+          },
         ];
       case 'downloadSubtitle':
         final idx = ((call.arguments as Map)['index'] as num?)?.toInt() ?? -1;
         if (idx < 0 || idx >= _subResults.length) return null;
         try {
           final r = _subResults[idx];
-          final path = await SubtitleSearchService().download(r);
+          final path = await r.download();
+          if (path == null) return null;
           return {
             'path': path,
             'language': r.language,
-            'name': r.name,
-            'format': r.format,
+            'name': r.label,
           };
         } catch (_) {
           return null;

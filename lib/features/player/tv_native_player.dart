@@ -20,7 +20,7 @@ import '../../core/playback/skip_service.dart';
 import '../../core/playback/source_health_store.dart';
 import '../../core/playback/source_selection.dart';
 import '../../core/playback/subtitle_font_stage.dart';
-import '../../core/playback/subtitle_search_service.dart';
+import '../../core/playback/online_subtitle_search.dart';
 import '../../core/repository/catalogue_repository.dart';
 import '../../core/tv/tv_playback_failure.dart';
 import '../../core/zmode/playback_resolver.dart';
@@ -77,10 +77,12 @@ class TvNativePlayer {
   static String? _cover;
   static Map<String, String>? _coverHeaders;
   static int? _malId;
+  static int? _tmdbId;
+  static String? _imdbId;
+  static bool _isTv = false;
   static String? _skipTitle; // anime title for AniSkip (null = no skips)
   static TvPlaybackTracker? _tracker;
-  static List<SubtitleSearchResult> _subResults =
-      const []; // last online search
+  static List<OnlineSubtitleHit> _subResults = const []; // last online search
   static String _category = 'sub';
   static ResumeStore? _resume;
   static String? _torrentId; // active torrent stream (stopped on switch/close)
@@ -127,6 +129,9 @@ class TvNativePlayer {
     _cover = cover;
     _coverHeaders = coverHeaders;
     _malId = malId;
+    _tmdbId = tmdbId;
+    _imdbId = imdbId;
+    _isTv = tmdbIsTv;
     _skipTitle = scrobbleTitle;
     _category = category;
     _resume = resume;
@@ -414,32 +419,38 @@ class TvNativePlayer {
         await SubtitleFontService.instance.ensure(font);
         return await stageSubtitleFont(font);
       case 'searchSubtitles':
-        // OpenSubtitles search for the current show; results cached for download.
+        // Merged online search (OpenSubtitles when a key is set, plus the
+        // keyless FrameX TV) for the current episode; results cached for
+        // download. FrameX keys on TMDB id + season/episode, so the native side
+        // passes the episode index it is showing.
+        final args = (call.arguments as Map?)?.cast<String, dynamic>() ?? {};
+        final index = (args['index'] as num?)?.toInt() ?? -1;
+        final ep = (index >= 0 && index < _episodes.length)
+            ? _episodes[index]
+            : null;
         final pref = sl<PlaybackPrefs>().subtitlePreference;
         final lang = (pref.isEmpty || pref == 'off') ? 'en' : pref;
-        try {
-          _subResults = await SubtitleSearchService().search(
-            _showTitle,
-            language: lang,
-          );
-        } catch (_) {
-          _subResults = const [];
-        }
+        _subResults = await OnlineSubtitleSearch().search(
+          _showTitle,
+          language: lang,
+          imdbId: _imdbId,
+          tmdbId: _tmdbId,
+          mediaType: _isTv ? 'tv' : 'movie',
+          season: ep == null ? null : episodeSeasonNumber(ep),
+          episode: ep?.number?.round(),
+        );
         return [
-          for (final r in _subResults) {'name': r.name, 'language': r.language},
+          for (final r in _subResults)
+            {'name': r.label, 'language': r.language, 'source': r.source},
         ];
       case 'downloadSubtitle':
         final idx = ((call.arguments as Map)['index'] as num?)?.toInt() ?? -1;
         if (idx < 0 || idx >= _subResults.length) return null;
         try {
           final r = _subResults[idx];
-          final path = await SubtitleSearchService().download(r);
-          return {
-            'path': path,
-            'language': r.language,
-            'name': r.name,
-            'format': r.format,
-          };
+          final path = await r.download();
+          if (path == null) return null;
+          return {'path': path, 'language': r.language, 'name': r.label};
         } catch (_) {
           return null;
         }
