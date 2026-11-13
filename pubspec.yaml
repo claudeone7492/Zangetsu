@@ -181,6 +181,8 @@ dependencies:
   dynamic_color: ^2.1.0
   local_auth: ^3.0.2
   enough_convert: ^1.7.1
+  flutter_timezone: ^5.1.1
+  timezone: ^0.9.4
 dev_dependencies:
   http: ^1.6.0
   video_player_platform_interface: ^6.9.0

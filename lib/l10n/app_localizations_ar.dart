@@ -5948,4 +5948,26 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get onboardingInstallBlurb =>
       'To get started we\'ll install the official source catalog — you can add, update or remove sources any time in Settings → Providers.';
+
+  @override
+  String get dailyPicks => 'Daily picks';
+
+  @override
+  String get dailyPicksSubtitle =>
+      'Three suggestions a day — new episodes and things to watch';
+
+  @override
+  String get dailyPicksEnable => 'Get daily picks';
+
+  @override
+  String get dailyPicksMorning => 'Morning';
+
+  @override
+  String get dailyPicksAfternoon => 'Afternoon';
+
+  @override
+  String get dailyPicksEvening => 'Evening';
+
+  @override
+  String get dailyPicksNow => 'Send the day\'s picks now';
 }

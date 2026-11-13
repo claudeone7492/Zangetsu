@@ -82,6 +82,7 @@ import '../watch_together/watch_together_controller.dart';
 import '../profiles/viewer_profiles_screen.dart';
 import '../onboarding/how_it_works.dart';
 import '../notify/subscriptions_screen.dart';
+import 'settings_daily_picks.dart';
 import 'tracker_settings_screen.dart';
 import '../sources/source_health_screen.dart';
 import '../sources/sources_screen.dart';
@@ -1300,6 +1301,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.notificationsSubtitle,
         keywords: 'notifications alerts new episode subscribe airing',
         onTap: () => _push(const SubscriptionsScreen()),
+      ),
+    if (Platform.isAndroid)
+      _SettingsEntry(
+        section: SettingsSection.notifications,
+        icon: Icons.auto_awesome_rounded,
+        title: l10n.dailyPicks,
+        subtitle: l10n.dailyPicksSubtitle,
+        keywords:
+            'daily picks digest notifications three a day suggestions cards',
+        onTap: () => _push(const DailyPicksScreen()),
       ),
     // Advanced
     if (Platform.isAndroid)

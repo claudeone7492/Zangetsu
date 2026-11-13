@@ -180,7 +180,14 @@
     "downloadingSourceCatalog",
     "installingSource",
     "setupFailedCheckConnection",
-    "onboardingInstallBlurb"
+    "onboardingInstallBlurb",
+    "dailyPicks",
+    "dailyPicksSubtitle",
+    "dailyPicksEnable",
+    "dailyPicksMorning",
+    "dailyPicksAfternoon",
+    "dailyPicksEvening",
+    "dailyPicksNow"
   ],
 
   "de": [
@@ -478,7 +485,14 @@
     "downloadingSourceCatalog",
     "installingSource",
     "setupFailedCheckConnection",
-    "onboardingInstallBlurb"
+    "onboardingInstallBlurb",
+    "dailyPicks",
+    "dailyPicksSubtitle",
+    "dailyPicksEnable",
+    "dailyPicksMorning",
+    "dailyPicksAfternoon",
+    "dailyPicksEvening",
+    "dailyPicksNow"
   ],
 
   "es": [
@@ -776,7 +790,14 @@
     "downloadingSourceCatalog",
     "installingSource",
     "setupFailedCheckConnection",
-    "onboardingInstallBlurb"
+    "onboardingInstallBlurb",
+    "dailyPicks",
+    "dailyPicksSubtitle",
+    "dailyPicksEnable",
+    "dailyPicksMorning",
+    "dailyPicksAfternoon",
+    "dailyPicksEvening",
+    "dailyPicksNow"
   ],
 
   "fr": [
@@ -1074,7 +1095,14 @@
     "downloadingSourceCatalog",
     "installingSource",
     "setupFailedCheckConnection",
-    "onboardingInstallBlurb"
+    "onboardingInstallBlurb",
+    "dailyPicks",
+    "dailyPicksSubtitle",
+    "dailyPicksEnable",
+    "dailyPicksMorning",
+    "dailyPicksAfternoon",
+    "dailyPicksEvening",
+    "dailyPicksNow"
   ],
 
   "id": [
@@ -1258,7 +1286,14 @@
     "downloadingSourceCatalog",
     "installingSource",
     "setupFailedCheckConnection",
-    "onboardingInstallBlurb"
+    "onboardingInstallBlurb",
+    "dailyPicks",
+    "dailyPicksSubtitle",
+    "dailyPicksEnable",
+    "dailyPicksMorning",
+    "dailyPicksAfternoon",
+    "dailyPicksEvening",
+    "dailyPicksNow"
   ],
 
   "it": [
@@ -1556,7 +1591,14 @@
     "downloadingSourceCatalog",
     "installingSource",
     "setupFailedCheckConnection",
-    "onboardingInstallBlurb"
+    "onboardingInstallBlurb",
+    "dailyPicks",
+    "dailyPicksSubtitle",
+    "dailyPicksEnable",
+    "dailyPicksMorning",
+    "dailyPicksAfternoon",
+    "dailyPicksEvening",
+    "dailyPicksNow"
   ],
 
   "ja": [
@@ -1854,7 +1896,14 @@
     "downloadingSourceCatalog",
     "installingSource",
     "setupFailedCheckConnection",
-    "onboardingInstallBlurb"
+    "onboardingInstallBlurb",
+    "dailyPicks",
+    "dailyPicksSubtitle",
+    "dailyPicksEnable",
+    "dailyPicksMorning",
+    "dailyPicksAfternoon",
+    "dailyPicksEvening",
+    "dailyPicksNow"
   ],
 
   "pt": [
@@ -2038,7 +2087,14 @@
     "downloadingSourceCatalog",
     "installingSource",
     "setupFailedCheckConnection",
-    "onboardingInstallBlurb"
+    "onboardingInstallBlurb",
+    "dailyPicks",
+    "dailyPicksSubtitle",
+    "dailyPicksEnable",
+    "dailyPicksMorning",
+    "dailyPicksAfternoon",
+    "dailyPicksEvening",
+    "dailyPicksNow"
   ],
 
   "tr": [
@@ -2222,7 +2278,14 @@
     "downloadingSourceCatalog",
     "installingSource",
     "setupFailedCheckConnection",
-    "onboardingInstallBlurb"
+    "onboardingInstallBlurb",
+    "dailyPicks",
+    "dailyPicksSubtitle",
+    "dailyPicksEnable",
+    "dailyPicksMorning",
+    "dailyPicksAfternoon",
+    "dailyPicksEvening",
+    "dailyPicksNow"
   ],
 
   "zh": [
@@ -2520,7 +2583,14 @@
     "downloadingSourceCatalog",
     "installingSource",
     "setupFailedCheckConnection",
-    "onboardingInstallBlurb"
+    "onboardingInstallBlurb",
+    "dailyPicks",
+    "dailyPicksSubtitle",
+    "dailyPicksEnable",
+    "dailyPicksMorning",
+    "dailyPicksAfternoon",
+    "dailyPicksEvening",
+    "dailyPicksNow"
   ],
 
   "zh_TW": [
@@ -2818,6 +2888,13 @@
     "downloadingSourceCatalog",
     "installingSource",
     "setupFailedCheckConnection",
-    "onboardingInstallBlurb"
+    "onboardingInstallBlurb",
+    "dailyPicks",
+    "dailyPicksSubtitle",
+    "dailyPicksEnable",
+    "dailyPicksMorning",
+    "dailyPicksAfternoon",
+    "dailyPicksEvening",
+    "dailyPicksNow"
   ]
 }

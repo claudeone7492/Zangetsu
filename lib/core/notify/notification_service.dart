@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/timezone.dart' as tz;
 
+import 'daily_picks_prefs.dart';
 import 'notification_router.dart';
 
 /// Thin wrapper over flutter_local_notifications.
@@ -22,6 +24,7 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
+
   final Dio _dio = Dio();
   // Native (CS worker) notification taps come over this channel.
   static const MethodChannel _notifChannel = MethodChannel(
@@ -187,6 +190,119 @@ class NotificationService {
       ),
     );
     await _plugin.show(id, title, body, details, payload: payload);
+  }
+
+  /// Show one of the daily-pick cards, choosing the Android expanded layout by
+  /// [style] so the three slots across a day are three distinct designs:
+  ///
+  ///   • [DailyPickStyle.bigText]    — title + a long single body.
+  ///   • [DailyPickStyle.bigPicture] — title + [imageUrl] as a large image.
+  ///   • [DailyPickStyle.inbox]      — title + [lines] as a list.
+  ///
+  /// Android-only, like the other alerts (iOS draws its own scheduled local
+  /// notifications with a fixed layout and no equivalent per-style control).
+  Future<void> showDailyPick({
+    required int id,
+    required String title,
+    required String body,
+    required DailyPickStyle style,
+    String? imageUrl,
+    List<String>? lines,
+    String? payload,
+  }) async {
+    if (!Platform.isAndroid) return;
+    if (!_inited) await init();
+    final styleInfo = await _dailyPickStyle(style, title, body, imageUrl, lines);
+    final details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'daily_picks',
+        'Daily picks',
+        channelDescription:
+            'Three suggestions a day — new episodes and things to watch',
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+        styleInformation: styleInfo,
+      ),
+    );
+    await _plugin.show(id, title, body, details, payload: payload);
+  }
+
+  /// Schedule a daily-pick card to fire at [when] and repeat at that wall-clock
+  /// time each day. Same three designs as [showDailyPick], so the alarm and the
+  /// catch-up post are the same card rather than the alarm being a bare
+  /// title-less notification.
+  ///
+  /// [inexactAllowWhileIdle] is deliberate: an exact alarm needs the
+  /// exact-alarm permission, which is intrusive for a digest, and Android's
+  /// inexact mode still lands close to the requested time.
+  Future<void> scheduleDailyPick({
+    required int id,
+    required String title,
+    required String body,
+    required DailyPickStyle style,
+    required tz.TZDateTime when,
+    String? imageUrl,
+    List<String>? lines,
+    String? payload,
+  }) async {
+    if (!Platform.isAndroid) return;
+    if (!_inited) await init();
+    final styleInfo = await _dailyPickStyle(style, title, body, imageUrl, lines);
+    final details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'daily_picks',
+        'Daily picks',
+        channelDescription:
+            'Three suggestions a day — new episodes and things to watch',
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+        styleInformation: styleInfo,
+      ),
+    );
+    await _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      when,
+      details,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      // Re-arms the alarm every day at the same time, so this only has to be
+      // scheduled once.
+      matchDateTimeComponents: DateTimeComponents.time,
+      payload: payload,
+    );
+  }
+
+  Future<StyleInformation?> _dailyPickStyle(
+    DailyPickStyle style,
+    String title,
+    String body,
+    String? imageUrl,
+    List<String>? lines,
+  ) async {
+    switch (style) {
+      case DailyPickStyle.bigText:
+        return BigTextStyleInformation(body, summaryText: title);
+      case DailyPickStyle.bigPicture:
+        final url = imageUrl;
+        if (url == null || url.isEmpty) return null;
+        final picture = await _downloadBitmap(url);
+        if (picture == null) return null;
+        return BigPictureStyleInformation(
+          picture,
+          contentTitle: title,
+          summaryText: body,
+          hideExpandedLargeIcon: true,
+        );
+      case DailyPickStyle.inbox:
+        return InboxStyleInformation(
+          lines ?? const [],
+          contentTitle: title,
+          summaryText: body,
+        );
+    }
   }
 
   /// Download a remote image into a temp file for a big-picture notification.

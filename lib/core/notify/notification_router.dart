@@ -10,12 +10,21 @@ import 'subscription_store.dart';
 /// [payload] is "sourceId|url" (split on the FIRST '|' — a url may contain one).
 /// The full cover / headers / title come from the stored subscription so Detail
 /// renders immediately; it then re-fetches by sourceId+url anyway.
+///
+/// A daily-pick card carries `"daily:<slot>:<sourceId>|<url>"` instead, so
+/// tapping one opens the item it led with rather than doing nothing.
 Future<void> openShowFromNotification(String? payload) async {
   if (payload == null) return;
-  final i = payload.indexOf('|');
+  var p = payload;
+  if (p.startsWith('daily:')) {
+    final sep = p.indexOf(':', 'daily:'.length);
+    if (sep < 0) return;
+    p = p.substring(sep + 1);
+  }
+  final i = p.indexOf('|');
   if (i < 0) return;
-  final sourceId = payload.substring(0, i);
-  final url = payload.substring(i + 1);
+  final sourceId = p.substring(0, i);
+  final url = p.substring(i + 1);
   if (sourceId.isEmpty || url.isEmpty) return;
 
   Subscription? sub;

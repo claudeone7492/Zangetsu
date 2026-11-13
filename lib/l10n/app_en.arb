@@ -3250,5 +3250,12 @@
 		}
 	},
 	"setupFailedCheckConnection": "Setup failed — check your connection and try again.",
-	"onboardingInstallBlurb": "To get started we'll install the official source catalog — you can add, update or remove sources any time in Settings → Providers."
+	"onboardingInstallBlurb": "To get started we'll install the official source catalog — you can add, update or remove sources any time in Settings → Providers.",
+	"dailyPicks": "Daily picks",
+	"dailyPicksSubtitle": "Three suggestions a day — new episodes and things to watch",
+	"dailyPicksEnable": "Get daily picks",
+	"dailyPicksMorning": "Morning",
+	"dailyPicksAfternoon": "Afternoon",
+	"dailyPicksEvening": "Evening",
+	"dailyPicksNow": "Send the day's picks now"
 }

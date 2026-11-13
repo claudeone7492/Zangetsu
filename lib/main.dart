@@ -27,6 +27,7 @@ import 'core/platform/apple_tv.dart';
 import 'core/platform/android_mpv.dart';
 import 'core/platform/trusted_certificates.dart';
 import 'core/notify/cs_notify.dart';
+import 'core/notify/daily_picks_service.dart';
 import 'core/notify/notification_service.dart';
 import 'core/notify/push_service.dart';
 import 'core/ui/home_rows_prefs.dart';
@@ -500,6 +501,9 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
       }
       _syncOnResume();
       unawaited(_checkSubscriptions());
+      // A resume is the cheapest chance to catch a slot that came due while the
+      // app was backgrounded; the day-stamp makes a repeat call a no-op.
+      unawaited(DailyPicksService.instance.sync());
       // The wallpaper may have changed while we were away. No-op unless
       // Material You is on, and only rebuilds if the colours actually moved.
       ThemeController.refresh();
@@ -604,6 +608,10 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
           // run the launch/resume sweep: JS sources here, CS via native worker.
           await _checkSubscriptions(syncCloudStream: true);
         } catch (_) {}
+        // Daily picks: (re)arm the three slots and post any that came due while
+        // the app was closed. Independent of the subscription check above so a
+        // failure in one never skips the other.
+        unawaited(DailyPicksService.instance.sync());
       });
     }
     // FCM broadcasts: subscribe every device to the `all` topic so we can push

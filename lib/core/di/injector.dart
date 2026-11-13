@@ -114,6 +114,7 @@ import '../debrid/playable_torrent.dart';
 import '../torrent/torrent_download_service.dart';
 import '../torrent/torrent_prefs.dart';
 import '../torrent/torrent_service.dart';
+import '../notify/daily_picks_prefs.dart';
 import '../notify/subscription_store.dart';
 import '../notify/subscription_checker.dart';
 import '../discord/discord_rpc.dart';
@@ -1203,6 +1204,11 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   // messages as a bottom sheet + a Notifications-screen history entry.
   await AnnouncementStore.init();
   sl.registerSingleton<AnnouncementStore>(AnnouncementStore());
+
+  // Daily picks: three-a-day digest notifications (one per slot, each a
+  // different card design). Opt-in, so this only opens the box — the scheduler
+  // itself is poked from the app lifecycle and no-ops while disabled.
+  await DailyPicksPrefs.init();
   sl.registerSingleton<AnnouncementService>(
     AnnouncementService(sl<Dio>(), sl<AnnouncementStore>()),
   );

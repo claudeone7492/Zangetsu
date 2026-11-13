@@ -10215,6 +10215,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'To get started we\'ll install the official source catalog — you can add, update or remove sources any time in Settings → Providers.'**
   String get onboardingInstallBlurb;
+
+  /// No description provided for @dailyPicks.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily picks'**
+  String get dailyPicks;
+
+  /// No description provided for @dailyPicksSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Three suggestions a day — new episodes and things to watch'**
+  String get dailyPicksSubtitle;
+
+  /// No description provided for @dailyPicksEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Get daily picks'**
+  String get dailyPicksEnable;
+
+  /// No description provided for @dailyPicksMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning'**
+  String get dailyPicksMorning;
+
+  /// No description provided for @dailyPicksAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon'**
+  String get dailyPicksAfternoon;
+
+  /// No description provided for @dailyPicksEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening'**
+  String get dailyPicksEvening;
+
+  /// No description provided for @dailyPicksNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Send the day\'s picks now'**
+  String get dailyPicksNow;
 }
 
 class _AppLocalizationsDelegate
