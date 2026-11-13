@@ -90,12 +90,9 @@ void main() {
     CfSolveNeeded.clear('healthy.test');
   });
 
-  // OWNER-DISABLED 2026-10-03: the fetch path no longer records
-  // needs-solve (CF handling off) — restore when it is re-enabled.
   test(
     'a search that hits a Cloudflare challenge while solving is suppressed '
     'records the host as needing a solve',
-    skip: 'CF handling owner-disabled 2026-10-03',
     () async {
       final provider = await manager.load(sourceId: 'cf-src', jsSource: _cfBlockedJs);
       await provider.search('foo', 1);
@@ -115,11 +112,8 @@ void main() {
     expect(CfSolveNeeded.sourceFlagged('ok-src'), isFalse);
   });
 
-  // OWNER-DISABLED 2026-10-03: the fetch path no longer records
-  // needs-solve (CF handling off) — restore when it is re-enabled.
   test(
     'an automatic solve that comes back empty still records the host',
-    skip: 'CF handling owner-disabled 2026-10-03',
     () async {
       // The non-search path solves by itself, and when that solve fails there
       // was nothing left behind for the UI to offer — the source just looked
@@ -143,10 +137,7 @@ void main() {
     },
   );
 
-  // OWNER-DISABLED 2026-10-03: the fetch path no longer solves (CF
-  // handling off) — restore when it is re-enabled.
-  test('a successful solve clears the flag',
-      skip: 'CF handling owner-disabled 2026-10-03', () async {
+  test('a successful solve clears the flag', () async {
     final provider = await manager.load(sourceId: 'cf-src', jsSource: _cfBlockedJs);
     await provider.search('foo', 1);
     expect(CfSolveNeeded.hostFlagged('cf-blocked.test'), isTrue);
