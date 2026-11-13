@@ -194,4 +194,50 @@ void main() {
     expect(find.text('Share'), findsOneWidget);
     expect(find.text('Show details'), findsOneWidget);
   });
+
+  testWidgets('prewarm gathers the feed while the tab is still off-screen', (
+    tester,
+  ) async {
+    sl.registerSingleton<CatalogueRepository>(
+      _FakeCatalogueRepository(
+        sections: [
+          HomeSection(title: 'Trending', items: [_item('a', 'Alpha')]),
+        ],
+      ),
+    );
+
+    await tester.binding.setSurfaceSize(const Size(1000, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      const MaterialApp(home: ShortsScreen(active: false, prewarm: true)),
+    );
+    await tester.pumpAndSettle();
+
+    // The rows are already there, so tapping the tab opens onto them — no
+    // fetch, no spinner.
+    expect(find.byType(PageView), findsOneWidget);
+    expect(find.text('Alpha'), findsOneWidget);
+  });
+
+  testWidgets('an off-screen tab without prewarm does no work', (
+    tester,
+  ) async {
+    sl.registerSingleton<CatalogueRepository>(
+      _FakeCatalogueRepository(
+        sections: [
+          HomeSection(title: 'Trending', items: [_item('a', 'Alpha')]),
+        ],
+      ),
+    );
+
+    await tester.binding.setSurfaceSize(const Size(1000, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      const MaterialApp(home: ShortsScreen(active: false)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PageView), findsNothing);
+    expect(find.text('Alpha'), findsNothing);
+  });
 }

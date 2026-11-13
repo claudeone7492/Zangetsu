@@ -350,7 +350,14 @@ class _RootShellState extends State<RootShell>
             // whole screen, so their own back affordance is suppressed.
             DockTab.downloads => const DownloadsScreen(showBack: false),
             DockTab.history => const HistoryScreen(showBack: false),
-            DockTab.shorts => ShortsScreen(active: _tab == DockTab.shorts),
+            DockTab.shorts => ShortsScreen(
+              active: _tab == DockTab.shorts,
+              // Gather the feed (and resolve the opening streams) as soon as
+              // Shorts is a dock tab, not only once it is tapped — so the tab
+              // opens onto a playing page rather than a spinner. Only when the
+              // tab is actually in the dock; a build that hides it does no work.
+              prewarm: _visibleTabs().contains(DockTab.shorts),
+            ),
           },
         ),
     ];

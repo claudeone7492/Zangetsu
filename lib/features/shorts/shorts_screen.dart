@@ -42,7 +42,7 @@ import '../player/mpv_player_pool.dart';
 /// real playback is resolved with the full player. So the feed is a preview,
 /// never a second, drifting playback path.
 class ShortsScreen extends StatefulWidget {
-  const ShortsScreen({super.key, this.active = true});
+  const ShortsScreen({super.key, this.active = true, this.prewarm = false});
 
   /// Whether this destination is the one on screen.
   ///
@@ -51,6 +51,16 @@ class ShortsScreen extends StatefulWidget {
   /// looking at Home. Defaults to true so a direct pump — the tests, or any
   /// host that shows Shorts on its own — behaves as before.
   final bool active;
+
+  /// Whether to gather the feed while the destination is still off-screen.
+  ///
+  /// A docked tab that is not selected builds with [active] false and, by
+  /// default, does no work at all. The shell sets this true so the Shorts feed
+  /// is already gathered — and its first pages already resolved — by the time
+  /// the user taps the tab, which is what makes the first swipe play instead of
+  /// spin. Playback never starts early: a page still only opens its player when
+  /// it is the visible one, so this warms data, not decoders.
+  final bool prewarm;
 
   @override
   State<ShortsScreen> createState() => _ShortsScreenState();
@@ -83,6 +93,18 @@ class _ShortsScreenState extends State<ShortsScreen> {
   List<MediaItem> _items = const [];
   int _index = 0;
 
+  /// Resolved stream per item, keyed by `sourceId:id`, so a page that has
+  /// already been warmed reuses its source instead of resolving again. The
+  /// value is the in-flight future, so a prefetch and the page's own ask share
+  /// one lookup rather than racing two.
+  final Map<String, Future<_VideoFeedSource?>> _resolved = {};
+
+  /// How many leading pages to resolve a stream for in the background once the
+  /// feed is known, so the first swipes are instant. Kept small: each entry
+  /// costs a provider round-trip, and the point is to cover the opening, not
+  /// the whole feed.
+  static const int _prefetchCount = 3;
+
   /// Muted by default: the feed autoplays as you swipe, so sound-on would be a
   /// jump-scare. The tap-to-toggle is remembered across pages, like TikTok.
   bool _muted = true;
@@ -90,9 +112,10 @@ class _ShortsScreenState extends State<ShortsScreen> {
   @override
   void initState() {
     super.initState();
-    // Only gather once the destination is actually on screen; the dock mounts
-    // every tab, and a hidden Shorts tab must not start fetching.
-    if (widget.active) {
+    // Gather when the destination is on screen, or when the host asked for it
+    // to be warmed ahead of the tap. The dock mounts every tab, and a hidden
+    // Shorts tab that was not asked to prewarm must not start fetching.
+    if (widget.active || widget.prewarm) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _load());
     }
   }
@@ -105,7 +128,7 @@ class _ShortsScreenState extends State<ShortsScreen> {
     // never started, and the visible page resumes on its own.
     if (!widget.active && old.active) {
       setState(() {});
-    } else if (widget.active && !old.active && !_loadStarted) {
+    } else if ((widget.active || widget.prewarm) && !_loadStarted) {
       _load();
     }
   }
@@ -196,10 +219,37 @@ class _ShortsScreenState extends State<ShortsScreen> {
       _index = 0;
       _loading = false;
     });
+    // Warm the opening pages' streams now, in the background, so the first
+    // swipes play instead of resolving on the spot.
+    _prefetchLeading();
+  }
+
+  /// Resolve the first [_prefetchCount] items' streams ahead of time. Each
+  /// lookup is memoised in [_resolved], so the page that later becomes visible
+  /// finds its stream already in flight (or done) rather than starting over.
+  void _prefetchLeading() {
+    final n = _items.length < _prefetchCount ? _items.length : _prefetchCount;
+    for (var i = 0; i < n; i++) {
+      final item = _items[i];
+      _resolved.putIfAbsent(
+        '${item.sourceId}:${item.id}',
+        () => _resolveVideo(item),
+      );
+    }
   }
 
   void _open(MediaItem item) {
     Navigator.of(context).push(DetailScreen.route(item));
+  }
+
+  /// The stream for [item], resolved once and reused. A page calls this when it
+  /// becomes visible; the prefetch calls it too, and whichever is first owns
+  /// the lookup — the other awaits the same future.
+  Future<_VideoFeedSource?> _resolveCached(MediaItem item) {
+    return _resolved.putIfAbsent(
+      '${item.sourceId}:${item.id}',
+      () => _resolveVideo(item),
+    );
   }
 
   /// Resolve the first playable stream for [item]'s first available episode.
@@ -250,10 +300,13 @@ class _ShortsScreenState extends State<ShortsScreen> {
   }
 
   Widget _body() {
-    // Off-screen (a dock tab that isn't showing): drop the whole feed, which
-    // disposes the live preview with it. [didUpdateWidget] rebuilds it the
-    // moment the destination is selected again — no refetch, the rows stay.
-    if (!widget.active) return const SizedBox.shrink();
+    // Off-screen and not warming (a dock tab that isn't showing and wasn't
+    // asked to prewarm): drop the whole feed, which disposes the live preview
+    // with it. [didUpdateWidget] rebuilds it the moment the destination is
+    // selected again — no refetch, the rows stay. A prewarming tab builds it
+    // (IndexedStack paints only the selected child) so the opening page can
+    // hold its first frame ready.
+    if (!widget.active && !widget.prewarm) return const SizedBox.shrink();
     if (_loading) {
       return Center(
         child: CircularProgressIndicator(color: AppColors.accent),
@@ -267,6 +320,9 @@ class _ShortsScreenState extends State<ShortsScreen> {
         onAction: _load,
       );
     }
+    // While prewarming (built but not yet visible), the page that will be
+    // visible on the tap is the one worth decoding, so it holds its frame.
+    final warming = widget.prewarm && !widget.active;
     return Stack(
       children: [
         PageView.builder(
@@ -277,14 +333,18 @@ class _ShortsScreenState extends State<ShortsScreen> {
           itemBuilder: (context, i) => _ShortPage(
             key: ValueKey('${_items[i].sourceId}:${_items[i].id}'),
             item: _items[i],
-            // Only the page in view holds a player, so a long feed never keeps
-            // a pile of paused decoders alive — and while the whole destination
-            // is off-screen, no page is active at all.
+            // Only the page in view holds a playing player, so a long feed
+            // never keeps a pile of live decoders alive — and while the whole
+            // destination is off-screen, no page plays at all. The neighbour
+            // pages (and the page that will open, while warming) resolve and
+            // hold their first frame, which is what makes the first swipe and
+            // the first open land on moving video.
             active: widget.active && i == _index,
+            near: widget.active ? (i - _index).abs() == 1 : (warming && i == _index),
             muted: _muted,
             onToggleMute: () => setState(() => _muted = !_muted),
             onOpen: () => _open(_items[i]),
-            resolveVideo: () => _resolveVideo(_items[i]),
+            resolveVideo: () => _resolveCached(_items[i]),
           ),
         ),
         // Position read-out — a long feed with no sense of place is
@@ -323,10 +383,16 @@ class _ShortPage extends StatefulWidget {
     required this.onToggleMute,
     required this.onOpen,
     required this.resolveVideo,
+    this.near = false,
   });
 
   final MediaItem item;
   final bool active;
+
+  /// True for the pages one step either side of the visible one. They resolve
+  /// their stream and hold the first frame paused, so the swipe that brings one
+  /// in starts on moving video instead of a spinner. They never play.
+  final bool near;
   final bool muted;
   final VoidCallback onToggleMute;
   final VoidCallback onOpen;
@@ -357,7 +423,11 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
   void initState() {
     super.initState();
     _syncSaved();
-    if (widget.active) _activate();
+    if (widget.active) {
+      _activate();
+    } else if (widget.near) {
+      _preload();
+    }
   }
 
   @override
@@ -386,12 +456,24 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
   @override
   void didUpdateWidget(covariant _ShortPage old) {
     super.didUpdateWidget(old);
-    if (widget.active && !old.active) {
-      _activate();
-    } else if (!widget.active && old.active) {
+    if (widget.active) {
+      if (!old.active) {
+        // Coming into view: resume a preloaded player, or start one now.
+        _activate();
+      } else if (widget.muted != old.muted) {
+        _applyVolume();
+      }
+      return;
+    }
+    // Not the visible page. A neighbour is kept warm (resolved, first frame
+    // held, paused); anything further is freed. The page that was visible also
+    // lands here when the destination leaves — paused, so no audio plays on
+    // behind the tab the user switched to.
+    if (widget.near) {
+      if (!old.near) _preload();
+      unawaited(_player?.pause());
+    } else if (old.active || old.near) {
       _deactivate();
-    } else if (widget.active && widget.muted != old.muted) {
-      _applyVolume();
     }
   }
 
@@ -408,15 +490,35 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
     _saved = sl<MyListStore>().contains(widget.item);
   }
 
-  /// Resolve the preview and start it. Guarded on the player pool being
-  /// registered: a test (or a headless build) that has no pool keeps the
-  /// poster and never touches media_kit.
+  /// Resolve the preview and start it playing. A page already warmed by
+  /// [_preload] only needs resuming — its player holds the first frame.
   Future<void> _activate() async {
     if (!sl.isRegistered<MpvPlayerPool>()) return;
+    final existing = _player;
+    if (existing != null) {
+      _applyVolume();
+      unawaited(existing.play());
+      return;
+    }
+    await _resolveAndOpen(play: true);
+  }
+
+  /// Resolve the preview and open it paused, so the first frame is decoded and
+  /// waiting. Never plays: this is a neighbour page, not the visible one.
+  Future<void> _preload() async {
+    if (!sl.isRegistered<MpvPlayerPool>()) return;
+    if (_player != null || _resolving) return;
+    await _resolveAndOpen(play: false);
+  }
+
+  /// Resolve [widget.item]'s stream and open a player for it. [play] decides
+  /// whether it starts immediately (the visible page) or holds its first frame
+  /// (a neighbour being warmed).
+  Future<void> _resolveAndOpen({required bool play}) async {
     if (_resolving || _player != null) return;
     setState(() => _resolving = true);
     final source = await widget.resolveVideo();
-    if (!mounted || !widget.active) return;
+    if (!mounted) return;
     if (source == null) {
       setState(() {
         _resolving = false;
@@ -426,7 +528,7 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
       return;
     }
     _source = source;
-    await _startPlayback(source);
+    await _startPlayback(source, play: play);
     if (!mounted) return;
     setState(() {
       _resolving = false;
@@ -434,7 +536,7 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
     });
   }
 
-  Future<void> _startPlayback(_VideoFeedSource source) async {
+  Future<void> _startPlayback(_VideoFeedSource source, {required bool play}) async {
     final pool = sl<MpvPlayerPool>();
     final player = pool.acquire(libass: false);
     final controller = VideoController(player);
@@ -454,9 +556,10 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
       await player.setPlaylistMode(PlaylistMode.single);
       await player.open(
         Media(source.url, httpHeaders: source.headers),
-        // If a Detail page was opened while the preview was resolving, don't
-        // start decoding behind it — didPopNext resumes on the way back.
-        play: !_covered,
+        // A preloaded neighbour opens paused to hold its frame; the visible
+        // page opens playing. If a Detail page was opened while the preview was
+        // resolving, don't start decoding behind it — didPopNext resumes.
+        play: play && !_covered,
       );
     } catch (_) {
       if (!mounted) return;
