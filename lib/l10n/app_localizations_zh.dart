@@ -192,6 +192,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get liveTv => 'Live TV';
 
   @override
+  String get liveSports => 'Live Sports';
+
+  @override
   String get sub => '子';
 
   @override

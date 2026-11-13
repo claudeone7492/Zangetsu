@@ -1091,6 +1091,21 @@ class SourceRepository implements CatalogueRepository {
     }
   }
 
+  /// Short-drama feed — an optional provider extension. Only the JS runtime
+  /// exposes it (MovieBox today); every other source yields an empty list so
+  /// the Shorts destination falls back to its home-row feed. Never throws: a
+  /// dead shorts endpoint must not take the feed down with it.
+  @override
+  Future<List<MediaItem>> shorts({String? sourceId}) async {
+    final provider = await _providerReady(sourceId);
+    if (provider is! JsProvider) return const [];
+    try {
+      return await provider.getShorts() ?? const [];
+    } catch (_) {
+      return const [];
+    }
+  }
+
   /// Resolves one provider browse category (`platform|<name>` / `filter|<spec>`
   /// from a home row, or a filter-sheet selection JSON). Empty for sources
   /// without `browseFilter`. Never throws.

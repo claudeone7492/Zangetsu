@@ -162,6 +162,7 @@ function wrapProvider(sourceId, src) {
       getVideoSources:typeof getVideoSources==='function'?getVideoSources:null,
       getSettings:typeof getSettings==='function'?getSettings:null,
       getLive:typeof getLive==='function'?getLive:null,
+      getShorts:typeof getShorts==='function'?getShorts:null,
       getFilters:typeof getFilters==='function'?getFilters:null,
       browseFilter:typeof browseFilter==='function'?browseFilter:null,
       getPages:typeof getPages==='function'?getPages:null,

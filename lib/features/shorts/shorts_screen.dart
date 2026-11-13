@@ -150,6 +150,24 @@ class _ShortsScreenState extends State<ShortsScreen> {
     final seen = <String>{};
     final gathered = <MediaItem>[];
     for (final id in ids) {
+      // A source with a dedicated short-drama feed (`getShorts`, MovieBox
+      // today) contributes ONLY its shorts. Its general home rows are skipped
+      // for it: they are two dozen movie/TV rails, and letting them in buries
+      // the shorts hundreds of swipes down — the feed's whole reason for
+      // existing. Every other source keeps the generic home-row behaviour.
+      List<MediaItem> fromShorts;
+      try {
+        fromShorts = await repo.shorts(sourceId: id).timeout(_perSourceTimeout);
+      } catch (_) {
+        fromShorts = const [];
+      }
+      if (!mounted) return;
+      if (fromShorts.isNotEmpty) {
+        for (final item in fromShorts) {
+          if (seen.add('${item.sourceId}:${item.id}')) gathered.add(item);
+        }
+        continue;
+      }
       try {
         final sections = await repo
             .home(sourceId: id)

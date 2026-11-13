@@ -44,6 +44,19 @@ live('getHome returns named rails of movie-shaped rows', async () => {
   }
 });
 
+live('getShorts returns only short-drama (subjectType 7) items', async () => {
+  const items = JSON.parse(await callProvider('moviebox', 'getShorts', [{}]));
+  assert.ok(Array.isArray(items) && items.length > 0, 'expected short dramas');
+  for (const it of items) {
+    assert.ok(it.id && it.title, 'items are MediaItem-shaped');
+    assert.ok(it.url.startsWith('mb:'), 'url carries the mb: prefix, got ' + it.url);
+    // The short-drama subject type is the last `|` field of the mb: handle.
+    assert.ok(it.url.endsWith('|7'), 'short drama url is subjectType 7, got ' + it.url);
+  }
+  // De-duplicated across the two short rails.
+  assert.equal(new Set(items.map((i) => i.id)).size, items.length, 'no duplicate ids');
+});
+
 live('getHome exposes a browse handle rail', async () => {
   const sections = JSON.parse(await callProvider('moviebox', 'getHome', [{}]));
   const browse = sections

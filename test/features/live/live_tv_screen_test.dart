@@ -26,15 +26,35 @@ MediaItem _channel(String id, String title) => MediaItem(
   sourceId: kLiveTvSourceId,
 );
 
+MediaItem _match(String id, String title) => MediaItem(
+  id: id,
+  title: title,
+  url: 'live:$id|https://sports.test/$id.m3u8',
+  type: ProviderType.movie,
+  sourceId: kLiveSportsSourceId,
+);
+
 class _FakeSourceRepository implements SourceRepository {
-  _FakeSourceRepository({this.sections, this.searchHits, this.fail = false});
+  _FakeSourceRepository({
+    this.sections,
+    this.searchHits,
+    this.fail = false,
+    this.liveMatches,
+    this.hasSportsSource = true,
+  });
 
   final List<HomeSection>? sections;
   final List<MediaItem>? searchHits;
   final bool fail;
+  final List<MediaItem>? liveMatches;
+
+  /// Whether the MovieBox (sports) source is installed. False exercises the
+  /// "no sports rail" path without an extra failure mode.
+  final bool hasSportsSource;
 
   int homeCalls = 0;
   int searchCalls = 0;
+  int liveCalls = 0;
   String? lastSearchQuery;
   String? lastSourceId;
 
@@ -51,7 +71,9 @@ class _FakeSourceRepository implements SourceRepository {
   String get sourceId => kLiveTvSourceId;
 
   @override
-  bool hasSource(String sourceId) => sourceId == kLiveTvSourceId;
+  bool hasSource(String sourceId) =>
+      sourceId == kLiveTvSourceId ||
+      (sourceId == kLiveSportsSourceId && hasSportsSource);
 
   @override
   String displayName(String sourceId) => 'IPTV';
@@ -65,6 +87,13 @@ class _FakeSourceRepository implements SourceRepository {
     lastSourceId = sourceId;
     if (fail) throw StateError('iptv down');
     return sections ?? const [];
+  }
+
+  @override
+  Future<List<MediaItem>> live({String? sourceId}) async {
+    liveCalls++;
+    if (fail) throw StateError('sports down');
+    return liveMatches ?? const [];
   }
 
   @override
@@ -309,5 +338,95 @@ void main() {
 
     expect(repo.searchCalls, 1);
     expect(find.text('Try again'), findsOneWidget);
+  });
+
+  testWidgets('live sports matches lead the All view as their own rail', (
+    tester,
+  ) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+      ],
+      liveMatches: [
+        _match('m1', 'England vs Croatia'),
+        _match('m2', 'Italy vs France'),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    // The sports feed is fetched from the MovieBox source, not IPTV.
+    expect(repo.liveCalls, 1);
+    expect(find.text('Live Sports'), findsWidgets);
+    expect(find.text('England vs Croatia'), findsOneWidget);
+    // The IPTV channels are still there, below the matches.
+    expect(find.text('World News'), findsOneWidget);
+  });
+
+  testWidgets('a missing sports source simply drops the rail', (tester) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+      ],
+      hasSportsSource: false,
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    expect(repo.liveCalls, 0);
+    expect(find.text('Live Sports'), findsNothing);
+    expect(find.text('World News'), findsOneWidget);
+  });
+
+  testWidgets('picking a channel category focuses on channels, dropping sports', (
+    tester,
+  ) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+      ],
+      liveMatches: [_match('m1', 'England vs Croatia')],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('England vs Croatia'), findsOneWidget);
+
+    // Category index 1 is the first real IPTV category ("News").
+    await tester.tap(find.byKey(const ValueKey('live-category-1')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('England vs Croatia'), findsNothing);
+    expect(find.text('World News'), findsOneWidget);
+
+    // Back to All brings the sports rail back.
+    await tester.tap(find.byKey(const ValueKey('live-category-0')));
+    await tester.pumpAndSettle();
+    expect(find.text('England vs Croatia'), findsOneWidget);
+  });
+
+  testWidgets('a dead sports endpoint does not sink the channels page', (
+    tester,
+  ) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+      ],
+      liveMatches: const [],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.text('World News'), findsOneWidget);
+    expect(find.text('Live Sports'), findsNothing);
+    // No "failed" screen — the page is up, just without sports.
+    expect(find.text('Try again'), findsNothing);
   });
 }

@@ -695,6 +695,31 @@ function getLive(opts) {
     .catch(function () { return []; });
 }
 
+// Short dramas — the vertical feed's dedicated extension. MovieBox's short
+// dramas are the `subjectType: 7` subjects; a general `getHome` buries their
+// two rails among two dozen movie/TV rails, so a feed built from every home
+// row leads with Popular Series and only reaches the shorts 400 items later.
+// This returns ONLY the short-drama subjects, rail order preserved and
+// de-duplicated, so the feed is shorts from the first swipe.
+function getShorts(opts) {
+  return _home().then(function (d) {
+    var ops = d.operatingList || [];
+    var out = [];
+    var seen = {};
+    for (var i = 0; i < ops.length; i++) {
+      var o = ops[i];
+      if (!o || !o.subjects || !o.subjects.length) continue;
+      for (var j = 0; j < o.subjects.length; j++) {
+        var s = o.subjects[j];
+        if (!s || s.subjectType !== 7) continue;
+        var m = _mapSubject(s);
+        if (m && !seen[m.id]) { seen[m.id] = 1; out.push(m); }
+      }
+    }
+    return out;
+  }).catch(function () { return []; });
+}
+
 function getVideoSourcesLive(url) {
   var spec = String(url || '').slice('live:'.length);
   var bar = spec.indexOf('|');

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +51,7 @@ import '../../core/aniyomi/aniyomi_filters.dart';
 import '../../core/mihon/mihon_filters.dart';
 import '../aniyomi/aniyomi_filter_sheet.dart';
 import '../mihon/mihon_filter_sheet.dart';
+import '../search/mangayomi_filter_sheet.dart';
 import '../auth/auth_screens.dart';
 import '../detail/detail_screen.dart';
 import '../player/player_screen.dart';
@@ -667,6 +669,91 @@ class _SearchViewState extends State<_SearchView>
     );
   }
 
+  /// Zangetsu JS source twin of [_openAniFilters] — the app's own providers
+  /// (MovieBox today) declare an optional `getFilters` schema rendered by the
+  /// same generic sheet the Mangayomi sources use, and answer a filtered
+  /// browse through their own `browseFilter`. The selection is stored and
+  /// re-applied exactly like the other two ecosystems; the bloc's fan-out and
+  /// filtered-browse already forward it without caring where it came from.
+  ///
+  /// [sourceId] must be a JS source id (no `ani:`/`mihon:` prefix) — see
+  /// [sourceFilterEcosystemOf], which routes everything else here.
+  Future<void> _openJsFilters(String sourceId) async {
+    final stored = context.read<SearchBloc>().state.filterSelectionFor(
+      sourceId,
+    );
+    final List<Map<String, dynamic>> filters =
+        (stored != null && stored.isNotEmpty)
+        ? (jsonDecode(stored) as List)
+              .map((item) => Map<String, dynamic>.from(item as Map))
+              .toList()
+        // Source-specific filter schema — not a CatalogueRepository call.
+        : (await sl<SourceRepository>().filterSchema(sourceId: sourceId) ??
+              const <Map<String, dynamic>>[]);
+    if (!mounted) return;
+    if (filters.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.thisSourceHasNoFilters)),
+      );
+      return;
+    }
+    // Drop focus first — see [_openAniFilters] for why.
+    FocusScope.of(context).unfocus();
+    final result = await showMangayomiFilterSheet(context, filters);
+    if (result == null || !mounted) return;
+    context.read<SearchBloc>().add(
+      SearchSourceFiltersApplied(sourceId, jsonEncode(result)),
+    );
+  }
+
+  /// The set of Zangetsu JS source ids that actually declare a `getFilters`
+  /// schema — the only ones for which a filter button belongs on the section
+  /// header. Probed once per id and cached: a source's filter schema is a
+  /// static property of its JS, so re-running `getFilters` for every rebuild
+  /// (each section header reads this synchronously) would be wasteful.
+  /// Populated by [_primeJsFilterSchemas], which the build kicks off.
+  final Map<String, bool> _jsHasFilters = {};
+
+  /// Whether [sourceId] is a Zangetsu JS source with a filter schema. Returns
+  /// false while the probe is still in flight, then rebuilds when it lands —
+  /// so the icon fades in rather than the header janking.
+  bool _jsSourceHasFilters(String sourceId) => _jsHasFilters[sourceId] ?? false;
+
+  /// Probes every Zangetsu JS source in [ids] for a filter schema, once each,
+  /// and rebuilds when the answer changes so the header icon appears. Best-
+  /// effort: a source that throws or has no `getFilters` is recorded as false
+  /// and never probed again.
+  Future<void> _primeJsFilterSchemas(Iterable<String> ids) async {
+    final pending = <String>[
+      for (final id in ids)
+        if (!_jsHasFilters.containsKey(id) &&
+            sourceFilterEcosystemOf(id) == SourceFilterEcosystem.zangetsu)
+          id,
+    ];
+    if (pending.isEmpty) return;
+    // Mark in-flight so a rebuild mid-probe doesn't start a second round.
+    for (final id in pending) {
+      _jsHasFilters[id] = false;
+    }
+    final repo = sl<SourceRepository>();
+    var changed = false;
+    for (final id in pending) {
+      List<Map<String, dynamic>>? schema;
+      try {
+        schema = await repo.filterSchema(sourceId: id);
+      } catch (_) {
+        schema = null;
+      }
+      if (!mounted) return;
+      final has = schema != null && schema.isNotEmpty;
+      if (has != _jsHasFilters[id]) {
+        _jsHasFilters[id] = has;
+        changed = true;
+      }
+    }
+    if (changed && mounted) setState(() {});
+  }
+
   Future<void> _play(MediaItem item) async {
     final category =
         sl<TitlePrefsStore>().category(item.sourceId, item.url) ??
@@ -755,6 +842,15 @@ class _SearchViewState extends State<_SearchView>
     // Computed once per outer build, not once per BlocBuilder rebuild below
     // (each fires on every search state emission during a live fan-out).
     final modeSources = _modeSources;
+    // Prime the JS-source filter probes so a Zangetsu source that declares
+    // `getFilters` (MovieBox) gets its section-header filter button. Idempotent
+    // — [_primeJsFilterSchemas] skips ids already probed — and deferred a
+    // frame so the probe never runs during build.
+    if (widget.scope == SearchScope.sources && modeSources.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _primeJsFilterSchemas(modeSources.map((s) => s.id)),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -1483,6 +1579,19 @@ class _SearchViewState extends State<_SearchView>
         onFilter: () => _openMihonFilters(sourceId),
         active: state.mihonFiltersBySource.containsKey(sourceId),
       ),
+      // Zangetsu JS sources: only those that actually declare a `getFilters`
+      // schema get a button. `_jsSourceHasFilters` is false until the async
+      // probe lands (see [_primeJsFilterSchemas]), so most JS sources — and
+      // every one that has no filters — simply never show the icon.
+      SourceFilterEcosystem.zangetsu =>
+        _jsSourceHasFilters(sourceId)
+            ? (
+                onFilter: () => _openJsFilters(sourceId),
+                active:
+                    (state.filterSelectionFor(sourceId) ?? '').isNotEmpty,
+              )
+            : (onFilter: null, active: false),
+      // CloudStream / LNReader / Mangayomi: no per-source sheet here.
       null => (onFilter: null, active: false),
     };
   }
@@ -2672,12 +2781,27 @@ bool searchTypeAudioGroupsVisible(ContentMode mode) => !mode.isReading;
 /// single-source control row ([_SearchViewState._sourceFilterAction]) and both
 /// source-section headers. A top-level function (same pattern as
 /// [searchFilterSections]) so it's unit-testable without pumping the sheet.
-enum SourceFilterEcosystem { aniyomi, mihon }
+///
+/// [zangetsu] covers the app's own JS providers (MovieBox today). Those ids
+/// carry no prefix, so [ecosystemOf] — the single source of truth for source
+/// classification, shared with the ecosystem tabs — is what tells them apart
+/// from CloudStream/LNReader/Mangayomi ids, none of which have a sheet on this
+/// screen. Whether a given Zangetsu source actually has filters is a separate
+/// question, answered against its declared schema: see
+/// [_SearchViewState._sourceFilterFor], which hides the button unless the
+/// source's `getFilters` returns something.
+enum SourceFilterEcosystem { aniyomi, mihon, zangetsu }
 
 SourceFilterEcosystem? sourceFilterEcosystemOf(String sourceId) {
-  if (sourceId.startsWith('ani:')) return SourceFilterEcosystem.aniyomi;
-  if (sourceId.startsWith('mihon:')) return SourceFilterEcosystem.mihon;
-  return null;
+  return switch (ecosystemOf(sourceId)) {
+    SearchEcosystem.aniyomi => SourceFilterEcosystem.aniyomi,
+    SearchEcosystem.mihon => SourceFilterEcosystem.mihon,
+    // The app's own JS providers — unprefixed ids. The filter button only
+    // appears once the source's `getFilters` is known to be non-empty.
+    SearchEcosystem.zangetsu => SourceFilterEcosystem.zangetsu,
+    // CloudStream, LNReader and Mangayomi: no per-source sheet here.
+    _ => null,
+  };
 }
 
 /// The filter sheet's "no sources" state. Anime mode's wording (a bare,

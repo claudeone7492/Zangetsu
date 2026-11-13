@@ -85,6 +85,11 @@ abstract interface class CatalogueRepository {
   /// can render the row only when it has items.
   Future<List<MediaItem>> live({String? sourceId});
 
+  /// Short-drama feed for [sourceId] — an optional provider extension
+  /// (`getShorts`). Empty for every source that doesn't define it, so the
+  /// Shorts destination falls back to a home-row feed when it is.
+  Future<List<MediaItem>> shorts({String? sourceId});
+
   /// Resolves a provider browse category to a page of items. [categoryId] is a
   /// `platform|<name>` / `filter|<spec>` handle from a home browse row, or a
   /// raw filter-sheet selection JSON. Empty when the source has no

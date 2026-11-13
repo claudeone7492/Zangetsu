@@ -1185,6 +1185,32 @@ class JsProvider implements BaseProvider, ReadingProvider {
     }
   }
 
+  /// Optional short-drama feed (`getShorts`). Returns null when the JS file
+  /// doesn't define it, so callers fall back to a home-row feed. MovieBox is
+  /// the only source that has it today: its short dramas are `subjectType: 7`
+  /// subjects that a general home feed buries among two dozen movie rails.
+  Future<List<MediaItem>?> getShorts() async {
+    try {
+      final raw = await _call('getShorts', [
+        const <String, Object?>{},
+      ], timeout: const Duration(seconds: 25));
+      final list = await _decodeBig(raw);
+      if (list is! List) return null;
+      return [
+        for (final e in list)
+          if (e is Map)
+            MediaItem.fromJson({
+              ...Map<String, dynamic>.from(e),
+              'sourceId': sourceId,
+            }),
+      ];
+    } catch (e) {
+      final msg = e is JsRuntimeException ? e.message : e.toString();
+      if (msg.contains('missing method: getShorts')) return null;
+      rethrow;
+    }
+  }
+
   /// Optional filter schema (`getFilters`), rendered as a browse sheet.
   /// Returns null when absent.
   Future<List<Map<String, dynamic>>?> getFilterSchema() async {

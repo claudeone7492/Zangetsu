@@ -140,6 +140,10 @@ class CatalogueRouter implements CatalogueRepository {
       _source.live(sourceId: sourceId);
 
   @override
+  Future<List<MediaItem>> shorts({String? sourceId}) =>
+      _source.shorts(sourceId: sourceId);
+
+  @override
   Future<List<MediaItem>> browseCategory(
     String categoryId, {
     String? sourceId,

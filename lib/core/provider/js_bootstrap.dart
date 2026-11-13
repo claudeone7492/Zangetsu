@@ -310,6 +310,7 @@ String wrapProviderSource(String sourceId, String providerJs) {
     // Optional browse/live extensions (MovieBox). Absent on every other
     // provider, where the wrapper exposes null and the app skips the feature.
     getLive:         typeof getLive === 'function' ? getLive : null,
+    getShorts:       typeof getShorts === 'function' ? getShorts : null,
     getFilters:      typeof getFilters === 'function' ? getFilters : null,
     browseFilter:    typeof browseFilter === 'function' ? browseFilter : null,
     // Manga/novel leaf + Sozo Read compat names (Task E4). No anime/movie

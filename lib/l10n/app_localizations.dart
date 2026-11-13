@@ -483,6 +483,12 @@ abstract class AppLocalizations {
   /// **'Live TV'**
   String get liveTv;
 
+  /// No description provided for @liveSports.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Sports'**
+  String get liveSports;
+
   /// No description provided for @sub.
   ///
   /// In en, this message translates to:

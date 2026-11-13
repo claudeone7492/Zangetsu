@@ -20,12 +20,19 @@ import '../../core/ui/states.dart';
 import '../../l10n/l10n.dart';
 import '../detail/detail_screen.dart';
 import '../home/home_screen_tv.dart';
+import '../home/provider_browse_route.dart' show openProviderExtensionItem;
 import '../search/browse_source_screen.dart' show canonicalTargetFor;
 
 /// The bundled source that carries live channels. Shipped inside the app's own
 /// pack (see `bundled_pack.dart`), so this page never has to ask the user to
 /// install anything.
 const String kLiveTvSourceId = 'iptv';
+
+/// The source that carries live sports matches. MovieBox exposes them through
+/// its optional `getLive` extension (a `live:`-scheme stream per match), which
+/// no other source defines — so this page asks it directly and folds the
+/// matches in as a "Live Sports" rail above the IPTV channels.
+const String kLiveSportsSourceId = 'moviebox';
 
 /// Order the channel rows are shown in. "Default" keeps the catalogue's own
 /// order (usually popularity), which is the only one that means anything for
@@ -95,6 +102,12 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   bool _failed = false;
   List<HomeSection> _sections = const [];
 
+  /// Live sports matches from MovieBox's `getLive` (empty when the source
+  /// isn't installed, has no `getLive`, or the sports endpoint is down). Held
+  /// apart from [_sections] because it is a second source, and only prepended
+  /// to the rails as a synthetic "Live Sports" row when non-empty.
+  List<MediaItem> _sports = const [];
+
   /// 0 = "All channels", otherwise an index into [_categories]. Applied to
   /// browse AND search, so the bar stays meaningful once a query is typed.
   int _category = 0;
@@ -129,13 +142,19 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
       _loading = true;
       _failed = false;
     });
+    // The sports feed is a second, optional source. Fetch it alongside the
+    // channels so the two don't serialize, but never let it sink the page: a
+    // missing MovieBox (or a dead sports endpoint) just yields no rail.
+    final sportsFuture = _loadSports();
     try {
       final sections = await _repo
           .home(sourceId: kLiveTvSourceId)
           .timeout(_timeout);
+      final sports = await sportsFuture;
       if (!mounted) return;
       setState(() {
         _sections = sections;
+        _sports = sports;
         _loading = false;
       });
     } catch (_) {
@@ -144,7 +163,20 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
         _failed = true;
         _loading = false;
         _sections = const [];
+        _sports = const [];
       });
+    }
+  }
+
+  /// MovieBox's live sports matches, or an empty list when the source is not
+  /// installed or the endpoint answers nothing. Best-effort by design: the
+  /// IPTV channels are the page's reason to exist, sports are a bonus rail.
+  Future<List<MediaItem>> _loadSports() async {
+    if (!_repo.hasSource(kLiveSportsSourceId)) return const [];
+    try {
+      return await _repo.live(sourceId: kLiveSportsSourceId).timeout(_timeout);
+    } catch (_) {
+      return const [];
     }
   }
 
@@ -166,9 +198,18 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   /// The rows the browse view actually paints, after the category filter and
   /// the chosen sort. Empty rows are dropped so a filter never leaves a
   /// titled-but-empty rail.
+  ///
+  /// The MovieBox live-sports matches lead the default ("All") view as a
+  /// synthetic rail — they are a second source, not an IPTV category, so
+  /// picking a specific channel category drops them and focuses on channels.
   List<HomeSection> get _visibleSections {
     final selected = _selectedCategory;
     final out = <HomeSection>[];
+    if (selected == null && _sports.isNotEmpty) {
+      out.add(
+        HomeSection(title: context.l10n.liveSports, items: _sorted(_sports)),
+      );
+    }
     for (final s in _sections) {
       if (s.items.isEmpty) continue;
       if (selected != null && s.title != selected) continue;
@@ -258,6 +299,12 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   }
 
   Future<void> _open(MediaItem item) async {
+    // A live-sports match is a provider-extension handle (`live:` scheme), not
+    // a title: it has no detail page, so it opens the player directly. IPTV
+    // channels are ordinary items and fall through to the Detail route.
+    if (await openProviderExtensionItem(context, item, repository: _repo)) {
+      return;
+    }
     final target = await canonicalTargetFor(item);
     if (!mounted) return;
     Navigator.of(context).push(DetailScreen.route(target ?? item));

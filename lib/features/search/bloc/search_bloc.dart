@@ -7,6 +7,7 @@ import '../../../core/di/injector.dart';
 import '../../../core/mode/content_mode.dart';
 import '../../../core/mode/content_mode_cubit.dart';
 import '../../../core/models/media_item.dart';
+import '../../../core/models/provider_info.dart';
 import '../../../core/playback/search_history.dart';
 import '../../../core/playback/search_prefs.dart';
 import '../../../core/playback/search_source_prefs.dart';
@@ -17,6 +18,7 @@ import '../../../core/state/active_source_cubit.dart';
 // sourceTypeOf lives with the source picker; search_screen.dart reaches for it
 // the same way for its own mode narrowing.
 import '../../../core/ui/source_switcher.dart';
+import '../../home/provider_browse_route.dart' show isProviderExtensionUrl;
 import 'search_event.dart';
 import 'search_state.dart';
 
@@ -199,9 +201,30 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     if (state.trending.isNotEmpty) return;
     try {
       final sections = await _repo.home(sourceId: fixedSourceId);
-      final items = sections.isNotEmpty
-          ? sections.first.items.take(12).toList()
-          : <MediaItem>[];
+      // The idle "Top picks" strip wants real titles, so it takes the first
+      // rail that actually holds some. A source's first home row is often
+      // navigation, not content — MovieBox leads with a `live:` "Live" rail of
+      // channel handles and a `browse:` platform row, and taking that rail
+      // verbatim left the strip empty (they are not MediaItems to open as
+      // titles) while a dozen real rails sat behind it. Skip any row whose
+      // items are provider-extension handles or reading content, and stop at
+      // the first title row.
+      final items = <MediaItem>[];
+      for (final section in sections) {
+        final titles = section.items
+            .where(
+              (i) =>
+                  !isProviderExtensionUrl(i.url) &&
+                  i.type != ProviderType.manga &&
+                  i.type != ProviderType.novel,
+            )
+            .take(12)
+            .toList();
+        if (titles.isNotEmpty) {
+          items.addAll(titles);
+          break;
+        }
+      }
       emit(state.copyWith(trending: items));
     } catch (_) {
       /* trending is best-effort */

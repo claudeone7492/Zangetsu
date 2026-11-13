@@ -1123,6 +1123,10 @@ class MetadataRepository implements CatalogueRepository {
       _src.live(sourceId: sourceId);
 
   @override
+  Future<List<MediaItem>> shorts({String? sourceId}) =>
+      _src.shorts(sourceId: sourceId);
+
+  @override
   Future<List<MediaItem>> browseCategory(
     String categoryId, {
     String? sourceId,
