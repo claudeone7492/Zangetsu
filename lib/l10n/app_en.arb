@@ -3257,5 +3257,11 @@
 	"dailyPicksMorning": "Morning",
 	"dailyPicksAfternoon": "Afternoon",
 	"dailyPicksEvening": "Evening",
-	"dailyPicksNow": "Send the day's picks now"
+	        "dailyPicksNow": "Send the day's picks now",
+        "sidePanel": "Side panel",
+        "readingStats": "Reading stats",
+        "readingProgress": "Reading progress",
+        "highlights": "Highlights",
+        "highlight": "Highlight",
+        "autoRead": "Auto read"
 }

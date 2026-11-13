@@ -8,6 +8,7 @@ import '../../core/models/page_content.dart';
 import '../../core/models/provider_info.dart';
 import '../../core/reading/read_history.dart';
 import '../../core/reading/read_store.dart';
+import '../../core/reading/reader_highlights.dart';
 import '../../core/reading/reader_prefs.dart';
 import '../../core/reading/tap_zones.dart';
 import '../../core/repository/source_repository.dart';
@@ -21,6 +22,8 @@ import 'reader_auto_scroll.dart';
 import 'reader_auto_scroll_ui.dart';
 import 'reader_comfort.dart';
 import 'reader_pull_chapter.dart';
+import 'reader_selection_menu.dart';
+import 'reader_side_panel.dart';
 import '../../l10n/l10n.dart';
 
 /// Text reader for manga/novel chapters — the reading counterpart of the
@@ -86,12 +89,25 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
   late final ScrollController _scrollController;
   late final PageController _pageController;
 
+  /// Lets the side panel's edge tab call `openEndDrawer()` without a
+  /// `Builder`/`context.findAncestorStateOfType` dance.
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  /// The most recent selection text, fed by `SelectionArea.onSelectionChanged`
+  /// and read by the context-menu builder (which can't ask the state for it).
+  String _selectedText = '';
+
   bool _loading = true;
   String? _error;
   ChapterText? _text;
   bool _chromeVisible = false;
   bool _atEnd = false;
   int _lastScrollSaveMs = 0;
+
+  /// Highlights for the chapter currently on screen, newest first. Reloaded
+  /// when the chapter changes and after the selection menu edits the store, so
+  /// the scroll reader can paint them back onto the HTML.
+  List<ReaderHighlight> _highlights = const [];
   // Last scroll permille computed while the controller was still attached.
   // `dispose()` flushes progress AFTER the Scrollable has detached, so
   // `_currentPermille()` can't read the live position then — it falls back to
@@ -191,6 +207,7 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
       setState(() {
         _text = text;
         _loading = false;
+        _highlights = _highlightStore?.forChapter(_chapter.url) ?? const [];
       });
       _restoreScrollPosition();
     } catch (_) {
@@ -200,6 +217,22 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
         _loading = false;
       });
     }
+  }
+
+  /// The highlight store, or null if DI hasn't registered it (some widget
+  /// tests boot the reader without it). Reading a chapter must not depend on
+  /// highlights being available — a null store just means nothing to paint.
+  ReaderHighlightStore? get _highlightStore =>
+      sl.isRegistered<ReaderHighlightStore>() ? sl<ReaderHighlightStore>() : null;
+
+  /// Re-reads the chapter's highlights from the store and repaints. Called by
+  /// the selection menu after it adds/removes/recolours one, so the page
+  /// updates without a reload.
+  void _reloadHighlights() {
+    if (!mounted) return;
+    setState(() {
+      _highlights = _highlightStore?.forChapter(_chapter.url) ?? const [];
+    });
   }
 
   /// Jumps to the chapter's saved scroll permille once the fresh content has
@@ -431,33 +464,97 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
 
   void _toggleChrome() => setState(() => _chromeVisible = !_chromeVisible);
 
+  /// Wraps the tappable chapter body so a long-press can start a text
+  /// selection. The tap-zone [GestureDetector] lives *inside* this, which is
+  /// what keeps a plain tap working: a descendant recognizer wins over the
+  /// selection area's own, whereas an ancestor's `onTapUp` would never fire
+  /// once the child `SelectableRegion` had claimed the hit (verified both
+  /// ways). Only long-press-and-drag behaves differently.
+  Widget _selectionArea(Widget child) {
+    return SelectionArea(
+      onSelectionChanged: (value) =>
+          _selectedText = value?.plainText ?? '',
+      contextMenuBuilder: (ctx, state) => buildReaderSelectionMenu(
+        context: ctx,
+        state: state,
+        selectedText: _selectedText,
+        sourceId: widget.sourceId,
+        showId: widget.showId,
+        chapterUrl: _chapter.url,
+        chapterTitle: widget.showTitle,
+        onChanged: _reloadHighlights,
+      ),
+      child: child,
+    );
+  }
+
+  /// The pull-tab pinned to the right edge that opens [ReaderSidePanel]. Sits
+  /// vertically centred so it clears both chrome bars.
+  Widget _buildPanelTab() {
+    return Positioned(
+      right: 0,
+      top: 0,
+      bottom: 0,
+      child: Center(
+        child: ReaderPanelTab(
+          icon: Icons.menu_book_rounded,
+          label: context.l10n.chapters,
+          onTap: () => _scaffoldKey.currentState?.openEndDrawer(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final prefs = sl<ReaderPrefs>();
     final theme = _readerTheme(prefs.theme);
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: _dimmedBg(theme, prefs.novelBgOpacity),
+      endDrawer: prefs.novelSidePanel
+          ? ReaderSidePanel(
+              showTitle: widget.showTitle,
+              chapters: _chapters,
+              index: _index,
+              autoReadOn: _autoScroll.running,
+              highlightCount: _highlights.length,
+              onChapterSelected: _goToChapter,
+              onAutoReadChanged: _setAutoScroll,
+              onOpenTextSize: _openTextSizeSheet,
+              onOpenSettings: _openSettingsSheet,
+            )
+          : null,
       body: Stack(
         children: [
           Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTapUp: (d) => _dispatchTap(d.globalPosition),
-              // Touch pauses; lifting resumes after a grace. See the manga
-              // reader — stopping outright on a drag made a nudge fatal.
-              child: Listener(
-                onPointerDown: (_) => _autoScroll.pauseForTouch(),
-                onPointerUp: (_) => _autoScroll.resumeAfterTouch(),
-                onPointerCancel: (_) => _autoScroll.resumeAfterTouch(),
-                child: ReaderPullChapter(
-                  enabled: prefs.overscrollChapter,
-                  hasPrev: _prevIndex != null,
-                  hasNext: _nextIndex != null,
-                  prevLabel: _chapterLabel(_prevIndex),
-                  nextLabel: _chapterLabel(_nextIndex),
-                  onChangeChapter: (d) =>
-                      _goToChapter(d > 0 ? _nextIndex : _prevIndex),
-                  child: _buildBody(theme, prefs),
+            // SelectableRegion wraps the tappable body from ABOVE: its own
+            // gesture recognizers must sit behind a descendant GestureDetector
+            // for a plain tap to win (verified — an ancestor's `onTapUp` never
+            // fires when a child SelectionArea is the hit target, but a child
+            // GestureDetector under a SelectionArea does receive the tap while
+            // a long-press still starts a selection). So the selection area is
+            // the ancestor here, not the child.
+            child: _selectionArea(
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapUp: (d) => _dispatchTap(d.globalPosition),
+                // Touch pauses; lifting resumes after a grace. See the manga
+                // reader — stopping outright on a drag made a nudge fatal.
+                child: Listener(
+                  onPointerDown: (_) => _autoScroll.pauseForTouch(),
+                  onPointerUp: (_) => _autoScroll.resumeAfterTouch(),
+                  onPointerCancel: (_) => _autoScroll.resumeAfterTouch(),
+                  child: ReaderPullChapter(
+                    enabled: prefs.overscrollChapter,
+                    hasPrev: _prevIndex != null,
+                    hasNext: _nextIndex != null,
+                    prevLabel: _chapterLabel(_prevIndex),
+                    nextLabel: _chapterLabel(_nextIndex),
+                    onChangeChapter: (d) =>
+                        _goToChapter(d > 0 ? _nextIndex : _prevIndex),
+                    child: _buildBody(theme, prefs),
+                  ),
                 ),
               ),
             ),
@@ -466,6 +563,7 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
           // IgnorePointer inside each for why that doesn't eat page taps.
           _buildTopBar(),
           _buildBottomBar(),
+          if (prefs.novelSidePanel) _buildPanelTab(),
           if (prefs.autoScrollButton)
             ReaderAutoScrollButton(
               autoScroll: _autoScroll,
@@ -542,7 +640,7 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
                 vertical: 32,
               ),
               sliver: HtmlWidget(
-                cleanNovelHtml(text.html),
+                applyHighlightsToHtml(cleanNovelHtml(text.html), _highlights),
                 renderMode: RenderMode.sliverList,
                 // Only a downloaded chapter carries a folder — resolves an
                 // image's relative `src` (the download saves them bare, e.g.
@@ -691,7 +789,12 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
                     child: Align(
                       alignment: AlignmentDirectional.topStart,
                       child: Text.rich(
-                        pages[index],
+                        TextSpan(
+                          children: applyHighlightsToSpans(
+                            pages[index].children ?? const [],
+                            _highlights,
+                          ),
+                        ),
                         textAlign: prefs.textAlignJustify
                             ? TextAlign.justify
                             : TextAlign.start,
@@ -1478,6 +1581,16 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
                               activeThumbColor: AppColors.accent,
                               onChanged: (v) =>
                                   apply(() => prefs.setOverscrollChapter(v)),
+                            ),
+                          ),
+                          readerSheetRow(
+                            icon: Icons.view_sidebar_rounded,
+                            label: context.l10n.sidePanel,
+                            trailing: Switch(
+                              value: prefs.novelSidePanel,
+                              activeThumbColor: AppColors.accent,
+                              onChanged: (v) =>
+                                  apply(() => prefs.setNovelSidePanel(v)),
                             ),
                           ),
                         ]),

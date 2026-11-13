@@ -187,7 +187,13 @@
     "dailyPicksMorning",
     "dailyPicksAfternoon",
     "dailyPicksEvening",
-    "dailyPicksNow"
+    "dailyPicksNow",
+    "sidePanel",
+    "readingStats",
+    "readingProgress",
+    "highlights",
+    "highlight",
+    "autoRead"
   ],
 
   "de": [
@@ -492,7 +498,13 @@
     "dailyPicksMorning",
     "dailyPicksAfternoon",
     "dailyPicksEvening",
-    "dailyPicksNow"
+    "dailyPicksNow",
+    "sidePanel",
+    "readingStats",
+    "readingProgress",
+    "highlights",
+    "highlight",
+    "autoRead"
   ],
 
   "es": [
@@ -797,7 +809,13 @@
     "dailyPicksMorning",
     "dailyPicksAfternoon",
     "dailyPicksEvening",
-    "dailyPicksNow"
+    "dailyPicksNow",
+    "sidePanel",
+    "readingStats",
+    "readingProgress",
+    "highlights",
+    "highlight",
+    "autoRead"
   ],
 
   "fr": [
@@ -1102,7 +1120,13 @@
     "dailyPicksMorning",
     "dailyPicksAfternoon",
     "dailyPicksEvening",
-    "dailyPicksNow"
+    "dailyPicksNow",
+    "sidePanel",
+    "readingStats",
+    "readingProgress",
+    "highlights",
+    "highlight",
+    "autoRead"
   ],
 
   "id": [
@@ -1293,7 +1317,13 @@
     "dailyPicksMorning",
     "dailyPicksAfternoon",
     "dailyPicksEvening",
-    "dailyPicksNow"
+    "dailyPicksNow",
+    "sidePanel",
+    "readingStats",
+    "readingProgress",
+    "highlights",
+    "highlight",
+    "autoRead"
   ],
 
   "it": [
@@ -1598,7 +1628,13 @@
     "dailyPicksMorning",
     "dailyPicksAfternoon",
     "dailyPicksEvening",
-    "dailyPicksNow"
+    "dailyPicksNow",
+    "sidePanel",
+    "readingStats",
+    "readingProgress",
+    "highlights",
+    "highlight",
+    "autoRead"
   ],
 
   "ja": [
@@ -1903,7 +1939,13 @@
     "dailyPicksMorning",
     "dailyPicksAfternoon",
     "dailyPicksEvening",
-    "dailyPicksNow"
+    "dailyPicksNow",
+    "sidePanel",
+    "readingStats",
+    "readingProgress",
+    "highlights",
+    "highlight",
+    "autoRead"
   ],
 
   "pt": [
@@ -2094,7 +2136,13 @@
     "dailyPicksMorning",
     "dailyPicksAfternoon",
     "dailyPicksEvening",
-    "dailyPicksNow"
+    "dailyPicksNow",
+    "sidePanel",
+    "readingStats",
+    "readingProgress",
+    "highlights",
+    "highlight",
+    "autoRead"
   ],
 
   "tr": [
@@ -2285,7 +2333,13 @@
     "dailyPicksMorning",
     "dailyPicksAfternoon",
     "dailyPicksEvening",
-    "dailyPicksNow"
+    "dailyPicksNow",
+    "sidePanel",
+    "readingStats",
+    "readingProgress",
+    "highlights",
+    "highlight",
+    "autoRead"
   ],
 
   "zh": [
@@ -2590,7 +2644,13 @@
     "dailyPicksMorning",
     "dailyPicksAfternoon",
     "dailyPicksEvening",
-    "dailyPicksNow"
+    "dailyPicksNow",
+    "sidePanel",
+    "readingStats",
+    "readingProgress",
+    "highlights",
+    "highlight",
+    "autoRead"
   ],
 
   "zh_TW": [
@@ -2895,6 +2955,12 @@
     "dailyPicksMorning",
     "dailyPicksAfternoon",
     "dailyPicksEvening",
-    "dailyPicksNow"
+    "dailyPicksNow",
+    "sidePanel",
+    "readingStats",
+    "readingProgress",
+    "highlights",
+    "highlight",
+    "autoRead"
   ]
 }

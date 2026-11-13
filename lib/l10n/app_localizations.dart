@@ -10257,6 +10257,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send the day\'s picks now'**
   String get dailyPicksNow;
+
+  /// No description provided for @sidePanel.
+  ///
+  /// In en, this message translates to:
+  /// **'Side panel'**
+  String get sidePanel;
+
+  /// No description provided for @readingStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading stats'**
+  String get readingStats;
+
+  /// No description provided for @readingProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading progress'**
+  String get readingProgress;
+
+  /// No description provided for @highlights.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlights'**
+  String get highlights;
+
+  /// No description provided for @highlight.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlight'**
+  String get highlight;
+
+  /// No description provided for @autoRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto read'**
+  String get autoRead;
 }
 
 class _AppLocalizationsDelegate

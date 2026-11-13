@@ -5748,6 +5748,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dailyPicksNow => 'Send the day\'s picks now';
+
+  @override
+  String get sidePanel => 'Side panel';
+
+  @override
+  String get readingStats => 'Reading stats';
+
+  @override
+  String get readingProgress => 'Reading progress';
+
+  @override
+  String get highlights => 'Highlights';
+
+  @override
+  String get highlight => 'Highlight';
+
+  @override
+  String get autoRead => 'Auto read';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).

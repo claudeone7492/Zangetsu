@@ -160,6 +160,15 @@ class ReaderPrefs {
   Future<void> setAutoScrollButton(bool value) =>
       _box.put('autoScrollButton', value);
 
+  /// Show the reader's side panel — the drawer that slides in from the right
+  /// with the chapter list, reading stats and a quick auto-read toggle.
+  /// On by default: it's the fastest way to move between chapters without
+  /// opening a sheet over the page.
+  bool get novelSidePanel =>
+      _box.get('novelSidePanel', defaultValue: true) as bool;
+  Future<void> setNovelSidePanel(bool value) =>
+      _box.put('novelSidePanel', value);
+
   /// Where the floating auto-scroll button sits, as a fraction of the screen
   /// (0–1 on each axis) rather than pixels — so it lands in the same place
   /// after a rotation or on a different device instead of off-screen.
