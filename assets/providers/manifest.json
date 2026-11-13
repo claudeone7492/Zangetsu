@@ -181,6 +181,56 @@
       "file": "moviebox.js",
       "logo": "https://themoviebox.xyz/favicon.ico",
       "nsfw": false
+    },
+    {
+      "id": "novelfire",
+      "name": "NovelFire",
+      "version": "1.0.0",
+      "type": "novel",
+      "lang": "en",
+      "file": "novelfire.js",
+      "logo": "https://novelfire.net/frontend/img/logo.png",
+      "nsfw": false
+    },
+    {
+      "id": "weebcentral",
+      "name": "WeebCentral",
+      "version": "1.0.5",
+      "type": "manga",
+      "lang": "en",
+      "file": "weebcentral.js",
+      "logo": "https://weebcentral.com/static/images/brand.png",
+      "nsfw": false
+    },
+    {
+      "id": "mangabats",
+      "name": "MangaBat",
+      "version": "1.0.0",
+      "type": "manga",
+      "lang": "en",
+      "file": "mangabats.js",
+      "logo": "https://www.mangabats.com/images/logo-bat.webp",
+      "nsfw": false
+    },
+    {
+      "id": "asurascans",
+      "name": "Asura Scans",
+      "version": "1.0.0",
+      "type": "manga",
+      "lang": "en",
+      "file": "asurascans.js",
+      "logo": "https://asurascans.com/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "wattpad",
+      "name": "Wattpad",
+      "version": "1.0.0",
+      "type": "novel",
+      "lang": "en",
+      "file": "wattpad.js",
+      "logo": "https://www.wattpad.com/favicon.ico",
+      "nsfw": false
     }
   ]
 }

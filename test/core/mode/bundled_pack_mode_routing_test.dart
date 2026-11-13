@@ -92,6 +92,24 @@ void main() {
     expect(types['mangapill'], ProviderType.manga);
     expect(types['gutenberg'], ProviderType.novel);
 
+    // Every reading source the pack ships must classify into its mode, so a
+    // newly-added manga/novel source that only carries a plain JS id still
+    // shows up on the Manga/Novel tabs and in a scoped search.
+    for (final id in ['weebcentral', 'mangabats', 'asurascans']) {
+      expect(types[id], ProviderType.manga, reason: '$id should be manga');
+      expect(sourceMatchesContentMode(id, ContentMode.manga), isTrue,
+          reason: '$id should match manga mode');
+      expect(sourceMatchesContentMode(id, ContentMode.anime), isFalse,
+          reason: '$id should not match streaming mode');
+    }
+    for (final id in ['novelfire', 'wattpad']) {
+      expect(types[id], ProviderType.novel, reason: '$id should be novel');
+      expect(sourceMatchesContentMode(id, ContentMode.novel), isTrue,
+          reason: '$id should match novel mode');
+      expect(sourceMatchesContentMode(id, ContentMode.anime), isFalse,
+          reason: '$id should not match streaming mode');
+    }
+
     // The bug: these are plain JS ids, so without the manifest resolver they
     // resolved as anime and Manga/Novel mode showed the "no sources" guide.
     expect(sourceMatchesContentMode('mangakakalot', ContentMode.manga), isTrue);

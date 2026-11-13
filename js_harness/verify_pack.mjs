@@ -49,9 +49,11 @@ for (const s of MANIFEST.sources) {
   const first = search.ok && Array.isArray(search.value) && search.value[0];
   if (first && first.url) {
     const detail = await tryCall(s.id, 'getDetail', [first.url]);
-    detailOk = verdict(detail, detail.ok && detail.value && detail.value.episodes
-      ? `eps=${detail.value.episodes.length}` : '');
-    const ep = detail.ok && detail.value && detail.value.episodes && detail.value.episodes[0];
+    // Reading providers return `chapters`; the app aliases that to `episodes`.
+    const eps = detail.ok && detail.value
+      ? (detail.value.episodes || detail.value.chapters) : null;
+    detailOk = verdict(detail, eps ? `eps=${eps.length}` : '');
+    const ep = eps && eps[0];
     if (ep && ep.url) {
       if (s.type === 'manga') {
         playLabel = 'getPages';
@@ -60,7 +62,12 @@ for (const s of MANIFEST.sources) {
           ? `pages=${pages.value.length}` : '');
       } else if (s.type === 'novel') {
         playLabel = 'getText';
-        const text = await tryCall(s.id, 'getText', [ep.url]);
+        // Mirror the app: novel sources may export getText() or the Sozo-compat
+        // getChapterContent() alias; provider_manager falls back between them.
+        let text = await tryCall(s.id, 'getText', [ep.url]);
+        if (!text.ok && /missing method: getText/.test(text.error || '')) {
+          text = await tryCall(s.id, 'getChapterContent', [ep.url]);
+        }
         playOk = verdict(text, text.ok && text.value
           ? `chars=${JSON.stringify(text.value).length}` : '');
       } else {
