@@ -283,6 +283,23 @@ class _RootShellState extends State<RootShell>
     }
   }
 
+  /// Opens the Reels feed from the centre menu. When the user still has the
+  /// Reels tab in the dock, this is a plain tab switch, so the dock highlight
+  /// and the feed move together. A user who hid it from the dock still gets
+  /// the feed, pushed as its own page rather than stranded behind a menu entry
+  /// that does nothing.
+  void _onOpenShorts() {
+    if (!mounted) return;
+    final visible = _visibleTabs();
+    if (visible.contains(DockTab.shorts)) {
+      _onTabSelected(DockTab.shorts);
+      return;
+    }
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(builder: (_) => const ShortsScreen()),
+    );
+  }
+
   /// Root-level Back: the first press shows a toast, a second within 2s exits.
   /// Only reached when Back would otherwise close the app — deep screens
   /// (detail, player, …) are pushed above this shell and pop normally.
@@ -529,6 +546,7 @@ class _RootShellState extends State<RootShell>
                                 glassBlurEnabled: _navPrefs.glassBlurEnabled,
                                 onSelected: _onTabSelected,
                                 modesEnabled: ZModePrefs.enabled,
+                                onOpenShorts: _onOpenShorts,
                                 onModeSelected: (mode, kind) async {
                                   await ZModePrefs.setStreamKind(kind);
                                   await sl<ContentModeCubit>().setMode(mode);
@@ -587,6 +605,7 @@ class _LiquidNavDock extends StatelessWidget {
     required this.onSelected,
     required this.modesEnabled,
     required this.onModeSelected,
+    required this.onOpenShorts,
   });
 
   final List<DockTab> tabs;
@@ -599,6 +618,12 @@ class _LiquidNavDock extends StatelessWidget {
   final ValueChanged<DockTab> onSelected;
   final bool modesEnabled;
   final void Function(ContentMode, StreamKind) onModeSelected;
+
+  /// Opens the Shorts/Reels feed. The menu lists it beside the content modes,
+  /// but it is a destination rather than a mode, so it routes through the
+  /// shell's tab selection (falling back to a pushed page when the user has
+  /// hidden the Reels tab from the dock).
+  final VoidCallback onOpenShorts;
 
   Widget _icon(DockTab tab, {bool selected = false}) {
     final color = selected ? AppColors.accent : AppColors.textPrimary;
@@ -760,6 +785,17 @@ class _LiquidNavDock extends StatelessWidget {
                             onTap: () =>
                                 onModeSelected(choice.mode, choice.kind),
                           ),
+                      GlassMenuItem(
+                        title: context.l10n.shorts,
+                        icon: const Icon(Icons.bolt_rounded),
+                        iconColor: AppColors.textPrimary,
+                        titleStyle: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        height: 48,
+                        onTap: onOpenShorts,
+                      ),
                       const GlassMenuDivider(),
                       GlassMenuItem(
                         title: context.l10n.liveTv,

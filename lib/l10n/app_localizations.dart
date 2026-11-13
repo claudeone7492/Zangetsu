@@ -6418,6 +6418,12 @@ abstract class AppLocalizations {
   /// **'Shorts'**
   String get shorts;
 
+  /// No description provided for @reels.
+  ///
+  /// In en, this message translates to:
+  /// **'Reels'**
+  String get reels;
+
   /// No description provided for @normalSpeed.
   ///
   /// In en, this message translates to:

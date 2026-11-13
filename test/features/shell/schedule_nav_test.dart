@@ -468,8 +468,9 @@ void main() {
   // mode cards — two doors to one screen was the point of removing it. The
   // Sources tab that briefly took its slot is gone too: the app installs and
   // manages its own sources (Settings → Providers), so there is nothing for
-  // the user to do here. Shorts took the slot.
-  testWidgets('the phone dock swapped Schedule for Shorts, not Sources', (
+  // the user to do here. Shorts took the slot, labelled "Reels" in the dock
+  // (`DockTabL10n`), while the screen keeps the `shorts` string.
+  testWidgets('the phone dock swapped Schedule for Reels, not Sources', (
     tester,
   ) async {
     sl.registerSingleton<AppMode>(const AppMode(isTv: false));
@@ -478,7 +479,8 @@ void main() {
 
     expect(dockLabel('Schedule'), findsNothing);
     expect(dockLabel('Sources'), findsNothing);
-    expect(dockLabel('Shorts'), findsOneWidget);
+    expect(dockLabel('Reels'), findsOneWidget);
+    expect(dockLabel('Shorts'), findsNothing);
   });
 
   testWidgets('the phone Profile tab opens the viewer overview', (
@@ -579,7 +581,7 @@ void main() {
     // A name a screen reader can read. The visible Text is excluded from
     // semantics and folds to zero height when the dock collapses, so the name
     // has to come from the item itself.
-    for (final name in const ['Home', 'My List', 'Shorts', 'Profile']) {
+    for (final name in const ['Home', 'My List', 'Reels', 'Profile']) {
       expect(
         find.descendant(of: dock, matching: find.bySemanticsLabel(name)),
         findsWidgets,

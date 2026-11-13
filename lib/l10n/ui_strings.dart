@@ -15,7 +15,7 @@ extension DockTabL10n on DockTab {
         DockTab.myList => context.l10n.myList,
         DockTab.downloads => context.l10n.downloads,
         DockTab.history => context.l10n.history,
-        DockTab.shorts => context.l10n.shorts,
+        DockTab.shorts => context.l10n.reels,
         DockTab.search => context.l10n.search,
         DockTab.profile => context.l10n.profile,
       };

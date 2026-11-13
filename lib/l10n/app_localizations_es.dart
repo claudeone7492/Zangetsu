@@ -3488,6 +3488,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get shorts => 'Shorts';
 
   @override
+  String get reels => 'Reels';
+
+  @override
   String get normalSpeed => 'Normal';
 
   @override

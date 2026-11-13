@@ -3378,6 +3378,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get shorts => 'Shorts';
 
   @override
+  String get reels => 'Reels';
+
+  @override
   String get normalSpeed => '普通的';
 
   @override

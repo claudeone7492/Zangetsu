@@ -1471,6 +1471,7 @@
 	"quality": "Quality",
 	"sources": "Sources",
 	"shorts": "Shorts",
+	"reels": "Reels",
 	"normalSpeed": "Normal",
 	"subtitles": "Subtitles",
 	"preferredLanguageColon": "Preferred language: {name}",

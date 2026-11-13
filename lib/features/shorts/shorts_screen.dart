@@ -288,22 +288,10 @@ class _ShortsScreenState extends State<ShortsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 0,
-        title: Text(context.l10n.shorts, style: AppText.barTitle),
-        actions: [
-          IconButton(
-            tooltip: context.l10n.retry,
-            onPressed: _loading ? null : _load,
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-          ),
-        ],
-      ),
-      body: _body(),
-    );
+    // No app bar: the feed is full-bleed, so the first frame reaches the top
+    // edge and the reels read as a single immersive surface rather than a
+    // screen with a chrome strip. A reload lives on the empty state's action.
+    return Scaffold(backgroundColor: Colors.black, body: _body());
   }
 
   Widget _body() {
