@@ -2,19 +2,75 @@
 // Lets provider/extractor contracts be tested without Flutter/QuickJS.
 import fs from 'node:fs';
 import nodeCrypto from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 
 globalThis.__providers = globalThis.__providers || {};
 globalThis.__extractors = globalThis.__extractors || {};
 
+const HARNESS_UA =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
+// Node's fetch (undici) has a TLS/HTTP fingerprint that Cloudflare challenges
+// on hosts where the app's own client (Dart/dart:io, and the Android OkHttp
+// native lane it retries over) is let through untouched. curl presents a
+// different, non-challenged fingerprint. When undici comes back with a real
+// interstitial, re-request through curl — the harness's stand-in for the app's
+// native-lane retry — so a provider is exercised against the bytes it would
+// actually see on a device instead of failing on the test client's fingerprint.
+function looksLikeCfChallenge(status, body) {
+  if (status !== 403 && status !== 503) return false;
+  const b = (body || '').toLowerCase();
+  return b.includes('just a moment') || b.includes('challenge-platform') ||
+    b.includes('cf-chl') || b.includes('checking your browser');
+}
+
+function curlFetch(u, headers) {
+  const args = ['-s', '-L', '--max-time', '30', '-A', HARNESS_UA];
+  for (const [k, v] of Object.entries(headers || {})) {
+    if (k.toLowerCase() === 'user-agent') continue;
+    args.push('-H', k + ': ' + v);
+  }
+  args.push('-w', '\n__CURL_META__%{http_code}|%{url_effective}', u);
+  let out;
+  try {
+    out = execFileSync('curl', args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  } catch (e) {
+    return null;
+  }
+  const idx = out.lastIndexOf('__CURL_META__');
+  if (idx === -1) return null;
+  const meta = out.slice(idx + '__CURL_META__'.length).trim();
+  const body = out.slice(0, idx).replace(/\n$/, '');
+  const [statusStr, url] = meta.split('|');
+  const status = parseInt(statusStr, 10) || 0;
+  return {
+    ok: status >= 200 && status < 300,
+    status, statusText: '', headers: {}, url: url || u, body,
+    text: async () => body, json: async () => JSON.parse(body),
+  };
+}
+
 globalThis.__fetch = async function (src, u, opts) {
   opts = opts || {};
+  // Mirror the app's Dio defaults closely enough that hosts keying off a
+  // browser-ish UA/headers answer the harness the way they answer a real device.
   const headers = Object.assign(
-    { 'User-Agent': 'Mozilla/5.0 Chrome/120.0', Accept: '*/*' },
+    {
+      'User-Agent': HARNESS_UA,
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9',
+    },
     opts.headers || {});
   const init = { method: opts.method || 'GET', headers, body: opts.body };
   if (opts.followRedirects === false) init.redirect = 'manual';
   const r = await fetch(u, init);
   const text = await r.text();
+  if (looksLikeCfChallenge(r.status, text)) {
+    const viaCurl = curlFetch(u, headers);
+    if (viaCurl && !looksLikeCfChallenge(viaCurl.status, viaCurl.body)) {
+      return viaCurl;
+    }
+  }
   const hdrs = Object.fromEntries(r.headers.entries());
   // undici hides multiple Set-Cookie from entries(); surface them explicitly.
   const sc = typeof r.headers.getSetCookie === 'function'

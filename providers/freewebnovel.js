@@ -1,5 +1,7 @@
 // FreeWebNovel provider — https://freewebnovel.com
-// Free, no Cloudflare gate, full chapter content rendered server-side.
+// Free, server-rendered novel site. Reachable from the app's own client
+// (Dart/dart:io) with a normal User-Agent; only non-browser TLS fingerprints
+// get a Cloudflare challenge, so no clearance is required in practice.
 // Novel-type provider — getChapterContent returns paragraphs; getPages
 // is a no-op.
 
@@ -14,7 +16,7 @@ function getInfo() {
     baseUrl: SITE,
     logo: SITE + '/files/article/image/logo.png',
     type: 'novel',
-    version: '1.0.0'
+    version: '1.1.0'
   };
 }
 
@@ -49,6 +51,78 @@ function _normalizeStatus(s) {
   return 'unknown';
 }
 
+// Every listing surface (search results and the /sort/… browse pages) shares
+// one card shape:
+//   <h3 class="tit"><a href="/novel/<slug>" title="Title">Title</a></h3>
+// with the cover <img> in the same <li> wrapper, before the title.
+function _parseCards(html) {
+  var results = [];
+  var seen = {};
+  var titleRe = /<h3\s+class="tit">\s*<a[^>]+href="(\/novel\/[^"]+)"[^>]*(?:title="([^"]*)")?[^>]*>([^<]+)<\/a>/g;
+  var titleMatches = _allMatches(html, titleRe);
+
+  for (var i = 0; i < titleMatches.length; i++) {
+    var href = titleMatches[i][1];
+    var link = absUrl(href, SITE);
+    if (seen[link]) continue;
+    seen[link] = true;
+    var title = _cleanText(titleMatches[i][2] || titleMatches[i][3]);
+
+    var titleIdx = html.indexOf(titleMatches[i][0]);
+    var snippet = titleIdx >= 0 ? html.substring(Math.max(0, titleIdx - 900), titleIdx) : '';
+    var coverM = snippet.match(/<img[^>]+src="([^"]+\.(?:jpg|jpeg|png|webp))"/i);
+    var cover = coverM ? absUrl(coverM[1], SITE) : null;
+
+    results.push({
+      id: _idFromUrl(link),
+      title: title,
+      cover: cover,
+      url: link,
+      type: 'novel'
+    });
+  }
+  return results;
+}
+
+function _browseRow(title, path) {
+  var url = SITE + path;
+  return fetch(url, {
+    headers: {
+      'Accept': 'text/html,application/xhtml+xml',
+      'Referer': REFERER
+    }
+  }).then(function(r) {
+    if (r.status !== 200) {
+      console.log('freewebnovel home row HTTP ' + r.status + ' ' + title);
+      return null;
+    }
+    var items = _parseCards(r.body || '');
+    return items.length ? { title: title, items: items } : null;
+  });
+}
+
+function getHome(opts) {
+  opts = opts || {};
+  var rows = [
+    { title: 'Latest Novels', path: '/sort/latest-novel' },
+    { title: 'Latest Release', path: '/sort/latest-release' },
+    { title: 'Most Popular', path: '/sort/most-popular' },
+    { title: 'Completed', path: '/sort/completed-novel' }
+  ];
+  var chain = Promise.resolve();
+  var sections = [];
+  rows.forEach(function(row) {
+    chain = chain.then(function() {
+      return _browseRow(row.title, row.path).then(function(sec) {
+        if (sec) sections.push(sec);
+      }).catch(function(e) {
+        console.log('freewebnovel home row failed: ' + row.title + ' (' + e + ')');
+      });
+    });
+  });
+  return chain.then(function() { return sections; });
+}
+
 function search(query, page, category) {
   page = page || 1;
   category = category || '';
@@ -58,54 +132,19 @@ function search(query, page, category) {
   if (hasQuery) {
     url = SITE + '/search?keyword=' + encodeURIComponent(String(query).trim());
   } else if (category === 'latest') {
-    // /latest-release returns 404 on this site; the only working "latest"
-    // surface is the homepage which mixes recent updates + popular. Fall
-    // through to /most-popular so the category card stays populated.
-    url = SITE + '/most-popular';
+    url = SITE + '/sort/latest-release';
   } else {
-    url = SITE + '/most-popular';
+    url = SITE + '/sort/most-popular';
   }
   console.log('freewebnovel search url: ' + url);
 
   return fetch(url, {
     headers: {
-      // FreeWebNovel rejects empty POSTs but accepts plain GET with
-      // standard browser-ish headers.
       'Accept': 'text/html,application/xhtml+xml',
       'Referer': REFERER
     }
   }).then(function(r) {
-    var html = r.body || '';
-    var results = [];
-    var seen = {};
-
-    // Every result card has:
-    //   <h3 class="tit"><a href="/novel/<slug>" title="Title">Title</a></h3>
-    var titleRe = /<h3\s+class="tit">\s*<a[^>]+href="(\/novel\/[^"]+)"[^>]*(?:title="([^"]*)")?[^>]*>([^<]+)<\/a>/g;
-    var titleMatches = _allMatches(html, titleRe);
-
-    for (var i = 0; i < titleMatches.length; i++) {
-      var href = titleMatches[i][1];
-      var link = absUrl(href, SITE);
-      if (seen[link]) continue;
-      seen[link] = true;
-      var title = _cleanText(titleMatches[i][2] || titleMatches[i][3]);
-
-      // The cover image lives in the same <li> wrapper, typically before
-      // the title h3. Walk back from the title position to find it.
-      var titleIdx = html.indexOf(titleMatches[i][0]);
-      var snippet = titleIdx >= 0 ? html.substring(Math.max(0, titleIdx - 800), titleIdx) : '';
-      var coverM = snippet.match(/<img[^>]+src="([^"]+\.(?:jpg|jpeg|png|webp))"/i);
-      var cover = coverM ? absUrl(coverM[1], SITE) : null;
-
-      results.push({
-        id: _idFromUrl(link),
-        title: title,
-        cover: cover,
-        url: link,
-        type: 'novel'
-      });
-    }
+    var results = _parseCards(r.body || '');
     console.log('freewebnovel search count: ' + results.length);
     return results;
   });
@@ -127,11 +166,11 @@ function _parseLinks(chunk) {
 }
 
 function _parseMetaField(html, label) {
-  // FreeWebNovel meta rows look like:
-  //   <span class="s1">Status<em>:</em></span><span class="s2"><a>...</a></span>
-  // or  <span>Status</span><span><a>Ongoing</a></span>
+  // Meta rows are icon spans labelled by title, followed by the value:
+  //   <span class="glyphicon glyphicon-user" title="Author"></span>
+  //   <div class="right"><a ...>Guiltythree</a></div>
   var re = new RegExp(
-    '<span[^>]*>\\s*' + label + '\\s*(?:<em>:</em>)?\\s*</span>\\s*<span[^>]*>([\\s\\S]*?)</span>',
+    'title="' + label + '">\\s*</span>\\s*<div class="right">([\\s\\S]*?)</div>',
     'i'
   );
   var m = html.match(re);
@@ -150,9 +189,8 @@ function getDetail(url) {
     var coverM = html.match(/<img[^>]+src="(\/files\/article\/[^"]+\.(?:jpg|jpeg|png|webp))"/i);
     var cover = coverM ? absUrl(coverM[1], SITE) : null;
 
-    // Description is inside the m-desc panel — pluck paragraphs.
-    var descM = html.match(/<div[^>]+class="m-desc"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i);
-    if (!descM) descM = html.match(/<div[^>]+class="inner"[^>]*>([\s\S]*?)<\/div>/i);
+    // Synopsis is the SUMMARY panel's inner block.
+    var descM = html.match(/<div[^>]+class="inner"[^>]*>([\s\S]*?)<\/div>/i);
     var description = descM ? _cleanText(descM[1]) : '';
 
     // Strip leading "Description" label if the cleaner left it in.

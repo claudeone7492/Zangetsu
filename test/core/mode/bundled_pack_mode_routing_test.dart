@@ -102,7 +102,7 @@ void main() {
       expect(sourceMatchesContentMode(id, ContentMode.anime), isFalse,
           reason: '$id should not match streaming mode');
     }
-    for (final id in ['novelfire', 'wattpad']) {
+    for (final id in ['novelfire', 'wattpad', 'freewebnovel']) {
       expect(types[id], ProviderType.novel, reason: '$id should be novel');
       expect(sourceMatchesContentMode(id, ContentMode.novel), isTrue,
           reason: '$id should match novel mode');
