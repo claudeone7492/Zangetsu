@@ -251,6 +251,16 @@
       "file": "novelbin.js",
       "logo": "https://novelbin.cc/favicon.ico",
       "nsfw": false
+    },
+    {
+      "id": "novelight",
+      "name": "Novelight",
+      "version": "1.0.0",
+      "type": "novel",
+      "lang": "en",
+      "file": "novelight.js",
+      "logo": "https://novelight.net/static/core/img/favicon.ico",
+      "nsfw": false
     }
   ]
 }
