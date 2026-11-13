@@ -133,3 +133,36 @@ live('movie: search -> detail -> single movie stream', async () => {
     await callProvider('moviebox', 'getVideoSources', [detail.episodes[0].url]));
   assert.ok(sources.length >= 1, 'expected a source');
 });
+
+// The API reports `statusLive: "Living"` for fixtures that have not kicked off,
+// so a badge keyed on it marked every upcoming match live. Liveness must come
+// from `status === "MatchIng"`. Cross-check the mapped titles against the raw
+// payload's status so this can't silently regress.
+live('only in-play matches carry the live dot', async () => {
+  const res = await fetch(
+    'https://h5-api.aoneroom.com/wefeed-h5api-bff/live/match-list-v5?timezone=UTC&system_language=en',
+    {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 ' +
+          '(KHTML, like Gecko) Chrome/120 Mobile Safari/537.36',
+        Referer: 'https://sportsnow.top/',
+        Origin: 'https://sportsnow.top',
+        Accept: 'application/json',
+      },
+    });
+  const raw = JSON.parse(await res.text());
+  const statusById = new Map(
+    (raw.data.list || []).map((m) => [String(m.id || m.matchId || ''), String(m.status)]),
+  );
+
+  const items = JSON.parse(await callProvider('moviebox', 'getLive', [{}]));
+  assert.ok(items.length > 0, 'expected live matches');
+  for (const it of items) {
+    const dot = it.title.startsWith('\u25CF');
+    assert.equal(
+      dot,
+      statusById.get(it.id) === 'MatchIng',
+      `${it.id} (${statusById.get(it.id)}) dot=${dot}`,
+    );
+  }
+});

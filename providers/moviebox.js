@@ -633,7 +633,16 @@ function _filtersToSpec(filters) {
 }
 
 // ── live sports ─────────────────────────────────────────────────────────────
-// Matches carry a direct `playPath` m3u8 (some are still pre-match with none).
+// Matches carry a direct `playPath` m3u8 once they are actually in play; an
+// upcoming match has `status: "MatchNotStart"` and an empty `playPath`.
+//
+// Liveness comes from `status`, whose enum the site itself defines as
+// `MatchEnded` / `MatchIng` / `MatchNotStart`. It must NOT come from
+// `statusLive`: the API reports `statusLive: "Living"` for matches that have
+// not kicked off yet (verified 2026-11-13 — all twelve `MatchNotStart` matches
+// carried `Living`), so a badge keyed on it marks every fixture as live while
+// none of them has a stream to play.
+//
 // The url packs the id and the path so getVideoSources can hand the player the
 // live stream without another lookup.
 function _mapMatch(m) {
@@ -646,7 +655,7 @@ function _mapMatch(m) {
   var title = (s1 !== undefined && s1 !== '' && s2 !== undefined && s2 !== '')
     ? (n1 + ' ' + s1 + ' - ' + s2 + ' ' + n2)
     : (n1 + ' vs ' + n2);
-  var live = m.statusLive === 'Living';
+  var live = String(m.status || '') === 'MatchIng';
   if (live) title = '\u25CF ' + title;
   var id = String(m.id || m.matchId || '');
   var path = m.playPath || '';
