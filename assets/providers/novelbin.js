@@ -1,0 +1,1 @@
+../../providers/novelbin.js

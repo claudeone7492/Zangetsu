@@ -241,6 +241,16 @@
       "file": "../providers/freewebnovel.js",
       "logo": "https://freewebnovel.com/files/article/image/logo.png",
       "nsfw": false
+    },
+    {
+      "id": "novelbin",
+      "name": "NovelBin",
+      "version": "1.0.0",
+      "type": "novel",
+      "lang": "en",
+      "file": "../providers/novelbin.js",
+      "logo": "https://novelbin.cc/favicon.ico",
+      "nsfw": false
     }
   ]
 }
