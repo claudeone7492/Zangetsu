@@ -2,6 +2,16 @@
 // .xyz / .pro mirrors). Movies, TV and anime, keyed by TMDB id. The backend
 // fans out to several upstream "providers" (bowler, giant, sparky, …) and
 // returns HLS/MP4 sources plus subtitle tracks. Verified live.
+//
+// Every endpoint the backend exposes is wired:
+//   /api/home       — hero + named rails (getHome)
+//   /api/trending   — the mixed trending feed (popular + "Trending Now" rail)
+//   /api/search     — name/id lookup (search, movie detail)
+//   /api/tv/{id}    — series detail; /api/tv/{id}/season/{n} — episodes
+//   /api/discover   — filtered browse (getFilters + browseFilter)
+//   /api/genres     — the genre list the filter sheet is built from
+//   /api/providers  — the upstream fan-out list (getVideoSources)
+//   /api/stream     — playable sources + subtitle tracks (getVideoSources)
 
 var SOURCE_ID = 'framextv';
 var BASES = [
@@ -84,6 +94,11 @@ function getHome(opts) {
       comedy_movies: 'Comedy', airing_anime: 'Airing Now'
     };
     var out = [];
+    // The hero is a title the backend spotlights; without a row of its own it
+    // is fetched and thrown away. Leading with it keeps the home bundle fully
+    // used and matches what the site's own front page opens on.
+    var hero = _mapItems(j && j.hero ? [j.hero] : []);
+    if (hero.length) out.push({ title: 'Featured', items: hero });
     for (var key in titles) {
       if (!titles.hasOwnProperty(key)) continue;
       var rail = rails[key];
@@ -95,13 +110,21 @@ function getHome(opts) {
 }
 
 function popular(opts) {
-  return _home().then(function (j) {
-    var rails = (j && j.rails) || {};
-    var dr = (opts && opts.dateRange != null) ? opts.dateRange : 7;
-    var key = dr <= 1 ? 'trending_movies'
-            : (dr <= 30 ? 'popular_movies' : 'new_releases');
-    var rail = rails[key] || rails.popular_movies || {};
-    return _mapItems((rail && rail.results) || []);
+  var p = (opts && opts.page) ? opts.page : 1;
+  // The mixed trending feed (movies + TV together) is a better "popular" than
+  // one rail of the home bundle: it pages, and it is the same list the site's
+  // own Trending tab shows. Fall back to the home rail when it answers empty.
+  return _get('/api/trending?page=' + p).then(function (j) {
+    var items = _mapItems((j && j.results) || []);
+    if (items.length) return items;
+    return _home().then(function (h) {
+      var rails = (h && h.rails) || {};
+      var dr = (opts && opts.dateRange != null) ? opts.dateRange : 7;
+      var key = dr <= 1 ? 'trending_movies'
+              : (dr <= 30 ? 'popular_movies' : 'new_releases');
+      var rail = rails[key] || rails.popular_movies || {};
+      return _mapItems((rail && rail.results) || []);
+    });
   }).catch(function () { return []; });
 }
 
@@ -110,6 +133,88 @@ function _parseUrl(url) {
   var i = s.indexOf(':');
   if (i < 0) return { kind: 'movie', id: s };
   return { kind: s.slice(0, i), id: s.slice(i + 1) };
+}
+
+// ── filtered browse ─────────────────────────────────────────────────────────
+// /api/discover is a TMDB-backed browse: type (movie/tv), genre id, year and a
+// page. The filter sheet is built from /api/genres so its list is the API's
+// own, not a hard-coded guess that drifts when the backend adds a genre.
+function getFilters() {
+  return _get('/api/genres').then(function (j) {
+    var genres = (j && j.genres) || [];
+    var pairs = [['All', 'All']];
+    for (var i = 0; i < genres.length; i++) {
+      var g = genres[i];
+      if (g && g.id != null && g.name) pairs.push([String(g.id), g.name]);
+    }
+    var sel = function (name, values) {
+      return {
+        name: name, type_name: 'SelectFilter',
+        values: values.map(function (p) { return { name: p[1], value: p[0] }; }),
+        state: 0
+      };
+    };
+    var types = [['All', 'All'], ['movie', 'Movies'], ['tv', 'TV Shows']];
+    var years = [['All', 'All']];
+    for (var y = 2026; y >= 1950; y--) years.push([String(y), String(y)]);
+    var sorts = [['popularity', 'Popularity'], ['rating', 'Rating'],
+                 ['year', 'Newest']];
+    return [sel('Type', types), sel('Genre', pairs), sel('Year', years),
+            sel('Sort', sorts)];
+  }).catch(function () { return []; });
+}
+
+// A filter-sheet selection (a JSON array of {name,values,state}) or the bare
+// `filter|…` spec maps to a /api/discover query. Both shapes are accepted so a
+// home-row url and a raw sheet selection reach the same code.
+function _discoverQuery(spec) {
+  var list = spec;
+  if (typeof spec === 'string') {
+    if (spec.indexOf('filter|') === 0) spec = spec.slice('filter|'.length);
+    if (spec.charAt(0) === '[') {
+      try { list = JSON.parse(spec); } catch (e) { return null; }
+    } else {
+      var q = {};
+      var parts = spec.split('&');
+      for (var i = 0; i < parts.length; i++) {
+        var kv = parts[i].split('=');
+        if (kv.length === 2) q[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1]);
+      }
+      return q;
+    }
+  }
+  if (!list || !list.length) return null;
+  var pick = function (name, def) {
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      if (f && f.name === name && f.values && f.state != null) {
+        var v = f.values[f.state];
+        if (v && v.value != null) return v.value;
+      }
+    }
+    return def;
+  };
+  return {
+    type: pick('Type', 'All'), genre: pick('Genre', 'All'),
+    year: pick('Year', 'All'), sort: pick('Sort', 'popularity')
+  };
+}
+
+function browseFilter(categoryId, page) {
+  var spec = String(categoryId || '');
+  // Accept the app's `browse:<spec>` handle or the bare spec.
+  if (spec.indexOf('browse:') === 0) spec = spec.slice('browse:'.length);
+  var q = _discoverQuery(spec);
+  if (!q) return Promise.resolve([]);
+  var p = page || 1;
+  var path = '/api/discover?page=' + p;
+  if (q.type && q.type !== 'All') path += '&type=' + encodeURIComponent(q.type);
+  if (q.genre && q.genre !== 'All') path += '&genre=' + encodeURIComponent(q.genre);
+  if (q.year && q.year !== 'All') path += '&year=' + encodeURIComponent(q.year);
+  if (q.sort && q.sort !== 'All') path += '&sort=' + encodeURIComponent(q.sort);
+  return _get(path).then(function (j) {
+    return _mapItems((j && j.results) || []);
+  }).catch(function () { return []; });
 }
 
 function getDetail(url, opts) {

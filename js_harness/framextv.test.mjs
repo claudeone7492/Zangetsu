@@ -56,3 +56,36 @@ live('tv: detail lists episodes across seasons', async () => {
   assert.ok(Array.isArray(detail.episodes) && detail.episodes.length > 0, 'expected episodes');
   assert.ok(detail.episodes[0].url.includes(':'), 'episode url carries season:episode');
 });
+
+live('getHome leads with the hero, then every rail', async () => {
+  const sections = JSON.parse(await callProvider('framextv', 'getHome', [{}]));
+  assert.ok(sections.length >= 5, 'expected several rails');
+  assert.equal(sections[0].title, 'Featured');
+  assert.ok(sections[0].items.length === 1, 'hero is a single item');
+});
+
+live('getFilters is built from the API genre list', async () => {
+  const filters = JSON.parse(await callProvider('framextv', 'getFilters', []));
+  const names = filters.map((f) => f.name);
+  assert.deepEqual(names, ['Type', 'Genre', 'Year', 'Sort']);
+  const genre = filters.find((f) => f.name === 'Genre');
+  assert.ok(genre.values.length > 5, 'genre list came from /api/genres');
+});
+
+live('browseFilter maps a sheet selection to /api/discover', async () => {
+  const selection = JSON.stringify([
+    { name: 'Type', values: [{ name: 'TV Shows', value: 'tv' }], state: 0 },
+    { name: 'Genre', values: [{ name: 'Animation', value: '16' }], state: 0 },
+    { name: 'Sort', values: [{ name: 'Popularity', value: 'popularity' }], state: 0 }
+  ]);
+  const rows = JSON.parse(await callProvider('framextv', 'browseFilter', [selection, 1]));
+  assert.ok(rows.length > 0, 'expected discover results');
+  assert.ok(rows.every((r) => /^(movie|tv|anime):/.test(r.url)), 'urls carry a kind');
+});
+
+live('popular pages the trending feed', async () => {
+  const p1 = JSON.parse(await callProvider('framextv', 'popular', [{ dateRange: 7, page: 1 }]));
+  const p2 = JSON.parse(await callProvider('framextv', 'popular', [{ dateRange: 7, page: 2 }]));
+  assert.ok(p1.length > 0 && p2.length > 0, 'both pages answer');
+  assert.notEqual(p1[0].id, p2[0].id, 'page 2 differs from page 1');
+});
