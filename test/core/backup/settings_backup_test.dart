@@ -104,6 +104,7 @@ void _driftGuard() {
       'list_categories': 'library backup',
       'tracker_bindings': 'library backup',
       'reader_overrides': 'per-title, library-shaped',
+      'reader_highlights': 'per-chapter, library-shaped',
       'chapter_downloads': 'downloads, not settings',
       'downloads': 'downloads, not settings',
       // Caches and transient state — regenerated, never restored.
