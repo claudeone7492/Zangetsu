@@ -261,6 +261,16 @@
       "file": "novelight.js",
       "logo": "https://novelight.net/static/core/img/favicon.ico",
       "nsfw": false
+    },
+    {
+      "id": "inkitt",
+      "name": "Inkitt",
+      "version": "1.0.0",
+      "type": "novel",
+      "lang": "en",
+      "file": "inkitt.js",
+      "logo": "https://www.inkitt.com/favicon.ico",
+      "nsfw": false
     }
   ]
 }
