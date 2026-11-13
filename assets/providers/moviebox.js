@@ -643,8 +643,39 @@ function _filtersToSpec(filters) {
 // carried `Living`), so a badge keyed on it marks every fixture as live while
 // none of them has a stream to play.
 //
-// The url packs the id and the path so getVideoSources can hand the player the
-// live stream without another lookup.
+// The url packs the id (and the path, when the snapshot already has one) so
+// getVideoSources can re-query the authoritative detail endpoint for a fresh
+// signed URL at play time — see getVideoSourcesLive.
+
+// The status chip the poster paints: LIVE while in play, a countdown before
+// kickoff, FT once it's over. Keyed on `status` for the reason above.
+function _liveCountdown(sec) {
+  var m = Math.floor(sec / 60);
+  var d = Math.floor(m / 1440);
+  if (d >= 1) return 'in ' + d + 'd';
+  var h = Math.floor(m / 60);
+  if (h >= 1) return 'in ' + h + 'h ' + (m % 60) + 'm';
+  return 'in ' + m + 'm';
+}
+
+function _liveBadge(status, startMs) {
+  if (status === 'MatchIng') return 'LIVE';
+  if (status === 'MatchNotStart') {
+    var sec = startMs ? Math.floor((startMs - Date.now()) / 1000) : 0;
+    return sec > 0 ? _liveCountdown(sec) : 'SOON';
+  }
+  return 'FT';
+}
+
+// The poster's second live line: the competition, plus the in-play clock the
+// feed reports (empty once a match has ended).
+function _liveInfo(m) {
+  var parts = [];
+  if (m.league) parts.push(m.league);
+  if (m.timeDesc) parts.push(m.timeDesc);
+  return parts.length ? parts.join(' \u00B7 ') : null;
+}
+
 function _mapMatch(m) {
   if (!m) return null;
   var t1 = m.team1 || {};
@@ -655,8 +686,8 @@ function _mapMatch(m) {
   var title = (s1 !== undefined && s1 !== '' && s2 !== undefined && s2 !== '')
     ? (n1 + ' ' + s1 + ' - ' + s2 + ' ' + n2)
     : (n1 + ' vs ' + n2);
-  var live = String(m.status || '') === 'MatchIng';
-  if (live) title = '\u25CF ' + title;
+  var status = String(m.status || '');
+  var startMs = parseInt(m.startTime, 10) || 0;
   var id = String(m.id || m.matchId || '');
   var path = m.playPath || '';
   var item = {
@@ -666,8 +697,12 @@ function _mapMatch(m) {
     banner: null,
     url: 'live:' + id + '|' + path,
     type: 'movie',
-    sourceId: SOURCE_ID
+    sourceId: SOURCE_ID,
+    liveBadge: _liveBadge(status, startMs),
+    liveStartMs: startMs || null
   };
+  var info = _liveInfo(m);
+  if (info) item.liveInfo = info;
   if (m.league) item.genres = [m.league];
   return item;
 }
@@ -729,12 +764,11 @@ function getShorts(opts) {
   }).catch(function () { return []; });
 }
 
-function getVideoSourcesLive(url) {
-  var spec = String(url || '').slice('live:'.length);
-  var bar = spec.indexOf('|');
-  var path = bar >= 0 ? spec.slice(bar + 1) : '';
-  if (!path) return Promise.resolve([]);
-  return Promise.resolve([{
+// One playable live source. The stream CDN (live-pull.aisports.mobi) answers a
+// bare request with 403 and only serves with the sports front end's referer, so
+// the sports headers ride along with the stream.
+function _liveSource(path) {
+  return {
     url: path,
     quality: 'Live',
     label: 'Live',
@@ -742,5 +776,26 @@ function getVideoSourcesLive(url) {
     headers: { 'User-Agent': UA, 'Referer': SPORTS + '/', 'Origin': SPORTS },
     kind: 'unknown',
     subtitles: []
-  }]);
+  };
+}
+
+// Resolve a live match to its stream. The match-list a user is browsing is a
+// snapshot: a match carries an empty `playPath` until the broadcast actually
+// starts, so a page opened before kickoff holds a handle with no URL in it and
+// tapping it at kickoff would resolve nothing. The detail endpoint is
+// authoritative and re-mints the signed URL per request, so resolve from it now
+// and fall back to whatever path the list already carried. The url is
+// `live:<id>|<path?>`.
+function getVideoSourcesLive(url) {
+  var spec = String(url || '').slice('live:'.length);
+  var bar = spec.indexOf('|');
+  var id = bar >= 0 ? spec.slice(0, bar) : spec;
+  var packed = bar >= 0 ? spec.slice(bar + 1) : '';
+  if (!id) return Promise.resolve([]);
+  return _sportGet('/wefeed-h5api-bff/live/match-detail?id=' + encodeURIComponent(id))
+    .then(function (d) {
+      var path = (d && d.playPath) || packed;
+      return path ? [_liveSource(path)] : [];
+    })
+    .catch(function () { return packed ? [_liveSource(packed)] : []; });
 }

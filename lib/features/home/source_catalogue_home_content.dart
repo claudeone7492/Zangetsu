@@ -430,6 +430,8 @@ class SourceCatalogueHomeContentState
         qualityBadge: item.quality,
         scoreBadge: item.score,
         dubBadge: item.dubBadge,
+        liveBadge: item.liveBadge,
+        liveInfo: item.liveInfo,
         onTap: () => _openItem(item),
       );
     },

@@ -9,6 +9,21 @@ browse (`getHome`) → search → detail → reader/playback — with a live pro
 (`RUN_LIVE=1 node js_harness/verify_pack.mjs`) and a per-source `node:test`
 under `js_harness/`. A source that does not resolve fully is not added.
 
+## Live / streaming sources
+
+| id | site | kind | notes |
+|---|---|---|---|
+| `iptv` | iptv-org | live TV | per-category M3U playlists (JsDelivr / GitHub Pages mirrors) |
+| `moviebox` | themoviebox.xyz | movie / shorts / live sports | `getLive` reads the `live:` match list; `getShorts` the short-drama subjects |
+| `streamfree` | streamfree.top | live sports | public JSON API + JW-Player embeds that mint signed HLS on `cdn1.strmfree.st` |
+
+`streamfree` covers soccer, basketball, hockey, combat, baseball, American
+football, motorsport, tennis and cricket. Its fixtures are 24/7 channels and
+matches; each resolves through `/get-stream-key/<key>` (which names the CDN
+path) and the embed page's own token. Verified live 2026-11-13: a 24/7 channel
+resolved to a real `#EXTM3U` playlist, and a match in play resolved while the
+same URL 404s once the match ends — the fixture, not a VOD, is the stream.
+
 ## Novel / manga sources
 
 | id | site | kind | reader |

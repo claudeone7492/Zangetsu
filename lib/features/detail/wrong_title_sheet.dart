@@ -917,6 +917,8 @@ class _Results extends StatelessWidget {
           cellWidth: cellWidth,
           qualityBadge: r.quality,
           dubBadge: r.dubBadge,
+          liveBadge: r.liveBadge,
+          liveInfo: r.liveInfo,
           tags: isCurrent ? [l10n.currentMatchBadge] : const [],
           // On TV the TvFocusable below owns OK, so the card must not also
           // claim the tap — see the TV rails for the same pairing.

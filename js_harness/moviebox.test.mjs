@@ -136,9 +136,10 @@ live('movie: search -> detail -> single movie stream', async () => {
 
 // The API reports `statusLive: "Living"` for fixtures that have not kicked off,
 // so a badge keyed on it marked every upcoming match live. Liveness must come
-// from `status === "MatchIng"`. Cross-check the mapped titles against the raw
+// from `status === "MatchIng"`, which the mapped item surfaces as
+// `liveBadge === "LIVE"`. Cross-check the mapped badges against the raw
 // payload's status so this can't silently regress.
-live('only in-play matches carry the live dot', async () => {
+live('only in-play matches carry the live badge', async () => {
   const res = await fetch(
     'https://h5-api.aoneroom.com/wefeed-h5api-bff/live/match-list-v5?timezone=UTC&system_language=en',
     {
@@ -158,11 +159,10 @@ live('only in-play matches carry the live dot', async () => {
   const items = JSON.parse(await callProvider('moviebox', 'getLive', [{}]));
   assert.ok(items.length > 0, 'expected live matches');
   for (const it of items) {
-    const dot = it.title.startsWith('\u25CF');
     assert.equal(
-      dot,
+      it.liveBadge === 'LIVE',
       statusById.get(it.id) === 'MatchIng',
-      `${it.id} (${statusById.get(it.id)}) dot=${dot}`,
+      `${it.id} (${statusById.get(it.id)}) badge=${it.liveBadge}`,
     );
   }
 });

@@ -21,6 +21,13 @@ const _posterTextScrim = LinearGradient(
   stops: [0, 0.26, 0.68],
 );
 
+/// Soft drop shadow for the live-info line, so it stays legible where the
+/// bottom scrim has already faded out (a two-line live row sits higher than
+/// the title it replaces).
+const _posterTextShadow = <Shadow>[
+  Shadow(color: Color(0xB3000000), blurRadius: 4, offset: Offset(0, 1)),
+];
+
 class PosterCard extends StatefulWidget {
   const PosterCard({
     super.key,
@@ -40,6 +47,8 @@ class PosterCard extends StatefulWidget {
     this.genres = const [],
     this.isAdult = false,
     this.progressBadge,
+    this.liveBadge,
+    this.liveInfo,
   });
   final String title;
   final String? imageUrl;
@@ -75,6 +84,17 @@ class PosterCard extends StatefulWidget {
   final bool isAdult;
   final String? progressBadge;
   final double cellWidth;
+
+  /// Live-sports status chip ("LIVE", "FT", "SOON", "in 2h 10m"), drawn in the
+  /// top-LEFT corner in a tinted pill. Null on everything that isn't a live
+  /// fixture. When present it takes the top-left corner from [dubBadge] — a
+  /// live match is never also an anime sub/dub listing.
+  final String? liveBadge;
+
+  /// Second live line (the competition, plus the broadcaster or in-play clock
+  /// when the source reports one), drawn along the bottom of the art above the
+  /// title. Null when the fixture has nothing more to say than [liveBadge].
+  final String? liveInfo;
 
   /// When false, omit an external title. An inside-image title still follows
   /// the saved placement setting, including TV cards.
@@ -291,6 +311,10 @@ class _PosterCardState extends State<PosterCard> {
     final hasBottomBadges =
         widget.tags.isNotEmpty ||
         (prefs?.posterProgressBadge == true && widget.progressBadge != null);
+    final liveBadge = widget.liveBadge;
+    final hasLiveBadge = liveBadge != null && liveBadge.isNotEmpty;
+    final liveInfo = widget.liveInfo;
+    final hasLiveInfo = liveInfo != null && liveInfo.isNotEmpty;
     final showGenre =
         wide && prefs?.posterGenreBadge == true && widget.genres.isNotEmpty;
     final showAdult = prefs?.posterAdultBadge == true && widget.isAdult;
@@ -366,9 +390,18 @@ class _PosterCardState extends State<PosterCard> {
                           errorWidget: (context, url, err) =>
                               ColoredBox(color: AppColors.surface2),
                         ),
-                      if (titleInside || hasBottomBadges || hasRightBadges)
+                      if (titleInside ||
+                          hasBottomBadges ||
+                          hasRightBadges ||
+                          hasLiveInfo)
                         const DecoratedBox(
                           decoration: BoxDecoration(gradient: _posterTextScrim),
+                        ),
+                      if (hasLiveBadge)
+                        Positioned(
+                          top: 6,
+                          left: 6,
+                          child: _LiveTag(liveBadge),
                         ),
                       if (widget.qualityBadge != null &&
                           (prefs?.posterQualityBadge ?? true))
@@ -386,13 +419,17 @@ class _PosterCardState extends State<PosterCard> {
                           child: _ScoreTag(widget.scoreBadge!),
                         ),
                       if (widget.dubBadge != null &&
+                          !hasLiveBadge &&
                           (prefs?.posterAudioBadge ?? true))
                         Positioned(
                           top: 6,
                           left: 6,
                           child: _PosterTag(widget.dubBadge!),
                         ),
-                      if (titleInside || hasBottomBadges || hasRightBadges)
+                      if (titleInside ||
+                          hasBottomBadges ||
+                          hasRightBadges ||
+                          hasLiveInfo)
                         Positioned(
                           left: 6,
                           bottom: 6,
@@ -400,13 +437,29 @@ class _PosterCardState extends State<PosterCard> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              if (titleInside || hasBottomBadges)
+                              if (titleInside || hasBottomBadges || hasLiveInfo)
                                 Expanded(
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
+                                      if (hasLiveInfo) ...[
+                                        Text(
+                                          liveInfo,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 11,
+                                            height: 1.15,
+                                            fontWeight: FontWeight.w600,
+                                            shadows: _posterTextShadow,
+                                          ),
+                                        ),
+                                        if (titleInside && widget.title.isNotEmpty)
+                                          const SizedBox(height: 4),
+                                      ],
                                       if (hasBottomBadges) ...[
                                         bottomBadges,
                                         if (titleInside &&
@@ -682,6 +735,56 @@ class _ScoreTag extends StatelessWidget {
               height: 1.1,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.3,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The live-sports status chip. Reads as "on air" at a glance: a red pill with
+/// a white dot for an in-play fixture, and a neutral dark pill for the
+/// pre-match countdown / full-time states that are not on air.
+class _LiveTag extends StatelessWidget {
+  const _LiveTag(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final live = text.toUpperCase() == 'LIVE';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: live ? AppColors.defaultAccent : Colors.black.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (live) ...[
+            Container(
+              width: 5,
+              height: 5,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: AppText.fontFamily,
+              fontFamilyFallback: AppText.fontFamilyFallback,
+              fontSize: 9,
+              height: 1.1,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.6,
               color: Colors.white,
             ),
           ),

@@ -1157,6 +1157,8 @@ class _SearchScreenTvState extends State<SearchScreenTv> {
           tags: _tagsFor(item),
           qualityBadge: item.quality,
           dubBadge: item.dubBadge,
+          liveBadge: item.liveBadge,
+          liveInfo: item.liveInfo,
           onTap: () => _openDetail(item),
         );
       },
@@ -1257,6 +1259,8 @@ class _SearchScreenTvState extends State<SearchScreenTv> {
                         tags: _tagsFor(item),
                         qualityBadge: item.quality,
                         dubBadge: item.dubBadge,
+                        liveBadge: item.liveBadge,
+                        liveInfo: item.liveInfo,
                         onTap: () => _openDetail(item),
                       ),
                     ),

@@ -1087,6 +1087,8 @@ class _HomeViewState extends State<_HomeView>
           qualityBadge: items[i].quality,
           scoreBadge: items[i].score,
           dubBadge: items[i].dubBadge,
+          liveBadge: items[i].liveBadge,
+          liveInfo: items[i].liveInfo,
           onTap: () => sourceCatalogue
               ? _openSourceCatalogueDetail(items[i])
               : _openDetail(items[i]),

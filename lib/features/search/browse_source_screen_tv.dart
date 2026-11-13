@@ -269,6 +269,8 @@ class _BrowseSourceScreenTvViewState extends State<_BrowseSourceScreenTvView> {
             scoreBadge: item.score,
             qualityBadge: item.quality,
             dubBadge: item.dubBadge,
+            liveBadge: item.liveBadge,
+            liveInfo: item.liveInfo,
             onTap: () => _openDetail(item),
           );
         },

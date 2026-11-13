@@ -116,6 +116,23 @@ class MediaItem extends Equatable {
   /// True only when a catalogue explicitly marks this listing adult.
   final bool isAdult;
 
+  /// Live-sports status chip for the poster's top-left corner: `LIVE` while a
+  /// fixture is in play, a countdown like `in 2h 10m` before kickoff, `FT`
+  /// once it is over. Null on everything that is not a live fixture — which is
+  /// every title, and every source that doesn't run a sports feed — so the
+  /// badge simply never appears there.
+  final String? liveBadge;
+
+  /// Secondary live-sports line, drawn over the bottom of the art (the
+  /// competition, and the broadcaster or in-play clock when the source has
+  /// one). Null when the source has nothing more to say than [liveBadge].
+  final String? liveInfo;
+
+  /// Fixture kickoff, in millis since epoch, as the source reports it. Kept on
+  /// the item so a re-sort (in-play first) has the kickoff without re-fetching
+  /// the feed. Null when the source reports no start time (24/7 channels).
+  final int? liveStartMs;
+
   const MediaItem({
     required this.id,
     required this.title,
@@ -142,6 +159,9 @@ class MediaItem extends Equatable {
     this.status,
     this.score,
     this.isAdult = false,
+    this.liveBadge,
+    this.liveInfo,
+    this.liveStartMs,
   });
 
   factory MediaItem.fromJson(Map<String, dynamic> json) =>
@@ -189,6 +209,9 @@ class MediaItem extends Equatable {
     status: status,
     score: score,
     isAdult: isAdult,
+    liveBadge: liveBadge,
+    liveInfo: liveInfo,
+    liveStartMs: liveStartMs,
   );
 
   @override
@@ -216,6 +239,9 @@ class MediaItem extends Equatable {
     status,
     score,
     isAdult,
+    liveBadge,
+    liveInfo,
+    liveStartMs,
   ];
 }
 

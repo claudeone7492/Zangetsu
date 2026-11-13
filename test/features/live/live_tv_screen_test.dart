@@ -26,12 +26,13 @@ MediaItem _channel(String id, String title) => MediaItem(
   sourceId: kLiveTvSourceId,
 );
 
-MediaItem _match(String id, String title) => MediaItem(
+MediaItem _match(String id, String title, {String? badge}) => MediaItem(
   id: id,
   title: title,
   url: 'live:$id|https://sports.test/$id.m3u8',
   type: ProviderType.movie,
-  sourceId: kLiveSportsSourceId,
+  sourceId: kLiveSportsSourceIds.first,
+  liveBadge: badge,
 );
 
 class _FakeSourceRepository implements SourceRepository {
@@ -40,16 +41,23 @@ class _FakeSourceRepository implements SourceRepository {
     this.searchHits,
     this.fail = false,
     this.liveMatches,
+    this.secondaryMatches,
     this.hasSportsSource = true,
   });
 
   final List<HomeSection>? sections;
   final List<MediaItem>? searchHits;
   final bool fail;
+
+  /// Fixtures the leading sports source (MovieBox) answers with.
   final List<MediaItem>? liveMatches;
 
-  /// Whether the MovieBox (sports) source is installed. False exercises the
-  /// "no sports rail" path without an extra failure mode.
+  /// Fixtures the second sports source (StreamFree) answers with — used to
+  /// prove the rail merges every installed source.
+  final List<MediaItem>? secondaryMatches;
+
+  /// Whether the sports sources are installed. False exercises the "no sports
+  /// rail" path without an extra failure mode.
   final bool hasSportsSource;
 
   int homeCalls = 0;
@@ -73,7 +81,7 @@ class _FakeSourceRepository implements SourceRepository {
   @override
   bool hasSource(String sourceId) =>
       sourceId == kLiveTvSourceId ||
-      (sourceId == kLiveSportsSourceId && hasSportsSource);
+      (kLiveSportsSourceIds.contains(sourceId) && hasSportsSource);
 
   @override
   String displayName(String sourceId) => 'IPTV';
@@ -93,7 +101,10 @@ class _FakeSourceRepository implements SourceRepository {
   Future<List<MediaItem>> live({String? sourceId}) async {
     liveCalls++;
     if (fail) throw StateError('sports down');
-    return liveMatches ?? const [];
+    // Each sports source contributes its own fixtures; the merge dedupes none,
+    // so a source that answers nothing simply adds nothing.
+    if (sourceId == kLiveSportsSourceIds.first) return liveMatches ?? const [];
+    return secondaryMatches ?? const [];
   }
 
   @override
@@ -357,12 +368,57 @@ void main() {
     await pumpLive(tester);
     await tester.pumpAndSettle();
 
-    // The sports feed is fetched from the MovieBox source, not IPTV.
-    expect(repo.liveCalls, 1);
+    // Both installed sports sources are asked, not just IPTV.
+    expect(repo.liveCalls, kLiveSportsSourceIds.length);
     expect(find.text('Live Sports'), findsWidgets);
     expect(find.text('England vs Croatia'), findsOneWidget);
     // The IPTV channels are still there, below the matches.
     expect(find.text('World News'), findsOneWidget);
+  });
+
+  testWidgets('the rail merges fixtures from every installed sports source', (
+    tester,
+  ) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+      ],
+      liveMatches: [_match('m1', 'England vs Croatia')],
+      secondaryMatches: [_match('m2', 'Lakers vs Celtics')],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.text('England vs Croatia'), findsOneWidget);
+    expect(find.text('Lakers vs Celtics'), findsOneWidget);
+  });
+
+  testWidgets('in-play fixtures lead the rail over finished ones', (
+    tester,
+  ) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+      ],
+      // The source lists the finished match first; the rail must hoist the
+      // in-play one so what a user can watch now is at the front.
+      liveMatches: [
+        _match('f1', 'Yesterday FC vs Old Town', badge: 'FT'),
+        _match('l1', 'England vs Croatia', badge: 'LIVE'),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    // The sports rail is a horizontal strip, so "leads" means further left.
+    expect(
+      tester.getTopLeft(find.text('England vs Croatia')).dx,
+      lessThan(tester.getTopLeft(find.text('Yesterday FC vs Old Town')).dx),
+    );
   });
 
   testWidgets('a missing sports source simply drops the rail', (tester) async {

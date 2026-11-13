@@ -34,6 +34,9 @@ MediaItem _$MediaItemFromJson(Map<String, dynamic> json) => MediaItem(
   status: $enumDecodeNullable(_$MediaStatusEnumMap, json['status']),
   score: (json['score'] as num?)?.toInt(),
   isAdult: json['isAdult'] as bool? ?? false,
+  liveBadge: json['liveBadge'] as String?,
+  liveInfo: json['liveInfo'] as String?,
+  liveStartMs: (json['liveStartMs'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$MediaItemToJson(MediaItem instance) => <String, dynamic>{
@@ -60,6 +63,9 @@ Map<String, dynamic> _$MediaItemToJson(MediaItem instance) => <String, dynamic>{
   'status': _$MediaStatusEnumMap[instance.status],
   'score': instance.score,
   'isAdult': instance.isAdult,
+  'liveBadge': instance.liveBadge,
+  'liveInfo': instance.liveInfo,
+  'liveStartMs': instance.liveStartMs,
 };
 
 const _$ProviderTypeEnumMap = {

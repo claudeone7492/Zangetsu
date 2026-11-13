@@ -322,6 +322,8 @@ class _SeeAllScreenState extends State<SeeAllScreen> {
                     qualityBadge: item.quality,
                     scoreBadge: item.score,
                     dubBadge: item.dubBadge,
+                    liveBadge: item.liveBadge,
+                    liveInfo: item.liveInfo,
                     cellWidth: cellW,
                     onTap: () => widget.onTap(item),
                     onLongPress: widget.onLongPress == null

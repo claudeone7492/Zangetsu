@@ -183,6 +183,16 @@
       "nsfw": false
     },
     {
+      "id": "streamfree",
+      "name": "StreamFree",
+      "version": "1.0.0",
+      "type": "movie",
+      "lang": "en",
+      "file": "../providers/streamfree.js",
+      "logo": "https://strmfree.st/favicon.ico",
+      "nsfw": false
+    },
+    {
       "id": "novelfire",
       "name": "NovelFire",
       "version": "1.0.0",

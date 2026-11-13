@@ -28,11 +28,13 @@ import '../search/browse_source_screen.dart' show canonicalTargetFor;
 /// install anything.
 const String kLiveTvSourceId = 'iptv';
 
-/// The source that carries live sports matches. MovieBox exposes them through
-/// its optional `getLive` extension (a `live:`-scheme stream per match), which
-/// no other source defines — so this page asks it directly and folds the
-/// matches in as a "Live Sports" rail above the IPTV channels.
-const String kLiveSportsSourceId = 'moviebox';
+/// The sources that carry live sports fixtures. Each exposes them through its
+/// optional `getLive` extension (a `live:`-scheme stream per fixture): MovieBox
+/// leads with its own sports feed, StreamFree adds per-sport fixtures (24/7
+/// channels plus matches). Both are asked in parallel and merged, in this
+/// order, so an installed-but-empty source simply contributes nothing. A source
+/// that isn't installed is skipped before the call.
+const List<String> kLiveSportsSourceIds = <String>['moviebox', 'streamfree'];
 
 /// Order the channel rows are shown in. "Default" keeps the catalogue's own
 /// order (usually popularity), which is the only one that means anything for
@@ -102,10 +104,10 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   bool _failed = false;
   List<HomeSection> _sections = const [];
 
-  /// Live sports matches from MovieBox's `getLive` (empty when the source
-  /// isn't installed, has no `getLive`, or the sports endpoint is down). Held
-  /// apart from [_sections] because it is a second source, and only prepended
-  /// to the rails as a synthetic "Live Sports" row when non-empty.
+  /// Live-sports fixtures from every installed sports source's `getLive`
+  /// (empty when none is installed, has no `getLive`, or the feeds are down).
+  /// Held apart from [_sections] because it is a second source, and only
+  /// prepended to the rails as a synthetic "Live Sports" row when non-empty.
   List<MediaItem> _sports = const [];
 
   /// 0 = "All channels", otherwise an index into [_categories]. Applied to
@@ -168,18 +170,43 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     }
   }
 
-  /// MovieBox's live sports matches, or an empty list when the source is not
-  /// installed or the endpoint answers nothing. Best-effort by design: the
-  /// IPTV channels are the page's reason to exist, sports are a bonus rail.
+  /// Every installed sports source's fixtures, merged in
+  /// [kLiveSportsSourceIds] order, or an empty list when none is installed or
+  /// the feeds answer nothing. Best-effort by design: the IPTV channels are the
+  /// page's reason to exist, sports are a bonus rail.
+  ///
+  /// In-play fixtures lead the rail, then upcoming ones, then finished ones —
+  /// what a user can watch now should not sit under yesterday's results. The
+  /// order within a rank is the sources' own, which is why the sort is done on
+  /// decorated indices: `List.sort` is not stable, so sorting the items alone
+  /// could shuffle two upcoming fixtures for no reason.
   Future<List<MediaItem>> _loadSports() async {
-    if (!_repo.hasSource(kLiveSportsSourceId)) return const [];
-    try {
-      return await _repo.live(sourceId: kLiveSportsSourceId).timeout(_timeout);
-    } catch (_) {
-      return const [];
+    final installed = kLiveSportsSourceIds.where(_repo.hasSource).toList();
+    if (installed.isEmpty) return const [];
+    final merged = <MediaItem>[];
+    for (final id in installed) {
+      try {
+        merged.addAll(await _repo.live(sourceId: id).timeout(_timeout));
+      } catch (_) {
+        // One dead feed must not hide the others.
+      }
     }
+    final indexed = merged.asMap().entries.toList();
+    indexed.sort((a, b) {
+      final byRank = _liveRank(a.value).compareTo(_liveRank(b.value));
+      return byRank != 0 ? byRank : a.key.compareTo(b.key);
+    });
+    return [for (final e in indexed) e.value];
   }
 
+  /// 0 in play, 2 finished, 1 for everything else — an upcoming kickoff, or a
+  /// 24/7 channel the source gives no kickoff at all.
+  int _liveRank(MediaItem m) {
+    final badge = m.liveBadge?.toUpperCase();
+    if (badge == 'LIVE') return 0;
+    if (badge == 'FT') return 2;
+    return 1;
+  }
 
   /// Non-empty category names, in catalogue order. Index 0 of the selector is
   /// the synthetic "All channels"; the rest map here by `index - 1`.
@@ -199,9 +226,9 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   /// the chosen sort. Empty rows are dropped so a filter never leaves a
   /// titled-but-empty rail.
   ///
-  /// The MovieBox live-sports matches lead the default ("All") view as a
-  /// synthetic rail — they are a second source, not an IPTV category, so
-  /// picking a specific channel category drops them and focuses on channels.
+  /// The live-sports fixtures lead the default ("All") view as a synthetic
+  /// rail — they are a second source, not an IPTV category, so picking a
+  /// specific channel category drops them and focuses on channels.
   List<HomeSection> get _visibleSections {
     final selected = _selectedCategory;
     final out = <HomeSection>[];
@@ -781,6 +808,8 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
           scoreBadge: item.score,
           qualityBadge: item.quality,
           dubBadge: item.dubBadge,
+          liveBadge: item.liveBadge,
+          liveInfo: item.liveInfo,
           onTap: () => _open(item),
         );
       },
