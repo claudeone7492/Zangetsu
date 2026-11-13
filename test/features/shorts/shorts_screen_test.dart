@@ -29,31 +29,50 @@ MediaItem _item(String id, String title, {String source = 'src1'}) => MediaItem(
 );
 
 class _FakeCatalogueRepository implements CatalogueRepository {
-  _FakeCatalogueRepository({this.sections = const [], this.throwOnHome = false});
+  _FakeCatalogueRepository({
+    this.sections = const [],
+    this.throwOnHome = false,
+    this.sourceIds = const ['src1'],
+    this.itemsBySource = const {},
+  });
 
   final List<HomeSection> sections;
   final bool throwOnHome;
+  final List<String> sourceIds;
+
+  /// Per-source home rows, so a test can prove which sources the feed walked.
+  final Map<String, List<HomeSection>> itemsBySource;
+
+  /// Source ids the feed actually pulled home rows from, in order.
+  final List<String> walked = [];
 
   @override
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
 
   @override
-  List<({String id, String name})> get loadedSources => const [
-    (id: 'src1', name: 'Source One'),
+  List<({String id, String name})> get loadedSources => [
+    for (final id in sourceIds) (id: id, name: id),
   ];
 
   @override
-  String get sourceId => 'src1';
+  String get sourceId => sourceIds.first;
 
   @override
-  String displayName(String sourceId) => 'Source One';
+  String displayName(String sourceId) => sourceId;
+
+  @override
+  Future<List<MediaItem>> shorts({String? sourceId}) async => const [];
 
   @override
   Future<List<HomeSection>> home({
     String category = 'sub',
     String? sourceId,
   }) async {
+    if (sourceId != null) walked.add(sourceId);
     if (throwOnHome) throw StateError('source down');
+    if (sourceId != null && itemsBySource.containsKey(sourceId)) {
+      return itemsBySource[sourceId]!;
+    }
     return sections;
   }
 }
@@ -219,9 +238,7 @@ void main() {
     expect(find.text('Alpha'), findsOneWidget);
   });
 
-  testWidgets('an off-screen tab without prewarm does no work', (
-    tester,
-  ) async {
+  testWidgets('an off-screen tab without prewarm does no work', (tester) async {
     sl.registerSingleton<CatalogueRepository>(
       _FakeCatalogueRepository(
         sections: [
@@ -239,5 +256,47 @@ void main() {
 
     expect(find.byType(PageView), findsNothing);
     expect(find.text('Alpha'), findsNothing);
+  });
+
+  testWidgets('the short-drama sources lead the feed ahead of movie sources', (
+    tester,
+  ) async {
+    // Install order deliberately puts the generic movie sources first — the
+    // registry sorts by key, so that is what a real device hands the feed. The
+    // feed caps how many sources it walks, so the drama catalogues must be
+    // hoisted or the cap fills with frameXTV/NetWeb/VidSrc and no drama shows.
+    final repo = _FakeCatalogueRepository(
+      sourceIds: const [
+        'framextv',
+        'netweb',
+        'vidsrc',
+        'vidlink',
+        'goodshort',
+        'reelshort',
+        'netshort',
+        'moviebox',
+      ],
+      itemsBySource: {
+        'moviebox': [
+          HomeSection(
+            title: 'Shorts',
+            items: [_item('m', 'Drama M', source: 'moviebox')],
+          ),
+        ],
+      },
+    );
+    sl.registerSingleton<CatalogueRepository>(repo);
+
+    await pumpShorts(tester);
+    await tester.pumpAndSettle();
+
+    expect(repo.walked.first, 'moviebox');
+    expect(repo.walked.take(4), [
+      'moviebox',
+      'goodshort',
+      'reelshort',
+      'netshort',
+    ]);
+    expect(find.text('Drama M'), findsOneWidget);
   });
 }

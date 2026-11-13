@@ -139,24 +139,31 @@ class _ShortsScreenState extends State<ShortsScreen> {
     super.dispose();
   }
 
-  /// Video sources worth pulling a feed from, MovieBox first. Reading sources
-  /// are skipped outright — a vertical "short" feed is a video idea, and
-  /// manga/novel pages belong in their own readers, so there is no reason to
-  /// even fetch their home rows.
+  /// Video sources worth pulling a feed from, the short-drama sources first.
+  /// Reading sources are skipped outright — a vertical "short" feed is a video
+  /// idea, and manga/novel pages belong in their own readers, so there is no
+  /// reason to even fetch their home rows.
   ///
-  /// [kShortsDefaultSourceId] leads so the feed is dominated by the short-drama
-  /// catalogue even when other sources were installed earlier; the rest keep
-  /// install order behind it. The cap is applied after the reorder, so a late
-  /// MovieBox is never squeezed out by earlier sources.
+  /// [kShortsPreferredSourceIds] lead so the feed is dominated by the
+  /// short-drama catalogues even when other sources were installed earlier; the
+  /// rest keep install order behind them. The cap is applied after the reorder,
+  /// so a late-installed drama source is never squeezed out by the generic
+  /// movie sources that sort ahead of it.
   List<String> _candidateSourceIds(CatalogueRepository repo) {
     final types = manifestSourceTypes();
     final video = repo.loadedSources
         .where((s) => sourceInMode(s.id, ContentMode.anime, types))
         .map((s) => s.id)
         .toList();
+    final preferred = video.where(kShortsPreferredSourceIds.contains).toList()
+      ..sort(
+        (a, b) => kShortsPreferredSourceIds
+            .indexOf(a)
+            .compareTo(kShortsPreferredSourceIds.indexOf(b)),
+      );
     final ordered = <String>[
-      if (video.contains(kShortsDefaultSourceId)) kShortsDefaultSourceId,
-      ...video.where((id) => id != kShortsDefaultSourceId),
+      ...preferred,
+      ...video.where((id) => !kShortsPreferredSourceIds.contains(id)),
     ];
     return ordered.take(_maxSources).toList();
   }
@@ -308,9 +315,7 @@ class _ShortsScreenState extends State<ShortsScreen> {
     // hold its first frame ready.
     if (!widget.active && !widget.prewarm) return const SizedBox.shrink();
     if (_loading) {
-      return Center(
-        child: CircularProgressIndicator(color: AppColors.accent),
-      );
+      return Center(child: CircularProgressIndicator(color: AppColors.accent));
     }
     if (_items.isEmpty) {
       return EmptyState(
@@ -340,7 +345,9 @@ class _ShortsScreenState extends State<ShortsScreen> {
             // hold their first frame, which is what makes the first swipe and
             // the first open land on moving video.
             active: widget.active && i == _index,
-            near: widget.active ? (i - _index).abs() == 1 : (warming && i == _index),
+            near: widget.active
+                ? (i - _index).abs() == 1
+                : (warming && i == _index),
             muted: _muted,
             onToggleMute: () => setState(() => _muted = !_muted),
             onOpen: () => _open(_items[i]),
@@ -536,7 +543,10 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
     });
   }
 
-  Future<void> _startPlayback(_VideoFeedSource source, {required bool play}) async {
+  Future<void> _startPlayback(
+    _VideoFeedSource source, {
+    required bool play,
+  }) async {
     final pool = sl<MpvPlayerPool>();
     final player = pool.acquire(libass: false);
     final controller = VideoController(player);
@@ -719,9 +729,7 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
             left: 20,
             bottom: 24,
             child: Icon(
-              widget.muted
-                  ? Icons.volume_off_rounded
-                  : Icons.volume_up_rounded,
+              widget.muted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
               color: Colors.white70,
               size: 20,
             ),
@@ -765,9 +773,7 @@ class _ActionRail extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _RailButton(
-          icon: saved
-              ? Icons.bookmark_rounded
-              : Icons.bookmark_border_rounded,
+          icon: saved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
           label: saved ? context.l10n.saved : context.l10n.save,
           onTap: onSave,
         ),
@@ -823,10 +829,7 @@ class _RailButton extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              label,
-              style: AppText.caption.copyWith(color: Colors.white70),
-            ),
+            Text(label, style: AppText.caption.copyWith(color: Colors.white70)),
           ],
         ),
       ),

@@ -50,6 +50,19 @@ const String kDefaultSourceId = 'anikoto';
 /// sources fill in behind it. A missing/uninstalled id is simply skipped.
 const String kShortsDefaultSourceId = 'moviebox';
 
+/// Short-drama sources the vertical Shorts feed hoists ahead of the generic
+/// movie sources. MovieBox, GoodShort, ReelShort and NetShort are all built
+/// around serialized short dramas — exactly what the feed is for — while the
+/// generic movie sources (frameXTV, VidSrc, …) mostly offer feature films. The
+/// feed caps how many sources it walks, so without this the cap fills with the
+/// generic movie sources and the drama catalogues never reach the feed.
+const List<String> kShortsPreferredSourceIds = <String>[
+  'moviebox',
+  'goodshort',
+  'reelshort',
+  'netshort',
+];
+
 /// Public directory of community source repos (Sozo Read format:
 /// `{entries:[{name,author,repoUrl,description,tags,verified}]}`). Browsed from
 /// Providers → Add repo so a user can discover community packs in one tap.
