@@ -102,13 +102,18 @@ void main() {
       expect(sourceMatchesContentMode(id, ContentMode.anime), isFalse,
           reason: '$id should not match streaming mode');
     }
-    for (final id in ['novelfire', 'wattpad', 'freewebnovel', 'novelbin', 'novelight', 'inkitt']) {
+    for (final id in ['novelfire', 'wattpad', 'freewebnovel', 'novelbin', 'novelight', 'inkitt', 'tapas']) {
       expect(types[id], ProviderType.novel, reason: '$id should be novel');
       expect(sourceMatchesContentMode(id, ContentMode.novel), isTrue,
           reason: '$id should match novel mode');
       expect(sourceMatchesContentMode(id, ContentMode.anime), isFalse,
           reason: '$id should not match streaming mode');
     }
+    // Tapas ships as two bundled sources off one JS file: the novel half and a
+    // separate comic half, each typed into its own mode.
+    expect(types['tapas-comics'], ProviderType.manga, reason: 'tapas-comics is manga');
+    expect(sourceMatchesContentMode('tapas-comics', ContentMode.manga), isTrue);
+    expect(sourceMatchesContentMode('tapas-comics', ContentMode.novel), isFalse);
 
     // The bug: these are plain JS ids, so without the manifest resolver they
     // resolved as anime and Manga/Novel mode showed the "no sources" guide.

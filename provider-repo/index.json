@@ -271,6 +271,26 @@
       "file": "../providers/inkitt.js",
       "logo": "https://www.inkitt.com/favicon.ico",
       "nsfw": false
+    },
+    {
+      "id": "tapas",
+      "name": "Tapas",
+      "version": "1.0.0",
+      "type": "novel",
+      "lang": "en",
+      "file": "../providers/tapas.js",
+      "logo": "https://tapas.io/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "tapas-comics",
+      "name": "Tapas Comics",
+      "version": "1.0.0",
+      "type": "manga",
+      "lang": "en",
+      "file": "../providers/tapas.js",
+      "logo": "https://tapas.io/favicon.ico",
+      "nsfw": false
     }
   ]
 }
