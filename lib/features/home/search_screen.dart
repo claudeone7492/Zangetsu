@@ -56,6 +56,7 @@ import '../auth/auth_screens.dart';
 import '../detail/detail_screen.dart';
 import '../player/player_screen.dart';
 import '../sources/zangetsu_sources_screen.dart';
+import 'genres_screen.dart';
 import 'search_screen_tv.dart';
 import 'see_all_screen.dart';
 import '../search/bloc/search_bloc.dart';
@@ -166,14 +167,12 @@ class _SearchScreenState extends State<SearchScreen> {
           forceMode: widget.forceMode,
           fixedSourceId: widget.fixedSourceId,
         );
-        // SearchStarted only fetches the idle "Top picks" strip, which the
-        // metadata search no longer shows — Home already carries Trending,
-        // Popular and Recently released, and repeating them here cost a
-        // request per visit and showed the wrong mode's picks anyway (it
-        // was fetched once and cached for the life of the bloc).
-        if (scope != SearchScope.library) {
-          bloc.add(const SearchStarted());
-        }
+        // SearchStarted fetches the idle landing's "Top picks" strip. Sources
+        // scope has always shown it. Library (metadata) scope hid it after the
+        // landing redesign, which left the page blank whenever there were no
+        // recents — the metadata catalogue's own rows ARE worth landing on, so
+        // it is fetched here too.
+        bloc.add(const SearchStarted());
         final q = widget.initialQuery?.trim();
         // An initial query (e.g. "see all results" from Home) runs the
         // full search straight away rather than waiting for the user to
@@ -2418,6 +2417,50 @@ class _SearchViewState extends State<_SearchView>
   static TextStyle get _idleSectionTitle => AppText.overline;
 
   // ── Idle view: recent searches + trending ─────────────────────────────────
+  /// Browse-by-genre entry for the metadata landing page — the phone twin of
+  /// [SearchScreenTv]'s `_genresEntry`. Hidden when the catalogue can't filter
+  /// (MAL/Simkl), matching the TV screen and the filter card.
+  Widget _genresEntry() {
+    if (!sl.isRegistered<MetadataRepository>() ||
+        !sl<MetadataRepository>().supportsFilters) {
+      return const SizedBox.shrink();
+    }
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: GestureDetector(
+        key: const ValueKey('phone-search-genres'),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const GenresScreen()),
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.surface2,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.local_offer_outlined,
+                size: 18,
+                color: AppColors.accent,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                context.l10n.genres,
+                style: AppText.body.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _idleView(SearchState state) {
     // Recent searches are hidden during a filtered browse — the screen is
     // showing filter results, not a search landing page, and the chips would
@@ -2431,11 +2474,7 @@ class _SearchViewState extends State<_SearchView>
     final browsing = state.hasFilteredBrowse;
     // Filter results still render here — those ARE what the filters asked for,
     // not filler. Only the unasked-for picks strip is gone.
-    final trending = browsing
-        ? state.filteredBrowse
-        : widget.scope == SearchScope.library
-        ? const <MediaItem>[]
-        : state.trending;
+    final trending = browsing ? state.filteredBrowse : state.trending;
 
     if (recent.isEmpty && trending.isEmpty) {
       return Center(
@@ -2453,6 +2492,10 @@ class _SearchViewState extends State<_SearchView>
               textAlign: TextAlign.center,
               style: AppText.body,
             ),
+            if (widget.scope == SearchScope.library) ...[
+              const SizedBox(height: 20),
+              _genresEntry(),
+            ],
           ],
         ),
       );
@@ -2481,6 +2524,13 @@ class _SearchViewState extends State<_SearchView>
         ),
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         children: [
+          // Browse by genre — the metadata search's other way in, alongside
+          // the recents and the picks below. Shown at the top so it is
+          // reachable however much is on the page.
+          if (widget.scope == SearchScope.library) ...[
+            _genresEntry(),
+            const SizedBox(height: 8),
+          ],
           if (recent.isNotEmpty) ...[
             Row(
               children: [

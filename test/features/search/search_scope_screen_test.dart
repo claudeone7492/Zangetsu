@@ -223,4 +223,34 @@ void main() {
       expect(sourceLine, findsOneWidget);
     },
   );
+
+  // The library landing page must offer a way in even with no recents — the
+  // picks strip it also carries is fetched, but a cold install has none yet,
+  // so the empty state has to carry something actionable. Browse-by-genre is
+  // that something, and it belongs to the metadata scope only.
+  final genresEntry = find.byKey(const ValueKey('phone-search-genres'));
+
+  testWidgets('Z Mode on: the idle landing offers Browse by genre', (t) async {
+    await t.runAsync(() async {
+      await ZModePrefs.init();
+      await ZModePrefs.setEnabled(true);
+    });
+
+    await t.pumpWidget(harness());
+    await t.pumpAndSettle();
+
+    expect(genresEntry, findsOneWidget);
+  });
+
+  testWidgets('Sources scope never shows the genre entry', (t) async {
+    await t.runAsync(() async {
+      await ZModePrefs.init();
+      await ZModePrefs.setEnabled(false);
+    });
+
+    await t.pumpWidget(harness());
+    await t.pumpAndSettle();
+
+    expect(genresEntry, findsNothing);
+  });
 }
