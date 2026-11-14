@@ -53,8 +53,17 @@ class CatalogueRouter implements CatalogueRepository {
   void syncSearchCache() => _source.syncSearchCache();
 
   @override
-  Future<List<HomeSection>> home({String category = 'sub', String? sourceId}) =>
-      _browse.home(category: category, sourceId: sourceId);
+  Future<List<HomeSection>> home({String category = 'sub', String? sourceId}) {
+    // A named [sourceId] is always an installed source's own catalogue, never
+    // metadata — the Shorts feed and the Live TV screen pass one per source
+    // they walk. Routing those to `_browse` sent them to the metadata
+    // catalogue whenever Z Mode was on, so the Shorts feed filled with
+    // AniList/TMDB anime rows instead of the drama source's own rows.
+    if (sourceId != null && sourceId != ZmodeIds.sourceId) {
+      return _source.home(category: category, sourceId: sourceId);
+    }
+    return _browse.home(category: category, sourceId: sourceId);
+  }
 
   @override
   Future<List<MediaItem>> search(

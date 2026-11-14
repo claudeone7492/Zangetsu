@@ -148,6 +148,13 @@ function popular(opts) {
   }).catch(function () { return []; });
 }
 
+// ── shorts feed ─────────────────────────────────────────────────────────────
+// NetShort is a short-drama service end to end, so the whole public catalogue
+// is the feed.
+function getShorts(opts) {
+  return _homeCatalogue().catch(function () { return []; });
+}
+
 // ── search ──────────────────────────────────────────────────────────────────
 // NetShort's keyword search is served only by the private signed API, so this
 // filters the public catalogue by title instead. It is exact enough for a

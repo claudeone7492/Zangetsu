@@ -111,6 +111,23 @@ function popular(opts) {
     }).catch(function () { return []; });
 }
 
+// ── shorts feed ─────────────────────────────────────────────────────────────
+// Every GoodShort book is a short drama, so the whole home catalogue is the
+// feed. The rails overlap (a book often tops several), so de-duplicate by id.
+function getShorts(opts) {
+  return getHome(opts).then(function (rails) {
+    var out = [], seen = {};
+    for (var i = 0; i < rails.length; i++) {
+      var items = rails[i].items || [];
+      for (var j = 0; j < items.length; j++) {
+        var m = items[j];
+        if (m && !seen[m.id]) { seen[m.id] = 1; out.push(m); }
+      }
+    }
+    return out;
+  }).catch(function () { return []; });
+}
+
 // ── search ──────────────────────────────────────────────────────────────────
 // The public "recommend" endpoint ignores the keyword entirely (it returns the
 // same curated set for any query) and rejects a missing `genderEnum`, so the

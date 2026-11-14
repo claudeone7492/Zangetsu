@@ -49,3 +49,10 @@ live('show: home -> detail -> first episode stream', async () => {
   assert.ok(Array.isArray(sources) && sources.length >= 1, 'expected a source');
   assert.ok(sources[0].url, 'source has a url');
 });
+
+live('getShorts returns the public drama catalogue', async () => {
+  const list = JSON.parse(await callProvider('netshort', 'getShorts', [{}]));
+  assert.ok(Array.isArray(list) && list.length > 0, 'expected a non-empty feed');
+  assert.ok(list.every((m) => m.id && m.title && m.url && m.url.startsWith('ns:')),
+    'every short is a playable ns: item');
+});

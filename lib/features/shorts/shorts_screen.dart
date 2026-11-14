@@ -15,6 +15,7 @@ import '../../core/models/media_item.dart';
 import '../../core/models/provider_info.dart';
 import '../../core/playback/my_list.dart';
 import '../../core/repository/catalogue_repository.dart';
+import '../../core/repository/source_repository.dart';
 import '../../core/share/share_link.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
@@ -149,7 +150,7 @@ class _ShortsScreenState extends State<ShortsScreen> {
   /// rest keep install order behind them. The cap is applied after the reorder,
   /// so a late-installed drama source is never squeezed out by the generic
   /// movie sources that sort ahead of it.
-  List<String> _candidateSourceIds(CatalogueRepository repo) {
+  List<String> _candidateSourceIds(SourceRepository repo) {
     final types = manifestSourceTypes();
     final video = repo.loadedSources
         .where((s) => sourceInMode(s.id, ContentMode.anime, types))
@@ -169,13 +170,18 @@ class _ShortsScreenState extends State<ShortsScreen> {
   }
 
   Future<void> _load() async {
-    if (!sl.isRegistered<CatalogueRepository>()) {
+    if (!sl.isRegistered<SourceRepository>()) {
       if (mounted) setState(() => _loading = false);
       return;
     }
     if (mounted) setState(() => _loading = true);
     _loadStarted = true;
-    final repo = sl<CatalogueRepository>();
+    // The SOURCE repository directly, not the Z Mode router: the router's
+    // `loadedSources`/`home` follow the metadata toggle, so under Z Mode the
+    // feed walked the metadata pseudo-source and filled with AniList/TMDB
+    // anime rows instead of the drama catalogues' own rows. Same reasoning as
+    // `LiveTvScreen`.
+    final repo = sl<SourceRepository>();
     final ids = _candidateSourceIds(repo);
     final seen = <String>{};
     final gathered = <MediaItem>[];
@@ -263,8 +269,8 @@ class _ShortsScreenState extends State<ShortsScreen> {
   /// Best-effort: any failure (no episodes, no mirrors, a slow source) yields
   /// null and the page simply falls back to its poster.
   Future<_VideoFeedSource?> _resolveVideo(MediaItem item) async {
-    if (!sl.isRegistered<CatalogueRepository>()) return null;
-    final repo = sl<CatalogueRepository>();
+    if (!sl.isRegistered<SourceRepository>()) return null;
+    final repo = sl<SourceRepository>();
     try {
       final episodes = await repo
           .episodes(item.url, sourceId: item.sourceId)

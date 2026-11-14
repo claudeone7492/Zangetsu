@@ -52,3 +52,14 @@ live('show: search -> detail -> playable episode', async () => {
   const m3u8 = await (await fetch(sources[0].url, { headers: sources[0].headers })).text();
   assert.ok(/#EXTM3U/.test(m3u8), 'hls master should start with #EXTM3U, got: ' + m3u8.slice(0, 120));
 });
+
+live('getShorts returns a deduped drama feed without podcasts', async () => {
+  const list = JSON.parse(await callProvider('reelshort', 'getShorts', [{}]));
+  assert.ok(Array.isArray(list) && list.length > 0, 'expected a non-empty feed');
+  assert.ok(list.every((m) => m.id && m.title && m.url && m.url.startsWith('rs:')),
+    'every short is a playable rs: item');
+  assert.ok(!list.some((m) => /ReelTalk/i.test(m.title)),
+    'the ReelTalk podcast shelf is excluded');
+  const ids = list.map((m) => m.id);
+  assert.equal(new Set(ids).size, ids.length, 'no duplicates');
+});

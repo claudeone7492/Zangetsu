@@ -166,3 +166,39 @@ live('only in-play matches carry the live badge', async () => {
     );
   }
 });
+
+// A match that is actually in play carries a signed m3u8 in the list payload;
+// resolving its `live:` url must hand back that stream. Matches that have not
+// kicked off have an empty playPath (verified: their detail endpoint returns
+// `liveType: "_UnLiveType"`), so they are allowed to resolve to nothing — the
+// badge already tells the user they are not on yet.
+live('an in-play match resolves to a playable hls source', async () => {
+  const res = await fetch(
+    'https://h5-api.aoneroom.com/wefeed-h5api-bff/live/match-list-v5?timezone=UTC&system_language=en',
+    {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        Referer: 'https://sportsnow.top/',
+        Origin: 'https://sportsnow.top',
+        Accept: 'application/json',
+      },
+    },
+  );
+  const raw = JSON.parse(await res.text());
+  const inPlayWithStream = (raw.data.list || []).find(
+    (m) => m.status === 'MatchIng' && m.playPath,
+  );
+  if (!inPlayWithStream) return; // nothing on right now — nothing to assert
+
+  const items = JSON.parse(await callProvider('moviebox', 'getLive', [{}]));
+  const item = items.find((i) => i.id === String(inPlayWithStream.id));
+  assert.ok(item, 'the in-play match is present in the feed');
+
+  const sources = JSON.parse(
+    await callProvider('moviebox', 'getVideoSources', [item.url]),
+  );
+  assert.ok(sources.length >= 1, 'an in-play match yields a source');
+  assert.ok(sources[0].url, 'the source carries a url');
+  assert.equal(sources[0].container, 'hls', 'live streams are hls');
+});

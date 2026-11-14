@@ -18,6 +18,7 @@ import 'package:watch_app/core/models/home_section.dart';
 import 'package:watch_app/core/models/media_item.dart';
 import 'package:watch_app/core/models/provider_info.dart';
 import 'package:watch_app/core/repository/catalogue_repository.dart';
+import 'package:watch_app/core/repository/source_repository.dart';
 import 'package:watch_app/features/shorts/shorts_screen.dart';
 
 MediaItem _item(String id, String title, {String source = 'src1'}) => MediaItem(
@@ -28,7 +29,7 @@ MediaItem _item(String id, String title, {String source = 'src1'}) => MediaItem(
   sourceId: source,
 );
 
-class _FakeCatalogueRepository implements CatalogueRepository {
+class _FakeCatalogueRepository implements CatalogueRepository, SourceRepository {
   _FakeCatalogueRepository({
     this.sections = const [],
     this.throwOnHome = false,
@@ -80,6 +81,13 @@ class _FakeCatalogueRepository implements CatalogueRepository {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  // The feed reads the SOURCE repository directly (never the Z Mode router),
+  // so every fake is registered under both interfaces.
+  void register(_FakeCatalogueRepository repo) {
+    sl.registerSingleton<CatalogueRepository>(repo);
+    sl.registerSingleton<SourceRepository>(repo);
+  }
+
   Future<void> pumpShorts(WidgetTester tester) async {
     await tester.binding.setSurfaceSize(const Size(1000, 1800));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -93,7 +101,7 @@ void main() {
   testWidgets('renders a feed gathered from the installed sources', (
     tester,
   ) async {
-    sl.registerSingleton<CatalogueRepository>(
+    register(
       _FakeCatalogueRepository(
         sections: [
           HomeSection(
@@ -115,7 +123,7 @@ void main() {
   testWidgets('the vertical pager advances the position read-out', (
     tester,
   ) async {
-    sl.registerSingleton<CatalogueRepository>(
+    register(
       _FakeCatalogueRepository(
         sections: [
           HomeSection(
@@ -139,7 +147,7 @@ void main() {
   testWidgets('a source that returns nothing yields the empty state', (
     tester,
   ) async {
-    sl.registerSingleton<CatalogueRepository>(_FakeCatalogueRepository());
+    register(_FakeCatalogueRepository());
 
     await pumpShorts(tester);
     await tester.pumpAndSettle();
@@ -149,7 +157,7 @@ void main() {
   });
 
   testWidgets('a source that throws does not sink the feed', (tester) async {
-    sl.registerSingleton<CatalogueRepository>(
+    register(
       _FakeCatalogueRepository(throwOnHome: true),
     );
 
@@ -165,7 +173,7 @@ void main() {
   testWidgets('manga/novel items are excluded from the video feed', (
     tester,
   ) async {
-    sl.registerSingleton<CatalogueRepository>(
+    register(
       _FakeCatalogueRepository(
         sections: [
           HomeSection(
@@ -196,7 +204,7 @@ void main() {
   testWidgets('every page carries the TikTok-style action rail', (
     tester,
   ) async {
-    sl.registerSingleton<CatalogueRepository>(
+    register(
       _FakeCatalogueRepository(
         sections: [
           HomeSection(title: 'Trending', items: [_item('a', 'Alpha')]),
@@ -217,7 +225,7 @@ void main() {
   testWidgets('prewarm gathers the feed while the tab is still off-screen', (
     tester,
   ) async {
-    sl.registerSingleton<CatalogueRepository>(
+    register(
       _FakeCatalogueRepository(
         sections: [
           HomeSection(title: 'Trending', items: [_item('a', 'Alpha')]),
@@ -239,7 +247,7 @@ void main() {
   });
 
   testWidgets('an off-screen tab without prewarm does no work', (tester) async {
-    sl.registerSingleton<CatalogueRepository>(
+    register(
       _FakeCatalogueRepository(
         sections: [
           HomeSection(title: 'Trending', items: [_item('a', 'Alpha')]),
@@ -285,7 +293,7 @@ void main() {
         ],
       },
     );
-    sl.registerSingleton<CatalogueRepository>(repo);
+    register(repo);
 
     await pumpShorts(tester);
     await tester.pumpAndSettle();

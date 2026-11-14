@@ -108,4 +108,23 @@ void main() {
     on = true;
     expect(router.sourceId, 'zm');
   });
+
+  // The Shorts feed and the Live TV screen walk every installed source and
+  // pass its id to `home`. Under Z Mode the toggle would otherwise send those
+  // calls to the metadata catalogue, filling the feed with AniList/TMDB rows
+  // instead of each source's own. A named source id always means "that source".
+  test('a named sourceId always routes to the source, even with the toggle on',
+      () async {
+    on = true;
+    await router.home(sourceId: 'goodshort');
+    expect(source.calls, contains('Symbol("home")'));
+    expect(meta.calls, isEmpty);
+  });
+
+  test('the metadata pseudo-source id still routes to metadata', () async {
+    on = true;
+    await router.home(sourceId: 'zm');
+    expect(meta.calls, contains('Symbol("home")'));
+    expect(source.calls, isEmpty);
+  });
 }

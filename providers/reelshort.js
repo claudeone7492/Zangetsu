@@ -146,6 +146,34 @@ function popular(opts) {
   }).catch(function () { return []; });
 }
 
+// ── shorts feed ─────────────────────────────────────────────────────────────
+// Every ReelShort book is a short drama, so the home shelves are the feed.
+// ReelTalk is a podcast shelf (its books carry a `Podcast` theme), not a
+// drama, so it is skipped. Shelves overlap heavily, so de-duplicate by id.
+function _isPodcast(b) {
+  var themes = (b && b.theme) || [];
+  for (var i = 0; i < themes.length; i++) {
+    if (String(themes[i]).toLowerCase() === 'podcast') return true;
+  }
+  return false;
+}
+
+function getShorts(opts) {
+  return _homeInfo().then(function (shelves) {
+    var out = [], seen = {};
+    for (var i = 0; i < shelves.length; i++) {
+      var books = shelves[i].books || [];
+      for (var j = 0; j < books.length; j++) {
+        var b = books[j];
+        if (!b || _isPodcast(b)) continue;
+        var m = _mapBook(b);
+        if (m && !seen[m.id]) { seen[m.id] = 1; out.push(m); }
+      }
+    }
+    return out;
+  }).catch(function () { return []; });
+}
+
 // ── search ──────────────────────────────────────────────────────────────────
 function search(query, page, opts) {
   var q = String(query || '');
