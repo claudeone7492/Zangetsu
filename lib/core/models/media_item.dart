@@ -187,6 +187,10 @@ class MediaItem extends Equatable {
     String? imdbId,
     String? savedFrom,
     int? savedAtMs,
+    String? liveBadge,
+    String? liveInfo,
+    int? liveStartMs,
+    bool clearLiveStart = false,
   }) => MediaItem(
     id: id,
     title: title,
@@ -218,9 +222,9 @@ class MediaItem extends Equatable {
     score: score,
     year: year,
     isAdult: isAdult,
-    liveBadge: liveBadge,
-    liveInfo: liveInfo,
-    liveStartMs: liveStartMs,
+    liveBadge: liveBadge ?? this.liveBadge,
+    liveInfo: liveInfo ?? this.liveInfo,
+    liveStartMs: clearLiveStart ? null : (liveStartMs ?? this.liveStartMs),
   );
 
   @override

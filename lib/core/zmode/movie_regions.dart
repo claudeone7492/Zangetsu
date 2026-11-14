@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
 import '../hive/safe_box.dart';
+import 'metadata_filters.dart';
 import 'zmode_prefs.dart';
 
 /// The Movies & TV sub-menu: a regional/category cut of the film catalogue.
@@ -38,6 +39,44 @@ extension MovieRegionX on MovieRegion {
   /// The plain movie catalogue (no discover filter) — Home renders TMDB's own
   /// rows for it.
   bool get isAll => this == MovieRegion.all;
+
+  /// The discover constraints this cut maps to, or null for [MovieRegion.all].
+  ///
+  /// This is the one place a region is turned into catalogue filters, so the
+  /// Home sub-menu's fixed rows ([rows]) and the Search landing's discover
+  /// pills both describe the same cut: origin country (and, for Cartoons, the
+  /// Animation genre). `with_origin_country` — not `region` — is what filters
+  /// by a film's country of origin, which is why the rows carry it too.
+  MetaFilters? get filters => switch (this) {
+    MovieRegion.all => null,
+    MovieRegion.hollywood => const MetaFilters(originCountry: 'US'),
+    MovieRegion.bollywood => const MetaFilters(originCountry: 'IN'),
+    MovieRegion.nollywood => const MetaFilters(originCountry: 'NG'),
+    MovieRegion.cartoons => const MetaFilters(genres: ['Animation']),
+  };
+
+  /// Whether [f]'s discover constraints are exactly this cut. Used to light the
+  /// pill when the landing's filters happen to match a region.
+  bool matches(MetaFilters f) {
+    final own = filters;
+    if (own == null) return false;
+    if (f.originCountry != own.originCountry) return false;
+    if (own.genres.isEmpty) return true;
+    return own.genres.every(f.genres.contains);
+  }
+
+  /// [f] re-based on this cut: the region's origin/genre constraints replace
+  /// whatever origin/genre the landing already had, while every other filter
+  /// (year, sort, adult) is kept. [MovieRegion.all] clears just those two.
+  MetaFilters applyTo(MetaFilters f) {
+    final own = filters;
+    return f.copyWith(
+      clearCountry: true,
+      clearLanguage: true,
+      genres: own?.genres ?? const [],
+      originCountry: own?.originCountry,
+    );
+  }
 
   /// The `/discover/movie` rows for this region, or null for [MovieRegion.all].
   List<MovieRow>? get rows => switch (this) {

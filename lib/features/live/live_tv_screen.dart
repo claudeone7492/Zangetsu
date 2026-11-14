@@ -1,9 +1,12 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
+import '../../core/live/live_match_enrichment.dart';
+import '../../core/live/live_match_format.dart';
 import '../../core/models/home_section.dart';
 import '../../core/models/media_item.dart';
 import '../../core/playback/playback_prefs.dart';
@@ -110,6 +113,45 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   /// prepended to the rails as a synthetic "Live Sports" row when non-empty.
   List<MediaItem> _sports = const [];
 
+  /// Fills in the score / clock / half-time state on the sports cards, then
+  /// pushes the enriched list (the scoreboard is a network hop, so the rail
+  /// first paints with the sources' own badges). Reset on every load.
+  Future<void> _enrichSports(List<MediaItem> sports) async {
+    if (sports.isEmpty) return;
+    try {
+      final enriched = await LiveMatchEnrichment(
+        sl<Dio>(),
+      ).enrich(sports).timeout(const Duration(seconds: 12));
+      if (!mounted || !identical(_sports, sports)) return;
+      setState(() => _sports = enriched);
+    } catch (_) {
+      // The rail already shows the sources' badges; a dead scoreboard is fine.
+    }
+  }
+
+  /// Keeps an unstarted fixture's countdown honest while the rail is on screen.
+  void _tickCountdowns() {
+    final now = DateTime.now();
+    var changed = false;
+    final next = <MediaItem>[];
+    for (final m in _sports) {
+      final start = m.liveStartMs;
+      final badge = m.liveBadge?.toUpperCase();
+      if (start == null || badge == 'LIVE' || badge == 'FT') {
+        next.add(m);
+        continue;
+      }
+      final countdown = liveCountdown(start, now);
+      if (countdown != null && countdown != m.liveBadge) {
+        changed = true;
+        next.add(m.copyWith(liveBadge: countdown));
+      } else {
+        next.add(m);
+      }
+    }
+    if (changed) setState(() => _sports = next);
+  }
+
   /// 0 = "All channels", otherwise an index into [_categories]. Applied to
   /// browse AND search, so the bar stays meaningful once a query is typed.
   int _category = 0;
@@ -122,15 +164,24 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   bool _searchFailed = false;
   List<MediaItem> _results = const [];
 
+  /// Recomputes upcoming-fixture countdowns, so "in 12m" becomes "in 11m" as
+  /// the page sits open rather than freezing at whatever the source returned.
+  Timer? _countdownTimer;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+    _countdownTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _tickCountdowns(),
+    );
   }
 
   @override
   void dispose() {
     _debounce?.cancel();
+    _countdownTimer?.cancel();
     _queryController.dispose();
     super.dispose();
   }
@@ -159,6 +210,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
         _sports = sports;
         _loading = false;
       });
+      _enrichSports(sports);
     } catch (_) {
       if (!mounted) return;
       setState(() {

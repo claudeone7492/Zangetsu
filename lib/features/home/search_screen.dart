@@ -14,6 +14,7 @@ import '../../core/ui/app_toast.dart';
 import '../../core/zmode/zmode_module.dart';
 import '../../core/zmode/zmode_ids.dart';
 import '../../core/zmode/metadata_filters.dart';
+import '../../core/zmode/movie_regions.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
 import '../../core/mode/content_mode.dart';
@@ -882,34 +883,39 @@ class _SearchViewState extends State<_SearchView>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _searchBar(),
-            const SizedBox(height: 12),
-            // Source line — what's being searched, one line of text, tap to
-            // open the source picker. Shown idle too, so scope is always known.
-            // Library scope queries the metadata catalogue, not a source, so
-            // this (and the picker it opens) is Sources-only.
-            if (widget.scope == SearchScope.sources) _sourceLine(),
-            // Control row — ecosystem tabs (or a result count once scoped to a
-            // single source) on the left, sort + filter actions on the right.
-            _controlRow(modeSources),
-            // What the catalogue is currently narrowed to, spelled out.
-            // Arriving here from a genre or tag chip, the results are already
-            // filtered before you have typed anything — without this the
-            // screen just looks like a browse that picked those titles. The
-            // discover landing keeps its own filter pills instead.
-            if (widget.scope == SearchScope.library && !_showDiscoverLanding)
-              _activeFilterChips(),
-            // Per-source result pills — direct jump to one source's results.
-            // Only meaningful once the scope is Sources.
-            if (widget.scope == SearchScope.sources) _sourcePillsRow(),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Divider(
-                height: 1,
-                thickness: 1,
-                color: AppColors.hairline,
+            // The discover landing drops this whole block: its own filter
+            // pills sit straight under the search bar, so a control row and a
+            // rule here only pushed them ~60px down the page for nothing.
+            if (!_showDiscoverLanding) ...[
+              const SizedBox(height: 12),
+              // Source line — what's being searched, one line of text, tap to
+              // open the source picker. Shown idle too, so scope is always
+              // known. Library scope queries the metadata catalogue, not a
+              // source, so this (and the picker it opens) is Sources-only.
+              if (widget.scope == SearchScope.sources) _sourceLine(),
+              // Control row — ecosystem tabs (or a result count once scoped to
+              // a single source) on the left, sort + filter actions on the
+              // right.
+              _controlRow(modeSources),
+              // What the catalogue is currently narrowed to, spelled out.
+              // Arriving here from a genre or tag chip, the results are already
+              // filtered before you have typed anything — without this the
+              // screen just looks like a browse that picked those titles. The
+              // discover landing keeps its own filter pills instead.
+              if (widget.scope == SearchScope.library) _activeFilterChips(),
+              // Per-source result pills — direct jump to one source's results.
+              // Only meaningful once the scope is Sources.
+              if (widget.scope == SearchScope.sources) _sourcePillsRow(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: AppColors.hairline,
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
+              const SizedBox(height: 6),
+            ],
             Expanded(
               child: BlocBuilder<SearchBloc, SearchState>(
                 builder: (context, state) {
@@ -2500,7 +2506,14 @@ class _SearchViewState extends State<_SearchView>
       ),
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       children: [
+        // Browse-by-genre leads the page: it is the metadata search's other way
+        // in, and it used to sit under the grid where it was rarely seen.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+          child: _genresEntry(),
+        ),
         if (recent.isNotEmpty) _discoverRecentRow(recent),
+        _discoverRegionRow(),
         _discoverFilterRows(),
         _discoverTabsRow(visible.length),
         if (_discoverSortOpen) _discoverSortMenu(),
@@ -2511,11 +2524,6 @@ class _SearchViewState extends State<_SearchView>
           _discoverEmpty()
         else
           _discoverPager(visible),
-        const SizedBox(height: 20),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: _genresEntry(),
-        ),
       ],
     );
   }
@@ -2615,6 +2623,39 @@ class _SearchViewState extends State<_SearchView>
             runSpacing: 8,
             children: [for (final q in recent) _recentChip(q)],
           ),
+        ],
+      ),
+    );
+  }
+
+  /// The regional cut of the catalogue — Hollywood / Bollywood / Nollywood /
+  /// Cartoons — as a scrollable row of pills, the same cuts the Movies & TV
+  /// Home sub-menu offers. A pick re-bases the discover grid on that origin
+  /// (and, for Cartoons, the Animation genre), so the landing can browse a
+  /// region without leaving Search. All clears just those two constraints and
+  /// keeps whatever year/sort the landing already had.
+  Widget _discoverRegionRow() {
+    final f = _metaFilters;
+    final anyActive = MovieRegion.values
+        .where((r) => r != MovieRegion.all)
+        .any((r) => r.matches(f));
+    return SizedBox(
+      height: 42,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+        children: [
+          for (final region in MovieRegion.values)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 6),
+              child: Center(
+                child: _discoverPill(
+                  region.label,
+                  region == MovieRegion.all ? !anyActive : region.matches(f),
+                  () => _setDiscoverFilters(region.applyTo(f)),
+                ),
+              ),
+            ),
         ],
       ),
     );

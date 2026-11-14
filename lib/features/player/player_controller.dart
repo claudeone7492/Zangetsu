@@ -27,6 +27,7 @@ import '../../core/models/episode.dart';
 import '../../core/models/provider_info.dart';
 import '../../core/models/video_source.dart';
 import '../../core/playback/hls.dart';
+import '../../core/playback/hls_segment_proxy.dart';
 import '../../core/playback/playback_prefs.dart';
 import '../../core/playback/source_health_store.dart';
 import '../../core/playback/filler_service.dart';
@@ -2940,6 +2941,20 @@ class PlayerCubit extends Cubit<PlayerState> {
         playUrl = trimmed;
         trimmedLocal = true;
       }
+    }
+    // A P2P-wrapped, header-locked playlist (StreamFree's live sports) lists
+    // segments FFmpeg can neither unwrap nor fetch without the embed headers.
+    // Rewrite it to loopback URLs the segment proxy re-fetches with those
+    // headers. Any failure keeps the original URL, so a plain source is
+    // unaffected (its playlist has no `#sf=` segments and returns null).
+    if (playUrlOverride == null &&
+        !trimmedLocal &&
+        s.container == SourceContainer.hls &&
+        playUrl.startsWith('http')) {
+      final proxied =
+          await HlsSegmentProxy.instance.rewrite(playUrl, headers: s.headers);
+      if (g != _gen || isClosed || !_lifecycle.canContinue(openToken)) return;
+      if (proxied != null) playUrl = proxied;
     }
     final plat = player.platform;
     final setupSteps = <Future<void> Function()>[];
