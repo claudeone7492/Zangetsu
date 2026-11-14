@@ -7,6 +7,7 @@ import '../models/media_item.dart';
 import '../playback/source_health_store.dart';
 import '../models/video_source.dart';
 import '../logging/app_logger.dart';
+import '../zmode/metadata_filters.dart';
 import '../zmode/zmode_ids.dart';
 import 'catalogue_repository.dart';
 
@@ -88,6 +89,12 @@ class CatalogueRouter implements CatalogueRepository {
     cache: cache,
     page: page,
   );
+
+  @override
+  Future<List<MediaItem>> searchDiscoverFeed(
+    MetaFilters filters, {
+    bool? forcedTv,
+  }) => _browse.searchDiscoverFeed(filters, forcedTv: forcedTv);
 
   @override
   Future<MediaDetail> detail(

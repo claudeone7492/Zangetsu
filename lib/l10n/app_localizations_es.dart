@@ -5947,4 +5947,47 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get autoRead => 'Auto read';
+
+  @override
+  String get searchTabAll => 'All';
+
+  @override
+  String get searchTabMovies => 'Movies';
+
+  @override
+  String get searchTabTvShows => 'TV Shows';
+
+  @override
+  String get searchFilterType => 'Type';
+
+  @override
+  String get searchFilterGenre => 'Genre';
+
+  @override
+  String get searchFilterYear => 'Year';
+
+  @override
+  String get searchFilterMovie => 'Movies';
+
+  @override
+  String get searchFilterTv => 'TV';
+
+  @override
+  String get searchFilterCartoons => 'Cartoons';
+
+  @override
+  String get searchSortPopularity => 'Popularity';
+
+  @override
+  String get searchSortRating => 'Rating';
+
+  @override
+  String get searchSortReleaseDate => 'Release date';
+
+  @override
+  String get searchSortAz => 'A–Z';
+
+  @override
+  String get searchNoResultsSubtitle =>
+      'Try another filter, or clear them and browse everything.';
 }

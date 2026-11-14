@@ -2862,5 +2862,19 @@
 	"shaderTierHighHeavy": "High-End-GPU – schwerer, schärfste",
 	"closeConfirmDoubleBackLabel": "Zurück – zweimal die Zurück-Taste drücken, um das Programm zu beenden",
 	"closeConfirmAskLabel": "Abschlussbestätigung – vor dem Verlassen des Hauses nachfragen.",
-	"closeConfirmExitImmediatelyLabel": "Direkt schließen – sofort verlassen"
+	"closeConfirmExitImmediatelyLabel": "Direkt schließen – sofort verlassen",
+        "searchTabAll": "All",
+        "searchTabMovies": "Movies",
+        "searchTabTvShows": "TV Shows",
+        "searchFilterType": "Type",
+        "searchFilterGenre": "Genre",
+        "searchFilterYear": "Year",
+        "searchFilterMovie": "Movies",
+        "searchFilterTv": "TV",
+        "searchFilterCartoons": "Cartoons",
+        "searchSortPopularity": "Popularity",
+        "searchSortRating": "Rating",
+        "searchSortReleaseDate": "Release date",
+        "searchSortAz": "A–Z",
+        "searchNoResultsSubtitle": "Try another filter, or clear them and browse everything."
 }

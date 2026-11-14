@@ -3013,5 +3013,19 @@
 	"epubExportFailed": "EPUB kaydedilemedi",
 	"export": "Dışa aktar",
 	"keepDownloadsPrivate": "İndirilenleri gizli tut",
-	"keepDownloadsPrivateSubtitle": "Yeni video indirmeleri İndirilenler klasörü yerine Zangetsu içinde kalır. Zangetsu'yu kaldırdığında silinirler. Kitap bölümleri ve dışa aktarmalar etkilenmez."
+	"keepDownloadsPrivateSubtitle": "Yeni video indirmeleri İndirilenler klasörü yerine Zangetsu içinde kalır. Zangetsu'yu kaldırdığında silinirler. Kitap bölümleri ve dışa aktarmalar etkilenmez.",
+        "searchTabAll": "All",
+        "searchTabMovies": "Movies",
+        "searchTabTvShows": "TV Shows",
+        "searchFilterType": "Type",
+        "searchFilterGenre": "Genre",
+        "searchFilterYear": "Year",
+        "searchFilterMovie": "Movies",
+        "searchFilterTv": "TV",
+        "searchFilterCartoons": "Cartoons",
+        "searchSortPopularity": "Popularity",
+        "searchSortRating": "Rating",
+        "searchSortReleaseDate": "Release date",
+        "searchSortAz": "A–Z",
+        "searchNoResultsSubtitle": "Try another filter, or clear them and browse everything."
 }

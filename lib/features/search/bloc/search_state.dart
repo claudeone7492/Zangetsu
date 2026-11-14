@@ -273,6 +273,16 @@ class SearchState extends Equatable {
   /// landing keeps the picks strip ([trending]).
   final List<HomeSection> landingRows;
 
+  /// The metadata Search landing's discover grid: the catalogue's own filtered
+  /// film/TV index, fetched whole (up to 100) so the landing can page it with
+  /// a horizontal swipe. Distinct from [filteredBrowse], which is a SOURCE's
+  /// filters-only browse and grows by infinite scroll; this one is fetched
+  /// once per filter change and paged in the UI.
+  final List<MediaItem> discoverItems;
+
+  /// True while [discoverItems] is being (re)fetched for a filter change.
+  final bool discoverLoading;
+
   /// Live title/history autocomplete shown under the field while typing.
   final List<String> suggestions;
 
@@ -377,6 +387,8 @@ class SearchState extends Equatable {
     this.error,
     this.trending = const [],
     this.landingRows = const [],
+    this.discoverItems = const [],
+    this.discoverLoading = false,
     this.suggestions = const [],
     this.aniFiltersBySource = const {},
     this.mihonFiltersBySource = const {},
@@ -725,6 +737,8 @@ class SearchState extends Equatable {
     bool clearError = false,
     List<MediaItem>? trending,
     List<HomeSection>? landingRows,
+    List<MediaItem>? discoverItems,
+    bool? discoverLoading,
     List<String>? suggestions,
     Map<String, String>? aniFiltersBySource,
     Map<String, String>? mihonFiltersBySource,
@@ -752,6 +766,8 @@ class SearchState extends Equatable {
     error: clearError ? null : (error ?? this.error),
     trending: trending ?? this.trending,
     landingRows: landingRows ?? this.landingRows,
+    discoverItems: discoverItems ?? this.discoverItems,
+    discoverLoading: discoverLoading ?? this.discoverLoading,
     suggestions: suggestions ?? this.suggestions,
     aniFiltersBySource: aniFiltersBySource ?? this.aniFiltersBySource,
     mihonFiltersBySource: mihonFiltersBySource ?? this.mihonFiltersBySource,
@@ -784,6 +800,8 @@ class SearchState extends Equatable {
     error,
     trending,
     landingRows,
+    discoverItems,
+    discoverLoading,
     suggestions,
     aniFiltersBySource,
     mihonFiltersBySource,

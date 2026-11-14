@@ -113,6 +113,13 @@ class MediaItem extends Equatable {
   /// without any caller having to ask which kind of row it is holding.
   final int? score;
 
+  /// Release/air year, when the catalogue states one (TMDB list endpoints
+  /// carry it). Drives the search grid's meta line — see [MediaItem]'s siblings
+  /// for the other non-serialized browse hints. Deliberately not serialized:
+  /// it is a listing hint, not something a saved entry needs to remember.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final int? year;
+
   /// True only when a catalogue explicitly marks this listing adult.
   final bool isAdult;
 
@@ -158,6 +165,7 @@ class MediaItem extends Equatable {
     this.genres = const [],
     this.status,
     this.score,
+    this.year,
     this.isAdult = false,
     this.liveBadge,
     this.liveInfo,
@@ -208,6 +216,7 @@ class MediaItem extends Equatable {
     genres: genres,
     status: status,
     score: score,
+    year: year,
     isAdult: isAdult,
     liveBadge: liveBadge,
     liveInfo: liveInfo,
@@ -238,6 +247,7 @@ class MediaItem extends Equatable {
     genres,
     status,
     score,
+    year,
     isAdult,
     liveBadge,
     liveInfo,

@@ -21,6 +21,7 @@ import '../models/media_detail.dart';
 import '../models/media_item.dart';
 import '../models/page_content.dart';
 import '../models/video_source.dart';
+import '../zmode/metadata_filters.dart';
 import '../playback/playback_prefs.dart';
 import '../playback/source_health_store.dart';
 import '../provider/base_provider.dart';
@@ -836,6 +837,16 @@ class SourceRepository implements CatalogueRepository {
     future.whenComplete(() => _searchInflight.remove(key));
     return future;
   }
+
+  /// Not a source capability: a discover grid is the metadata catalogue's own
+  /// index. The interface declares it so the Search landing can call one
+  /// method on either repository; a source install has no such feed, so this
+  /// stays empty and the landing keeps its rails.
+  @override
+  Future<List<MediaItem>> searchDiscoverFeed(
+    MetaFilters filters, {
+    bool? forcedTv,
+  }) async => const [];
 
   Future<({List<MediaItem> items, SourceOutcome outcome})>
   _searchStatusUncached(

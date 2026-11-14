@@ -3264,5 +3264,19 @@
         "readingProgress": "Reading progress",
         "highlights": "Highlights",
         "highlight": "Highlight",
-        "autoRead": "Auto read"
+        "autoRead": "Auto read",
+        "searchTabAll": "All",
+        "searchTabMovies": "Movies",
+        "searchTabTvShows": "TV Shows",
+        "searchFilterType": "Type",
+        "searchFilterGenre": "Genre",
+        "searchFilterYear": "Year",
+        "searchFilterMovie": "Movies",
+        "searchFilterTv": "TV",
+        "searchFilterCartoons": "Cartoons",
+        "searchSortPopularity": "Popularity",
+        "searchSortRating": "Rating",
+        "searchSortReleaseDate": "Release date",
+        "searchSortAz": "A–Z",
+        "searchNoResultsSubtitle": "Try another filter, or clear them and browse everything."
 }

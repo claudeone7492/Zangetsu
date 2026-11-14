@@ -56,6 +56,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     on<SearchSubmitted>(_onSubmitted);
     on<SearchSourceFiltersApplied>(_onSourceFiltersApplied);
     on<SearchFilteredBrowseMore>(_onFilteredBrowseMore);
+    on<SearchDiscoverRequested>(_onDiscoverRequested);
     on<SearchModeChanged>(_onModeChanged);
     on<SearchRetryRequested>(_onRetryRequested);
     // Results belong to the mode they were fetched in. The Search tab stays
@@ -912,6 +913,27 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     }
   }
 
+  /// Loads the metadata Search landing's discover grid for the requested
+  /// filters. The whole grid (up to 100) is fetched once here; the UI pages it
+  /// with a horizontal swipe, so there is no paging call to make per page.
+  Future<void> _onDiscoverRequested(
+    SearchDiscoverRequested event,
+    Emitter<SearchState> emit,
+  ) async {
+    // The landing only ever shows the grid while the query box is empty; a
+    // discover load that lands after the user started typing is stale.
+    if (state.query.trim().isNotEmpty) return;
+    emit(state.copyWith(discoverLoading: true));
+    try {
+      final items = await _repo.searchDiscoverFeed(event.filters);
+      if (isClosed || state.query.trim().isNotEmpty) return;
+      emit(state.copyWith(discoverItems: items, discoverLoading: false));
+    } catch (_) {
+      if (isClosed) return;
+      emit(state.copyWith(discoverItems: const [], discoverLoading: false));
+    }
+  }
+
   /// Mode switched — drop everything the previous mode fetched. The query text
   /// is kept so re-running it in the new mode is one tap, but nothing is
   /// searched automatically: an all-sources fan-out is expensive and the user
@@ -926,6 +948,10 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         suggestions: const [],
         sourceFilter: kAllSources,
         ecosystem: SearchEcosystem.all,
+        // The discover grid belongs to the mode it was fetched in (a manga
+        // browse has no TMDB discover index). Drop it; the landing reloads.
+        discoverItems: const [],
+        discoverLoading: false,
       ),
     );
   }

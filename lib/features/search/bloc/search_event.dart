@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../core/zmode/metadata_filters.dart';
 import 'search_state.dart';
 
 abstract class SearchEvent extends Equatable {
@@ -161,4 +162,16 @@ class SearchRetryRequested extends SearchEvent {
 
   @override
   List<Object?> get props => [sourceId];
+}
+
+/// Loads (or reloads) the metadata Search landing's discover grid for
+/// [filters]. Fired on first landing and on every pill/category change; the
+/// bloc fetches the whole grid once (up to 100) and the UI pages it by swipe.
+class SearchDiscoverRequested extends SearchEvent {
+  const SearchDiscoverRequested(this.filters);
+
+  final MetaFilters filters;
+
+  @override
+  List<Object?> get props => [filters];
 }

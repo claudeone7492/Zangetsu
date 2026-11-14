@@ -10299,6 +10299,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Auto read'**
   String get autoRead;
+
+  /// No description provided for @searchTabAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get searchTabAll;
+
+  /// No description provided for @searchTabMovies.
+  ///
+  /// In en, this message translates to:
+  /// **'Movies'**
+  String get searchTabMovies;
+
+  /// No description provided for @searchTabTvShows.
+  ///
+  /// In en, this message translates to:
+  /// **'TV Shows'**
+  String get searchTabTvShows;
+
+  /// No description provided for @searchFilterType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get searchFilterType;
+
+  /// No description provided for @searchFilterGenre.
+  ///
+  /// In en, this message translates to:
+  /// **'Genre'**
+  String get searchFilterGenre;
+
+  /// No description provided for @searchFilterYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get searchFilterYear;
+
+  /// No description provided for @searchFilterMovie.
+  ///
+  /// In en, this message translates to:
+  /// **'Movies'**
+  String get searchFilterMovie;
+
+  /// No description provided for @searchFilterTv.
+  ///
+  /// In en, this message translates to:
+  /// **'TV'**
+  String get searchFilterTv;
+
+  /// No description provided for @searchFilterCartoons.
+  ///
+  /// In en, this message translates to:
+  /// **'Cartoons'**
+  String get searchFilterCartoons;
+
+  /// No description provided for @searchSortPopularity.
+  ///
+  /// In en, this message translates to:
+  /// **'Popularity'**
+  String get searchSortPopularity;
+
+  /// No description provided for @searchSortRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get searchSortRating;
+
+  /// No description provided for @searchSortReleaseDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Release date'**
+  String get searchSortReleaseDate;
+
+  /// No description provided for @searchSortAz.
+  ///
+  /// In en, this message translates to:
+  /// **'A–Z'**
+  String get searchSortAz;
+
+  /// No description provided for @searchNoResultsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another filter, or clear them and browse everything.'**
+  String get searchNoResultsSubtitle;
 }
 
 class _AppLocalizationsDelegate

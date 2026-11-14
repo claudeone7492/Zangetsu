@@ -2862,5 +2862,19 @@
 	"shaderTierHighHeavy": "Carte graphique haut de gamme — plus lourde, plus performante",
 	"closeConfirmDoubleBackLabel": "Retour arrière — appuyez deux fois sur la touche retour pour quitter",
 	"closeConfirmAskLabel": "Confirmation de fermeture — demandez avant de partir",
-	"closeConfirmExitImmediatelyLabel": "Fermer directement — sortir immédiatement"
+	"closeConfirmExitImmediatelyLabel": "Fermer directement — sortir immédiatement",
+        "searchTabAll": "All",
+        "searchTabMovies": "Movies",
+        "searchTabTvShows": "TV Shows",
+        "searchFilterType": "Type",
+        "searchFilterGenre": "Genre",
+        "searchFilterYear": "Year",
+        "searchFilterMovie": "Movies",
+        "searchFilterTv": "TV",
+        "searchFilterCartoons": "Cartoons",
+        "searchSortPopularity": "Popularity",
+        "searchSortRating": "Rating",
+        "searchSortReleaseDate": "Release date",
+        "searchSortAz": "A–Z",
+        "searchNoResultsSubtitle": "Try another filter, or clear them and browse everything."
 }

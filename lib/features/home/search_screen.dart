@@ -19,7 +19,6 @@ import '../../core/di/injector.dart';
 import '../../core/mode/content_mode.dart';
 import '../../core/mode/content_mode_cubit.dart';
 import '../../core/models/media_detail.dart';
-import '../../core/models/home_section.dart';
 import '../../core/models/media_item.dart';
 import '../../core/models/provider_info.dart';
 import '../../core/playback/my_list.dart';
@@ -42,7 +41,6 @@ import '../../core/zmode/metadata_repository.dart';
 import '../../core/zmode/zmode_prefs.dart';
 import '../../l10n/l10n.dart';
 import '../../l10n/ui_strings.dart';
-import '../../core/ui/content_row.dart';
 import '../../core/ui/media_info_sheet.dart';
 import '../../core/ui/row_skeleton.dart';
 import '../../core/ui/source_switcher.dart';
@@ -336,6 +334,13 @@ class _SearchViewState extends State<_SearchView>
       _applyMetaFilters();
     }
     _checkVoice();
+    // The metadata landing opens on the catalogue's own discover grid, so
+    // fetch it once up front (up to 100 items; the UI pages it by swipe).
+    // Deferred a frame: the bloc is provided by an ancestor, not yet readable
+    // from initState.
+    if (widget.scope == SearchScope.library) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _discoverReload());
+    }
   }
 
   /// Focus the field when the Search tab is (re)selected so the keyboard is
@@ -518,9 +523,22 @@ class _SearchViewState extends State<_SearchView>
     );
   }
 
-  /// What the metadata filter sheet last returned. View state: it belongs to
-  /// this screen, not the bloc, because only this screen can open the sheet.
-  ///
+  /// What the metadata filter sheet last returned, plus the discover landing's
+  /// own view state. All view state: it belongs to this screen, not the bloc,
+  /// because only this screen can open the sheet and switch tabs. Switching
+  /// tabs only narrows the already-fetched feed, so it never costs a request.
+  /// The discover landing IS the page while Library scope is idle and no
+  /// filters-only browse has taken over.
+  bool get _showDiscoverLanding {
+    if (widget.scope != SearchScope.library) return false;
+    final s = context.read<SearchBloc>().state;
+    return s.status == SearchStatus.idle && !s.hasFilteredBrowse;
+  }
+
+  _DiscoverTab _discoverTab = _DiscoverTab.all;
+  bool _discoverSortOpen = false;
+  int _discoverPage = 0;
+
   late MetaFilters _metaFilters = initialSearchFilters(
     widget.initialFilters,
     sl.isRegistered<PlaybackPrefs>() &&
@@ -876,8 +894,10 @@ class _SearchViewState extends State<_SearchView>
             // What the catalogue is currently narrowed to, spelled out.
             // Arriving here from a genre or tag chip, the results are already
             // filtered before you have typed anything — without this the
-            // screen just looks like a browse that picked those titles.
-            if (widget.scope == SearchScope.library) _activeFilterChips(),
+            // screen just looks like a browse that picked those titles. The
+            // discover landing keeps its own filter pills instead.
+            if (widget.scope == SearchScope.library && !_showDiscoverLanding)
+              _activeFilterChips(),
             // Per-source result pills — direct jump to one source's results.
             // Only meaningful once the scope is Sources.
             if (widget.scope == SearchScope.sources) _sourcePillsRow(),
@@ -2464,11 +2484,15 @@ class _SearchViewState extends State<_SearchView>
     );
   }
 
-  /// The metadata (Z Mode) Search landing: recent searches, Browse by genre,
-  /// then the catalogue's own Home rails. A populated, browsable page rather
-  /// than the bare "search for something to watch" prompt the page collapsed
-  /// to whenever there were no recents.
+  // ── Discover landing (Z Mode / library scope) ─────────────────────────────
+  /// The metadata Search landing: the catalogue's own discover index behind
+  /// quick Type / Genre / Year filters, an All / Movies / TV Shows tab row with
+  /// a sort menu, and the results as a swipe-paged poster grid. Replaces the
+  /// old rails-and-recents page — this is a browse surface, so it reads like
+  /// one rather than like a Home page with a search field bolted on top.
   Widget _metadataLanding(SearchState state, List<String> recent) {
+    final visible = _discoverVisible(state);
+    final loading = state.discoverLoading && state.discoverItems.isEmpty;
     return ListView(
       padding: EdgeInsets.only(
         top: 4,
@@ -2476,113 +2500,550 @@ class _SearchViewState extends State<_SearchView>
       ),
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       children: [
+        if (recent.isNotEmpty) _discoverRecentRow(recent),
+        _discoverFilterRows(),
+        _discoverTabsRow(visible.length),
+        if (_discoverSortOpen) _discoverSortMenu(),
+        const SizedBox(height: 10),
+        if (loading)
+          const Padding(padding: EdgeInsets.all(20), child: SkeletonGrid())
+        else if (visible.isEmpty)
+          _discoverEmpty()
+        else
+          _discoverPager(visible),
+        const SizedBox(height: 20),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: _genresEntry(),
         ),
-        const SizedBox(height: 8),
-        if (recent.isNotEmpty) ...[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    context.l10n.recentSearches,
-                    style: _idleSectionTitle,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () async {
-                    await _history.clear();
-                    if (mounted) setState(() {});
-                  },
-                  behavior: HitTestBehavior.opaque,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 4,
-                    ),
-                    child: Text(
-                      context.l10n.clearAll,
-                      style: AppText.caption.copyWith(color: AppColors.accent),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [for (final q in recent) _recentChip(q)],
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Divider(height: 1, thickness: 1, color: AppColors.hairline),
-        ],
-        for (final section in state.landingRows) _landingRail(section),
       ],
     );
   }
 
-  /// One catalogue rail on the metadata landing. Mirrors Home's own section
-  /// row, so the two pages read the same; "See all" pages the row through
-  /// whichever repository owns its [BrowseMore].
-  Widget _landingRail(HomeSection section) {
-    final items = section.items;
-    return ContentRow(
-      title: section.title,
-      itemWidth: posterRowWidth(context),
-      itemHeight: posterRowHeight(context),
-      itemCount: items.length,
-      onSeeAll: section.more == null ? null : () => _openLandingSeeAll(section),
-      itemBuilder: (c, i) => PosterCard(
-        title: items[i].title,
-        logoItem: items[i],
-        imageUrl: items[i].cover,
-        headers: items[i].coverHeaders,
-        cellWidth: posterRowWidth(c),
-        wideImageUrl: items[i].banner,
-        genres: items[i].genres,
-        isAdult: items[i].isAdult,
-        qualityBadge: items[i].quality,
-        scoreBadge: items[i].score,
-        dubBadge: items[i].dubBadge,
-        liveBadge: items[i].liveBadge,
-        liveInfo: items[i].liveInfo,
-        tags: _tagsFor(items[i]),
-        onTap: () => _openDetail(items[i]),
-        onLongPress: () => _showInfo(items[i]),
+  /// The catalogue narrowed to whatever the tabs and filters ask for. The
+  /// fetch carries no media-type restriction — one merged discover feed — so
+  /// the tab is applied here and switching tabs never costs a request. Sort is
+  /// applied locally too: it only re-orders what is already in hand.
+  List<MediaItem> _discoverVisible(SearchState state) {
+    final items = state.discoverItems
+        .where(
+          (i) => switch (_discoverTab) {
+            _DiscoverTab.all => true,
+            _DiscoverTab.movies => !i.tmdbIsTv,
+            _DiscoverTab.tv => i.tmdbIsTv,
+          },
+        )
+        .toList();
+    switch (_metaFilters.sort) {
+      case MetaSort.score:
+        items.sort((a, b) => (b.score ?? 0).compareTo(a.score ?? 0));
+      case MetaSort.newest:
+        items.sort((a, b) => (b.year ?? 0).compareTo(a.year ?? 0));
+      case MetaSort.oldest:
+        items.sort((a, b) => (a.year ?? 0).compareTo(b.year ?? 0));
+      case MetaSort.title:
+        items.sort(
+          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+        );
+      case MetaSort.popularity:
+      case MetaSort.trending:
+        break;
+    }
+    return items;
+  }
+
+  void _discoverReload() {
+    if (!mounted) return;
+    context.read<SearchBloc>().add(SearchDiscoverRequested(_metaFilters));
+  }
+
+  void _setDiscoverFilters(MetaFilters next) {
+    setState(() => _metaFilters = next);
+    _discoverReload();
+  }
+
+  void _toggleDiscoverGenre(String genre) {
+    final genres = [..._metaFilters.genres];
+    genres.contains(genre) ? genres.remove(genre) : genres.add(genre);
+    _setDiscoverFilters(_metaFilters.copyWith(genres: genres));
+  }
+
+  void _toggleDiscoverYear(int year) {
+    _setDiscoverFilters(
+      _metaFilters.yearFrom == year
+          ? _metaFilters.copyWith(clearYear: true)
+          : _metaFilters.copyWith(yearFrom: year, yearTo: year),
+    );
+  }
+
+  Widget _discoverRecentRow(List<String> recent) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  context.l10n.recentSearches,
+                  style: _idleSectionTitle,
+                ),
+              ),
+              GestureDetector(
+                onTap: () async {
+                  await _history.clear();
+                  if (mounted) setState(() {});
+                },
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 4,
+                  ),
+                  child: Text(
+                    context.l10n.clearAll,
+                    style: AppText.caption.copyWith(color: AppColors.accent),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [for (final q in recent) _recentChip(q)],
+          ),
+        ],
       ),
     );
   }
 
-  void _openLandingSeeAll(HomeSection section) {
-    final more = section.more!;
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (_) => SeeAllScreen(
-          title: section.title,
-          items: section.items,
-          tagsFor: _tagsFor,
-          onTap: _openDetail,
-          onLongPress: _showInfo,
-          // Compare the source id, not the url — a metadata row is stamped
-          // with the Z Mode id, everything else is a real source.
-          onLoadMore: more.sourceId == ZmodeIds.sourceId
-              ? (page) => sl<MetadataRepository>().browseMore(more, page)
-              : (page) => sl<SourceRepository>().browseMore(more, page),
+  /// The Type / Genre / Year quick filters. Type's Movie and TV halves drive
+  /// the tab rather than a filter field — the two result streams are one feed
+  /// the tab narrows — so the pill reflects and moves the tab, and tapping the
+  /// active one returns to All.
+  Widget _discoverFilterRows() {
+    final thisYear = DateTime.now().year;
+    return Column(
+      children: [
+        _discoverPillRow(
+          label: context.l10n.searchFilterType,
+          children: [
+            _discoverPill(
+              context.l10n.searchFilterMovie,
+              _discoverTab == _DiscoverTab.movies,
+              () => setState(
+                () => _discoverTab = _discoverTab == _DiscoverTab.movies
+                    ? _DiscoverTab.all
+                    : _DiscoverTab.movies,
+              ),
+            ),
+            _discoverPill(
+              context.l10n.searchFilterTv,
+              _discoverTab == _DiscoverTab.tv,
+              () => setState(
+                () => _discoverTab = _discoverTab == _DiscoverTab.tv
+                    ? _DiscoverTab.all
+                    : _DiscoverTab.tv,
+              ),
+            ),
+            _discoverPill(
+              context.l10n.searchFilterCartoons,
+              _metaFilters.genres.contains(_kCartoonGenre),
+              () => _toggleDiscoverGenre(_kCartoonGenre),
+            ),
+          ],
+        ),
+        _discoverPillRow(
+          label: context.l10n.searchFilterGenre,
+          children: [
+            for (final genre in _kDiscoverGenres)
+              _discoverPill(
+                genre,
+                _metaFilters.genres.contains(genre),
+                () => _toggleDiscoverGenre(genre),
+              ),
+          ],
+        ),
+        _discoverPillRow(
+          label: context.l10n.searchFilterYear,
+          children: [
+            for (var y = thisYear; y >= thisYear - 11; y--)
+              _discoverPill(
+                '$y',
+                _metaFilters.yearFrom == y,
+                () => _toggleDiscoverYear(y),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _discoverPillRow({
+    required String label,
+    required List<Widget> children,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, bottom: 6),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 58,
+            child: Text(
+              '$label:',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppText.caption.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Expanded(
+            child: SizedBox(
+              height: 34,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(right: 16),
+                children: [
+                  for (final child in children)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: Center(child: child),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _discoverPill(String label, bool active, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 28,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: AppColors.surface2.withValues(alpha: 0.25),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            width: 1.5,
+            color: active ? AppColors.accent : AppColors.hairline,
+          ),
+        ),
+        child: Text(
+          label,
+          maxLines: 1,
+          style: AppText.caption.copyWith(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: active ? AppColors.accent : AppColors.textSecondary,
+          ),
         ),
       ),
-    ).then((_) {
-      if (mounted) setState(() {});
-    });
+    );
   }
+
+  /// All / Movies / TV Shows, the result count, and the sort control that
+  /// opens the sort menu.
+  Widget _discoverTabsRow(int count) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 2, 8, 2),
+      child: Row(
+        children: [
+          for (final tab in _DiscoverTab.values) _discoverTabButton(tab),
+          const Spacer(),
+          if (count > 0) ...[
+            const Icon(
+              Icons.grid_view_rounded,
+              size: 13,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '$count',
+              style: AppText.caption.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+          GestureDetector(
+            onTap: () => setState(() => _discoverSortOpen = !_discoverSortOpen),
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.swap_vert_rounded,
+                    size: 15,
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _discoverSortLabel(_metaFilters.sort),
+                    style: AppText.caption.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _discoverTabButton(_DiscoverTab tab) {
+    final active = _discoverTab == tab;
+    return GestureDetector(
+      onTap: () => setState(() => _discoverTab = tab),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _discoverTabLabel(tab),
+              style: AppText.body.copyWith(
+                fontWeight: FontWeight.w700,
+                color: active ? AppColors.accent : AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Container(
+              height: 2,
+              width: 22,
+              color: active ? AppColors.accent : Colors.transparent,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _discoverSortMenu() {
+    const options = <(MetaSort, IconData)>[
+      (MetaSort.popularity, Icons.trending_up_rounded),
+      (MetaSort.score, Icons.star_rounded),
+      (MetaSort.newest, Icons.calendar_today_rounded),
+      (MetaSort.title, Icons.sort_by_alpha_rounded),
+    ];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 2, 16, 2),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.hairline),
+        ),
+        child: Column(
+          children: [
+            for (final (sort, icon) in options)
+              GestureDetector(
+                onTap: () {
+                  setState(() => _discoverSortOpen = false);
+                  if (_metaFilters.sort != sort) {
+                    _setDiscoverFilters(_metaFilters.copyWith(sort: sort));
+                  }
+                },
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        icon,
+                        size: 15,
+                        color: _metaFilters.sort == sort
+                            ? AppColors.accent
+                            : AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        _discoverSortLabel(sort),
+                        style: AppText.body.copyWith(
+                          color: _metaFilters.sort == sort
+                              ? AppColors.accent
+                              : AppColors.textPrimary,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (_metaFilters.sort == sort)
+                        Icon(
+                          Icons.check_rounded,
+                          size: 15,
+                          color: AppColors.accent,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _discoverEmpty() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.search_off_rounded,
+            size: 44,
+            color: AppColors.textTertiary,
+          ),
+          const SizedBox(height: 12),
+          Text(context.l10n.noResults, style: AppText.body),
+          const SizedBox(height: 6),
+          Text(
+            context.l10n.searchNoResultsSubtitle,
+            textAlign: TextAlign.center,
+            style: AppText.caption.copyWith(color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The results grid, swiped a page at a time. A page is four rows deep, so a
+  /// whole page fits without vertical scrolling inside the outer list.
+  Widget _discoverPager(List<MediaItem> items) {
+    final cols = posterGridColumns(context);
+    final perPage = cols * 4;
+    final pages = <List<MediaItem>>[];
+    for (var i = 0; i < items.length; i += perPage) {
+      pages.add(items.sublist(i, (i + perPage).clamp(0, items.length)));
+    }
+    final cellW = posterGridCellWidth(context);
+    final cellH = cellW / posterGridAspect(context);
+    final rows = (perPage / cols).ceil();
+    final pageHeight = rows * cellH + (rows - 1) * _kDiscoverGridGap;
+    return Column(
+      children: [
+        SizedBox(
+          height: pageHeight,
+          child: PageView.builder(
+            itemCount: pages.length,
+            onPageChanged: (p) => setState(() => _discoverPage = p),
+            itemBuilder: (_, p) => _discoverPageView(pages[p], cellW, cellH),
+          ),
+        ),
+        if (pages.length > 1) ...[
+          const SizedBox(height: 10),
+          _discoverDots(pages.length),
+        ],
+      ],
+    );
+  }
+
+  Widget _discoverPageView(
+    List<MediaItem> items,
+    double cellW,
+    double cellH,
+  ) {
+    final cols = posterGridColumns(context);
+    final rows = <List<MediaItem>>[];
+    for (var i = 0; i < items.length; i += cols) {
+      rows.add(items.sublist(i, (i + cols).clamp(0, items.length)));
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          for (var r = 0; r < rows.length; r++) ...[
+            if (r > 0) const SizedBox(height: _kDiscoverGridGap),
+            Row(
+              children: [
+                for (var c = 0; c < cols; c++) ...[
+                  if (c > 0) const SizedBox(width: 12),
+                  if (c < rows[r].length)
+                    SizedBox(
+                      width: cellW,
+                      height: cellH,
+                      child: _discoverCard(rows[r][c], cellW),
+                    )
+                  else
+                    SizedBox(width: cellW),
+                ],
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _discoverCard(MediaItem item, double cellW) {
+    return PosterCard(
+      title: item.title,
+      logoItem: item,
+      imageUrl: item.cover,
+      wideImageUrl: item.banner,
+      genres: item.genres,
+      isAdult: item.isAdult,
+      headers: item.coverHeaders,
+      tags: _tagsFor(item),
+      qualityBadge: item.quality,
+      scoreBadge: item.score,
+      dubBadge: item.dubBadge,
+      liveBadge: item.liveBadge,
+      liveInfo: item.liveInfo,
+      cellWidth: cellW,
+      onTap: () => _openDetail(item),
+      onLongPress: () => _showInfo(item),
+    );
+  }
+
+  Widget _discoverDots(int count) {
+    final current = _discoverPage.clamp(0, count - 1);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (var i = 0; i < count; i++)
+          Container(
+            width: 6,
+            height: 6,
+            margin: const EdgeInsets.symmetric(horizontal: 3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: i == current
+                  ? AppColors.accent
+                  : AppColors.textTertiary.withValues(alpha: 0.5),
+            ),
+          ),
+      ],
+    );
+  }
+
+  String _discoverTabLabel(_DiscoverTab tab) => switch (tab) {
+    _DiscoverTab.all => context.l10n.searchTabAll,
+    _DiscoverTab.movies => context.l10n.searchTabMovies,
+    _DiscoverTab.tv => context.l10n.searchTabTvShows,
+  };
+
+  String _discoverSortLabel(MetaSort sort) => switch (sort) {
+    MetaSort.score => context.l10n.searchSortRating,
+    MetaSort.newest || MetaSort.oldest => context.l10n.searchSortReleaseDate,
+    MetaSort.title => context.l10n.searchSortAz,
+    _ => context.l10n.searchSortPopularity,
+  };
 
   Widget _idleView(SearchState state) {
     // Recent searches are hidden during a filtered browse — the screen is
@@ -2595,12 +3056,10 @@ class _SearchViewState extends State<_SearchView>
     // replaces "Top picks" — those results ARE what the filters asked for.
     // Falls back to trending the moment the filters are cleared.
     final browsing = state.hasFilteredBrowse;
-    // The metadata landing renders the catalogue's own rails (Netflix-style)
-    // rather than the single "Top picks" strip; a filtered browse still takes
-    // over the page, since those results ARE what the filters asked for.
-    if (widget.scope == SearchScope.library &&
-        !browsing &&
-        state.landingRows.isNotEmpty) {
+    // Library scope IS the discover landing: the catalogue's own index behind
+    // the quick filters. A filtered browse takes over instead — those results
+    // ARE what the filters asked for, so they are shown as a result grid.
+    if (widget.scope == SearchScope.library && !browsing) {
       return _metadataLanding(state, recent);
     }
     // Filter results still render here — those ARE what the filters asked for,
@@ -3792,3 +4251,33 @@ class _ActiveFilterChip extends StatelessWidget {
     );
   }
 }
+
+/// The discover landing's result tabs. All shows the merged movie + TV feed;
+/// Movies and TV Shows narrow it locally, so switching never costs a request.
+enum _DiscoverTab { all, movies, tv }
+
+/// The quick-filter genre row on the discover landing. A workable subset of
+/// the catalogue's own genre ids — the full list lives behind the tune icon.
+const List<String> _kDiscoverGenres = [
+  'Action',
+  'Adventure',
+  'Animation',
+  'Comedy',
+  'Crime',
+  'Documentary',
+  'Drama',
+  'Family',
+  'Fantasy',
+  'Horror',
+  'Mystery',
+  'Romance',
+  'Science Fiction',
+  'Thriller',
+];
+
+/// The "Cartoons" type pill toggles this genre — TMDB's Animation id, on both
+/// the movie and the TV list.
+const String _kCartoonGenre = 'Animation';
+
+/// Vertical gap between discover-grid rows, matching the app's poster grid.
+const double _kDiscoverGridGap = 16;

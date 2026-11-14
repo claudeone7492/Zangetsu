@@ -3014,5 +3014,19 @@
 	"epubExportFailed": "Não foi possível salvar o EPUB",
 	"export": "Exportar",
 	"keepDownloadsPrivate": "Manter os downloads privados",
-	"keepDownloadsPrivateSubtitle": "Os novos downloads de vídeo ficam dentro do Zangetsu em vez da pasta Downloads. Eles são apagados quando você desinstala o Zangetsu. Capítulos e exportações não são afetados."
+	"keepDownloadsPrivateSubtitle": "Os novos downloads de vídeo ficam dentro do Zangetsu em vez da pasta Downloads. Eles são apagados quando você desinstala o Zangetsu. Capítulos e exportações não são afetados.",
+        "searchTabAll": "All",
+        "searchTabMovies": "Movies",
+        "searchTabTvShows": "TV Shows",
+        "searchFilterType": "Type",
+        "searchFilterGenre": "Genre",
+        "searchFilterYear": "Year",
+        "searchFilterMovie": "Movies",
+        "searchFilterTv": "TV",
+        "searchFilterCartoons": "Cartoons",
+        "searchSortPopularity": "Popularity",
+        "searchSortRating": "Rating",
+        "searchSortReleaseDate": "Release date",
+        "searchSortAz": "A–Z",
+        "searchNoResultsSubtitle": "Try another filter, or clear them and browse everything."
 }

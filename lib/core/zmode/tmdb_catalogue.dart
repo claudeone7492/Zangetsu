@@ -465,6 +465,58 @@ class TmdbCatalogue implements VideoCatalogue {
   Future<List<MediaItem>> search(String q) =>
       _searchAllPages((page) => {'query': q, 'page': page}, forcedTv: null);
 
+  /// The search tab's discover feed: a filtered `/discover` browse over BOTH
+  /// media types, merged and aimed at [searchResultTarget] so the landing grid
+  /// fills. Distinct from [searchFiltered] in two ways the landing needs:
+  ///
+  ///  * it always interleaves movie and TV, rather than picking one side from
+  ///    [MetaFilters.format] — the All tab shows both, and the tab filter is
+  ///    applied in the UI over the merged list;
+  ///  * it pages up to [_searchPageCap] to reach the target, where a single
+  ///    `/discover` page is 20.
+  ///
+  /// [forcedTv] pins one side (the Movies / TV Shows tabs); null merges both.
+  Future<List<MediaItem>> discoverFeed(
+    MetaFilters filters, {
+    bool? forcedTv,
+  }) async {
+    final wantMovie = forcedTv != true;
+    final wantTv = forcedTv != false;
+    final lists = await Future.wait([
+      if (wantMovie) _discoverPages(filters, isTv: false),
+      if (wantTv) _discoverPages(filters, isTv: true),
+    ]);
+    if (lists.length == 1) return lists.single;
+    return _interleave(lists[0], lists[1]);
+  }
+
+  /// Pages one `/discover/{movie|tv}` query until [searchResultTarget] is
+  /// reached or the catalogue runs out, de-duplicated by url. A genre the
+  /// media type doesn't know (History on TV, say) returns nothing rather than
+  /// erroring, matching [_discoverProviderFiltered].
+  Future<List<MediaItem>> _discoverPages(
+    MetaFilters filters, {
+    required bool isTv,
+  }) async {
+    if (filters.genres.any((genre) => tmdbGenreId(genre, isTv: isTv) == null)) {
+      return const [];
+    }
+    final out = <MediaItem>[];
+    final seen = <String>{};
+    for (var page = 1; page <= _searchPageCap; page++) {
+      final params = tmdbDiscoverParams(filters, isTv: isTv, page: page);
+      final items = await _safe(
+        () => _get('/discover/${isTv ? 'tv' : 'movie'}', params),
+        forcedTv: isTv,
+      );
+      for (final i in items) {
+        if (seen.add(i.url)) out.add(i);
+      }
+      if (items.length < 20 || out.length >= searchResultTarget) break;
+    }
+    return out;
+  }
+
   /// Pages `/search/multi` until the target is reached (or the catalogue runs
   /// out), so one source's row on the search screen fills instead of stopping
   /// at TMDB's 20-per-page. Pages run sequentially: the first is what the user
@@ -606,6 +658,13 @@ class TmdbCatalogue implements VideoCatalogue {
     return d == null || d <= 0 ? null : (d * 10).round();
   }
 
+  /// Leading 4-digit year of a TMDB date (`2019-05-01`), or null when the
+  /// endpoint left the field blank (an announced title has none).
+  static int? _year(Object? v) {
+    if (v is! String || v.length < 4) return null;
+    return int.tryParse(v.substring(0, 4));
+  }
+
   static int? _runtime(Object? v) {
     if (v is num && v > 0) return v.toInt();
     // episode_run_time is a list, often with more than one entry when a show
@@ -672,6 +731,7 @@ class TmdbCatalogue implements VideoCatalogue {
             isTv: isTv,
           ),
           score: _score(m['vote_average']),
+          year: _year(isTv ? m['first_air_date'] : m['release_date']),
           isAdult: m['adult'] == true,
         ),
       );

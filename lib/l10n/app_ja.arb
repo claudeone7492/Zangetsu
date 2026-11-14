@@ -2862,5 +2862,19 @@
 	"shaderTierHighHeavy": "ハイエンドGPU - より重く、よりシャープ",
 	"closeConfirmDoubleBackLabel": "戻る — 戻るボタンを2回押して終了します",
 	"closeConfirmAskLabel": "最終確認 - 出発前に必ず確認してください",
-	"closeConfirmExitImmediatelyLabel": "すぐに閉じて、すぐに退出してください。"
+	"closeConfirmExitImmediatelyLabel": "すぐに閉じて、すぐに退出してください。",
+        "searchTabAll": "All",
+        "searchTabMovies": "Movies",
+        "searchTabTvShows": "TV Shows",
+        "searchFilterType": "Type",
+        "searchFilterGenre": "Genre",
+        "searchFilterYear": "Year",
+        "searchFilterMovie": "Movies",
+        "searchFilterTv": "TV",
+        "searchFilterCartoons": "Cartoons",
+        "searchSortPopularity": "Popularity",
+        "searchSortRating": "Rating",
+        "searchSortReleaseDate": "Release date",
+        "searchSortAz": "A–Z",
+        "searchNoResultsSubtitle": "Try another filter, or clear them and browse everything."
 }

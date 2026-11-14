@@ -606,6 +606,30 @@ class MetadataRepository implements CatalogueRepository {
     return items;
   }
 
+  @override
+  Future<List<MediaItem>> searchDiscoverFeed(
+    MetaFilters filters, {
+    bool? forcedTv,
+  }) async {
+    var safeFilters = filters;
+    if (safeFilters.adult && !_adultAllowed()) {
+      safeFilters = safeFilters.copyWith(adult: false);
+    }
+    // Only the video (TMDB) side has a discover index; an anime/manga kind
+    // falls back to a filters-only search so the grid is never empty just
+    // because the user is browsing anime.
+    if (!_isTmdb(_browseKind())) {
+      return searchFiltered('', filters: safeFilters);
+    }
+    // TMDB is the only provider with a discover index, so the landing's grid
+    // goes straight to it rather than through [_viaVideo] — the same choice
+    // [_homeForKind] makes for a region cut. A Simkl-primary install still
+    // gets a browsable grid here instead of an empty page.
+    final items = await _tmdb.discoverFeed(safeFilters, forcedTv: forcedTv);
+    items.forEach(_remember);
+    return items;
+  }
+
   /// TV's optional source recovery; ordinary catalogue search keeps its
   /// existing provider and filter behavior on phones.
   Future<List<MediaItem>> tvSearchWithSourceRecovery(

@@ -2862,5 +2862,19 @@
 	"shaderTierHighHeavy": "高階GPU－更重，更銳利",
 	"closeConfirmDoubleBackLabel": "返回 — 按兩次返回鍵退出",
 	"closeConfirmAskLabel": "最後確認——離開前請再詢問",
-	"closeConfirmExitImmediatelyLabel": "直接關閉－立即出口"
+	"closeConfirmExitImmediatelyLabel": "直接關閉－立即出口",
+        "searchTabAll": "All",
+        "searchTabMovies": "Movies",
+        "searchTabTvShows": "TV Shows",
+        "searchFilterType": "Type",
+        "searchFilterGenre": "Genre",
+        "searchFilterYear": "Year",
+        "searchFilterMovie": "Movies",
+        "searchFilterTv": "TV",
+        "searchFilterCartoons": "Cartoons",
+        "searchSortPopularity": "Popularity",
+        "searchSortRating": "Rating",
+        "searchSortReleaseDate": "Release date",
+        "searchSortAz": "A–Z",
+        "searchNoResultsSubtitle": "Try another filter, or clear them and browse everything."
 }

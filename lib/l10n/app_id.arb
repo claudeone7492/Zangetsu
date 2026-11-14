@@ -3014,5 +3014,19 @@
 	"epubExportFailed": "Tidak bisa menyimpan EPUB",
 	"export": "Ekspor",
 	"keepDownloadsPrivate": "Jaga unduhan tetap privat",
-	"keepDownloadsPrivateSubtitle": "Unduhan video baru tetap di dalam Zangetsu, bukan di folder Unduhan. Unduhan itu dihapus saat kamu mencopot Zangetsu. Bab dan hasil ekspor tidak terpengaruh."
+	"keepDownloadsPrivateSubtitle": "Unduhan video baru tetap di dalam Zangetsu, bukan di folder Unduhan. Unduhan itu dihapus saat kamu mencopot Zangetsu. Bab dan hasil ekspor tidak terpengaruh.",
+        "searchTabAll": "All",
+        "searchTabMovies": "Movies",
+        "searchTabTvShows": "TV Shows",
+        "searchFilterType": "Type",
+        "searchFilterGenre": "Genre",
+        "searchFilterYear": "Year",
+        "searchFilterMovie": "Movies",
+        "searchFilterTv": "TV",
+        "searchFilterCartoons": "Cartoons",
+        "searchSortPopularity": "Popularity",
+        "searchSortRating": "Rating",
+        "searchSortReleaseDate": "Release date",
+        "searchSortAz": "A–Z",
+        "searchNoResultsSubtitle": "Try another filter, or clear them and browse everything."
 }

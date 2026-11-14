@@ -4,6 +4,7 @@ import '../models/media_detail.dart';
 import '../models/media_item.dart';
 import '../playback/source_health_store.dart';
 import '../models/video_source.dart';
+import '../zmode/metadata_filters.dart';
 
 /// What the catalogue screens (Home, Detail, Search) need from whatever is
 /// feeding them. `SourceRepository` already satisfies this; `MetadataRepository`
@@ -32,6 +33,20 @@ abstract interface class CatalogueRepository {
     bool cache = false,
     int page = 1,
   });
+
+  /// The metadata Search landing's discover grid: a filters-only browse over
+  /// the catalogue's whole film/TV index, merged across media types and paged
+  /// to a full grid (100). Distinct from [searchStatus] with an empty query,
+  /// which stays on one media type and one page.
+  ///
+  /// [forcedTv] pins Movies (false) or TV Shows (true); null merges both for
+  /// the All tab. Empty for a source repository — only the metadata catalogue
+  /// has a discover index, so its default implementation returns nothing and
+  /// the landing keeps whatever it had.
+  Future<List<MediaItem>> searchDiscoverFeed(
+    MetaFilters filters, {
+    bool? forcedTv,
+  }) async => const [];
 
   /// [onPartial], when supplied, may be called ONCE with a usable but
   /// incomplete detail before the returned future completes: the metadata is
