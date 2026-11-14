@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../core/models/home_section.dart';
 import '../../../core/models/media_detail.dart' show MediaStatus;
 import '../../../core/models/media_item.dart';
 import '../../../core/models/provider_info.dart';
@@ -266,6 +267,12 @@ class SearchState extends Equatable {
   /// Trending titles for the idle screen (loaded once).
   final List<MediaItem> trending;
 
+  /// The catalogue's own rails for the metadata (Z Mode) landing page — the
+  /// Home rows, so the search page lands on a populated, browsable page
+  /// instead of a single "Top picks" strip. Empty for a Sources search, whose
+  /// landing keeps the picks strip ([trending]).
+  final List<HomeSection> landingRows;
+
   /// Live title/history autocomplete shown under the field while typing.
   final List<String> suggestions;
 
@@ -369,6 +376,7 @@ class SearchState extends Equatable {
     this.statusFilter = SearchStatusFilter.any,
     this.error,
     this.trending = const [],
+    this.landingRows = const [],
     this.suggestions = const [],
     this.aniFiltersBySource = const {},
     this.mihonFiltersBySource = const {},
@@ -716,6 +724,7 @@ class SearchState extends Equatable {
     String? error,
     bool clearError = false,
     List<MediaItem>? trending,
+    List<HomeSection>? landingRows,
     List<String>? suggestions,
     Map<String, String>? aniFiltersBySource,
     Map<String, String>? mihonFiltersBySource,
@@ -742,6 +751,7 @@ class SearchState extends Equatable {
     statusFilter: statusFilter ?? this.statusFilter,
     error: clearError ? null : (error ?? this.error),
     trending: trending ?? this.trending,
+    landingRows: landingRows ?? this.landingRows,
     suggestions: suggestions ?? this.suggestions,
     aniFiltersBySource: aniFiltersBySource ?? this.aniFiltersBySource,
     mihonFiltersBySource: mihonFiltersBySource ?? this.mihonFiltersBySource,
@@ -773,6 +783,7 @@ class SearchState extends Equatable {
     statusFilter,
     error,
     trending,
+    landingRows,
     suggestions,
     aniFiltersBySource,
     mihonFiltersBySource,

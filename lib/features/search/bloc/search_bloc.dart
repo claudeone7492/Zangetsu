@@ -6,6 +6,7 @@ import '../../../core/zmode/metadata_provider_prefs.dart';
 import '../../../core/di/injector.dart';
 import '../../../core/mode/content_mode.dart';
 import '../../../core/mode/content_mode_cubit.dart';
+import '../../../core/models/home_section.dart';
 import '../../../core/models/media_item.dart';
 import '../../../core/models/provider_info.dart';
 import '../../../core/playback/search_history.dart';
@@ -30,6 +31,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     TitleSuggestionService? suggestions,
     this.forceMode,
     this.fixedSourceId,
+    this.metadataLanding = false,
   }) : _repo = repo,
        _history = history,
        _prefs = prefs ?? sl<SearchPrefs>(),
@@ -93,6 +95,11 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
   /// Pins a Home Source Catalogue search to its selected source without
   /// changing the app-wide active source or saved search scope.
   final String? fixedSourceId;
+
+  /// True when this bloc backs the metadata (Z Mode) Search landing, whose
+  /// idle page renders the catalogue's own rails rather than a single "Top
+  /// picks" strip. Set by [SearchScreen] from its derived scope.
+  final bool metadataLanding;
 
   /// Hard cap on one source's search.
   ///
@@ -198,7 +205,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     SearchStarted event,
     Emitter<SearchState> emit,
   ) async {
-    if (state.trending.isNotEmpty) return;
+    if (state.trending.isNotEmpty || state.landingRows.isNotEmpty) return;
     try {
       final sections = await _repo.home(sourceId: fixedSourceId);
       // The idle "Top picks" strip wants real titles, so it takes the first
@@ -210,6 +217,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       // items are provider-extension handles or reading content, and stop at
       // the first title row.
       final items = <MediaItem>[];
+      final rows = <HomeSection>[];
       for (final section in sections) {
         final titles = section.items
             .where(
@@ -218,14 +226,23 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
                   i.type != ProviderType.manga &&
                   i.type != ProviderType.novel,
             )
-            .take(12)
             .toList();
-        if (titles.isNotEmpty) {
-          items.addAll(titles);
-          break;
+        if (titles.isEmpty) continue;
+        // The metadata landing renders the whole catalogue Home (Netflix-style
+        // rails); a Sources landing keeps only the first title rail as its
+        // "Top picks" strip, so leave [rows] empty there.
+        if (metadataLanding) {
+          rows.add(
+            HomeSection(
+              title: section.title,
+              items: titles.take(20).toList(),
+              more: section.more,
+            ),
+          );
         }
+        if (items.isEmpty) items.addAll(titles.take(12));
       }
-      emit(state.copyWith(trending: items));
+      emit(state.copyWith(trending: items, landingRows: rows));
     } catch (_) {
       /* trending is best-effort */
     }

@@ -19,6 +19,7 @@ import '../../core/di/injector.dart';
 import '../../core/mode/content_mode.dart';
 import '../../core/mode/content_mode_cubit.dart';
 import '../../core/models/media_detail.dart';
+import '../../core/models/home_section.dart';
 import '../../core/models/media_item.dart';
 import '../../core/models/provider_info.dart';
 import '../../core/playback/my_list.dart';
@@ -41,6 +42,7 @@ import '../../core/zmode/metadata_repository.dart';
 import '../../core/zmode/zmode_prefs.dart';
 import '../../l10n/l10n.dart';
 import '../../l10n/ui_strings.dart';
+import '../../core/ui/content_row.dart';
 import '../../core/ui/media_info_sheet.dart';
 import '../../core/ui/row_skeleton.dart';
 import '../../core/ui/source_switcher.dart';
@@ -166,6 +168,7 @@ class _SearchScreenState extends State<SearchScreen> {
           history: sl<SearchHistory>(),
           forceMode: widget.forceMode,
           fixedSourceId: widget.fixedSourceId,
+          metadataLanding: scope == SearchScope.library,
         );
         // SearchStarted fetches the idle landing's "Top picks" strip. Sources
         // scope has always shown it. Library (metadata) scope hid it after the
@@ -2461,6 +2464,126 @@ class _SearchViewState extends State<_SearchView>
     );
   }
 
+  /// The metadata (Z Mode) Search landing: recent searches, Browse by genre,
+  /// then the catalogue's own Home rails. A populated, browsable page rather
+  /// than the bare "search for something to watch" prompt the page collapsed
+  /// to whenever there were no recents.
+  Widget _metadataLanding(SearchState state, List<String> recent) {
+    return ListView(
+      padding: EdgeInsets.only(
+        top: 4,
+        bottom: MediaQuery.paddingOf(context).bottom,
+      ),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: _genresEntry(),
+        ),
+        const SizedBox(height: 8),
+        if (recent.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    context.l10n.recentSearches,
+                    style: _idleSectionTitle,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    await _history.clear();
+                    if (mounted) setState(() {});
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 4,
+                    ),
+                    child: Text(
+                      context.l10n.clearAll,
+                      style: AppText.caption.copyWith(color: AppColors.accent),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [for (final q in recent) _recentChip(q)],
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Divider(height: 1, thickness: 1, color: AppColors.hairline),
+        ],
+        for (final section in state.landingRows) _landingRail(section),
+      ],
+    );
+  }
+
+  /// One catalogue rail on the metadata landing. Mirrors Home's own section
+  /// row, so the two pages read the same; "See all" pages the row through
+  /// whichever repository owns its [BrowseMore].
+  Widget _landingRail(HomeSection section) {
+    final items = section.items;
+    return ContentRow(
+      title: section.title,
+      itemWidth: posterRowWidth(context),
+      itemHeight: posterRowHeight(context),
+      itemCount: items.length,
+      onSeeAll: section.more == null ? null : () => _openLandingSeeAll(section),
+      itemBuilder: (c, i) => PosterCard(
+        title: items[i].title,
+        logoItem: items[i],
+        imageUrl: items[i].cover,
+        headers: items[i].coverHeaders,
+        cellWidth: posterRowWidth(c),
+        wideImageUrl: items[i].banner,
+        genres: items[i].genres,
+        isAdult: items[i].isAdult,
+        qualityBadge: items[i].quality,
+        scoreBadge: items[i].score,
+        dubBadge: items[i].dubBadge,
+        liveBadge: items[i].liveBadge,
+        liveInfo: items[i].liveInfo,
+        tags: _tagsFor(items[i]),
+        onTap: () => _openDetail(items[i]),
+        onLongPress: () => _showInfo(items[i]),
+      ),
+    );
+  }
+
+  void _openLandingSeeAll(HomeSection section) {
+    final more = section.more!;
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => SeeAllScreen(
+          title: section.title,
+          items: section.items,
+          tagsFor: _tagsFor,
+          onTap: _openDetail,
+          onLongPress: _showInfo,
+          // Compare the source id, not the url — a metadata row is stamped
+          // with the Z Mode id, everything else is a real source.
+          onLoadMore: more.sourceId == ZmodeIds.sourceId
+              ? (page) => sl<MetadataRepository>().browseMore(more, page)
+              : (page) => sl<SourceRepository>().browseMore(more, page),
+        ),
+      ),
+    ).then((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
   Widget _idleView(SearchState state) {
     // Recent searches are hidden during a filtered browse — the screen is
     // showing filter results, not a search landing page, and the chips would
@@ -2472,6 +2595,14 @@ class _SearchViewState extends State<_SearchView>
     // replaces "Top picks" — those results ARE what the filters asked for.
     // Falls back to trending the moment the filters are cleared.
     final browsing = state.hasFilteredBrowse;
+    // The metadata landing renders the catalogue's own rails (Netflix-style)
+    // rather than the single "Top picks" strip; a filtered browse still takes
+    // over the page, since those results ARE what the filters asked for.
+    if (widget.scope == SearchScope.library &&
+        !browsing &&
+        state.landingRows.isNotEmpty) {
+      return _metadataLanding(state, recent);
+    }
     // Filter results still render here — those ARE what the filters asked for,
     // not filler. Only the unasked-for picks strip is gone.
     final trending = browsing ? state.filteredBrowse : state.trending;

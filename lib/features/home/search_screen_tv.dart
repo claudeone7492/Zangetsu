@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di/injector.dart';
 import '../../core/mode/content_mode.dart';
 import '../../core/mode/content_mode_cubit.dart';
+import '../../core/models/home_section.dart';
 import '../../core/models/media_item.dart';
 import '../../core/playback/playback_prefs.dart';
 import '../../core/profiles/viewer_profile.dart';
@@ -31,6 +32,8 @@ import '../../core/zmode/zmode_module.dart';
 import '../../core/zmode/zmode_prefs.dart';
 import '../detail/detail_screen.dart';
 import 'genres_screen_tv.dart';
+import 'home_screen_tv.dart';
+import 'see_all_screen_tv.dart';
 import 'tv_search_input_screen.dart';
 import '../search/bloc/search_bloc.dart';
 import '../search/bloc/search_event.dart';
@@ -1011,9 +1014,106 @@ class _SearchScreenTvState extends State<SearchScreenTv> {
     );
   }
 
+  /// The metadata (Z Mode) TV Search landing: Browse by genre, recent
+  /// searches, then the catalogue's own Home rails. Same populated page the
+  /// phone shows, so Search never lands on an empty view.
+  Widget _libraryLanding(SearchState state, List<String> recent) {
+    return ListView(
+      padding: const EdgeInsets.only(top: 4, bottom: 40),
+      children: [
+        _genresEntry(),
+        if (recent.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(48, 16, 48, 12),
+            child: Text(
+              context.l10n.recentSearches,
+              style: AppText.overline,
+            ),
+          ),
+          for (final q in recent)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 2),
+              child: TvListFocusable(
+                waitForKeyUp: true,
+                onTap: () {
+                  _controller.value = TextEditingValue(
+                    text: q,
+                    selection: TextSelection.collapsed(offset: q.length),
+                  );
+                  context.read<SearchBloc>().add(SearchRunRequested(q));
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.history_rounded,
+                        size: 22,
+                        color: AppColors.textTertiary,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          q,
+                          style: AppText.headline.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          const SizedBox(height: 12),
+        ],
+        for (final section in state.landingRows)
+          TvRail(
+            section: section,
+            onTap: _openDetail,
+            onSeeAll: section.more == null
+                ? null
+                : () => _openLandingSeeAll(section),
+          ),
+      ],
+    );
+  }
+
+  void _openLandingSeeAll(HomeSection section) {
+    final more = section.more!;
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => SeeAllScreenTv(
+          title: section.title,
+          items: section.items,
+          tagsFor: _tagsFor,
+          onTap: _openDetail,
+          onLoadMore: more.sourceId == ZmodeIds.sourceId
+              ? (page) => sl<MetadataRepository>().browseMore(more, page)
+              : (page) => sl<SourceRepository>().browseMore(more, page),
+        ),
+      ),
+    ).then((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
   Widget _idleView() {
     final history = widget.history;
     final recent = history?.recent() ?? const <String>[];
+    final state = context.read<SearchBloc>().state;
+    // The metadata (Z Mode) landing is a populated, browsable page: the
+    // catalogue's own Home rails, so it never collapses to the bare prompt.
+    if (_isLibrary && state.landingRows.isNotEmpty) {
+      return _libraryLanding(state, recent);
+    }
     if (history == null || recent.isEmpty) {
       return Column(
         children: [
