@@ -8,7 +8,14 @@ import '../provider/provider_registry.dart';
 
 /// The app-wide content mode. Anime is the default and covers the whole
 /// existing video app (anime + movie sources); manga/novel are reading modes.
-enum ContentMode { anime, manga, novel }
+///
+/// [shorts] is a video mode too, but a *source-backed aggregate* rather than a
+/// metadata catalogue: picking it fills Home with the short-drama sources' own
+/// rows (MovieBox, GoodShort, ReelShort, NetShort …) instead of AniList/TMDB
+/// rows. It is deliberately NOT a `StreamKind` — the dock's Reels tab already
+/// owns the autoplaying vertical feed, and this mode exists so the *menu*
+/// entry populates Home the way every other selection does.
+enum ContentMode { anime, manga, novel, shorts }
 
 /// Content kind a source id belongs to, when it can be told from the id alone.
 ///
@@ -45,6 +52,9 @@ bool sourceIdMatchesContentMode(
       ContentMode.anime => mangayomiType == MangayomiContentType.video,
       ContentMode.manga => mangayomiType == MangayomiContentType.manga,
       ContentMode.novel => mangayomiType == MangayomiContentType.novel,
+      // Shorts is a video shelf, so it takes the video family exactly as anime
+      // does — the drama catalogues are declared as video sources.
+      ContentMode.shorts => mangayomiType == MangayomiContentType.video,
     };
   }
   // Prefix-encoded reading types first, so the mode cubit's cheap id-only check
@@ -54,8 +64,9 @@ bool sourceIdMatchesContentMode(
   final declared = typeFromManifest?.call(sourceId);
   if (declared != null) return mode.matchesProvider(declared);
   // Unknown id, no resolver: video. `cs:`/`ani:`/Stremio/`zm` are all video by
-  // construction, so this is correct for every remaining real id.
-  return mode == ContentMode.anime;
+  // construction, so this is correct for every remaining real id — and Shorts
+  // is a video shelf, so it takes them too.
+  return mode == ContentMode.anime || mode == ContentMode.shorts;
 }
 
 /// [sourceIdMatchesContentMode] with the manifest resolver already wired to the
@@ -118,22 +129,30 @@ extension ContentModeX on ContentMode {
     ContentMode.anime => 'Streaming',
     ContentMode.manga => 'Manga',
     ContentMode.novel => 'Novel',
+    ContentMode.shorts => 'Shorts',
   };
 
   IconData get icon => switch (this) {
     ContentMode.anime => Icons.play_circle_outline_rounded,
     ContentMode.manga => Icons.auto_stories_outlined,
     ContentMode.novel => Icons.menu_book_outlined,
+    ContentMode.shorts => Icons.bolt_outlined,
   };
 
-  bool get isReading => this != ContentMode.anime;
+  /// Manga/novel read; anime and shorts watch. Shorts is video, so it must not
+  /// inherit the reading wording ("Chapter") that a bare `!= anime` would give
+  /// it.
+  bool get isReading => this == ContentMode.manga || this == ContentMode.novel;
 
-  /// Which provider types belong to this mode. Anime mode keeps both video
-  /// types so today's mixed anime/movie source list is unchanged.
+  /// Which provider types belong to this mode. Anime and Shorts both keep the
+  /// video types — the short-drama sources are declared `movie` — so a source
+  /// is never dropped from either by the type alone; Shorts narrows further to
+  /// the drama catalogues in [shortsSourceIds].
   bool matchesProvider(ProviderType t) => switch (this) {
     ContentMode.anime => t == ProviderType.anime || t == ProviderType.movie,
     ContentMode.manga => t == ProviderType.manga,
     ContentMode.novel => t == ProviderType.novel,
+    ContentMode.shorts => t == ProviderType.anime || t == ProviderType.movie,
   };
 }
 

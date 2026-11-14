@@ -152,7 +152,10 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
   /// the app's ContentMode, so you can see your manga list without switching
   /// the whole app into manga mode. Tracker screens ignore it — a tracker
   /// answers for one kind already.
-  ContentMode _kind = sl<ContentModeCubit>().state;
+  ///
+  /// Shorts has no list of its own — it shares the video list — so the mode is
+  /// folded into anime here; the tabs never offer a Shorts kind.
+  ContentMode _kind = listKindOf(sl<ContentModeCubit>().state);
   bool _sortDesc = ListSortPrefs.descending;
   VoidCallback? _shuffleAction;
 
@@ -346,7 +349,9 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
             : switch (widget.pinnedKind ?? sl<ContentModeCubit>().state) {
                 ContentMode.manga => l10n.yourSavedMangaList,
                 ContentMode.novel => l10n.yourSavedNovelList,
-                ContentMode.anime => l10n.yourSavedAnimeList,
+                // Shorts shares the video list, so it reads as the video one.
+                ContentMode.anime || ContentMode.shorts =>
+                  l10n.yourSavedAnimeList,
               };
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -799,7 +804,10 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
   );
 
   Widget _kindTabs(BuildContext context) {
-    const kinds = ContentMode.values;
+    // Shorts shares the video list, so it is not a tab of its own.
+    final kinds = ContentMode.values
+        .where((m) => m != ContentMode.shorts)
+        .toList();
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 2, 16, 10),
       child: LayoutBuilder(
@@ -1323,7 +1331,7 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
 /// type instead of the generic "Nothing".
 String myListFilteredEmptyMessage(AppLocalizations l10n, ContentMode mode) =>
     switch (mode) {
-      ContentMode.anime => l10n.nothingHereInThisFilter,
+      ContentMode.anime || ContentMode.shorts => l10n.nothingHereInThisFilter,
       ContentMode.manga => l10n.noMangaHereInThisFilter,
       ContentMode.novel => l10n.noNovelsHereInThisFilter,
     };
@@ -1332,7 +1340,13 @@ String myListFilteredEmptyMessage(AppLocalizations l10n, ContentMode mode) =>
 /// ANY type). Anime mode's wording is unchanged.
 String myListEmptyMessage(AppLocalizations l10n, ContentMode mode) =>
     switch (mode) {
-      ContentMode.anime => l10n.titlesYouAddAppearHere,
+      ContentMode.anime || ContentMode.shorts => l10n.titlesYouAddAppearHere,
       ContentMode.manga => l10n.mangaYouAddAppearHere,
       ContentMode.novel => l10n.novelsYouAddAppearHere,
     };
+
+/// The list kind that backs [mode]. Shorts is a video shelf with no list of its
+/// own, so it reads and writes the video (anime) list — the same list the
+/// Streaming mode uses — rather than opening onto an empty Shorts tab.
+ContentMode listKindOf(ContentMode mode) =>
+    mode == ContentMode.shorts ? ContentMode.anime : mode;

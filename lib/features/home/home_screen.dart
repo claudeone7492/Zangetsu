@@ -225,7 +225,18 @@ class _HomeViewState extends State<_HomeView>
                 _slashTarget != null &&
                 _slashCtrl.value >= 0.5) {
               _slashSwapped = true;
-              sl<ContentModeCubit>().setMode(_slashTarget!);
+              final target = _slashTarget!;
+              final wasShorts =
+                  sl<ContentModeCubit>().state == ContentMode.shorts;
+              sl<ContentModeCubit>().setMode(target);
+              // Shorts keeps the current (video) source, so no source change
+              // fires the reload above — drive it here, both entering Shorts
+              // and leaving it, or Home would linger on the other mode's rows.
+              // Manga/Novel change the source and reload themselves; reloading
+              // them too is harmless (latest-wins) and matches the dock.
+              if (target == ContentMode.shorts || wasShorts) {
+                context.read<HomeCubit>().load(reset: true);
+              }
             }
           })
           ..addStatusListener((status) {
@@ -2109,6 +2120,10 @@ class _HomeViewState extends State<_HomeView>
                             ContentMode.novel,
                           ),
                           ContentMode.anime => false,
+                          // Shorts browses the drama sources' aggregate, not
+                          // the active source, so it never shows the no-source
+                          // guide — the aggregate drops dead sources itself.
+                          ContentMode.shorts => false,
                         };
                   return CustomScrollView(
                     controller: _homeScroll,
@@ -2513,11 +2528,12 @@ class _NoSourcesGuide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = mode.label; // Streaming / Manga / Novel
+    final label = mode.label; // Streaming / Manga / Novel / Shorts
     final (icon, noun) = switch (mode) {
       ContentMode.anime => (Icons.live_tv_rounded, 'shows'),
       ContentMode.manga => (Icons.auto_stories_rounded, 'manga'),
       ContentMode.novel => (Icons.menu_book_rounded, 'novels'),
+      ContentMode.shorts => (Icons.bolt_rounded, 'shorts'),
     };
     return Center(
       child: Padding(

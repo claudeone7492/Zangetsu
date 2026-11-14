@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/zmode/metadata_filters.dart';
 import '../../../core/zmode/metadata_provider_prefs.dart';
 import '../../../core/di/injector.dart';
 import '../../../core/mode/content_mode.dart';
@@ -185,6 +186,12 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       currentSourceOnly: prefs.currentSourceOnly,
     );
   }
+
+  /// The filters the discover grid was last fetched with, so a mode/provider
+  /// switch can refetch the same grid against the new catalogue instead of
+  /// leaving the landing blank (see [_onModeChanged]). Null until the landing
+  /// has issued its first fetch.
+  MetaFilters? _lastDiscoverFilters;
 
   /// Debounce for the LIGHTWEIGHT autocomplete only — never the heavy search.
   Timer? _suggestDebounce;
@@ -923,6 +930,9 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     // The landing only ever shows the grid while the query box is empty; a
     // discover load that lands after the user started typing is stale.
     if (state.query.trim().isNotEmpty) return;
+    // Remembered so a mode switch can refetch the same grid in the new mode's
+    // catalogue — see [_onModeChanged].
+    _lastDiscoverFilters = event.filters;
     emit(state.copyWith(discoverLoading: true));
     try {
       final items = await _repo.searchDiscoverFeed(event.filters);
@@ -949,11 +959,25 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         sourceFilter: kAllSources,
         ecosystem: SearchEcosystem.all,
         // The discover grid belongs to the mode it was fetched in (a manga
-        // browse has no TMDB discover index). Drop it; the landing reloads.
+        // browse has no TMDB discover index). Drop it and refetch for the new
+        // mode's catalogue — without the refetch the landing stayed blank until
+        // the screen was reopened, since nothing else re-issued the request.
         discoverItems: const [],
         discoverLoading: false,
       ),
     );
+    _reloadDiscoverIfIdle();
+  }
+
+  /// Re-issues the last discover fetch so the landing refills after its grid
+  /// was dropped (a mode/provider switch). No-op when the grid was never
+  /// fetched or the user has started typing — the landing only shows it idle.
+  void _reloadDiscoverIfIdle() {
+    final filters = _lastDiscoverFilters;
+    if (filters == null || isClosed) return;
+    // Queued rather than run inline: the emitter belongs to the handler that is
+    // still unwinding, and re-entering it here would emit after it completes.
+    add(SearchDiscoverRequested(filters));
   }
 
   void _onProviderChanged() {

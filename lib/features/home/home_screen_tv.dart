@@ -735,6 +735,8 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
               ContentMode.novel,
             ),
             ContentMode.anime => false,
+            // Shorts browses the drama aggregate, not the active source.
+            ContentMode.shorts => false,
             null => false,
           };
 
@@ -1191,6 +1193,7 @@ class _TvNoSourcesGuide extends StatelessWidget {
       ContentMode.anime => (Icons.live_tv_rounded, 'shows'),
       ContentMode.manga => (Icons.auto_stories_rounded, 'manga'),
       ContentMode.novel => (Icons.menu_book_rounded, 'novels'),
+      ContentMode.shorts => (Icons.bolt_rounded, 'shorts'),
     };
     final l10n = context.l10n;
     return Center(

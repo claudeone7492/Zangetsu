@@ -326,8 +326,13 @@ SourceRecord sourceRecordOf(String id) {
 
 /// The catalogue kind to browse: the content mode, with Movie/TV split out of
 /// `anime` by the stream kind. Pure, so it is unit-testable.
+///
+/// `shorts` maps to the movie kind so the search/genres surfaces still have a
+/// well-defined metadata kind to fall back on; its Home, however, is
+/// source-backed (see `HomeCubit`), not this kind's metadata rows.
 ZKind browseKindFor(ContentMode mode, StreamKind stream) => switch (mode) {
   ContentMode.manga => ZKind.manga,
   ContentMode.novel => ZKind.novel,
+  ContentMode.shorts => ZKind.movie,
   ContentMode.anime => stream == StreamKind.movie ? ZKind.movie : ZKind.anime,
 };

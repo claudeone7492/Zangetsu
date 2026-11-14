@@ -232,56 +232,60 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         // Scrollable so a short screen (or a large system font, which grows the
         // intro copy) can never clip the bottom of the layout — the screen
-        // always shows whole, scrolling instead of overflowing.
+        // always shows whole, scrolling instead of overflowing. Centred with
+        // mainAxisAlignment rather than Spacers: a flex child needs a bounded
+        // height, which the scroll view does not provide.
         child: SingleChildScrollView(
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minHeight: MediaQuery.sizeOf(context).height,
             ),
-            child: Column(
-              children: [
-                const Spacer(flex: 2),
-                const _Logo(),
-                const SizedBox(height: 18),
-                Text(
-                  context.l10n.goodToHaveYouHere,
-                  style: AppText.title,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Text(
-                    context.l10n.onboardingIntro,
-                    style: AppText.body.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const _Logo(),
+                  const SizedBox(height: 18),
+                  Text(
+                    context.l10n.goodToHaveYouHere,
+                    style: AppText.title,
                     textAlign: TextAlign.center,
                   ),
-                ),
-                const Spacer(flex: 3),
-                Column(
-                  children: [
-                    SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.4,
-                        color: AppColors.accent,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      _status,
-                      style: AppText.caption.copyWith(
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Text(
+                      context.l10n.onboardingIntro,
+                      style: AppText.body.copyWith(
                         color: AppColors.textSecondary,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 60),
-              ],
+                  ),
+                  const SizedBox(height: 48),
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        _status,
+                        style: AppText.caption.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

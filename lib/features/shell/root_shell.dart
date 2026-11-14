@@ -491,9 +491,16 @@ class _RootShellState extends State<RootShell>
                           current: (mode, ZModePrefs.streamKind),
                           onPicked: (m, k) async {
                             setState(() => _modeBarOpen = false);
+                            final wasShorts =
+                                sl<ContentModeCubit>().state ==
+                                ContentMode.shorts;
                             await ZModePrefs.setStreamKind(k);
                             await sl<ContentModeCubit>().setMode(m);
-                            if (m != ContentMode.anime) {
+                            // Shorts keeps the current (video) source, so no
+                            // source change reloads Home — do it here, entering
+                            // OR leaving Shorts. Manga/Novel change the source
+                            // and reload themselves.
+                            if (m != ContentMode.anime || wasShorts) {
                               sl<HomeCubit>().load(reset: true);
                             }
                           },
@@ -564,9 +571,15 @@ class _RootShellState extends State<RootShell>
                                 modesEnabled: ZModePrefs.enabled,
                                 onOpenShorts: _onOpenShorts,
                                 onModeSelected: (mode, kind) async {
+                                  final wasShorts =
+                                      sl<ContentModeCubit>().state ==
+                                      ContentMode.shorts;
                                   await ZModePrefs.setStreamKind(kind);
                                   await sl<ContentModeCubit>().setMode(mode);
-                                  if (mode != ContentMode.anime) {
+                                  // See the mode bar above: Shorts keeps the
+                                  // video source, so reload on entering OR
+                                  // leaving it.
+                                  if (mode != ContentMode.anime || wasShorts) {
                                     sl<HomeCubit>().load(reset: true);
                                   }
                                 },
@@ -802,7 +815,12 @@ class _LiquidNavDock extends StatelessWidget {
                                 onModeSelected(choice.mode, choice.kind),
                           ),
                       GlassMenuItem(
-                        title: context.l10n.shorts,
+                        // The menu's "Shorts" is the content-mode choice above
+                        // (it fills Home with the drama rows). This entry is the
+                        // autoplaying vertical FEED, so it carries the feed's
+                        // own name — Reels — matching the dock tab, and keeps
+                        // the feed reachable when that tab is hidden.
+                        title: context.l10n.reels,
                         icon: const Icon(Icons.bolt_rounded),
                         iconColor: AppColors.textPrimary,
                         titleStyle: const TextStyle(

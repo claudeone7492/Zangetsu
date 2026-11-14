@@ -114,7 +114,8 @@ bool hasInstalledPlaybackSources(ContentMode mode) {
     ContentMode.novel => allIds.any(
       (id) => sourceInMode(id, ContentMode.novel, types),
     ),
-    ContentMode.anime => allIds.any(
+    // Shorts plays video, so it checks the same video family as anime.
+    ContentMode.anime || ContentMode.shorts => allIds.any(
       (id) => sourceInMode(id, ContentMode.anime, types),
     ),
   };

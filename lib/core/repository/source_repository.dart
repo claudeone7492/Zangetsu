@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart' show debugPrint;
 
 import '../aniyomi/aniyomi_filters.dart';
 import '../aniyomi/aniyomi_provider.dart';
+import '../app_config.dart';
+import '../mode/content_mode.dart';
 import '../lnreader/lnreader_manager.dart';
 import '../mangayomi/mangayomi_manager.dart';
 import '../mangayomi/mangayomi_provider.dart';
@@ -20,6 +22,7 @@ import '../models/home_section.dart';
 import '../models/media_detail.dart';
 import '../models/media_item.dart';
 import '../models/page_content.dart';
+import '../models/provider_info.dart';
 import '../models/video_source.dart';
 import '../zmode/metadata_filters.dart';
 import '../playback/playback_prefs.dart';
@@ -1114,6 +1117,105 @@ class SourceRepository implements CatalogueRepository {
       return await provider.getShorts() ?? const [];
     } catch (_) {
       return const [];
+    }
+  }
+
+  /// The short-drama sources installed right now, drama catalogues first.
+  ///
+  /// [kShortsPreferredSourceIds] lead so the aggregate is dominated by the
+  /// purpose-built drama sources even when generic movie sources were installed
+  /// earlier; everything else keeps install order behind them. Reading sources
+  /// are dropped outright — a "shorts" shelf is a video idea, and a manga/novel
+  /// row belongs in its own reader.
+  List<String> shortsSourceIds() {
+    final types = manifestSourceTypes();
+    final video = loadedSources
+        .where((s) => sourceInMode(s.id, ContentMode.anime, types))
+        .map((s) => s.id)
+        .toList();
+    final preferred = video.where(kShortsPreferredSourceIds.contains).toList()
+      ..sort(
+        (a, b) => kShortsPreferredSourceIds
+            .indexOf(a)
+            .compareTo(kShortsPreferredSourceIds.indexOf(b)),
+      );
+    return [
+      ...preferred,
+      ...video.where((id) => !kShortsPreferredSourceIds.contains(id)),
+    ];
+  }
+
+  /// Home for the Shorts content mode: one named row per short-drama source,
+  /// each filled from that source's dedicated `getShorts` feed when it has one
+  /// and its own home rows otherwise.
+  ///
+  /// This is what makes the menu's Shorts entry "populate the whole page just
+  /// like the rest selections" — the same browse surface as Anime/Movie, but
+  /// sourced from the drama catalogues instead of AniList/TMDB. Unlike the
+  /// Reels tab (which autoplays a vertical feed), this is an ordinary
+  /// row-and-poster browse; tapping a title opens its Detail.
+  ///
+  /// Sources are walked concurrently and each contributes at most one row, so
+  /// the page opens as fast as the slowest source and a dead one just drops
+  /// out. Rows are capped so a device with dozens of movie sources installed
+  /// still opens onto drama, not a wall of generic rows.
+  @override
+  Future<List<HomeSection>> shortsHome() async {
+    final ids = shortsSourceIds();
+    if (ids.isEmpty) return const [];
+    final results = await Future.wait([
+      for (final id in ids.take(_maxShortsHomeSources)) _shortsRow(id),
+    ]);
+    final seen = <String>{};
+    final out = <HomeSection>[];
+    for (final row in results) {
+      if (row == null || row.items.isEmpty) continue;
+      // Drop titles already carried by an earlier (higher-priority) source, so
+      // the same drama does not appear twice under two catalogues.
+      final items = [
+        for (final item in row.items)
+          if (seen.add('${item.sourceId}:${item.id}')) item,
+      ];
+      if (items.isNotEmpty) out.add(HomeSection(title: row.title, items: items));
+    }
+    return out;
+  }
+
+  /// How many sources the Shorts Home walks. Each costs a provider round trip,
+  /// and the drama sources lead the list, so the cap only ever trims the tail
+  /// of generic movie sources.
+  static const int _maxShortsHomeSources = 12;
+
+  Future<HomeSection?> _shortsRow(String sourceId) async {
+    final name = displayName(sourceId);
+    try {
+      final shortsItems = await shorts(sourceId: sourceId);
+      if (shortsItems.isNotEmpty) {
+        return HomeSection(title: name, items: shortsItems);
+      }
+    } catch (_) {
+      // Fall through to the source's own home rows.
+    }
+    try {
+      final sections = await home(sourceId: sourceId);
+      final items = <MediaItem>[];
+      for (final section in sections) {
+        for (final item in section.items) {
+          if (item.type == ProviderType.manga ||
+              item.type == ProviderType.novel) {
+            continue;
+          }
+          // Provider-extension rows are navigation, not titles — a dead poster
+          // in a browse grid. The Shorts Home is a title browse, so skip them.
+          // Same `browse:`/`live:` handle check the provider-browse route uses.
+          final url = item.url;
+          if (url.startsWith('browse:') || url.startsWith('live:')) continue;
+          items.add(item);
+        }
+      }
+      return items.isEmpty ? null : HomeSection(title: name, items: items);
+    } catch (_) {
+      return null;
     }
   }
 

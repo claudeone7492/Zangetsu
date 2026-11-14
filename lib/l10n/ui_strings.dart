@@ -40,6 +40,7 @@ String contentModeLabel(AppLocalizations l10n, ContentMode mode) =>
       ContentMode.anime => l10n.modeStreaming,
       ContentMode.manga => l10n.modeManga,
       ContentMode.novel => l10n.modeNovel,
+      ContentMode.shorts => l10n.shorts,
     };
 
 String contentModeContentNoun(AppLocalizations l10n, ContentMode mode) =>
@@ -47,6 +48,7 @@ String contentModeContentNoun(AppLocalizations l10n, ContentMode mode) =>
       ContentMode.anime => l10n.contentShows,
       ContentMode.manga => l10n.contentManga,
       ContentMode.novel => l10n.contentNovels,
+      ContentMode.shorts => l10n.shorts,
     };
 
 String sourceOutcomeLabel(AppLocalizations l10n, SourceOutcome outcome) =>

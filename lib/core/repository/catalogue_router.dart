@@ -159,6 +159,13 @@ class CatalogueRouter implements CatalogueRepository {
   Future<List<MediaItem>> shorts({String? sourceId}) =>
       _source.shorts(sourceId: sourceId);
 
+  /// The Shorts content mode's Home always comes from the SOURCE catalogue,
+  /// never the metadata one — the mode exists to browse the drama sources'
+  /// own rows, so the Z Mode toggle must not divert it to AniList/TMDB (the
+  /// same reasoning as [home] with a named sourceId, and as the Shorts feed).
+  @override
+  Future<List<HomeSection>> shortsHome() => _source.shortsHome();
+
   @override
   Future<List<MediaItem>> browseCategory(
     String categoryId, {

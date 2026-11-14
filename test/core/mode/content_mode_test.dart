@@ -7,9 +7,12 @@ void main() {
     expect(ContentMode.anime.label, 'Streaming'); // anime mode = all video
     expect(ContentMode.manga.label, 'Manga');
     expect(ContentMode.novel.label, 'Novel');
+    expect(ContentMode.shorts.label, 'Shorts');
     expect(ContentMode.anime.isReading, isFalse);
     expect(ContentMode.manga.isReading, isTrue);
     expect(ContentMode.novel.isReading, isTrue);
+    // Shorts plays video, so it must not inherit the reading wording.
+    expect(ContentMode.shorts.isReading, isFalse);
   });
 
   test('every mode has its own icon', () {
@@ -25,6 +28,11 @@ void main() {
     expect(ContentMode.manga.matchesProvider(ProviderType.manga), isTrue);
     expect(ContentMode.novel.matchesProvider(ProviderType.novel), isTrue);
     expect(ContentMode.manga.matchesProvider(ProviderType.novel), isFalse);
+    // Shorts is a video shelf: it takes the video types exactly as anime does.
+    expect(ContentMode.shorts.matchesProvider(ProviderType.anime), isTrue);
+    expect(ContentMode.shorts.matchesProvider(ProviderType.movie), isTrue);
+    expect(ContentMode.shorts.matchesProvider(ProviderType.manga), isFalse);
+    expect(ContentMode.shorts.matchesProvider(ProviderType.novel), isFalse);
   });
 
   test('new ProviderType members round-trip by name', () {

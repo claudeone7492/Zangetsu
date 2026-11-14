@@ -1150,6 +1150,12 @@ class MetadataRepository implements CatalogueRepository {
   Future<List<MediaItem>> shorts({String? sourceId}) =>
       _src.shorts(sourceId: sourceId);
 
+  /// The metadata catalogue has no Shorts index — the mode is source-backed —
+  /// so this is empty and HomeCubit routes Shorts to the source aggregate
+  /// directly. Present only to satisfy the interface.
+  @override
+  Future<List<HomeSection>> shortsHome() async => const [];
+
   @override
   Future<List<MediaItem>> browseCategory(
     String categoryId, {

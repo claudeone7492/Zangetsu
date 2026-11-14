@@ -105,6 +105,13 @@ abstract interface class CatalogueRepository {
   /// Shorts destination falls back to a home-row feed when it is.
   Future<List<MediaItem>> shorts({String? sourceId});
 
+  /// Home for the Shorts content mode: one named row per short-drama source,
+  /// aggregated across the installed video catalogues. Empty for repositories
+  /// that are not source-backed (the metadata catalogue has no such index), so
+  /// the mode's default implementation returns nothing and Home falls back to
+  /// its own rows.
+  Future<List<HomeSection>> shortsHome() async => const [];
+
   /// Resolves a provider browse category to a page of items. [categoryId] is a
   /// `platform|<name>` / `filter|<spec>` handle from a home browse row, or a
   /// raw filter-sheet selection JSON. Empty when the source has no

@@ -72,7 +72,9 @@ void main() {
         MaterialApp(home: OnboardingScreen(onDone: () => done = true)),
       );
       await tester.pump();
-      await Future<void>.delayed(const Duration(milliseconds: 200));
+      // Setup runs alongside the screen's minimum dwell (~1.1s), so wait past
+      // it before asserting the hand-off has happened.
+      await Future<void>.delayed(const Duration(milliseconds: 1500));
     });
     await tester.pump();
 

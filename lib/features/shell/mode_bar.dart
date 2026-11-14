@@ -14,8 +14,10 @@ typedef ModeChoice = ({
   StreamKind kind,
 });
 
-/// The four things the centre button can switch to. Movie/TV shares the
-/// `anime` content mode and differs by [StreamKind].
+/// The things the centre button can switch to. Movie/TV shares the
+/// `anime` content mode and differs by [StreamKind]. Shorts is its own
+/// content mode: picking it fills Home with the short-drama sources' own rows
+/// (a browse surface), while the dock's Reels tab stays the autoplaying feed.
 final List<ModeChoice> modeChoices = [
   (
     label: (c) => c.l10n.modeAnime,
@@ -39,6 +41,12 @@ final List<ModeChoice> modeChoices = [
     label: (c) => c.l10n.modeNovel,
     icon: Icons.menu_book_outlined,
     mode: ContentMode.novel,
+    kind: StreamKind.anime,
+  ),
+  (
+    label: (c) => c.l10n.shorts,
+    icon: Icons.bolt_outlined,
+    mode: ContentMode.shorts,
     kind: StreamKind.anime,
   ),
 ];
@@ -142,6 +150,9 @@ class _Choice extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               // A tighter line box as well as a smaller face: caption's 1.3
               // height was adding more than the font size did.
               style: AppText.caption.copyWith(

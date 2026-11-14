@@ -182,13 +182,23 @@ class HomeCubit extends Cubit<HomeState> {
   /// The Z Mode browse kind for this load, or null when the home is
   /// source-backed. Read per load (not cached) because mode and stream kind
   /// change under the cubit without a new registration.
+  ///
+  /// Shorts is source-backed too — its Home is the drama sources' aggregate,
+  /// not a metadata catalogue — so it returns null here even with Z Mode on.
   ZKind? get _browseKind {
     if (!ZModePrefs.enabled) return null;
     final mode = _sl.isRegistered<ContentModeCubit>()
         ? _sl<ContentModeCubit>().state
         : ContentMode.anime;
+    if (mode == ContentMode.shorts) return null;
     return browseKindFor(mode, ZModePrefs.streamKind);
   }
+
+  /// The content mode driving this load. Shorts routes the fetch itself to the
+  /// source aggregate rather than the metadata catalogue.
+  ContentMode get _mode => _sl.isRegistered<ContentModeCubit>()
+      ? _sl<ContentModeCubit>().state
+      : ContentMode.anime;
 
   /// The storage key of the arrangement this cubit is composing, from the
   /// same inputs [_mergedRows] uses. Read per call, like [_browseKind]: mode
@@ -222,7 +232,10 @@ class HomeCubit extends Cubit<HomeState> {
     if (reset) _trackerCache = null;
     final sourceId = _repo.sourceId;
     final kind = _browseKind;
-    final cacheKey = kind?.name ?? 'all';
+    // Shorts is source-backed like 'all', but its rows are the drama
+    // aggregate, not the active source's own home — a distinct cache key keeps
+    // the two from overwriting each other on the same cold start.
+    final cacheKey = _mode == ContentMode.shorts ? 'shorts' : (kind?.name ?? 'all');
     // Cold start with a remembered home: paint it on the first frame and
     // refresh silently underneath. Same rows, same order — only the wait is
     // gone. A miss simply keeps the normal loading state.
@@ -278,7 +291,14 @@ class HomeCubit extends Cubit<HomeState> {
     var offline = false;
     int? limitedSeconds;
     try {
-      final homeFuture = _repo.home();
+      // Shorts mode browses the short-drama sources' own rows, not the
+      // metadata catalogue — the whole point of the menu entry is that it
+      // populates Home like every other selection, but from the drama
+      // catalogues. `_browseKind` is null for this mode, so the layout is
+      // source-backed and no tracker rows are attempted.
+      final homeFuture = _mode == ContentMode.shorts
+          ? _repo.shortsHome()
+          : _repo.home();
       sections = isAppleTv
           ? await homeFuture.timeout(const Duration(seconds: 20))
           : await homeFuture;
