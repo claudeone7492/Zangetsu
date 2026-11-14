@@ -118,8 +118,13 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   /// IPTV index (several large playlists) is fetched again. Refreshed in the
   /// background on every open, and dropped when a fetch fails so a stale list
   /// can never outlive the page's own error state.
+  ///
+  /// Tagged with the [SourceRepository] that produced it: the cache is only
+  /// reused while that same repository is registered, so a swapped repository
+  /// (or a fresh one per test) can never paint another one's channels.
   static List<HomeSection>? _cachedSections;
   static List<MediaItem>? _cachedSports;
+  static SourceRepository? _cacheOwner;
 
   /// Live-sports fixtures from every installed sports source's `getLive`
   /// (empty when none is installed, has no `getLive`, or the feeds are down).
@@ -209,9 +214,9 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   /// app boot; a failure leaves the cache null and the screen fetches normally.
   /// A no-op once the cache is already populated, so repeated calls are cheap.
   static Future<void> preload() async {
-    if (_cachedSections != null) return;
     if (!sl.isRegistered<SourceRepository>()) return;
     final repo = sl<SourceRepository>();
+    if (_cacheOwner == repo && _cachedSections != null) return;
     try {
       final sports = await _fetchSports(repo);
       final sections = await repo
@@ -219,21 +224,29 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
           .timeout(_timeout);
       _cachedSections = sections;
       _cachedSports = sports;
+      _cacheOwner = repo;
     } catch (_) {
       // Best-effort: the screen fetches on open if this never landed.
     }
   }
 
+  /// The cached rows, but only while they belong to [repo] — a repository swap
+  /// invalidates them so a stale list is never painted over a new source.
+  (List<HomeSection>, List<MediaItem>)? _cachedFor(SourceRepository repo) {
+    if (_cacheOwner != repo || _cachedSections == null) return null;
+    return (_cachedSections!, _cachedSports ?? const []);
+  }
+
   Future<void> _load() async {
-    final cached = _cachedSections;
+    final cached = _cachedFor(_repo);
     setState(() {
       // Paint the last-known channels immediately on a re-open; the fetch below
       // replaces them when it lands. No cache → the normal spinner.
       _loading = cached == null;
       _failed = false;
       if (cached != null) {
-        _sections = cached;
-        _sports = _cachedSports ?? const [];
+        _sections = cached.$1;
+        _sports = cached.$2;
       }
     });
     // The sports feed is a second, optional source. Fetch it alongside the
@@ -248,6 +261,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
       if (!mounted) return;
       _cachedSections = sections;
       _cachedSports = sports;
+      _cacheOwner = _repo;
       setState(() {
         _sections = sections;
         _sports = sports;
@@ -259,7 +273,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
       // Keep whatever cache painted rather than blanking the page: a transient
       // fetch failure on a re-open should not hide the channels the user was
       // just looking at. Only a first open with no cache shows the error state.
-      if (_cachedSections != null) return;
+      if (cached != null) return;
       setState(() {
         _failed = true;
         _loading = false;
