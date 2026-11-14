@@ -106,9 +106,10 @@ class _ShortsScreenState extends State<ShortsScreen> {
   /// the whole feed.
   static const int _prefetchCount = 3;
 
-  /// Muted by default: the feed autoplays as you swipe, so sound-on would be a
-  /// jump-scare. The tap-to-toggle is remembered across pages, like TikTok.
-  bool _muted = true;
+  /// Sound is on from the first page — a feed that opens silent reads as
+  /// broken. Tapping the video toggles it, and the choice is remembered across
+  /// pages, like TikTok.
+  bool _muted = false;
 
   @override
   void initState() {
@@ -183,50 +184,22 @@ class _ShortsScreenState extends State<ShortsScreen> {
     // `LiveTvScreen`.
     final repo = sl<SourceRepository>();
     final ids = _candidateSourceIds(repo);
+    // Walk the sources CONCURRENTLY: gathered one after another, six sources at
+    // up to 8s each could hold the feed for the best part of a minute on a slow
+    // network — the exact spinner the prewarm exists to avoid. Run in parallel
+    // and each row simply arrives whenever its own source answers, in the
+    // order [ids] lists them so the drama sources still lead.
+    final perSource = await Future.wait([
+      for (final id in ids) _gatherFrom(repo, id),
+    ]);
+    if (!mounted) return;
     final seen = <String>{};
     final gathered = <MediaItem>[];
-    for (final id in ids) {
-      // A source with a dedicated short-drama feed (`getShorts`, MovieBox
-      // today) contributes ONLY its shorts. Its general home rows are skipped
-      // for it: they are two dozen movie/TV rails, and letting them in buries
-      // the shorts hundreds of swipes down — the feed's whole reason for
-      // existing. Every other source keeps the generic home-row behaviour.
-      List<MediaItem> fromShorts;
-      try {
-        fromShorts = await repo.shorts(sourceId: id).timeout(_perSourceTimeout);
-      } catch (_) {
-        fromShorts = const [];
+    for (final rows in perSource) {
+      for (final item in rows) {
+        if (seen.add('${item.sourceId}:${item.id}')) gathered.add(item);
       }
-      if (!mounted) return;
-      if (fromShorts.isNotEmpty) {
-        for (final item in fromShorts) {
-          if (seen.add('${item.sourceId}:${item.id}')) gathered.add(item);
-        }
-        continue;
-      }
-      try {
-        final sections = await repo
-            .home(sourceId: id)
-            .timeout(_perSourceTimeout);
-        for (final section in sections) {
-          for (final item in section.items) {
-            if (item.type == ProviderType.manga ||
-                item.type == ProviderType.novel) {
-              continue;
-            }
-            // Provider-extension rows (a `browse:` platform/filter handle or a
-            // `live:` match) are navigation, not a short — they carry no
-            // episode to resolve, so they'd render as a dead poster.
-            if (isProviderExtensionUrl(item.url)) continue;
-            if (seen.add('${item.sourceId}:${item.id}')) gathered.add(item);
-          }
-        }
-      } catch (_) {
-        // One slow or dead source must never sink the feed.
-      }
-      if (!mounted) return;
     }
-    if (!mounted) return;
     setState(() {
       _items = gathered;
       _index = 0;
@@ -235,6 +208,45 @@ class _ShortsScreenState extends State<ShortsScreen> {
     // Warm the opening pages' streams now, in the background, so the first
     // swipes play instead of resolving on the spot.
     _prefetchLeading();
+  }
+
+  /// The rows one source contributes to the feed.
+  ///
+  /// A source with a dedicated short-drama feed (`getShorts`, MovieBox today)
+  /// contributes ONLY its shorts: its general home rows are two dozen movie/TV
+  /// rails, and letting them in buries the shorts hundreds of swipes down — the
+  /// feed's whole reason for existing. Every other source keeps the generic
+  /// home-row behaviour. Never throws: one slow or dead source must not sink
+  /// the feed.
+  Future<List<MediaItem>> _gatherFrom(SourceRepository repo, String id) async {
+    try {
+      final shorts = await repo
+          .shorts(sourceId: id)
+          .timeout(_perSourceTimeout);
+      if (shorts.isNotEmpty) return shorts;
+    } catch (_) {
+      // Fall through to the home rows.
+    }
+    try {
+      final sections = await repo.home(sourceId: id).timeout(_perSourceTimeout);
+      final out = <MediaItem>[];
+      for (final section in sections) {
+        for (final item in section.items) {
+          if (item.type == ProviderType.manga ||
+              item.type == ProviderType.novel) {
+            continue;
+          }
+          // Provider-extension rows (a `browse:` platform/filter handle or a
+          // `live:` match) are navigation, not a short — they carry no episode
+          // to resolve, so they'd render as a dead poster.
+          if (isProviderExtensionUrl(item.url)) continue;
+          out.add(item);
+        }
+      }
+      return out;
+    } catch (_) {
+      return const [];
+    }
   }
 
   /// Resolve the first [_prefetchCount] items' streams ahead of time. Each

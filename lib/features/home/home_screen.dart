@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -111,24 +112,34 @@ import 'see_all_screen.dart';
 /// Stateful for the per-item lazy hero-description cache and the navigation
 /// helpers.
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key, this.isTabActive = true});
+  const HomeScreen({super.key, this.isTabActive = true, this.scrollToTopSignal});
 
   final bool isTabActive;
+
+  /// Bumped by the shell each time the already-selected Home tab is tapped
+  /// again — the standard "jump to the top" gesture. Without it a second tap
+  /// on Home looked like it did nothing until the user realised they had to
+  /// scroll back up by hand.
+  final ValueListenable<int>? scrollToTopSignal;
 
   @override
   Widget build(BuildContext context) {
     // Use the shared singleton so the splash can warm it before this mounts.
     return BlocProvider.value(
       value: sl<HomeCubit>(),
-      child: _HomeView(isTabActive: isTabActive),
+      child: _HomeView(
+        isTabActive: isTabActive,
+        scrollToTopSignal: scrollToTopSignal,
+      ),
     );
   }
 }
 
 class _HomeView extends StatefulWidget {
-  const _HomeView({required this.isTabActive});
+  const _HomeView({required this.isTabActive, this.scrollToTopSignal});
 
   final bool isTabActive;
+  final ValueListenable<int>? scrollToTopSignal;
 
   @override
   State<_HomeView> createState() => _HomeViewState();
@@ -146,6 +157,11 @@ class _HomeViewState extends State<_HomeView>
   String? _sourceCatalogueSourceId;
   List<HomeSection> _sourceCatalogueSections = const [];
   bool _sourceCatalogueSelected = HomeCataloguePrefs.catalogueShown;
+
+  /// The vertical Home page. Owned here (not by the ScrollView's default
+  /// PrimaryScrollController) so a second tap on the already-selected Home tab
+  /// can animate the page back to the top.
+  final ScrollController _homeScroll = ScrollController();
 
   /// Hero metadata cache: key = "sourceId:id". Futures are stored so they're
   /// never re-fetched on carousel rotation; pre-warmed when hero items load.
@@ -177,6 +193,7 @@ class _HomeViewState extends State<_HomeView>
     super.initState();
     _sourceCatalogueSelection = HomeCataloguePrefs.sourceSelection;
     _sourceCatalogueSelection.addListener(_onSourceCatalogueSelectionChanged);
+    widget.scrollToTopSignal?.addListener(_scrollHomeToTop);
     HomeCataloguePrefs.revision.addListener(_onCatalogueRevision);
     _sourceCatalogueSourceId = HomeCataloguePrefs.sourceIdFor(
       sl<ContentModeCubit>().state,
@@ -249,6 +266,8 @@ class _HomeViewState extends State<_HomeView>
   @override
   void dispose() {
     _sourceCatalogueModeSubscription?.cancel();
+    widget.scrollToTopSignal?.removeListener(_scrollHomeToTop);
+    _homeScroll.dispose();
     _sourceCatalogueSelection.removeListener(
       _onSourceCatalogueSelectionChanged,
     );
@@ -261,6 +280,17 @@ class _HomeViewState extends State<_HomeView>
 
   void _onThemeRevision() {
     if (mounted) setState(() {});
+  }
+
+  /// A second tap on the already-selected Home dock tab: glide the page back to
+  /// the top. No-op when there is nothing to scroll (already at the top).
+  void _scrollHomeToTop() {
+    if (!_homeScroll.hasClients) return;
+    _homeScroll.animateTo(
+      0,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   void _onSourceCatalogueSelectionChanged() {
@@ -2081,6 +2111,7 @@ class _HomeViewState extends State<_HomeView>
                           ContentMode.anime => false,
                         };
                   return CustomScrollView(
+                    controller: _homeScroll,
                     slivers: [
                       // ── Hero + floating header (first sliver) ─────────────────
                       SliverToBoxAdapter(

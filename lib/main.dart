@@ -57,6 +57,7 @@ import 'core/ui/global_messenger.dart';
 import 'core/theme/theme_repaint_observer.dart';
 import 'features/auth/auth_cubit.dart';
 import 'features/home/cubit/home_cubit.dart';
+import 'features/live/live_tv_screen.dart';
 import 'features/onboarding/boot_error_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/profiles/profile_launch_gate.dart';
@@ -598,6 +599,13 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
     if (isOnboarded()) {
       // tvOS: Home fetch waits until provider JS is loaded (deferred boot task).
       if (!isAppleTv) sl<HomeCubit>().load();
+      // Warm the Live TV channel + sports list in the background so the first
+      // tap on that destination paints immediately instead of showing a
+      // spinner while the IPTV index is fetched. Delayed so it never competes
+      // with the splash / Home, and best-effort throughout.
+      Future.delayed(const Duration(seconds: 3), () {
+        unawaited(LiveTvScreen.preload());
+      });
       // CloudStream-style "new episode" check: once the app is up, re-fetch
       // each subscribed show's episodes (JS or CS) and notify on any increase.
       // Fire-and-forget + delayed so it doesn't compete with the splash/home.

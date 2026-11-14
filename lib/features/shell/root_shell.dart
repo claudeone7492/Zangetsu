@@ -3,6 +3,7 @@ import '../../core/theme/theme_controller.dart';
 import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show SystemNavigator;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -57,12 +58,16 @@ import 'root_shell_tv.dart';
 ///
 /// [searchFixedSourceId] pins the Search page to one source catalogue. TV
 /// leaves it null; the phone dock passes [dockSearchFixedSourceId].
+///
+/// [homeScrollSignal] is bumped when the phone dock's already-selected Home
+/// tab is tapped again, so the Home page scrolls back to the top.
 List<Widget> buildShellPages(
   ValueNotifier<int>? searchFocusSignal, {
   bool homeIsActive = true,
   String? searchFixedSourceId,
+  ValueListenable<int>? homeScrollSignal,
 }) => [
-  HomeScreen(isTabActive: homeIsActive),
+  HomeScreen(isTabActive: homeIsActive, scrollToTopSignal: homeScrollSignal),
   SearchScreen(
     showBack: false,
     focusSignal: searchFocusSignal,
@@ -136,6 +141,10 @@ class _RootShellState extends State<RootShell>
   /// within 2s exits the app; the first just shows the "press back again" toast.
   DateTime? _lastBackPress;
   DateTime? _lastProfileTap;
+
+  /// Bumped when the already-selected Home tab is tapped again; Home listens
+  /// and scrolls its page back to the top (the standard tab-bar gesture).
+  final ValueNotifier<int> _homeScrollSignal = ValueNotifier<int>(0);
 
   /// Tab-switch entrance: the visible page swaps immediately and the INCOMING
   /// tab fades + slides up into place (200ms, ease-out). We never fade the old
@@ -253,6 +262,7 @@ class _RootShellState extends State<RootShell>
       );
     }
     _switchCtrl.dispose();
+    _homeScrollSignal.dispose();
     super.dispose();
   }
 
@@ -274,7 +284,12 @@ class _RootShellState extends State<RootShell>
     } else {
       _lastProfileTap = null;
     }
-    if (tab == _tab) return; // Re-tapping the current tab: no transition.
+    if (tab == _tab) {
+      // Re-tapping the current tab: no transition. Home uses the gesture to
+      // jump back to the top, the way every bottom bar does.
+      if (tab == DockTab.home) _homeScrollSignal.value++;
+      return;
+    }
     DockScrollCollapse.reset();
     setState(() => _tab = tab);
     _switchCtrl.forward(from: 0);
@@ -348,6 +363,7 @@ class _RootShellState extends State<RootShell>
       null,
       homeIsActive: _tab == DockTab.home,
       searchFixedSourceId: dockSearchFixedSourceId(),
+      homeScrollSignal: _homeScrollSignal,
     );
     return [
       for (final t in tabs)

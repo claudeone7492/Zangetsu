@@ -178,6 +178,12 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   String _status = '';
 
+  /// Minimum time the first-run screen stays up. Setup is otherwise near-instant
+  /// (the sources are already installed by the boot pass), so without this the
+  /// screen flashed for a couple of frames and the user never saw it in full —
+  /// it read as the app skipping straight to Home.
+  static const Duration _minDwell = Duration(milliseconds: 1100);
+
   @override
   void initState() {
     super.initState();
@@ -189,6 +195,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   /// which one is active and primes Home. Best-effort: any failure still marks
   /// onboarding done so the user is never trapped on this screen.
   Future<void> _setup() async {
+    // The dwell runs alongside setup, so the screen is shown WHOLE and for a
+    // beat whether setup takes 50ms or 500 — not just however long the work
+    // happened to take.
+    final dwell = Future<void>.delayed(_minDwell);
     if (mounted) {
       setState(() => _status = context.l10n.downloadingSourceCatalog);
     }
@@ -209,6 +219,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     } catch (_) {
       // Sources install during boot; a failure here is not worth blocking on.
     }
+    await dwell;
     await _markOnboarded();
     if (mounted) widget.onDone();
   }
@@ -219,48 +230,60 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
-        child: Column(
-          children: [
-            const Spacer(flex: 2),
-            const _Logo(),
-            const SizedBox(height: 18),
-            Text(
-              context.l10n.goodToHaveYouHere,
-              style: AppText.title,
-              textAlign: TextAlign.center,
+        // Scrollable so a short screen (or a large system font, which grows the
+        // intro copy) can never clip the bottom of the layout — the screen
+        // always shows whole, scrolling instead of overflowing.
+        child: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.sizeOf(context).height,
             ),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                context.l10n.onboardingIntro,
-                style: AppText.body.copyWith(color: AppColors.textSecondary),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const Spacer(flex: 3),
-            Column(
+            child: Column(
               children: [
-                SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.4,
-                    color: AppColors.accent,
-                  ),
-                ),
-                const SizedBox(height: 12),
+                const Spacer(flex: 2),
+                const _Logo(),
+                const SizedBox(height: 18),
                 Text(
-                  _status,
-                  style: AppText.caption.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  context.l10n.goodToHaveYouHere,
+                  style: AppText.title,
                   textAlign: TextAlign.center,
                 ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    context.l10n.onboardingIntro,
+                    style: AppText.body.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const Spacer(flex: 3),
+                Column(
+                  children: [
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      _status,
+                      style: AppText.caption.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 60),
               ],
             ),
-            const SizedBox(height: 60),
-          ],
+          ),
         ),
       ),
     );

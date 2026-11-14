@@ -71,6 +71,12 @@ class LiveTvScreen extends StatefulWidget {
   /// the page's own Back affordance is suppressed (mirrors [DownloadsScreen]).
   final bool showBack;
 
+  /// Warms the channel + sports list before the first open, so the very first
+  /// tap on Live TV paints the channels instead of a spinner. Fire-and-forget
+  /// from the app boot; a failure leaves the cache empty and the screen fetches
+  /// on open as usual. A no-op once the cache is already populated.
+  static Future<void> preload() => _LiveTvScreenState.preload();
+
   @override
   State<LiveTvScreen> createState() => _LiveTvScreenState();
 }
@@ -106,6 +112,14 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   bool _loading = true;
   bool _failed = false;
   List<HomeSection> _sections = const [];
+
+  /// The channels + sports rows from the previous open, kept across instances
+  /// so a re-open paints instantly instead of showing the spinner while the
+  /// IPTV index (several large playlists) is fetched again. Refreshed in the
+  /// background on every open, and dropped when a fetch fails so a stale list
+  /// can never outlive the page's own error state.
+  static List<HomeSection>? _cachedSections;
+  static List<MediaItem>? _cachedSports;
 
   /// Live-sports fixtures from every installed sports source's `getLive`
   /// (empty when none is installed, has no `getLive`, or the feeds are down).
@@ -190,21 +204,50 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
 
   bool get _isTv => sl.isRegistered<AppMode>() && sl<AppMode>().isTv;
 
+  /// Warms [_cachedSections] ahead of the first open, so the very first tap on
+  /// Live TV paints the channels instead of a spinner. Fire-and-forget from the
+  /// app boot; a failure leaves the cache null and the screen fetches normally.
+  /// A no-op once the cache is already populated, so repeated calls are cheap.
+  static Future<void> preload() async {
+    if (_cachedSections != null) return;
+    if (!sl.isRegistered<SourceRepository>()) return;
+    final repo = sl<SourceRepository>();
+    try {
+      final sports = await _fetchSports(repo);
+      final sections = await repo
+          .home(sourceId: kLiveTvSourceId)
+          .timeout(_timeout);
+      _cachedSections = sections;
+      _cachedSports = sports;
+    } catch (_) {
+      // Best-effort: the screen fetches on open if this never landed.
+    }
+  }
+
   Future<void> _load() async {
+    final cached = _cachedSections;
     setState(() {
-      _loading = true;
+      // Paint the last-known channels immediately on a re-open; the fetch below
+      // replaces them when it lands. No cache → the normal spinner.
+      _loading = cached == null;
       _failed = false;
+      if (cached != null) {
+        _sections = cached;
+        _sports = _cachedSports ?? const [];
+      }
     });
     // The sports feed is a second, optional source. Fetch it alongside the
     // channels so the two don't serialize, but never let it sink the page: a
     // missing MovieBox (or a dead sports endpoint) just yields no rail.
-    final sportsFuture = _loadSports();
+    final sportsFuture = _fetchSports(_repo);
     try {
       final sections = await _repo
           .home(sourceId: kLiveTvSourceId)
           .timeout(_timeout);
       final sports = await sportsFuture;
       if (!mounted) return;
+      _cachedSections = sections;
+      _cachedSports = sports;
       setState(() {
         _sections = sections;
         _sports = sports;
@@ -213,6 +256,10 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
       _enrichSports(sports);
     } catch (_) {
       if (!mounted) return;
+      // Keep whatever cache painted rather than blanking the page: a transient
+      // fetch failure on a re-open should not hide the channels the user was
+      // just looking at. Only a first open with no cache shows the error state.
+      if (_cachedSections != null) return;
       setState(() {
         _failed = true;
         _loading = false;
@@ -232,13 +279,16 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   /// order within a rank is the sources' own, which is why the sort is done on
   /// decorated indices: `List.sort` is not stable, so sorting the items alone
   /// could shuffle two upcoming fixtures for no reason.
-  Future<List<MediaItem>> _loadSports() async {
-    final installed = kLiveSportsSourceIds.where(_repo.hasSource).toList();
+  ///
+  /// Static + repo-parameterised so the launch [preload] can run it before the
+  /// screen exists.
+  static Future<List<MediaItem>> _fetchSports(SourceRepository repo) async {
+    final installed = kLiveSportsSourceIds.where(repo.hasSource).toList();
     if (installed.isEmpty) return const [];
     final merged = <MediaItem>[];
     for (final id in installed) {
       try {
-        merged.addAll(await _repo.live(sourceId: id).timeout(_timeout));
+        merged.addAll(await repo.live(sourceId: id).timeout(_timeout));
       } catch (_) {
         // One dead feed must not hide the others.
       }
@@ -253,7 +303,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
 
   /// 0 in play, 2 finished, 1 for everything else — an upcoming kickoff, or a
   /// 24/7 channel the source gives no kickoff at all.
-  int _liveRank(MediaItem m) {
+  static int _liveRank(MediaItem m) {
     final badge = m.liveBadge?.toUpperCase();
     if (badge == 'LIVE') return 0;
     if (badge == 'FT') return 2;
