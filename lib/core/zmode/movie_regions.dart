@@ -9,17 +9,22 @@ import 'zmode_prefs.dart';
 ///
 /// The stream kind (`movie`) already says "films and series"; this narrows it
 /// further to the datasets people actually browse by — Hollywood, Bollywood,
-/// Nollywood and Cartoons. Each is a fixed set of TMDB `/discover` rows
-/// (`with_origin_country` + original language, plus the Animation genre for
-/// Cartoons), so selecting one swaps the whole movie Home for that cut rather
-/// than filtering a single row. `all` keeps TMDB's own curated rows.
+/// Nollywood, Anime, Cartoons and Asian. Each is a fixed set of TMDB
+/// `/discover` rows (`with_origin_country` + original language, plus a genre
+/// for the animation/Asian cuts), so selecting one swaps the whole movie Home
+/// for that cut rather than filtering a single row. `all` keeps TMDB's own
+/// curated rows.
 ///
 /// `with_origin_country` — not `region` — is what actually filters by the
 /// film's country of origin. `region` only shifts release-date handling, so
 /// `region=NG` returned the whole English-language catalogue (20k titles) and
 /// the Nollywood shelf was just Hollywood. The origin filter returns the real
 /// ~1.1k Nigerian films.
-enum MovieRegion { all, hollywood, bollywood, nollywood, cartoons }
+///
+/// Anime and Asian mirror the reference "netflix-pro" category cards: Anime is
+/// Japanese origin + the Animation genre, and Asian is the East-Asian drama
+/// cut (KR/CN/TW/HK origin + the Drama genre), which is TV-first.
+enum MovieRegion { all, hollywood, bollywood, nollywood, anime, cartoons, asian }
 
 /// One discover row: a title, the endpoint, and the params that make it that
 /// region's shelf. The endpoint takes `?page=`, so [path]/[params] are also
@@ -33,7 +38,9 @@ extension MovieRegionX on MovieRegion {
     MovieRegion.hollywood => 'Hollywood',
     MovieRegion.bollywood => 'Bollywood',
     MovieRegion.nollywood => 'Nollywood',
+    MovieRegion.anime => 'Anime',
     MovieRegion.cartoons => 'Cartoons',
+    MovieRegion.asian => 'Asian',
   };
 
   /// The plain movie catalogue (no discover filter) — Home renders TMDB's own
@@ -44,15 +51,36 @@ extension MovieRegionX on MovieRegion {
   ///
   /// This is the one place a region is turned into catalogue filters, so the
   /// Home sub-menu's fixed rows ([rows]) and the Search landing's discover
-  /// pills both describe the same cut: origin country (and, for Cartoons, the
-  /// Animation genre). `with_origin_country` — not `region` — is what filters
-  /// by a film's country of origin, which is why the rows carry it too.
+  /// pills both describe the same cut: origin country, original language(s)
+  /// and, for the animation/Asian cuts, a genre. `with_origin_country` — not
+  /// `region` — is what filters by a film's country of origin, which is why
+  /// the rows carry it too.
   MetaFilters? get filters => switch (this) {
     MovieRegion.all => null,
-    MovieRegion.hollywood => const MetaFilters(originCountry: 'US'),
-    MovieRegion.bollywood => const MetaFilters(originCountry: 'IN'),
+    MovieRegion.hollywood => const MetaFilters(
+      originCountry: 'US',
+      originalLanguage: 'en',
+    ),
+    MovieRegion.bollywood => const MetaFilters(
+      originCountry: 'IN',
+      originalLanguage: 'hi',
+    ),
     MovieRegion.nollywood => const MetaFilters(originCountry: 'NG'),
+    // Japanese animation: origin Japan + the Animation genre, matching the
+    // reference's Anime card.
+    MovieRegion.anime => const MetaFilters(
+      originCountry: 'JP',
+      originalLanguage: 'ja',
+      genres: ['Animation'],
+    ),
     MovieRegion.cartoons => const MetaFilters(genres: ['Animation']),
+    // The East-Asian drama cut (KR/CN/TW/HK origin + Drama), which is what the
+    // reference's Asian card browses. TV-first, but the discover row covers
+    // both sides of the catalogue.
+    MovieRegion.asian => const MetaFilters(
+      originCountry: 'KR|CN|TW|HK',
+      genres: ['Drama'],
+    ),
   };
 
   /// Whether [f]'s discover constraints are exactly this cut. Used to light the
@@ -61,20 +89,24 @@ extension MovieRegionX on MovieRegion {
     final own = filters;
     if (own == null) return false;
     if (f.originCountry != own.originCountry) return false;
+    if (f.originalLanguage != own.originalLanguage) return false;
     if (own.genres.isEmpty) return true;
     return own.genres.every(f.genres.contains);
   }
 
-  /// [f] re-based on this cut: the region's origin/genre constraints replace
-  /// whatever origin/genre the landing already had, while every other filter
-  /// (year, sort, adult) is kept. [MovieRegion.all] clears just those two.
+  /// [f] re-based on this cut: the region's origin/language/genre constraints
+  /// replace whatever the landing already had, while every other filter (year,
+  /// sort, adult) is kept. [MovieRegion.all] clears just those three.
   MetaFilters applyTo(MetaFilters f) {
     final own = filters;
     return f.copyWith(
-      clearCountry: true,
-      clearLanguage: true,
       genres: own?.genres ?? const [],
       originCountry: own?.originCountry,
+      originalLanguage: own?.originalLanguage,
+      // `copyWith` can't set a field to null, so a cut without an origin or
+      // language (Cartoons, All) must clear rather than keep the old value.
+      clearCountry: own?.originCountry == null,
+      clearLanguage: own?.originalLanguage == null,
     );
   }
 
@@ -218,6 +250,88 @@ extension MovieRegionX on MovieRegion {
         title: 'Animated family',
         path: '/discover/movie',
         params: {'with_genres': '16,10751', 'sort_by': 'popularity.desc'},
+      ),
+    ],
+    MovieRegion.anime => const [
+      (
+        title: 'Popular anime',
+        path: '/discover/movie',
+        params: {
+          'with_origin_country': 'JP',
+          'with_original_language': 'ja',
+          'with_genres': '16',
+          'sort_by': 'popularity.desc',
+        },
+      ),
+      (
+        title: 'Top rated anime',
+        path: '/discover/movie',
+        params: {
+          'with_origin_country': 'JP',
+          'with_original_language': 'ja',
+          'with_genres': '16',
+          'sort_by': 'vote_average.desc',
+          'vote_count.gte': '100',
+        },
+      ),
+      (
+        title: 'New anime',
+        path: '/discover/movie',
+        params: {
+          'with_origin_country': 'JP',
+          'with_original_language': 'ja',
+          'with_genres': '16',
+          'sort_by': 'primary_release_date.desc',
+        },
+      ),
+      (
+        title: 'Anime action',
+        path: '/discover/movie',
+        params: {
+          'with_origin_country': 'JP',
+          'with_original_language': 'ja',
+          'with_genres': '16,28',
+          'sort_by': 'popularity.desc',
+        },
+      ),
+    ],
+    MovieRegion.asian => const [
+      (
+        title: 'Popular Asian drama',
+        path: '/discover/movie',
+        params: {
+          'with_origin_country': 'KR|CN|TW|HK',
+          'with_genres': '18',
+          'sort_by': 'popularity.desc',
+        },
+      ),
+      (
+        title: 'Top rated Asian',
+        path: '/discover/movie',
+        params: {
+          'with_origin_country': 'KR|CN|TW|HK',
+          'with_genres': '18',
+          'sort_by': 'vote_average.desc',
+          'vote_count.gte': '100',
+        },
+      ),
+      (
+        title: 'New Asian',
+        path: '/discover/movie',
+        params: {
+          'with_origin_country': 'KR|CN|TW|HK',
+          'with_genres': '18',
+          'sort_by': 'primary_release_date.desc',
+        },
+      ),
+      (
+        title: 'Asian romance',
+        path: '/discover/movie',
+        params: {
+          'with_origin_country': 'KR|CN|TW|HK',
+          'with_genres': '18,10749',
+          'sort_by': 'popularity.desc',
+        },
       ),
     ],
   };

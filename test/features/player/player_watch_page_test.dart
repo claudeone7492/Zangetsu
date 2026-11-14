@@ -9,6 +9,7 @@ import 'package:watch_app/core/theme/app_colors.dart';
 import 'package:watch_app/core/ui/frosted_surface.dart';
 import 'package:watch_app/features/player/watch_page_motion.dart';
 import 'package:watch_app/features/player/watch_page_info.dart';
+import 'package:watch_app/features/player/watch_episodes_panel.dart';
 
 PlayerWatchPage _page({
   bool isMovie = false,
@@ -739,6 +740,46 @@ void main() {
     expect(find.byType(SliverGrid), findsOneWidget);
     await tester.tap(find.text('2').first);
     expect(opened, 1);
+  });
+
+  testWidgets('left-edge glass panel opens the tapped episode', (tester) async {
+    int? opened;
+    await _pump(
+      tester,
+      _page(
+        onOpenEpisode: (i) => opened = i,
+        episodes: const [
+          WatchPageEpisode(
+            index: 0,
+            heading: '1. A',
+            label: 'A',
+            thumb: '',
+            current: true,
+          ),
+          WatchPageEpisode(
+            index: 4,
+            heading: '5. F',
+            label: 'F',
+            thumb: '',
+            current: false,
+          ),
+        ],
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.view_sidebar_outlined));
+    await tester.pumpAndSettle();
+    expect(find.byType(WatchEpisodesPanel), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(WatchEpisodesPanel),
+        matching: find.text('5'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(opened, 4);
+    expect(find.byType(WatchEpisodesPanel), findsNothing);
   });
 
   testWidgets('jump dialog scrolls to the typed episode', (tester) async {

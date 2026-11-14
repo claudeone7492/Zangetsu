@@ -11,6 +11,7 @@ import '../../core/theme/app_text.dart';
 import '../../core/ui/frosted_surface.dart';
 import '../detail/episode_filter.dart';
 import '../../l10n/l10n.dart';
+import 'watch_episodes_panel.dart';
 import 'watch_page_info.dart';
 import 'watch_page_motion.dart';
 
@@ -1014,6 +1015,16 @@ class _PlayerWatchPageState extends State<PlayerWatchPage> {
                 ),
                 const SizedBox(width: 8),
               ],
+              // Left-edge glass grid: every episode a tap away, so a long
+              // title is never a thousand swipes from the one you want.
+              if (widget.episodes.length > 1) ...[
+                _roundBtn(
+                  Icons.view_sidebar_outlined,
+                  l10n.episodes,
+                  _openEpisodesPanel,
+                ),
+                const SizedBox(width: 8),
+              ],
               if (!widget.isMovie || widget.episodes.length > 1) ...[
                 _roundBtn(
                   _grid ? Icons.view_list_rounded : Icons.grid_view_rounded,
@@ -1296,6 +1307,36 @@ class _PlayerWatchPageState extends State<PlayerWatchPage> {
             if (selected) Icon(Icons.check_rounded, color: AppColors.accent),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Slide the left-edge glass episode grid in over the page. Picking an
+  /// episode closes the panel and hands the real index to the parent, exactly
+  /// as a tapped row does.
+  void _openEpisodesPanel() {
+    showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Episodes',
+      barrierColor: Colors.black54,
+      transitionDuration: watchPageMotionEnabled(context)
+          ? const Duration(milliseconds: 240)
+          : Duration.zero,
+      pageBuilder: (ctx, _, _) => WatchEpisodesPanel(
+        episodes: _paged.isEmpty ? widget.episodes : _ordered,
+        onSelect: (i) {
+          Navigator.pop(ctx);
+          widget.onOpenEpisode(i);
+        },
+        onClose: () => Navigator.pop(ctx),
+      ),
+      transitionBuilder: (ctx, anim, _, child) => SlideTransition(
+        position: Tween(
+          begin: const Offset(-1, 0),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+        child: child,
       ),
     );
   }

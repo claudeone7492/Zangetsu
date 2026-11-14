@@ -27,7 +27,15 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(app());
+    // The bar is a horizontal list, so on a phone-width test viewport the
+    // later chips (Anime, Cartoons, Asian) start off-screen. Scroll each one
+    // into view before asserting, rather than assuming they all fit.
     for (final r in MovieRegion.values) {
+      await tester.scrollUntilVisible(
+        find.byKey(ValueKey('movies-tv-region-${r.name}')),
+        60,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text(r.label), findsOneWidget, reason: r.name);
     }
     // The bar is identifiable for the screens that mount it conditionally.

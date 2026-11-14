@@ -2629,10 +2629,10 @@ class _SearchViewState extends State<_SearchView>
   }
 
   /// The regional cut of the catalogue — Hollywood / Bollywood / Nollywood /
-  /// Cartoons — as a scrollable row of pills, the same cuts the Movies & TV
-  /// Home sub-menu offers. A pick re-bases the discover grid on that origin
-  /// (and, for Cartoons, the Animation genre), so the landing can browse a
-  /// region without leaving Search. All clears just those two constraints and
+  /// Anime / Cartoons / Asian — as a scrollable row of pills, the same cuts the
+  /// Movies & TV Home sub-menu offers. A pick re-bases the discover grid on that
+  /// origin (and, for Anime/Cartoons/Asian, a genre), so the landing can browse
+  /// a region without leaving Search. All clears just those constraints and
   /// keeps whatever year/sort the landing already had.
   Widget _discoverRegionRow() {
     final f = _metaFilters;

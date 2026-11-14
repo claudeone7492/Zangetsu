@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:watch_app/core/models/provider_info.dart';
+import 'package:watch_app/core/zmode/metadata_filters.dart';
 import 'package:watch_app/core/zmode/movie_regions.dart';
 import 'package:watch_app/core/zmode/zmode_prefs.dart';
 import 'package:watch_app/core/zmode/tmdb_catalogue.dart';
@@ -60,8 +61,44 @@ void main() {
         'Hollywood',
         'Bollywood',
         'Nollywood',
+        'Anime',
         'Cartoons',
+        'Asian',
       ]);
+    });
+
+    test('Anime is JP/Animation and Asian is the East-Asian drama cut', () {
+      for (final row in MovieRegion.anime.rows!) {
+        expect(row.params['with_origin_country'], 'JP');
+        expect(row.params['with_original_language'], 'ja');
+        expect(row.params['with_genres'], startsWith('16'));
+      }
+
+      for (final row in MovieRegion.asian.rows!) {
+        // The reference card browses KR/CN/TW/HK drama, pipe-joined so TMDB
+        // ORs the countries.
+        expect(row.params['with_origin_country'], 'KR|CN|TW|HK');
+        expect(row.params['with_genres'], startsWith('18'));
+      }
+    });
+
+    test('filters describe each cut and re-base a landing', () {
+      expect(MovieRegion.all.filters, isNull);
+      expect(MovieRegion.asian.filters!.originCountry, 'KR|CN|TW|HK');
+      expect(MovieRegion.anime.filters!.originalLanguage, 'ja');
+
+      const base = MetaFilters(yearFrom: 2000, sort: MetaSort.newest);
+      final asian = MovieRegion.asian.applyTo(base);
+      expect(asian.originCountry, 'KR|CN|TW|HK');
+      expect(asian.genres, ['Drama']);
+      expect(asian.yearFrom, 2000); // unrelated filters survive
+      expect(MovieRegion.asian.matches(asian), isTrue);
+
+      final cleared = MovieRegion.all.applyTo(asian);
+      expect(cleared.originCountry, isNull);
+      expect(cleared.originalLanguage, isNull);
+      expect(cleared.genres, isEmpty);
+      expect(cleared.yearFrom, 2000);
     });
   });
 

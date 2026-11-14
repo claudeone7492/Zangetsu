@@ -11,6 +11,7 @@ import '../../core/comments/episode_comments_service.dart';
 import '../../core/di/injector.dart';
 import '../../core/mode/content_mode.dart';
 import '../../core/models/episode.dart';
+import '../../core/models/episode_title.dart';
 import '../../core/models/media_item.dart';
 import '../../core/models/provider_info.dart';
 import '../../core/playback/my_list.dart';
@@ -629,6 +630,15 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
     );
   }
 
+  /// "Episode N · title" for the resolved preview, or null before it resolves
+  /// (or when the source gave no episode at all — a bare movie). Shown under
+  /// the title so the card names the part that is playing.
+  String? get _episodeLabel {
+    final ep = _source?.episode;
+    if (ep == null) return null;
+    return episodeDisplayTitle(ep, number: ep.number?.toInt());
+  }
+
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
@@ -702,11 +712,17 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                item.title,
-                style: AppText.title.copyWith(color: Colors.white),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
+              // The title doubles as a route to the full page: the tap surface
+              // above only toggles sound, so without this the name was the one
+              // bit of the card that looked tappable and wasn't.
+              GestureDetector(
+                onTap: widget.onOpen,
+                child: Text(
+                  item.title,
+                  style: AppText.title.copyWith(color: Colors.white),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               const SizedBox(height: 8),
               Row(
@@ -727,6 +743,17 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
                   ),
                 ],
               ),
+              // The episode the preview resolved, so a swipe into a drama shows
+              // which part is playing rather than a bare title.
+              if (_episodeLabel != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  _episodeLabel!,
+                  style: AppText.caption.copyWith(color: Colors.white60),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ],
           ),
         ),
