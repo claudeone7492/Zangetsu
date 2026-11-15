@@ -203,6 +203,16 @@
       "nsfw": false
     },
     {
+      "id": "timstreams",
+      "name": "TimStreams",
+      "version": "1.0.0",
+      "type": "movie",
+      "lang": "en",
+      "file": "../providers/timstreams.js",
+      "logo": "https://tim-streams.com/favicon.ico",
+      "nsfw": false
+    },
+    {
       "id": "novelfire",
       "name": "NovelFire",
       "version": "1.0.0",

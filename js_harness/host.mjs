@@ -64,7 +64,10 @@ globalThis.__fetch = async function (src, u, opts) {
   const init = { method: opts.method || 'GET', headers, body: opts.body };
   if (opts.followRedirects === false) init.redirect = 'manual';
   const r = await fetch(u, init);
-  const text = await r.text();
+  // Read the RAW bytes, then derive text — never the reverse, so a binary body
+  // is not run through a UTF-8 decode before it can be handed back.
+  const raw = Buffer.from(await r.arrayBuffer());
+  const text = raw.toString('utf8');
   if (looksLikeCfChallenge(r.status, text)) {
     const viaCurl = curlFetch(u, headers);
     if (viaCurl && !looksLikeCfChallenge(viaCurl.status, viaCurl.body)) {
@@ -78,10 +81,20 @@ globalThis.__fetch = async function (src, u, opts) {
     : null;
   if (sc && sc.length) hdrs['set-cookie'] = sc.join(', ');
   else { const one = r.headers.get('set-cookie'); if (one) hdrs['set-cookie'] = one; }
+  // Mirror the app's binary lane: a fetch that asked for { responseType:
+  // 'base64' } gets the bytes back as base64 (see js_bootstrap + the Dart
+  // fetch handler), plus arrayBuffer()/bytes() built on top.
+  const wantBytes = opts.responseType === 'base64';
+  const bodyB64 = wantBytes ? raw.toString('base64') : '';
   return {
     ok: r.ok, status: r.status, statusText: r.statusText,
-    headers: hdrs, url: r.url, body: text,
+    headers: hdrs, url: r.url, body: wantBytes ? '' : text, bodyB64,
     text: async () => text, json: async () => JSON.parse(text),
+    bytes: () => globalThis.base64ToBytes(bodyB64),
+    arrayBuffer: async () => {
+      const b = Buffer.from(bodyB64, 'base64');
+      return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength);
+    },
   };
 };
 

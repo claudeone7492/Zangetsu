@@ -39,6 +39,7 @@ const String kLiveTvSourceId = 'iptv';
 /// that isn't installed is skipped before the call.
 const List<String> kLiveSportsSourceIds = <String>[
   'cdnlivetv',
+  'timstreams',
   'moviebox',
   'streamfree',
 ];

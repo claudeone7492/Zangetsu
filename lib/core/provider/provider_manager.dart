@@ -494,6 +494,9 @@ class _JsHost {
       final tMs = (payload['timeoutMs'] as num?)?.toInt() ?? 0;
       final follow = payload['followRedirects'] != false;
       final wantCf = payload['browser'] == true || payload['cf'] == true;
+      // A provider asks for the raw bytes with { responseType: 'base64' }.
+      // The body then rides back as base64 so binary survives the bridge.
+      final wantBytes = (payload['responseType'] as String?) == 'base64';
       final host = Uri.parse(url).host;
       final hdr = headers.map((k, v) => MapEntry(k, v.toString()));
       // A cached clearance is attached; one is NOT solved for up front, even
@@ -521,7 +524,7 @@ class _JsHost {
       // expired) and must be dropped rather than reused.
       final sentClearance = _cfCookie.containsKey(host);
       debugPrint('[fetch] $method $url${wantCf ? ' (cf)' : ''}');
-      var resp = await _request(url, method, hdr, body, follow, tMs);
+      var resp = await _request(url, method, hdr, body, follow, tMs, wantBytes);
       // Auto-recover from a Cloudflare challenge even without the opt-in flag:
       // solve (once) and replay with the clearance. CRUCIALLY, also replay when
       // the cookie was JUST solved by a concurrent fetch for this host — without
@@ -551,7 +554,7 @@ class _JsHost {
         }
         if (_cfCookie.containsKey(host)) {
           _applyCf(host, hdr);
-          resp = await _request(url, method, hdr, body, follow, tMs);
+          resp = await _request(url, method, hdr, body, follow, tMs, wantBytes);
         } else {
           // Challenged, and we finished without a clearance — the solve failed,
           // timed out, or is in its cool-off. Record it so the UI can offer a
@@ -576,7 +579,13 @@ class _JsHost {
         'statusText': resp.statusMessage ?? '',
         'headers': responseHeaders,
         'url': resp.realUri.toString(),
-        'body': resp.data?.toString() ?? '',
+        // A binary body would stringify to a huge "[1, 2, 3, …]" array; it
+        // rides back as base64 instead and leaves `body` empty.
+        'body': wantBytes ? '' : (resp.data?.toString() ?? ''),
+        // Only for a binary request: the raw bytes as base64 so a provider can
+        // read them with arrayBuffer()/bytes() without UTF-8 mangling.
+        if (wantBytes)
+          'bodyB64': base64Encode(_rawResponseBytes(resp)),
       });
       _engine.post(
         '__resolveFetch(${jsonEncode(id)}, ${jsonEncode(responseJson)});',
@@ -615,12 +624,16 @@ class _JsHost {
     Map<String, String> headers,
     dynamic body,
     bool follow,
-    int tMs,
-  ) {
-    final key = '$method\u0000$url\u0000${body ?? ''}';
+    int tMs, [
+    bool wantBytes = false,
+  ]) {
+    // The response type is part of the identity: a text and a binary request
+    // for the same URL must not share one in-flight future.
+    final key = '$method\u0000$url\u0000${body ?? ''}\u0000$wantBytes';
     final running = _inFlightFetches[key];
     if (running != null) return running;
-    final started = _requestUnshared(url, method, headers, body, follow, tMs);
+    final started =
+        _requestUnshared(url, method, headers, body, follow, tMs, wantBytes);
     _inFlightFetches[key] = started;
     // Braces, NOT an arrow: Map.remove hands back the removed value, and
     // whenComplete awaits a returned Future — an arrow would await the very
@@ -639,8 +652,9 @@ class _JsHost {
     Map<String, String> headers,
     dynamic body,
     bool follow,
-    int tMs,
-  ) {
+    int tMs, [
+    bool wantBytes = false,
+  ]) {
     // `null` in Dio means "wait forever", which is what a provider fetch got
     // whenever the source didn't ask for a timeout — and WCCCNF shows the cost:
     // one title took 71.8s while every other request queued behind it. A
@@ -673,7 +687,9 @@ class _JsHost {
       options: Options(
         method: method,
         headers: headers,
-        responseType: ResponseType.plain,
+        // A binary request must not let Dio's UTF-8 text decode touch the body
+        // (it would replace malformed bytes); bytes are handed back as-is.
+        responseType: wantBytes ? ResponseType.bytes : ResponseType.plain,
         followRedirects: follow,
         maxRedirects: follow ? 5 : 0,
         validateStatus: (_) => true,
@@ -681,6 +697,16 @@ class _JsHost {
         sendTimeout: Duration(milliseconds: ms),
       ),
     );
+  }
+
+  /// The response's raw bytes, for a binary ([ResponseType.bytes]) request.
+  /// Dio already hands back a `List<int>`; a text lane that slipped through is
+  /// encoded back so a provider always gets the same base64 either way.
+  List<int> _rawResponseBytes(Response<dynamic> resp) {
+    final data = resp.data;
+    if (data is List<int>) return data;
+    if (data is Uint8List) return data;
+    return utf8.encode(data?.toString() ?? '');
   }
 
   /// Solve Cloudflare for [host] via the native WebView solver and cache the

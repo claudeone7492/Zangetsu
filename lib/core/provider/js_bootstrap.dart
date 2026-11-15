@@ -121,7 +121,21 @@ globalThis.__fetch = function(src, url, opts) {
         try { return Promise.resolve(JSON.parse(res.body || 'null')); }
         catch (e) { return Promise.reject('Invalid JSON: ' + e); }
       },
-      body: res.body || ''
+      // Raw bytes as a Uint8Array. Only populated for a fetch that asked for
+      // { responseType: 'base64' } — the native lane ships the body as base64
+      // so a binary response (a signed ticket, a packed PNG) survives the
+      // bridge intact, where UTF-8 text would corrupt it. Empty otherwise.
+      arrayBuffer: function() {
+        var bytes = globalThis.base64ToBytes(res.bodyB64 || '');
+        var u8 = new Uint8Array(bytes.length);
+        for (var i = 0; i < bytes.length; i++) u8[i] = bytes[i] & 255;
+        return Promise.resolve(u8.buffer);
+      },
+      bytes: function() {
+        return globalThis.base64ToBytes(res.bodyB64 || '');
+      },
+      body: res.body || '',
+      bodyB64: res.bodyB64 || ''
     };
   });
 };
