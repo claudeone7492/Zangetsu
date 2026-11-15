@@ -87,3 +87,6 @@ supabase/.temp/
 
 # Machine-local dependency overrides.
 /pubspec_overrides.yaml
+
+# Kotlin build session files
+android/.kotlin/

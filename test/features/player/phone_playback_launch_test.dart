@@ -129,6 +129,10 @@ void main() {
       int positionMs = 0,
       bool megaSkip = true,
       int megaSkipSeconds = 85,
+      bool nativeCacheEnabled = false,
+      int nativeCacheMb = 128,
+      bool diskCacheEnabled = false,
+      int diskCacheGb = 2,
     }) => phonePlayerArgs(
       source: source ?? _src(),
       positionMs: positionMs,
@@ -138,6 +142,10 @@ void main() {
       startIndex: 0,
       accentColor: 0xFFFF4D5E,
       softwareDecoding: false,
+      nativeCacheEnabled: nativeCacheEnabled,
+      nativeCacheMb: nativeCacheMb,
+      diskCacheEnabled: diskCacheEnabled,
+      diskCacheGb: diskCacheGb,
       defaultSpeed: 1.0,
       bufferParams: const {
         'minBufferMs': 15000,
@@ -170,6 +178,24 @@ void main() {
         expect(custom['seekSeconds'], 15);
         expect(args(megaSkipSeconds: 1)['megaSkipSeconds'], 5);
         expect(args(megaSkipSeconds: 999)['megaSkipSeconds'], 180);
+      },
+    );
+
+    test(
+      'extra native caches are opt-in and transmitted with bounded amounts',
+      () {
+        expect(args()['nativeCacheEnabled'], isFalse);
+        expect(args()['diskCacheEnabled'], isFalse);
+        final configured = args(
+          nativeCacheEnabled: true,
+          nativeCacheMb: 99999,
+          diskCacheEnabled: true,
+          diskCacheGb: -5,
+        );
+        expect(configured['nativeCacheEnabled'], isTrue);
+        expect(configured['nativeCacheMb'], 512);
+        expect(configured['diskCacheEnabled'], isTrue);
+        expect(configured['diskCacheGb'], 1);
       },
     );
 

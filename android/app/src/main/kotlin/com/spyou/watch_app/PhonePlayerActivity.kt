@@ -217,6 +217,7 @@ class PhonePlayerActivity : Activity() {
     private var subtitlePreference = ""
     private var subtitlePreferenceApplied = false
     private var playbackStarted = false
+    private var playbackDiskCache: androidx.media3.datasource.cache.Cache? = null
     private var resizeIndex = 0
     private var controlLayout = PhonePlayerControlLayout()
     private var controlsLocked = false
@@ -446,6 +447,7 @@ class PhonePlayerActivity : Activity() {
                     intent.getIntExtra(PhonePlayerIntent.EXTRA_BUF_MAX_MS, 0),
                     intent.getIntExtra(PhonePlayerIntent.EXTRA_BUF_BYTES, 0),
                     intent.getIntExtra(PhonePlayerIntent.EXTRA_BUF_BACK_MS, 0),
+                    maxHeapBytes = Runtime.getRuntime().maxMemory(),
                 ),
             )
             .build()
@@ -1362,8 +1364,23 @@ class PhonePlayerActivity : Activity() {
         // DefaultDataSource picks the reader off the scheme, so a downloaded
         // file:// or content:// plays through the local readers while streams
         // keep the headers and redirect handling above.
-        val sourceFactory =
-            DefaultMediaSourceFactory(DefaultDataSource.Factory(this, httpFactory))
+        val upstream = DefaultDataSource.Factory(this, httpFactory)
+        var dataSource: androidx.media3.datasource.DataSource.Factory = upstream
+        if (PhonePlaybackCache.supports(url, mime)) {
+            if (playbackDiskCache == null && intent.getBooleanExtra(PhonePlayerIntent.EXTRA_DISK_CACHE, false)) {
+                playbackDiskCache = try {
+                    val bytes = intent.getIntExtra(PhonePlayerIntent.EXTRA_DISK_CACHE_GB, 2)
+                        .coerceIn(1, 20) * 1024L * 1024 * 1024
+                    PhonePlaybackCache.acquire(this, bytes)
+                } catch (_: Exception) { null }
+            }
+            val nativeMb = if (intent.getBooleanExtra(PhonePlayerIntent.EXTRA_NATIVE_CACHE, false)) {
+                minOf(intent.getIntExtra(PhonePlayerIntent.EXTRA_NATIVE_CACHE_MB, 128).coerceIn(32, 512),
+                    PhonePlaybackCache.nativeLimitMb(this))
+            } else 0
+            dataSource = PhonePlaybackCache.factory(upstream, url, headers, playbackDiskCache, nativeMb * 1024 * 1024)
+        }
+        val sourceFactory = DefaultMediaSourceFactory(dataSource)
         p.setMediaSource(sourceFactory.createMediaSource(builder.build()))
         loadedEpisodeIndex = currentIndex
         if (positionMs > 0) p.seekTo(positionMs)
@@ -2956,6 +2973,10 @@ class PhonePlayerActivity : Activity() {
         PhonePlaybackService.stop(this)
         player?.release()
         player = null
+        if (playbackDiskCache != null) {
+            PhonePlaybackCache.release()
+            playbackDiskCache = null
+        }
         super.onDestroy()
     }
 

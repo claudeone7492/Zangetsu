@@ -198,7 +198,18 @@
     "readingProgress",
     "highlights",
     "highlight",
-    "autoRead"
+    "autoRead",
+    "androidPlayerCache",
+    "androidPlayerCacheSummary",
+    "androidPlayerCacheNote",
+    "androidNativeCache",
+    "androidNativeCacheDescription",
+    "androidNativeCacheUnavailable",
+    "androidDiskCache",
+    "androidDiskCacheDescription",
+    "androidCacheClear",
+    "androidCacheClearBusy",
+    "androidCacheUnavailable"
   ],
 
   "de": [
@@ -514,7 +525,18 @@
     "readingProgress",
     "highlights",
     "highlight",
-    "autoRead"
+    "autoRead",
+    "androidPlayerCache",
+    "androidPlayerCacheSummary",
+    "androidPlayerCacheNote",
+    "androidNativeCache",
+    "androidNativeCacheDescription",
+    "androidNativeCacheUnavailable",
+    "androidDiskCache",
+    "androidDiskCacheDescription",
+    "androidCacheClear",
+    "androidCacheClearBusy",
+    "androidCacheUnavailable"
   ],
 
   "es": [
@@ -830,7 +852,18 @@
     "readingProgress",
     "highlights",
     "highlight",
-    "autoRead"
+    "autoRead",
+    "androidPlayerCache",
+    "androidPlayerCacheSummary",
+    "androidPlayerCacheNote",
+    "androidNativeCache",
+    "androidNativeCacheDescription",
+    "androidNativeCacheUnavailable",
+    "androidDiskCache",
+    "androidDiskCacheDescription",
+    "androidCacheClear",
+    "androidCacheClearBusy",
+    "androidCacheUnavailable"
   ],
 
   "fr": [
@@ -1146,7 +1179,18 @@
     "readingProgress",
     "highlights",
     "highlight",
-    "autoRead"
+    "autoRead",
+    "androidPlayerCache",
+    "androidPlayerCacheSummary",
+    "androidPlayerCacheNote",
+    "androidNativeCache",
+    "androidNativeCacheDescription",
+    "androidNativeCacheUnavailable",
+    "androidDiskCache",
+    "androidDiskCacheDescription",
+    "androidCacheClear",
+    "androidCacheClearBusy",
+    "androidCacheUnavailable"
   ],
 
   "id": [
@@ -1348,7 +1392,18 @@
     "readingProgress",
     "highlights",
     "highlight",
-    "autoRead"
+    "autoRead",
+    "androidPlayerCache",
+    "androidPlayerCacheSummary",
+    "androidPlayerCacheNote",
+    "androidNativeCache",
+    "androidNativeCacheDescription",
+    "androidNativeCacheUnavailable",
+    "androidDiskCache",
+    "androidDiskCacheDescription",
+    "androidCacheClear",
+    "androidCacheClearBusy",
+    "androidCacheUnavailable"
   ],
 
   "it": [
@@ -1664,7 +1719,18 @@
     "readingProgress",
     "highlights",
     "highlight",
-    "autoRead"
+    "autoRead",
+    "androidPlayerCache",
+    "androidPlayerCacheSummary",
+    "androidPlayerCacheNote",
+    "androidNativeCache",
+    "androidNativeCacheDescription",
+    "androidNativeCacheUnavailable",
+    "androidDiskCache",
+    "androidDiskCacheDescription",
+    "androidCacheClear",
+    "androidCacheClearBusy",
+    "androidCacheUnavailable"
   ],
 
   "ja": [
@@ -1980,7 +2046,18 @@
     "readingProgress",
     "highlights",
     "highlight",
-    "autoRead"
+    "autoRead",
+    "androidPlayerCache",
+    "androidPlayerCacheSummary",
+    "androidPlayerCacheNote",
+    "androidNativeCache",
+    "androidNativeCacheDescription",
+    "androidNativeCacheUnavailable",
+    "androidDiskCache",
+    "androidDiskCacheDescription",
+    "androidCacheClear",
+    "androidCacheClearBusy",
+    "androidCacheUnavailable"
   ],
 
   "pt": [
@@ -2182,7 +2259,18 @@
     "readingProgress",
     "highlights",
     "highlight",
-    "autoRead"
+    "autoRead",
+    "androidPlayerCache",
+    "androidPlayerCacheSummary",
+    "androidPlayerCacheNote",
+    "androidNativeCache",
+    "androidNativeCacheDescription",
+    "androidNativeCacheUnavailable",
+    "androidDiskCache",
+    "androidDiskCacheDescription",
+    "androidCacheClear",
+    "androidCacheClearBusy",
+    "androidCacheUnavailable"
   ],
 
   "tr": [
@@ -2384,7 +2472,18 @@
     "readingProgress",
     "highlights",
     "highlight",
-    "autoRead"
+    "autoRead",
+    "androidPlayerCache",
+    "androidPlayerCacheSummary",
+    "androidPlayerCacheNote",
+    "androidNativeCache",
+    "androidNativeCacheDescription",
+    "androidNativeCacheUnavailable",
+    "androidDiskCache",
+    "androidDiskCacheDescription",
+    "androidCacheClear",
+    "androidCacheClearBusy",
+    "androidCacheUnavailable"
   ],
 
   "zh": [
@@ -2700,7 +2799,18 @@
     "readingProgress",
     "highlights",
     "highlight",
-    "autoRead"
+    "autoRead",
+    "androidPlayerCache",
+    "androidPlayerCacheSummary",
+    "androidPlayerCacheNote",
+    "androidNativeCache",
+    "androidNativeCacheDescription",
+    "androidNativeCacheUnavailable",
+    "androidDiskCache",
+    "androidDiskCacheDescription",
+    "androidCacheClear",
+    "androidCacheClearBusy",
+    "androidCacheUnavailable"
   ],
 
   "zh_TW": [
@@ -3016,6 +3126,17 @@
     "readingProgress",
     "highlights",
     "highlight",
-    "autoRead"
+    "autoRead",
+    "androidPlayerCache",
+    "androidPlayerCacheSummary",
+    "androidPlayerCacheNote",
+    "androidNativeCache",
+    "androidNativeCacheDescription",
+    "androidNativeCacheUnavailable",
+    "androidDiskCache",
+    "androidDiskCacheDescription",
+    "androidCacheClear",
+    "androidCacheClearBusy",
+    "androidCacheUnavailable"
   ]
 }
