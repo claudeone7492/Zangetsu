@@ -209,7 +209,9 @@
     "androidDiskCacheDescription",
     "androidCacheClear",
     "androidCacheClearBusy",
-    "androidCacheUnavailable"
+    "androidCacheUnavailable",
+    "autoPlayerFallback",
+    "autoPlayerFallbackDescription"
   ],
 
   "de": [
@@ -536,7 +538,9 @@
     "androidDiskCacheDescription",
     "androidCacheClear",
     "androidCacheClearBusy",
-    "androidCacheUnavailable"
+    "androidCacheUnavailable",
+    "autoPlayerFallback",
+    "autoPlayerFallbackDescription"
   ],
 
   "es": [
@@ -863,7 +867,9 @@
     "androidDiskCacheDescription",
     "androidCacheClear",
     "androidCacheClearBusy",
-    "androidCacheUnavailable"
+    "androidCacheUnavailable",
+    "autoPlayerFallback",
+    "autoPlayerFallbackDescription"
   ],
 
   "fr": [
@@ -1190,7 +1196,9 @@
     "androidDiskCacheDescription",
     "androidCacheClear",
     "androidCacheClearBusy",
-    "androidCacheUnavailable"
+    "androidCacheUnavailable",
+    "autoPlayerFallback",
+    "autoPlayerFallbackDescription"
   ],
 
   "id": [
@@ -1403,7 +1411,9 @@
     "androidDiskCacheDescription",
     "androidCacheClear",
     "androidCacheClearBusy",
-    "androidCacheUnavailable"
+    "androidCacheUnavailable",
+    "autoPlayerFallback",
+    "autoPlayerFallbackDescription"
   ],
 
   "it": [
@@ -1730,7 +1740,9 @@
     "androidDiskCacheDescription",
     "androidCacheClear",
     "androidCacheClearBusy",
-    "androidCacheUnavailable"
+    "androidCacheUnavailable",
+    "autoPlayerFallback",
+    "autoPlayerFallbackDescription"
   ],
 
   "ja": [
@@ -2057,7 +2069,9 @@
     "androidDiskCacheDescription",
     "androidCacheClear",
     "androidCacheClearBusy",
-    "androidCacheUnavailable"
+    "androidCacheUnavailable",
+    "autoPlayerFallback",
+    "autoPlayerFallbackDescription"
   ],
 
   "pt": [
@@ -2270,7 +2284,9 @@
     "androidDiskCacheDescription",
     "androidCacheClear",
     "androidCacheClearBusy",
-    "androidCacheUnavailable"
+    "androidCacheUnavailable",
+    "autoPlayerFallback",
+    "autoPlayerFallbackDescription"
   ],
 
   "tr": [
@@ -2483,7 +2499,9 @@
     "androidDiskCacheDescription",
     "androidCacheClear",
     "androidCacheClearBusy",
-    "androidCacheUnavailable"
+    "androidCacheUnavailable",
+    "autoPlayerFallback",
+    "autoPlayerFallbackDescription"
   ],
 
   "zh": [
@@ -2810,7 +2828,9 @@
     "androidDiskCacheDescription",
     "androidCacheClear",
     "androidCacheClearBusy",
-    "androidCacheUnavailable"
+    "androidCacheUnavailable",
+    "autoPlayerFallback",
+    "autoPlayerFallbackDescription"
   ],
 
   "zh_TW": [
@@ -3137,6 +3157,8 @@
     "androidDiskCacheDescription",
     "androidCacheClear",
     "androidCacheClearBusy",
-    "androidCacheUnavailable"
+    "androidCacheUnavailable",
+    "autoPlayerFallback",
+    "autoPlayerFallbackDescription"
   ]
 }

@@ -63,6 +63,9 @@ object PhonePlayerIntent {
     // PiP + background playback, read from the player-screen Settings toggles.
     const val EXTRA_AUTO_PIP = "autoPip"
     const val EXTRA_BACKGROUND_PLAYBACK = "backgroundPlayback"
+    // Opt-in engine fallback: the phone player asks Dart to relaunch in mpv
+    // when the experimental native player cannot play the stream.
+    const val EXTRA_AUTO_ENGINE_FALLBACK = "autoPlayerFallback"
 
     // Reported over the channel on close, not via setResult — the phone player
     // is started with startActivity, so there is no onActivityResult to hook.
