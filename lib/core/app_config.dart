@@ -99,7 +99,7 @@ const String kProfilePickerArtworkManifestUrl =
 /// The app READS this on launch to show in-app announcements — never writes.
 /// Edit + push that file to broadcast a message to every user.
 const String kAnnouncementsUrl =
-    'https://raw.githubusercontent.com/Spyou/Zangetsu/main/announcements.json';
+    'https://raw.githubusercontent.com/claudeone7492/Zangetsu/main/announcements.json';
 
 /// TMDB API key for movie/TV trailer lookups (TrailerService). Anime trailers
 /// use AniList and need no key. Supply via `--dart-define=TMDB_API_KEY=...`,
