@@ -7,6 +7,7 @@ import '../models/media_item.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import 'banner_actions.dart';
+import 'banner_image_preloader.dart';
 import 'featured_carousel.dart' show heroHeightFor;
 import 'featured_hero.dart' show HeroMeta, heroTopReserve;
 import 'image_fade.dart';
@@ -52,6 +53,7 @@ class _FeaturedBannerPanelsState extends State<FeaturedBannerPanels> {
   late List<MediaItem> _pages;
   int _i = 0;
   Timer? _timer;
+  final _imagePreloader = BannerImagePreloader();
 
   MediaItem _at(int offset) => _pages[(_i + offset) % _pages.length];
   static String? _art(MediaItem m) => m.banner ?? m.cover;
@@ -79,6 +81,7 @@ class _FeaturedBannerPanelsState extends State<FeaturedBannerPanels> {
 
   @override
   void dispose() {
+    _imagePreloader.dispose();
     _timer?.cancel();
     super.dispose();
   }
@@ -102,6 +105,22 @@ class _FeaturedBannerPanelsState extends State<FeaturedBannerPanels> {
   Widget build(BuildContext context) {
     final height = heroHeightFor(context);
     if (_pages.isEmpty) return SizedBox(height: height);
+
+    final mq = MediaQuery.of(context);
+    _imagePreloader.warm(
+      context,
+      _pages,
+      _i,
+      artwork: (item) {
+        final url = _art(item);
+        return url == null || url.isEmpty
+            ? null
+            : ResizeImage(
+                nativeCoverProvider(url, item.coverHeaders),
+                width: (mq.size.width * mq.devicePixelRatio * 0.7).round(),
+              );
+      },
+    );
 
     final top = heroTopReserve(MediaQuery.paddingOf(context).top);
 
