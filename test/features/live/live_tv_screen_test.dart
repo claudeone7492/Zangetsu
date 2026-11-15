@@ -110,9 +110,14 @@ class _FakeSourceRepository implements SourceRepository {
     liveCalls++;
     if (fail) throw StateError('sports down');
     // Each sports source contributes its own fixtures; the merge dedupes none,
-    // so a source that answers nothing simply adds nothing.
+    // so a source that answers nothing simply adds nothing. The first two
+    // sources carry a fixture each and every further one is empty, so a third
+    // source added to [kLiveSportsSourceIds] doesn't duplicate a card.
     if (sourceId == kLiveSportsSourceIds.first) return liveMatches ?? const [];
-    return secondaryMatches ?? const [];
+    if (sourceId == kLiveSportsSourceIds.elementAt(1)) {
+      return secondaryMatches ?? const [];
+    }
+    return const [];
   }
 
   @override

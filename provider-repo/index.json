@@ -193,6 +193,16 @@
       "nsfw": false
     },
     {
+      "id": "cdnlivetv",
+      "name": "CDNLive TV",
+      "version": "1.0.0",
+      "type": "movie",
+      "lang": "en",
+      "file": "../providers/cdnlivetv.js",
+      "logo": "https://cdnlivetv.tv/favicon.ico",
+      "nsfw": false
+    },
+    {
       "id": "novelfire",
       "name": "NovelFire",
       "version": "1.0.0",

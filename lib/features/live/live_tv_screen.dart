@@ -37,7 +37,11 @@ const String kLiveTvSourceId = 'iptv';
 /// channels plus matches). Both are asked in parallel and merged, in this
 /// order, so an installed-but-empty source simply contributes nothing. A source
 /// that isn't installed is skipped before the call.
-const List<String> kLiveSportsSourceIds = <String>['moviebox', 'streamfree'];
+const List<String> kLiveSportsSourceIds = <String>[
+  'cdnlivetv',
+  'moviebox',
+  'streamfree',
+];
 
 /// Order the channel rows are shown in. "Default" keeps the catalogue's own
 /// order (usually popularity), which is the only one that means anything for
