@@ -3,7 +3,26 @@ import 'dart:math';
 import '../../core/models/watch_status.dart';
 import '../../core/mode/content_mode.dart';
 import '../../core/playback/category_store.dart';
+import '../../core/tracker/tracker.dart';
+import '../../core/tracker/tracker_hub.dart';
 import 'cubit/my_list_cubit.dart';
+
+List<ContentMode> libraryKindsForTracker(Tracker? tracker) => [
+  for (final mode in ContentMode.values)
+    // Shorts has no list of its own — it shares the video list — so it is
+    // never a category tab (see listKindOf in my_list_screen.dart).
+    if (mode != ContentMode.shorts &&
+        (tracker == null ||
+            (mode.isReading
+                ? tracker.supportsReading
+                : trackerSupportsVideo(tracker))))
+      mode,
+];
+
+ContentMode libraryKindForTracker(Tracker? tracker, ContentMode preferred) {
+  final kinds = libraryKindsForTracker(tracker);
+  return kinds.contains(preferred) ? preferred : kinds.first;
+}
 
 /// Picks one entry from the already-filtered library view, or null when it is
 /// empty. The optional [random] keeps the choice deterministic in tests.
