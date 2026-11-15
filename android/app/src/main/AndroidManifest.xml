@@ -263,7 +263,7 @@
             android:screenOrientation="unspecified"
             android:supportsPictureInPicture="true"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" />
+            android:theme="@style/Theme.PhonePlayer" />
         <!-- Keeps the native phone player's audio running (and its media
             notification alive) while the app is backgrounded or the player is
             in PiP. mediaPlayback type so Android 14+ accepts it for playback. -->

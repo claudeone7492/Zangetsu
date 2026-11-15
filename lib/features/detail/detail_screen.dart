@@ -95,6 +95,7 @@ import '../../core/tracker/tracker_binding_store.dart';
 import '../../core/tracker/tracker_hub.dart';
 import '../../core/stremio/stremio_manager.dart';
 import '../../core/stremio/stremio_ref.dart';
+import '../../core/stremio/stremio_stream_mapping.dart';
 import '../../core/playback/playback_prefs.dart';
 import '../player/mpv_player_pool.dart';
 import '../../core/playback/resume_store.dart';
@@ -1665,7 +1666,16 @@ class _DetailViewState extends State<_DetailView>
 
     Navigator.of(context)
         .push(
-          EpisodePlayerRoute(
+          episodePlayerRoute(
+            nativeHandoff:
+                Platform.isAndroid &&
+                stremioPlayerPackage(
+                      widget.item.sourceId,
+                      initialSource,
+                      playerOverride?.package ??
+                          sl<PlaybackPrefs>().externalPlayerPackage,
+                    ) ==
+                    PlaybackPrefs.androidPlayerId,
             builder: (_) => PlayerScreen(
               playerOverride: playerOverride?.package,
               initialSource: initialSource,
