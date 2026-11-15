@@ -58,6 +58,8 @@
 	"read": "阅读",
 	"web": "网页",
 	"live": "居住",
+	"liveTextOnly": "仅文字解说 — 无视频流",
+	"liveTextOnlyShort": "仅文字",
 	"sub": "子",
 	"dub": "配音",
 	"nsfw": "NSFW",

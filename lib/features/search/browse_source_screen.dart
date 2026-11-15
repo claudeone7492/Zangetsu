@@ -688,6 +688,7 @@ class _BrowseSourceViewState extends State<_BrowseSourceView> {
                       dubBadge: items[j].dubBadge,
                       liveBadge: items[j].liveBadge,
                       liveInfo: items[j].liveInfo,
+                      liveUnplayable: items[j].liveUnplayable,
                       onTap: () => _openDetail(context, items[j]),
                     ),
                   );
@@ -785,6 +786,7 @@ class _BrowseSourceViewState extends State<_BrowseSourceView> {
             dubBadge: item.dubBadge,
             liveBadge: item.liveBadge,
             liveInfo: item.liveInfo,
+            liveUnplayable: item.liveUnplayable,
             cellWidth: posterGridCellWidth(context),
             onTap: () => _openDetail(context, item),
           );

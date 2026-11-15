@@ -24,6 +24,7 @@ class TvPosterTile extends StatelessWidget {
     this.progressBadge,
     this.liveBadge,
     this.liveInfo,
+    this.liveUnplayable = false,
     this.logoItem,
     required this.onTap,
     this.onLongPress,
@@ -47,6 +48,9 @@ class TvPosterTile extends StatelessWidget {
   /// Live-sports chip + info line. See [PosterCard.liveBadge].
   final String? liveBadge;
   final String? liveInfo;
+
+  /// Text-only fixture marker. See [PosterCard.liveUnplayable].
+  final bool liveUnplayable;
   final MediaItem? logoItem;
 
   final VoidCallback onTap;
@@ -88,6 +92,7 @@ class TvPosterTile extends StatelessWidget {
                   progressBadge: progressBadge,
                   liveBadge: liveBadge,
                   liveInfo: liveInfo,
+                  liveUnplayable: liveUnplayable,
                   cellWidth: constraints.maxWidth,
                   showTitle: false,
                   // Touch gestures are disabled on TV; TvFocusable handles OK-key

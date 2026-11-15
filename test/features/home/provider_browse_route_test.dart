@@ -3,8 +3,19 @@
 // whether a tapped row is a title or an extension, and how to unwrap the
 // provider's own spec from the app's scheme prefix.
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watch_app/core/models/media_item.dart';
+import 'package:watch_app/core/models/provider_info.dart';
+import 'package:watch_app/core/repository/catalogue_repository.dart';
 import 'package:watch_app/features/home/provider_browse_route.dart';
+
+/// Nothing here is ever reached: the tap under test must be answered before a
+/// player or a listing is opened.
+class _NoopRepo implements CatalogueRepository {
+  @override
+  noSuchMethod(Invocation i) => super.noSuchMethod(i);
+}
 
 void main() {
   group('isProviderExtensionUrl', () {
@@ -36,6 +47,49 @@ void main() {
     test('passes through a bare spec or an unknown url unchanged', () {
       expect(browseSpecOf('platform|Netflix'), 'platform|Netflix');
       expect(browseSpecOf('mb:123|slug|2'), 'mb:123|slug|2');
+    });
+  });
+
+  group('openProviderExtensionItem', () {
+    testWidgets('a text-only fixture is refused with an explanation, not a player', (
+      tester,
+    ) async {
+      final item = MediaItem(
+        id: 't1',
+        title: 'Text Only United',
+        url: 'live:t1|',
+        type: ProviderType.movie,
+        sourceId: 'mb',
+        liveBadge: 'LIVE',
+        liveUnplayable: true,
+      );
+
+      late bool handled;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () async {
+                  handled = await openProviderExtensionItem(
+                    context,
+                    item,
+                    repository: _NoopRepo(),
+                  );
+                },
+                child: const Text('tap'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('tap'));
+      await tester.pump();
+
+      expect(handled, isTrue);
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.textContaining('Text commentary'), findsOneWidget);
     });
   });
 }

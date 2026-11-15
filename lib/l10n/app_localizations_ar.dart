@@ -201,6 +201,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get liveSports => 'Live Sports';
 
   @override
+  String get liveTextOnly => 'تعليق نصي فقط — لا يوجد بث فيديو';
+
+  @override
+  String get liveTextOnlyShort => 'نص فقط';
+
+  @override
   String get sub => 'مترجم';
 
   @override

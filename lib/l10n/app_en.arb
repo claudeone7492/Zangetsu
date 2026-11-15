@@ -64,6 +64,8 @@
 	"live": "Live",
 	"liveTv": "Live TV",
 	"liveSports": "Live Sports",
+	"liveTextOnly": "Text commentary only — no video stream",
+	"liveTextOnlyShort": "Text only",
 	"sub": "Sub",
 	"dub": "Dub",
 	"nsfw": "NSFW",

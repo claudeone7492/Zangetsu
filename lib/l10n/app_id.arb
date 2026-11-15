@@ -58,6 +58,8 @@
 	"read": "Baca",
 	"web": "Web",
 	"live": "Live",
+	"liveTextOnly": "Hanya komentar teks — tanpa video",
+	"liveTextOnlyShort": "Teks saja",
 	"sub": "Sub",
 	"dub": "Dubbing",
 	"nsfw": "NSFW",

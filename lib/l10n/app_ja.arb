@@ -58,6 +58,8 @@
 	"read": "読む",
 	"web": "ウェブ",
 	"live": "ライブ",
+	"liveTextOnly": "テキスト速報のみ — 動画配信なし",
+	"liveTextOnlyShort": "テキストのみ",
 	"sub": "サブ",
 	"dub": "吹き替え版",
 	"nsfw": "NSFW",

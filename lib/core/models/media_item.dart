@@ -140,6 +140,13 @@ class MediaItem extends Equatable {
   /// the feed. Null when the source reports no start time (24/7 channels).
   final int? liveStartMs;
 
+  /// True when a live fixture has no video broadcast to play — a text-only
+  /// match centre (`PlayTypeText`). The card still shows the fixture and its
+  /// score, but a tap must not open a player that resolves zero sources; the
+  /// UI says so instead. False on every ordinary title and every fixture that
+  /// carries a stream.
+  final bool liveUnplayable;
+
   const MediaItem({
     required this.id,
     required this.title,
@@ -170,6 +177,7 @@ class MediaItem extends Equatable {
     this.liveBadge,
     this.liveInfo,
     this.liveStartMs,
+    this.liveUnplayable = false,
   });
 
   factory MediaItem.fromJson(Map<String, dynamic> json) =>
@@ -190,6 +198,7 @@ class MediaItem extends Equatable {
     String? liveBadge,
     String? liveInfo,
     int? liveStartMs,
+    bool? liveUnplayable,
     bool clearLiveStart = false,
   }) => MediaItem(
     id: id,
@@ -225,6 +234,7 @@ class MediaItem extends Equatable {
     liveBadge: liveBadge ?? this.liveBadge,
     liveInfo: liveInfo ?? this.liveInfo,
     liveStartMs: clearLiveStart ? null : (liveStartMs ?? this.liveStartMs),
+    liveUnplayable: liveUnplayable ?? this.liveUnplayable,
   );
 
   @override
@@ -256,6 +266,7 @@ class MediaItem extends Equatable {
     liveBadge,
     liveInfo,
     liveStartMs,
+    liveUnplayable,
   ];
 }
 

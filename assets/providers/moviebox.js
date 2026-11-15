@@ -281,13 +281,25 @@ function _filterRail(d) {
 // from the FILTER shortcuts, then one rail per streaming platform. A rail that
 // comes back empty is dropped rather than shown as a blank row.
 function getHome(opts) {
-  return _home().then(function (d) {
+  // The live rail is fetched from the sports endpoint rather than read out of
+  // the home payload: the payload's SPORT_LIVE block omits `playType`, so it
+  // cannot tell a fixture with a video broadcast from a text-only match centre
+  // — every card would look playable and half of them would open a player with
+  // no sources. The sports list carries the flag; if that call fails we fall
+  // back to the payload rail so the row still appears.
+  return Promise.all([_home(), getLive()]).then(function (res) {
+    var d = res[0];
+    var liveItems = res[1] || [];
     var ops = d.operatingList || [];
     var out = [];
     // Live matches lead the page — they are the one row that is only useful
     // while it is current.
-    var live = _homeLive(d);
-    if (live) out.push(live);
+    if (liveItems.length) {
+      out.push({ title: 'Live', items: liveItems });
+    } else {
+      var live = _homeLive(d);
+      if (live) out.push(live);
+    }
     for (var i = 0; i < ops.length; i++) {
       var o = ops[i];
       if (!o || !o.title || o.type === 'FILTER' || o.type === 'SPORT_LIVE') continue;
@@ -676,6 +688,22 @@ function _liveInfo(m) {
   return parts.length ? parts.join(' \u00B7 ') : null;
 }
 
+// Whether a fixture actually has a video broadcast to play.
+//
+// The API tags every fixture with a `playType`: `PlayTypeVideo` for one with a
+// stream, `PlayTypeText` for a text-only match centre (live commentary, no
+// picture). Plenty of in-play football fixtures are `PlayTypeText` — they read
+// as LIVE on the poster but carry no `playPath`/`playSource`, so tapping one
+// resolves zero sources and the player reports "no sources". Marking those
+// non-playable lets the card say so instead of promising a stream it cannot
+// open. A missing `playType` (the home rail omits it) is treated as playable so
+// a payload change never hides every fixture.
+function _matchPlayable(m) {
+  if (!m) return false;
+  if (m.playType === 'PlayTypeText') return false;
+  return true;
+}
+
 function _mapMatch(m) {
   if (!m) return null;
   var t1 = m.team1 || {};
@@ -701,6 +729,9 @@ function _mapMatch(m) {
     liveBadge: _liveBadge(status, startMs),
     liveStartMs: startMs || null
   };
+  // Text-only fixtures carry no stream; flag them so the card can say so and a
+  // tap does not open a player that resolves nothing.
+  if (!_matchPlayable(m)) item.liveUnplayable = true;
   var info = _liveInfo(m);
   if (info) item.liveInfo = info;
   if (m.league) item.genres = [m.league];

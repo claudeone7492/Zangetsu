@@ -157,6 +157,7 @@ class TvRail extends StatelessWidget {
                               dubBadge: item.dubBadge,
                               liveBadge: item.liveBadge,
                               liveInfo: item.liveInfo,
+                              liveUnplayable: item.liveUnplayable,
                               scoreBadge: item.score,
                               showTitle: false,
                               onTap: null,

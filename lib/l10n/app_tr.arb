@@ -58,6 +58,8 @@
 	"read": "Oku",
 	"web": "Web",
 	"live": "Canlı",
+	"liveTextOnly": "Yalnızca metin anlatımı — video akışı yok",
+	"liveTextOnlyShort": "Yalnız metin",
 	"sub": "Altyazılı",
 	"dub": "Dublaj",
 	"nsfw": "NSFW",

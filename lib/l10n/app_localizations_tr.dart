@@ -201,6 +201,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get liveSports => 'Live Sports';
 
   @override
+  String get liveTextOnly => 'Yalnızca metin anlatımı — video akışı yok';
+
+  @override
+  String get liveTextOnlyShort => 'Yalnız metin';
+
+  @override
   String get sub => 'Altyazılı';
 
   @override

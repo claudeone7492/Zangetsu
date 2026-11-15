@@ -201,6 +201,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get liveSports => 'Live Sports';
 
   @override
+  String get liveTextOnly => 'Apenas comentário em texto — sem vídeo';
+
+  @override
+  String get liveTextOnlyShort => 'Só texto';
+
+  @override
   String get sub => 'Legendado';
 
   @override

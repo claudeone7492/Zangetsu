@@ -58,6 +58,8 @@
 	"read": "Ler",
 	"web": "Web",
 	"live": "Ao vivo",
+	"liveTextOnly": "Apenas comentário em texto — sem vídeo",
+	"liveTextOnlyShort": "Só texto",
 	"sub": "Legendado",
 	"dub": "Dublado",
 	"nsfw": "NSFW",

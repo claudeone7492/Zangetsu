@@ -432,6 +432,7 @@ class SourceCatalogueHomeContentState
         dubBadge: item.dubBadge,
         liveBadge: item.liveBadge,
         liveInfo: item.liveInfo,
+        liveUnplayable: item.liveUnplayable,
         onTap: () => _openItem(item),
       );
     },

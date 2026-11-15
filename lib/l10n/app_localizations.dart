@@ -501,6 +501,18 @@ abstract class AppLocalizations {
   /// **'Live Sports'**
   String get liveSports;
 
+  /// No description provided for @liveTextOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Text commentary only — no video stream'**
+  String get liveTextOnly;
+
+  /// No description provided for @liveTextOnlyShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Text only'**
+  String get liveTextOnlyShort;
+
   /// No description provided for @sub.
   ///
   /// In en, this message translates to:

@@ -58,6 +58,8 @@
 	"read": "Lesen",
 	"web": "Netz",
 	"live": "LIVE",
+	"liveTextOnly": "Nur Textkommentar — kein Videostream",
+	"liveTextOnlyShort": "Nur Text",
 	"sub": "Unter",
 	"dub": "DUB",
 	"nsfw": "Nicht jugendfrei",

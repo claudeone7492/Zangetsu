@@ -315,9 +315,13 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     return [for (final e in indexed) e.value];
   }
 
-  /// 0 in play, 2 finished, 1 for everything else — an upcoming kickoff, or a
-  /// 24/7 channel the source gives no kickoff at all.
+  /// Ordering rank for a fixture. A playable in-play match leads (0), then a
+  /// playable upcoming one (1), a playable finished one (2). Text-only
+  /// fixtures — no video broadcast, so a tap can only explain that — sink to
+  /// the end (3): they are real fixtures worth showing, but they must never
+  /// push something the user can actually watch below the fold.
   static int _liveRank(MediaItem m) {
+    if (m.liveUnplayable) return 3;
     final badge = m.liveBadge?.toUpperCase();
     if (badge == 'LIVE') return 0;
     if (badge == 'FT') return 2;
@@ -653,6 +657,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
                 // bare posters and the enrichment had nowhere to land.
                 liveBadge: item.liveBadge,
                 liveInfo: item.liveInfo,
+                liveUnplayable: item.liveUnplayable,
                 onTap: () => _open(item),
                 cellWidth: _phoneCardWidth,
               );
@@ -709,6 +714,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
           genres: item.genres,
           liveBadge: item.liveBadge,
           liveInfo: item.liveInfo,
+          liveUnplayable: item.liveUnplayable,
           onTap: () => _open(item),
         );
       },
@@ -945,6 +951,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
           dubBadge: item.dubBadge,
           liveBadge: item.liveBadge,
           liveInfo: item.liveInfo,
+          liveUnplayable: item.liveUnplayable,
           onTap: () => _open(item),
         );
       },

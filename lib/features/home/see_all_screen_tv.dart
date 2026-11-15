@@ -359,6 +359,7 @@ class _SeeAllScreenTvState extends State<SeeAllScreenTv> {
                   dubBadge: item.dubBadge,
                   liveBadge: item.liveBadge,
                   liveInfo: item.liveInfo,
+                  liveUnplayable: item.liveUnplayable,
                   tags: widget.tagsFor?.call(item) ?? const [],
                   onTap: () => widget.onTap(item),
                   onLongPress: widget.onLongPress == null

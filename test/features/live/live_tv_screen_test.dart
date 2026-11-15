@@ -31,6 +31,7 @@ MediaItem _match(
   String title, {
   String? badge,
   String? info,
+  bool unplayable = false,
 }) => MediaItem(
   id: id,
   title: title,
@@ -39,6 +40,7 @@ MediaItem _match(
   sourceId: kLiveSportsSourceIds.first,
   liveBadge: badge,
   liveInfo: info,
+  liveUnplayable: unplayable,
 );
 
 class _FakeSourceRepository implements SourceRepository {
@@ -425,6 +427,46 @@ void main() {
       tester.getTopLeft(find.text('England vs Croatia')).dx,
       lessThan(tester.getTopLeft(find.text('Yesterday FC vs Old Town')).dx),
     );
+  });
+
+  testWidgets('text-only fixtures sink below playable ones', (tester) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+      ],
+      // A text-only match centre carries no stream, so a tap could only ever
+      // explain that. It must not push a fixture the user can actually watch
+      // off the front of the rail, whatever its in-play badge says.
+      liveMatches: [
+        _match('t1', 'Text Only United', badge: 'LIVE', unplayable: true),
+        _match('p1', 'England vs Croatia', badge: 'LIVE'),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.getTopLeft(find.text('England vs Croatia')).dx,
+      lessThan(tester.getTopLeft(find.text('Text Only United')).dx),
+    );
+  });
+
+  testWidgets('a text-only fixture is marked on its card', (tester) async {
+    final repo = _FakeSourceRepository(
+      sections: const [],
+      liveMatches: [_match('t1', 'Text Only United', badge: 'LIVE', unplayable: true)],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    // The badge alone says "LIVE"; the marker is what tells the user the card
+    // will not play.
+    expect(find.text('LIVE'), findsOneWidget);
+    expect(find.text('Text only'), findsOneWidget);
   });
 
   testWidgets('the phone rail paints each match badge and info line', (

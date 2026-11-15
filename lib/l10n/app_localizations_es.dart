@@ -201,6 +201,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get liveSports => 'Live Sports';
 
   @override
+  String get liveTextOnly => 'Solo comentario de texto — sin vídeo';
+
+  @override
+  String get liveTextOnlyShort => 'Solo texto';
+
+  @override
   String get sub => 'Sub';
 
   @override

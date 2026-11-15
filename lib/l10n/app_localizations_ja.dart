@@ -201,6 +201,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get liveSports => 'Live Sports';
 
   @override
+  String get liveTextOnly => 'テキスト速報のみ — 動画配信なし';
+
+  @override
+  String get liveTextOnlyShort => 'テキストのみ';
+
+  @override
   String get sub => 'サブ';
 
   @override

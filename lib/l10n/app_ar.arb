@@ -58,6 +58,8 @@
 	"read": "قراءة",
 	"web": "الويب",
 	"live": "مباشر",
+	"liveTextOnly": "تعليق نصي فقط — لا يوجد بث فيديو",
+	"liveTextOnlyShort": "نص فقط",
 	"sub": "مترجم",
 	"dub": "مدبلج",
 	"nsfw": "NSFW",

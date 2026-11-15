@@ -201,6 +201,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get liveSports => 'Live Sports';
 
   @override
+  String get liveTextOnly => '仅文字解说 — 无视频流';
+
+  @override
+  String get liveTextOnlyShort => '仅文字';
+
+  @override
   String get sub => '子';
 
   @override
@@ -6049,6 +6055,12 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get live => '居住';
+
+  @override
+  String get liveTextOnly => '僅文字解說 — 無影片串流';
+
+  @override
+  String get liveTextOnlyShort => '僅文字';
 
   @override
   String get sub => '子';

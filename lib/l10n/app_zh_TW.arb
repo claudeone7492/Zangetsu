@@ -58,6 +58,8 @@
 	"read": "閱讀",
 	"web": "網路",
 	"live": "居住",
+	"liveTextOnly": "僅文字解說 — 無影片串流",
+	"liveTextOnlyShort": "僅文字",
 	"sub": "子",
 	"dub": "配音",
 	"nsfw": "NSFW",

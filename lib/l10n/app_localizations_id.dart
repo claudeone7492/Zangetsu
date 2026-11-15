@@ -201,6 +201,12 @@ class AppLocalizationsId extends AppLocalizations {
   String get liveSports => 'Live Sports';
 
   @override
+  String get liveTextOnly => 'Hanya komentar teks — tanpa video';
+
+  @override
+  String get liveTextOnlyShort => 'Teks saja';
+
+  @override
   String get sub => 'Sub';
 
   @override

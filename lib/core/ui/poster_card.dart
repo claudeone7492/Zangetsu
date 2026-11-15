@@ -7,6 +7,7 @@ import '../di/injector.dart';
 import '../metadata/title_logo_service.dart';
 import '../models/media_item.dart';
 import '../playback/playback_prefs.dart';
+import '../../l10n/l10n.dart';
 
 import 'image_fade.dart';
 import '../aniyomi/aniyomi_image_provider.dart';
@@ -49,6 +50,7 @@ class PosterCard extends StatefulWidget {
     this.progressBadge,
     this.liveBadge,
     this.liveInfo,
+    this.liveUnplayable = false,
   });
   final String title;
   final String? imageUrl;
@@ -95,6 +97,12 @@ class PosterCard extends StatefulWidget {
   /// when the source reports one), drawn along the bottom of the art above the
   /// title. Null when the fixture has nothing more to say than [liveBadge].
   final String? liveInfo;
+
+  /// True for a live fixture with no video stream (a text-only match centre).
+  /// The card keeps its badge and score but gains a muted corner tag so the
+  /// user can tell at a glance which fixtures actually play — tapping one shows
+  /// an explanation rather than a player that resolves nothing.
+  final bool liveUnplayable;
 
   /// When false, omit an external title. An inside-image title still follows
   /// the saved placement setting, including TV cards.
@@ -401,7 +409,17 @@ class _PosterCardState extends State<PosterCard> {
                         Positioned(
                           top: 6,
                           left: 6,
-                          child: _LiveTag(liveBadge),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _LiveTag(liveBadge),
+                              if (widget.liveUnplayable) ...[
+                                const SizedBox(height: 3),
+                                _PosterTag(context.l10n.liveTextOnlyShort),
+                              ],
+                            ],
+                          ),
                         ),
                       if (widget.qualityBadge != null &&
                           (prefs?.posterQualityBadge ?? true))

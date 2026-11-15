@@ -1259,6 +1259,7 @@ class _SearchScreenTvState extends State<SearchScreenTv> {
           dubBadge: item.dubBadge,
           liveBadge: item.liveBadge,
           liveInfo: item.liveInfo,
+          liveUnplayable: item.liveUnplayable,
           onTap: () => _openDetail(item),
         );
       },
@@ -1361,6 +1362,7 @@ class _SearchScreenTvState extends State<SearchScreenTv> {
                         dubBadge: item.dubBadge,
                         liveBadge: item.liveBadge,
                         liveInfo: item.liveInfo,
+                        liveUnplayable: item.liveUnplayable,
                         onTap: () => _openDetail(item),
                       ),
                     ),

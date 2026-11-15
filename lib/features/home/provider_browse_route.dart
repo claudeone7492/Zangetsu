@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/di/injector.dart';
+import '../../l10n/l10n.dart';
 import '../../core/models/episode.dart';
 import '../../core/models/media_item.dart';
 import '../../core/playback/resume_store.dart';
@@ -37,6 +38,14 @@ Future<bool> openProviderExtensionItem(
   if (!isProviderExtensionUrl(url)) return false;
   final repo = repository ?? sl<CatalogueRepository>();
   if (url.startsWith('live:')) {
+    // A text-only match centre carries no stream — tapping it would open a
+    // player that resolves nothing. Say why instead of doing that.
+    if (item.liveUnplayable) {
+      ScaffoldMessenger.maybeOf(context)
+        ?..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(context.l10n.liveTextOnly)));
+      return true;
+    }
     _openLive(context, item, repo);
     return true;
   }
