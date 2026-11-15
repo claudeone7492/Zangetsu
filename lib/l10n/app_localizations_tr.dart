@@ -3000,6 +3000,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get copyLink => 'Bağlantıyı kopyala';
 
   @override
+  String get playbackLinkCopied => 'Link copied';
+
+  @override
+  String get couldNotCopyLink => 'Could not copy link';
+
+  @override
   String get removeTracking => 'İzlemeyi kaldır';
 
   @override

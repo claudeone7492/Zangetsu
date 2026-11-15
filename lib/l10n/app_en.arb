@@ -1062,6 +1062,8 @@
 	"openInBrowser": "Open in browser",
 	"markAsRead": "Mark as read",
 	"copyLink": "Copy link",
+	"playbackLinkCopied": "Link copied",
+	"couldNotCopyLink": "Could not copy link",
 	"removeTracking": "Remove tracking",
 	"noTrackersConnectedNConnectOneInSettingsConnections": "No trackers connected.\\nConnect one in Settings → Connections.",
 	"syncAllAtOnce": "Sync all at once",

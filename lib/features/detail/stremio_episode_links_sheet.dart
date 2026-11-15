@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:zangetsu_source_bridge/stremio.dart';
 
 import '../../core/app_mode.dart';
+import '../../core/ui/copy_playback_link.dart';
 import '../../core/di/injector.dart';
 import '../../core/models/video_source.dart';
 import '../../core/stremio/stremio_link_session.dart';
@@ -270,6 +271,13 @@ class _StremioLinksSheetState extends State<_StremioLinksSheet> {
                 ),
           trailing: const Icon(Icons.play_arrow_rounded, size: 20),
           onTap: _picking ? null : () => _choose(choice),
+          onLongPress: () {
+            final source = stremioVideoSource(
+              choice,
+              allowTorrent: _allowTorrent,
+            );
+            if (source != null) copyPlaybackLink(context, source.url);
+          },
         );
       },
     );

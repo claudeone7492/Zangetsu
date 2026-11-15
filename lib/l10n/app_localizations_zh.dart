@@ -2903,6 +2903,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get copyLink => '复制链接';
 
   @override
+  String get playbackLinkCopied => 'Link copied';
+
+  @override
+  String get couldNotCopyLink => 'Could not copy link';
+
+  @override
   String get removeTracking => '取消追番';
 
   @override

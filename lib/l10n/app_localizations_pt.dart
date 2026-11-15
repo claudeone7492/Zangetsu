@@ -3021,6 +3021,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get copyLink => 'Copiar link';
 
   @override
+  String get playbackLinkCopied => 'Link copied';
+
+  @override
+  String get couldNotCopyLink => 'Could not copy link';
+
+  @override
   String get removeTracking => 'Remover rastreamento';
 
   @override

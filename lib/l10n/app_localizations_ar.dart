@@ -2998,6 +2998,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get copyLink => 'نسخ الرابط';
 
   @override
+  String get playbackLinkCopied => 'Link copied';
+
+  @override
+  String get couldNotCopyLink => 'Could not copy link';
+
+  @override
   String get removeTracking => 'إزالة التتبّع';
 
   @override

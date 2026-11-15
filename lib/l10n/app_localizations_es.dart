@@ -3007,6 +3007,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get copyLink => 'Copiar enlace';
 
   @override
+  String get playbackLinkCopied => 'Link copied';
+
+  @override
+  String get couldNotCopyLink => 'Could not copy link';
+
+  @override
   String get removeTracking => 'Quitar tracking';
 
   @override

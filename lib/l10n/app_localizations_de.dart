@@ -3005,6 +3005,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get copyLink => 'Link kopieren';
 
   @override
+  String get playbackLinkCopied => 'Link copied';
+
+  @override
+  String get couldNotCopyLink => 'Could not copy link';
+
+  @override
   String get removeTracking => 'Tracking entfernen';
 
   @override

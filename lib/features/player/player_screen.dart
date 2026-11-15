@@ -54,6 +54,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/ui/app_dialog.dart';
 import '../../core/ui/episode_unavailable_dialog.dart';
+import '../../core/ui/copy_playback_link.dart';
 import '../../core/ui/badge.dart';
 import '../../core/ui/brand_loader.dart';
 import '../../core/ui/frosted_surface.dart';
@@ -3259,6 +3260,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     : '${k != AudioKind.unknown ? '${k.name.toUpperCase()} • ' : ''}'
                           '${s.quality?.isNotEmpty == true ? s.quality : s.container.name}',
                 active: s == _c.state.active,
+                onLongPress: () => copyPlaybackLink(context, s.url),
                 onTap: () async {
                   Navigator.pop(context);
                   await _c.selectSource(

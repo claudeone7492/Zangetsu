@@ -3004,6 +3004,12 @@ class AppLocalizationsId extends AppLocalizations {
   String get copyLink => 'Salin tautan';
 
   @override
+  String get playbackLinkCopied => 'Link copied';
+
+  @override
+  String get couldNotCopyLink => 'Could not copy link';
+
+  @override
   String get removeTracking => 'Hentikan pelacakan';
 
   @override

@@ -5698,6 +5698,18 @@ abstract class AppLocalizations {
   /// **'Copy link'**
   String get copyLink;
 
+  /// No description provided for @playbackLinkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied'**
+  String get playbackLinkCopied;
+
+  /// No description provided for @couldNotCopyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not copy link'**
+  String get couldNotCopyLink;
+
   /// No description provided for @removeTracking.
   ///
   /// In en, this message translates to:

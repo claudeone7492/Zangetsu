@@ -3016,6 +3016,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get copyLink => 'Copier le lien';
 
   @override
+  String get playbackLinkCopied => 'Link copied';
+
+  @override
+  String get couldNotCopyLink => 'Could not copy link';
+
+  @override
   String get removeTracking => 'Retirer le suivi';
 
   @override

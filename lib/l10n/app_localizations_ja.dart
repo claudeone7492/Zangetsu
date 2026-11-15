@@ -2921,6 +2921,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get copyLink => 'リンクをコピー';
 
   @override
+  String get playbackLinkCopied => 'Link copied';
+
+  @override
+  String get couldNotCopyLink => 'Could not copy link';
+
+  @override
   String get removeTracking => 'トラッキングを解除';
 
   @override
