@@ -360,6 +360,7 @@ class _SearchViewState extends State<_SearchView>
     _controller.dispose();
     _focusNode.dispose();
     _ecoTabController?.dispose();
+    _discoverPageController.dispose();
     super.dispose();
   }
 
@@ -539,6 +540,7 @@ class _SearchViewState extends State<_SearchView>
   _DiscoverTab _discoverTab = _DiscoverTab.all;
   bool _discoverSortOpen = false;
   int _discoverPage = 0;
+  final PageController _discoverPageController = PageController();
 
   late MetaFilters _metaFilters = initialSearchFilters(
     widget.initialFilters,
@@ -656,6 +658,7 @@ class _SearchViewState extends State<_SearchView>
     FocusScope.of(context).unfocus();
     final picked = await showMetaFilterSheet(context, kind, _metaFilters);
     if (picked == null || !mounted) return;
+    _resetDiscoverPage();
     setState(() => _metaFilters = picked);
     _applyMetaFilters(browseDefaults: true);
   }
@@ -2566,8 +2569,20 @@ class _SearchViewState extends State<_SearchView>
   }
 
   void _setDiscoverFilters(MetaFilters next) {
+    // A new filter set means a new result grid; keep the user on its first
+    // page rather than on whatever page the old grid was swiped to.
+    _resetDiscoverPage();
     setState(() => _metaFilters = next);
     _discoverReload();
+  }
+
+  /// Returns the pager to page 1. The controller is only attached while the
+  /// grid is on screen, so guard the jump and fall back to the plain field.
+  void _resetDiscoverPage() {
+    _discoverPage = 0;
+    if (_discoverPageController.hasClients) {
+      _discoverPageController.jumpToPage(0);
+    }
   }
 
   void _toggleDiscoverGenre(String genre) {
@@ -2799,8 +2814,21 @@ class _SearchViewState extends State<_SearchView>
       padding: const EdgeInsets.fromLTRB(16, 2, 8, 2),
       child: Row(
         children: [
-          for (final tab in _DiscoverTab.values) _discoverTabButton(tab),
-          const Spacer(),
+          // The tabs scroll rather than overflow: three labels plus the sort
+          // control are wider than a 360dp phone, and a fixed Row clipped the
+          // sort menu off the edge on the narrowest devices.
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final tab in _DiscoverTab.values)
+                    _discoverTabButton(tab),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
           if (count > 0) ...[
             const Icon(
               Icons.grid_view_rounded,
@@ -2848,7 +2876,11 @@ class _SearchViewState extends State<_SearchView>
   Widget _discoverTabButton(_DiscoverTab tab) {
     final active = _discoverTab == tab;
     return GestureDetector(
-      onTap: () => setState(() => _discoverTab = tab),
+      onTap: () {
+        // A different tab is a different list, so it starts at page 1.
+        _resetDiscoverPage();
+        setState(() => _discoverTab = tab);
+      },
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -2976,11 +3008,16 @@ class _SearchViewState extends State<_SearchView>
     final cellH = cellW / posterGridAspect(context);
     final rows = (perPage / cols).ceil();
     final pageHeight = rows * cellH + (rows - 1) * _kDiscoverGridGap;
+    // Clamp before use: a filter change can shrink the page count under a
+    // page index the user had swiped to, and an out-of-range page would show
+    // nothing (and leave the dots highlighting a page that no longer exists).
+    final page = _discoverPage.clamp(0, pages.length - 1);
     return Column(
       children: [
         SizedBox(
           height: pageHeight,
           child: PageView.builder(
+            controller: _discoverPageController,
             itemCount: pages.length,
             onPageChanged: (p) => setState(() => _discoverPage = p),
             itemBuilder: (_, p) => _discoverPageView(pages[p], cellW, cellH),
@@ -2988,7 +3025,7 @@ class _SearchViewState extends State<_SearchView>
         ),
         if (pages.length > 1) ...[
           const SizedBox(height: 10),
-          _discoverDots(pages.length),
+          _discoverDots(pages.length, page),
         ],
       ],
     );
@@ -3052,8 +3089,7 @@ class _SearchViewState extends State<_SearchView>
     );
   }
 
-  Widget _discoverDots(int count) {
-    final current = _discoverPage.clamp(0, count - 1);
+  Widget _discoverDots(int count, int current) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

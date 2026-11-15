@@ -535,6 +535,15 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
   bool _saved = false;
   bool _failed = false;
 
+  /// Playback state for the paused affordance. The progress bar reads the
+  /// player's position stream directly, so it does not rebuild the video.
+  bool _paused = false;
+
+  /// Transient "−10s" / "+10s" badge shown after a double-tap seek, fading out
+  /// once the jump has landed. Null when no seek is in flight.
+  String? _seekFlash;
+  Timer? _seekFlashTimer;
+
   /// True while another route (a Detail page opened from the rail) sits on
   /// top. The preview pauses rather than decoding video behind what the user
   /// is actually looking at — the same reason the detail hero watches the
@@ -604,6 +613,7 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
   void dispose() {
     if (_route != null) appRouteObserver.unsubscribe(this);
     _playingSub?.cancel();
+    _seekFlashTimer?.cancel();
     _disposePlayer();
     super.dispose();
   }
@@ -673,9 +683,10 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
     if (mounted) setState(() {});
     _playingSub = player.stream.playing.listen((playing) {
       if (!mounted || player != _player) return;
-      // Keeps the stream wired before open() resolves and repaints the frame
-      // once playback actually starts, mirroring the detail hero's warm-up.
-      if (playing) setState(() {});
+      // Drives both the paused affordance and a repaint once the first frame
+      // lands (mirroring the detail hero's warm-up), so the card never sits on
+      // a stale frame while the decoder spins up.
+      if (mounted) setState(() => _paused = !playing);
     });
     try {
       await player.setVolume(widget.muted ? 0 : 100);
@@ -711,6 +722,50 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
     final player = _player;
     if (player == null) return;
     unawaited(player.setVolume(widget.muted ? 0 : 100));
+  }
+
+  /// Double-tap seek: jump [delta] from the current position, clamped into the
+  /// clip, and flash a "±Ns" badge. A no-op until the stream has a duration —
+  /// seeking a live preview is meaningless.
+  void _seekBy(Duration delta) {
+    final player = _player;
+    if (player == null) return;
+    final duration = player.state.duration;
+    if (duration <= Duration.zero) return;
+    var target = player.state.position + delta;
+    if (target < Duration.zero) target = Duration.zero;
+    if (target > duration) target = duration;
+    unawaited(player.seek(target));
+    setState(() => _seekFlash = delta.isNegative ? '−10s' : '+10s');
+    _seekFlashTimer?.cancel();
+    _seekFlashTimer = Timer(const Duration(milliseconds: 650), () {
+      if (mounted) setState(() => _seekFlash = null);
+    });
+  }
+
+  void _togglePlay() {
+    final player = _player;
+    if (player == null) return;
+    unawaited(player.playOrPause());
+  }
+
+  /// Right/left thirds are the seek zones (the TikTok gesture); the middle
+  /// third pauses. The player's own playing stream keeps [_paused] honest, so
+  /// this only has to issue the command.
+  void _onDoubleTapDown(TapDownDetails details, double width) {
+    final player = _player;
+    if (player == null) {
+      widget.onOpen();
+      return;
+    }
+    final x = details.localPosition.dx;
+    if (x < width / 3) {
+      _seekBy(const Duration(seconds: -10));
+    } else if (x > width * 2 / 3) {
+      _seekBy(const Duration(seconds: 10));
+    } else {
+      _togglePlay();
+    }
   }
 
   Future<void> _toggleSave() async {
@@ -800,12 +855,21 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
           )
         else
           ColoredBox(color: AppColors.surface),
-        // Tap surface: toggles sound once a preview is up; otherwise opens the
-        // title. Sits below the rail so the rail buttons stay independent.
+        // Gesture surface. With a preview up it is the TikTok layout: double
+        // tap left/right thirds to jump ±10s, double tap the middle to play or
+        // pause, single tap toggles sound (long press would fight the swipe).
+        // Before a preview resolves, a tap simply opens the title. Sits below
+        // the rail so the rail buttons stay independent.
         Positioned.fill(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: controller != null ? widget.onToggleMute : widget.onOpen,
+          child: LayoutBuilder(
+            builder: (context, constraints) => GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: controller != null ? widget.onToggleMute : widget.onOpen,
+              onDoubleTapDown: controller != null
+                  ? (d) => _onDoubleTapDown(d, constraints.maxWidth)
+                  : null,
+              onDoubleTap: () {},
+            ),
           ),
         ),
         if (_resolving && controller == null)
@@ -821,6 +885,40 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
             child: Icon(
               Icons.play_circle_outline_rounded,
               size: 56,
+              color: Colors.white70,
+            ),
+          ),
+        // Transient seek badge, centred like the ±10s feedback every modern
+        // reels player shows.
+        if (_seekFlash != null)
+          Center(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.55),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 10,
+                ),
+                child: Text(
+                  _seekFlash!,
+                  style: AppText.title.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        // Paused affordance: a soft play glyph over the frame so a paused
+        // preview reads as paused, not frozen.
+        if (controller != null && _paused && _seekFlash == null)
+          const Center(
+            child: Icon(
+              Icons.play_arrow_rounded,
+              size: 72,
               color: Colors.white70,
             ),
           ),
@@ -905,6 +1003,16 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
               size: 20,
             ),
           ),
+        // Thin scrub bar pinned to the very bottom edge: the reels equivalent
+        // of the player's timeline. It reads the position stream itself, so a
+        // frame-by-frame tick never rebuilds the video widget above it.
+        if (controller != null)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _FeedProgressBar(player: controller.player),
+          ),
         Positioned(
           right: 10,
           bottom: 48,
@@ -917,6 +1025,46 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// A hairline scrub bar for the reels page. It listens to the player's own
+/// position and duration streams so the surrounding page never rebuilds per
+/// frame; only this thin strip repaints.
+class _FeedProgressBar extends StatelessWidget {
+  const _FeedProgressBar({required this.player});
+
+  final Player player;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<Duration>(
+      stream: player.stream.position,
+      builder: (context, posSnap) {
+        return StreamBuilder<Duration>(
+          stream: player.stream.duration,
+          builder: (context, durSnap) {
+            final position = posSnap.data ?? Duration.zero;
+            final duration = durSnap.data ?? Duration.zero;
+            final progress = duration.inMilliseconds <= 0
+                ? 0.0
+                : (position.inMilliseconds / duration.inMilliseconds).clamp(
+                    0.0,
+                    1.0,
+                  );
+            return SizedBox(
+              height: 3,
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 3,
+                backgroundColor: Colors.white.withValues(alpha: 0.18),
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
