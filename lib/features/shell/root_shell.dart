@@ -822,22 +822,6 @@ class _LiquidNavDock extends StatelessWidget {
                             onTap: () =>
                                 onModeSelected(choice.mode, choice.kind),
                           ),
-                      GlassMenuItem(
-                        // The menu's "Shorts" is the content-mode choice above
-                        // (it fills Home with the drama rows). This entry is the
-                        // autoplaying vertical FEED, so it carries the feed's
-                        // own name — Reels — matching the dock tab, and keeps
-                        // the feed reachable when that tab is hidden.
-                        title: context.l10n.reels,
-                        icon: const Icon(Icons.bolt_rounded),
-                        iconColor: AppColors.textPrimary,
-                        titleStyle: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        height: 48,
-                        onTap: onOpenShorts,
-                      ),
                       const GlassMenuDivider(),
                       GlassMenuItem(
                         title: context.l10n.liveTv,
