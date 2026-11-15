@@ -202,3 +202,55 @@ live('an in-play match resolves to a playable hls source', async () => {
   assert.ok(sources[0].url, 'the source carries a url');
   assert.equal(sources[0].container, 'hls', 'live streams are hls');
 });
+
+// A fixture whose `playPath` is empty (or whose CDN path 404s) is still
+// playable through its `playSource` channel list — the site's own
+// "Channel 1/2/…" broadcasts. Resolving such a match must hand those back,
+// otherwise the player reports "no sources" for a match that is on air.
+live('a match with no playPath resolves through its playSource channels', async () => {
+  const res = await fetch(
+    'https://h5-api.aoneroom.com/wefeed-h5api-bff/live/match-list-v5?timezone=UTC&system_language=en',
+    {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        Referer: 'https://sportsnow.top/',
+        Origin: 'https://sportsnow.top',
+        Accept: 'application/json',
+      },
+    },
+  );
+  const list = (JSON.parse(await res.text()).data.list || []).map((m) => String(m.id));
+  // Walk the detail endpoint for a match that carries channels, in play or not.
+  let withChannels = null;
+  for (const id of list.slice(0, 12)) {
+    const d = await fetch(
+      'https://h5-api.aoneroom.com/wefeed-h5api-bff/live/match-detail?id=' + id,
+      {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          Referer: 'https://sportsnow.top/',
+          Origin: 'https://sportsnow.top',
+          Accept: 'application/json',
+        },
+      },
+    );
+    const det = (JSON.parse(await d.text()).data) || {};
+    if (det.playSource && det.playSource.length) {
+      withChannels = { id, playPath: det.playPath || '', count: det.playSource.length };
+      break;
+    }
+  }
+  if (!withChannels) return; // nothing broadcasting right now — nothing to assert
+
+  const items = JSON.parse(await callProvider('moviebox', 'getLive', [{}]));
+  const item = items.find((i) => i.id === withChannels.id);
+  if (!item) return; // not in the home feed's slice
+
+  const sources = JSON.parse(
+    await callProvider('moviebox', 'getVideoSources', [item.url]),
+  );
+  assert.ok(sources.length >= 1, 'a match with channels yields a source');
+  assert.ok(sources[0].url, 'the source carries a url');
+});

@@ -764,14 +764,26 @@ function getShorts(opts) {
   }).catch(function () { return []; });
 }
 
-// One playable live source. The stream CDN (live-pull.aisports.mobi) answers a
-// bare request with 403 and only serves with the sports front end's referer, so
-// the sports headers ride along with the stream.
-function _liveSource(path) {
+// Resolve a live match to its stream(s). The match-list a user is browsing is a
+// snapshot: a match carries an empty `playPath` until the broadcast actually
+// starts, so a page opened before kickoff holds a handle with no URL in it and
+// tapping it at kickoff would resolve nothing. The detail endpoint is
+// authoritative and re-mints the signed URL per request, so resolve from it now
+// and fall back to whatever path the list already carried. The url is
+// `live:<id>|<path?>`.
+//
+// A match in play also carries `playSource`: the per-channel broadcast URLs
+// (`http://play.sportsteam368.com/...`) the site itself offers as "Channel 1/2/…".
+// `playPath` is empty for a good number of live fixtures (and the CDN 404s on
+// others), so when it yields nothing the channels are the only playable route —
+// without them the player reports "no sources" for a match that is on air.
+// Each channel becomes its own source, labelled, so the player's picker lists
+// them exactly like the site does.
+function _liveSource(path, label) {
   return {
     url: path,
     quality: 'Live',
-    label: 'Live',
+    label: label || 'Live',
     container: _container(path),
     headers: { 'User-Agent': UA, 'Referer': SPORTS + '/', 'Origin': SPORTS },
     kind: 'unknown',
@@ -779,13 +791,32 @@ function _liveSource(path) {
   };
 }
 
-// Resolve a live match to its stream. The match-list a user is browsing is a
-// snapshot: a match carries an empty `playPath` until the broadcast actually
-// starts, so a page opened before kickoff holds a handle with no URL in it and
-// tapping it at kickoff would resolve nothing. The detail endpoint is
-// authoritative and re-mints the signed URL per request, so resolve from it now
-// and fall back to whatever path the list already carried. The url is
-// `live:<id>|<path?>`.
+// The playable sources a match detail offers, best first: the signed CDN path,
+// then every `playSource` channel. De-duplicated by URL. Empty only when the
+// match genuinely carries nothing to play (an upcoming fixture).
+function _liveSources(d, packed) {
+  var out = [];
+  var seen = {};
+  function add(path, label) {
+    if (!path) return;
+    path = String(path);
+    if (seen[path]) return;
+    seen[path] = 1;
+    out.push(_liveSource(path, label));
+  }
+  if (d && d.playPath) add(d.playPath, 'Live');
+  var chans = (d && d.playSource) || [];
+  for (var i = 0; i < chans.length; i++) {
+    var c = chans[i];
+    if (!c || !c.path) continue;
+    add(c.path, c.title || ('Channel ' + (i + 1)));
+  }
+  // The list snapshot's own path is the last resort: it may already be a valid
+  // URL even when the detail call failed or dropped it.
+  if (!out.length && packed) add(packed, 'Live');
+  return out;
+}
+
 function getVideoSourcesLive(url) {
   var spec = String(url || '').slice('live:'.length);
   var bar = spec.indexOf('|');
@@ -793,9 +824,6 @@ function getVideoSourcesLive(url) {
   var packed = bar >= 0 ? spec.slice(bar + 1) : '';
   if (!id) return Promise.resolve([]);
   return _sportGet('/wefeed-h5api-bff/live/match-detail?id=' + encodeURIComponent(id))
-    .then(function (d) {
-      var path = (d && d.playPath) || packed;
-      return path ? [_liveSource(path)] : [];
-    })
+    .then(function (d) { return _liveSources(d, packed); })
     .catch(function () { return packed ? [_liveSource(packed)] : []; });
 }

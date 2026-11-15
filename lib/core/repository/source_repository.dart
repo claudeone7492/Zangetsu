@@ -1145,38 +1145,54 @@ class SourceRepository implements CatalogueRepository {
     ];
   }
 
-  /// Home for the Shorts content mode: one named row per short-drama source,
-  /// each filled from that source's dedicated `getShorts` feed when it has one
-  /// and its own home rows otherwise.
+  /// Home for the Shorts content mode: the drama sources' titles laid out under
+  /// the SAME standard section titles every other mode shows — Trending /
+  /// Popular / Top rated / … — rather than one row per source.
   ///
   /// This is what makes the menu's Shorts entry "populate the whole page just
-  /// like the rest selections" — the same browse surface as Anime/Movie, but
-  /// sourced from the drama catalogues instead of AniList/TMDB. Unlike the
-  /// Reels tab (which autoplays a vertical feed), this is an ordinary
-  /// row-and-poster browse; tapping a title opens its Detail.
+  /// like the rest selections": the sections stay the app's usual ones and the
+  /// dramas simply fill those cards, so the source name never appears as a
+  /// heading. Unlike the Reels tab (which autoplays a vertical feed), this is
+  /// an ordinary row-and-poster browse; tapping a title opens its Detail.
   ///
-  /// Sources are walked concurrently and each contributes at most one row, so
-  /// the page opens as fast as the slowest source and a dead one just drops
-  /// out. Rows are capped so a device with dozens of movie sources installed
-  /// still opens onto drama, not a wall of generic rows.
+  /// Sources are walked concurrently and their items are interleaved
+  /// round-robin, so no single catalogue fills every row, then sliced across
+  /// [kShortsHomeRowTitles]. A dead source just contributes nothing.
   @override
   Future<List<HomeSection>> shortsHome() async {
     final ids = shortsSourceIds();
     if (ids.isEmpty) return const [];
-    final results = await Future.wait([
-      for (final id in ids.take(_maxShortsHomeSources)) _shortsRow(id),
+    final perSource = await Future.wait([
+      for (final id in ids.take(_maxShortsHomeSources)) _shortsItems(id),
     ]);
+    // Interleave the sources so the pool leads with each catalogue's first
+    // drama in turn, not one source's whole feed. De-duplicated so a drama
+    // carried by two catalogues appears once.
     final seen = <String>{};
+    final pool = <MediaItem>[];
+    final cursors = List<int>.filled(perSource.length, 0);
+    var exhausted = false;
+    while (!exhausted) {
+      exhausted = true;
+      for (var s = 0; s < perSource.length; s++) {
+        final items = perSource[s];
+        if (cursors[s] >= items.length) continue;
+        exhausted = false;
+        final item = items[cursors[s]++];
+        if (seen.add('${item.sourceId}:${item.id}')) pool.add(item);
+      }
+    }
+    if (pool.isEmpty) return const [];
+    // Slice the pool across the standard titles: the first row gets the
+    // leading (trending) dramas, the next the ones after, and so on.
     final out = <HomeSection>[];
-    for (final row in results) {
-      if (row == null || row.items.isEmpty) continue;
-      // Drop titles already carried by an earlier (higher-priority) source, so
-      // the same drama does not appear twice under two catalogues.
-      final items = [
-        for (final item in row.items)
-          if (seen.add('${item.sourceId}:${item.id}')) item,
-      ];
-      if (items.isNotEmpty) out.add(HomeSection(title: row.title, items: items));
+    for (var i = 0; i < kShortsHomeRowTitles.length; i++) {
+      final start = i * _shortsRowSize;
+      if (start >= pool.length) break;
+      final end = (start + _shortsRowSize).clamp(0, pool.length);
+      out.add(
+        HomeSection(title: kShortsHomeRowTitles[i], items: pool.sublist(start, end)),
+      );
     }
     return out;
   }
@@ -1186,13 +1202,27 @@ class SourceRepository implements CatalogueRepository {
   /// of generic movie sources.
   static const int _maxShortsHomeSources = 12;
 
-  Future<HomeSection?> _shortsRow(String sourceId) async {
-    final name = displayName(sourceId);
+  /// How many dramas fill each standard Shorts row.
+  static const int _shortsRowSize = 20;
+
+  /// The standard section titles the Shorts Home reuses, in display order — the
+  /// same shape the metadata modes show, so the mode reads like every other
+  /// mode and never names a source.
+  static const List<String> kShortsHomeRowTitles = [
+    'Trending Now',
+    'Popular This Month',
+    'Top Rated',
+    'New Releases',
+    'All-Time Favorites',
+  ];
+
+  /// One source's contribution to the Shorts pool: its dedicated `getShorts`
+  /// feed when it has one, otherwise the video items from its own home rows.
+  /// Never throws — one slow or dead source must not sink the page.
+  Future<List<MediaItem>> _shortsItems(String sourceId) async {
     try {
       final shortsItems = await shorts(sourceId: sourceId);
-      if (shortsItems.isNotEmpty) {
-        return HomeSection(title: name, items: shortsItems);
-      }
+      if (shortsItems.isNotEmpty) return shortsItems;
     } catch (_) {
       // Fall through to the source's own home rows.
     }
@@ -1213,9 +1243,9 @@ class SourceRepository implements CatalogueRepository {
           items.add(item);
         }
       }
-      return items.isEmpty ? null : HomeSection(title: name, items: items);
+      return items;
     } catch (_) {
-      return null;
+      return const [];
     }
   }
 

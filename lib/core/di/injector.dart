@@ -6,7 +6,8 @@ import 'package:watch_app/core/hive/source_icon_store.dart';
 import 'package:watch_app/core/lnreader/novel_cloudflare.dart';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
+import 'package:flutter/foundation.dart'
+    show ValueNotifier, debugPrint, kDebugMode;
 import 'package:flutter/services.dart' show MethodChannel, rootBundle;
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -179,6 +180,13 @@ Future<void> runDeferredAppleTvBootTasks() async {
 /// True once [runDeferredAppleTvBootTasks] has finished (success or failure).
 /// Home must not call into provider JS before this on TV.
 bool tvosProvidersReady = false;
+
+/// Bumped every time the provider load finishes (foreground or the background
+/// tail after the boot cap). Screens that gather content from the installed
+/// sources — the Reels/Shorts feed warms itself while it is only a dock tab —
+/// listen to this and re-gather, so a warm that ran before any source was
+/// installed doesn't leave the tab blank until it is rebuilt from scratch.
+final ValueNotifier<int> sourcesRevision = ValueNotifier<int>(0);
 
 /// Browser-like default headers for LNReader plugin requests — a straight
 /// mirror of LNReader's own `makeInit` (src/plugins/helpers/fetch.ts). Some
@@ -930,6 +938,10 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
           (id) => manager.installedIds.contains(id),
         );
       }
+      // Tell source-gathering screens (the Reels/Shorts feed) that the source
+      // set is now populated, so a warm that ran before any source was
+      // installed re-gathers instead of staying blank.
+      sourcesRevision.value++;
       // Metadata home on TV loads from AniList/TMDB — no JS providers needed.
       // Reloading here after a slow background loadAll only blocks toggles.
       if (!isTv &&

@@ -95,6 +95,13 @@ class _ShortsScreenState extends State<ShortsScreen> {
   List<MediaItem> _items = const [];
   int _index = 0;
 
+  /// The source ids the last gather walked. A docked tab warms at boot, but
+  /// providers finish loading on their own schedule, so the first gather can
+  /// run before any source is installed and come back empty. Re-gathering when
+  /// the tab is opened AND the source set has grown turns that empty warm into
+  /// a populated feed instead of a permanently blank tab.
+  List<String> _gatheredFrom = const [];
+
   /// Resolved stream per item, keyed by `sourceId:id`, so a page that has
   /// already been warmed reuses its source instead of resolving again. The
   /// value is the in-flight future, so a prefetch and the page's own ask share
@@ -121,6 +128,16 @@ class _ShortsScreenState extends State<ShortsScreen> {
     if (widget.active || widget.prewarm) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _load());
     }
+    // The boot race: this tab warms before the JS providers finish loading, so
+    // the first gather can walk an empty source set and leave the feed blank.
+    // Re-gather the moment the source set is populated, so a tab the user has
+    // not tapped yet is already full by the time they do.
+    sourcesRevision.addListener(_onSourcesChanged);
+  }
+
+  void _onSourcesChanged() {
+    if (!mounted || !(widget.active || widget.prewarm)) return;
+    if (_shouldRetry) _load();
   }
 
   @override
@@ -131,13 +148,37 @@ class _ShortsScreenState extends State<ShortsScreen> {
     // never started, and the visible page resumes on its own.
     if (!widget.active && old.active) {
       setState(() {});
-    } else if ((widget.active || widget.prewarm) && !_loadStarted) {
-      _load();
+    } else if (widget.active || widget.prewarm) {
+      // Coming into view, or still warming: gather if it was never started, or
+      // retry when the earlier gather found no sources — a docked tab can warm
+      // before provider load finishes, and an empty feed there must not stick.
+      if (!_loadStarted || _shouldRetry) {
+        _load();
+      }
     }
+  }
+
+  /// True when the last gather came back with nothing while more sources are
+  /// installed now than it walked. The boot race: the tab warms before the
+  /// providers finish loading, so the first gather sees no sources; the tap
+  /// that opens it must re-gather rather than show the empty state forever.
+  bool get _shouldRetry {
+    if (_items.isNotEmpty || !sl.isRegistered<SourceRepository>()) return false;
+    final now = _candidateSourceIds(sl<SourceRepository>());
+    return now.isNotEmpty && !_sameIds(now, _gatheredFrom);
+  }
+
+  static bool _sameIds(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   @override
   void dispose() {
+    sourcesRevision.removeListener(_onSourcesChanged);
     _pageController.dispose();
     super.dispose();
   }
@@ -185,6 +226,7 @@ class _ShortsScreenState extends State<ShortsScreen> {
     // `LiveTvScreen`.
     final repo = sl<SourceRepository>();
     final ids = _candidateSourceIds(repo);
+    _gatheredFrom = ids;
     // Walk the sources CONCURRENTLY: gathered one after another, six sources at
     // up to 8s each could hold the feed for the best part of a minute on a slow
     // network — the exact spinner the prewarm exists to avoid. Run in parallel
