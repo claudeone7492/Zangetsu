@@ -19,10 +19,16 @@ class _NoopRepo implements CatalogueRepository {
 
 void main() {
   group('isProviderExtensionUrl', () {
-    test('recognises browse: and live: handles', () {
+    test('recognises browse: and every live-sports handle', () {
       expect(isProviderExtensionUrl('browse:platform|Netflix'), isTrue);
       expect(isProviderExtensionUrl('browse:filter|type=/home/movieFilter'), isTrue);
+      // MovieBox / StreamFree.
       expect(isProviderExtensionUrl('live:123|https://cdn/x.m3u8'), isTrue);
+      // CDNLive TV and TimStreams mint their own schemes; recognising only
+      // `live:` mis-routed their fixtures to the detail page, which is where
+      // "no source to play this video" came from.
+      expect(isProviderExtensionUrl('ev:England @ Spain|...'), isTrue);
+      expect(isProviderExtensionUrl('ts:{"feeds":[["HD","https://x"]]}'), isTrue);
     });
 
     test('leaves ordinary title urls alone', () {

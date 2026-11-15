@@ -40,6 +40,9 @@ class _LateRepo implements CatalogueRepository, SourceRepository {
   String displayName(String s) => s;
 
   @override
+  bool hasSource(String sourceId) => ready && sourceId == 'reelshort';
+
+  @override
   Future<List<MediaItem>> shorts({String? sourceId}) async =>
       ready ? [_item('a', 'Alpha Drama')] : const [];
 

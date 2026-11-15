@@ -21,20 +21,22 @@ import 'package:watch_app/core/repository/catalogue_repository.dart';
 import 'package:watch_app/core/repository/source_repository.dart';
 import 'package:watch_app/features/shorts/shorts_screen.dart';
 
-MediaItem _item(String id, String title, {String source = 'src1'}) => MediaItem(
-  id: id,
-  title: title,
-  url: 'https://src.test/$source/$id',
-  type: ProviderType.movie,
-  sourceId: source,
-);
+MediaItem _item(String id, String title, {String source = 'goodshort'}) =>
+    MediaItem(
+      id: id,
+      title: title,
+      url: 'https://src.test/$source/$id',
+      type: ProviderType.movie,
+      sourceId: source,
+    );
 
 class _FakeCatalogueRepository implements CatalogueRepository, SourceRepository {
   _FakeCatalogueRepository({
     this.sections = const [],
     this.throwOnHome = false,
-    this.sourceIds = const ['src1'],
+    this.sourceIds = const ['goodshort'],
     this.itemsBySource = const {},
+    this.shortsBySource = const {},
   });
 
   final List<HomeSection> sections;
@@ -44,8 +46,16 @@ class _FakeCatalogueRepository implements CatalogueRepository, SourceRepository 
   /// Per-source home rows, so a test can prove which sources the feed walked.
   final Map<String, List<HomeSection>> itemsBySource;
 
+  /// Per-source dedicated `getShorts` feed.
+  final Map<String, List<MediaItem>> shortsBySource;
+
   /// Source ids the feed actually pulled home rows from, in order.
   final List<String> walked = [];
+
+  /// Every source id the feed asked for a feed from, in gather order. The feed
+  /// asks `getShorts` first for every candidate, so this is the source set it
+  /// drew from — the thing the "drama sources only" tests pin.
+  final List<String> gathered = [];
 
   @override
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
@@ -62,7 +72,13 @@ class _FakeCatalogueRepository implements CatalogueRepository, SourceRepository 
   String displayName(String sourceId) => sourceId;
 
   @override
-  Future<List<MediaItem>> shorts({String? sourceId}) async => const [];
+  bool hasSource(String sourceId) => sourceIds.contains(sourceId);
+
+  @override
+  Future<List<MediaItem>> shorts({String? sourceId}) async {
+    if (sourceId != null) gathered.add(sourceId);
+    return shortsBySource[sourceId] ?? const [];
+  }
 
   @override
   Future<List<HomeSection>> home({
@@ -196,9 +212,9 @@ void main() {
               MediaItem(
                 id: 'm',
                 title: 'A Manga',
-                url: 'https://src.test/src1/m',
+                url: 'https://src.test/goodshort/m',
                 type: ProviderType.manga,
-                sourceId: 'src1',
+                sourceId: 'goodshort',
               ),
             ],
           ),
@@ -279,13 +295,13 @@ void main() {
     expect(find.text('Alpha'), findsNothing);
   });
 
-  testWidgets('the short-drama sources lead the feed ahead of movie sources', (
+  testWidgets('the drama sources lead the feed, and no movie source is walked', (
     tester,
   ) async {
     // Install order deliberately puts the generic movie sources first — the
     // registry sorts by key, so that is what a real device hands the feed. The
-    // feed caps how many sources it walks, so the drama catalogues must be
-    // hoisted or the cap fills with frameXTV/NetWeb/VidSrc and no drama shows.
+    // feed must draw from the short-drama catalogues ONLY: the movie sources
+    // have no `getShorts`, so walking them would only leak their home rows in.
     final repo = _FakeCatalogueRepository(
       sourceIds: const [
         'framextv',
@@ -297,13 +313,8 @@ void main() {
         'netshort',
         'moviebox',
       ],
-      itemsBySource: {
-        'moviebox': [
-          HomeSection(
-            title: 'Shorts',
-            items: [_item('m', 'Drama M', source: 'moviebox')],
-          ),
-        ],
+      shortsBySource: {
+        'moviebox': [_item('m', 'Drama M', source: 'moviebox')],
       },
     );
     register(repo);
@@ -311,14 +322,40 @@ void main() {
     await pumpShorts(tester);
     await tester.pumpAndSettle();
 
-    expect(repo.walked.first, 'moviebox');
-    expect(repo.walked.take(4), [
+    // Only the drama catalogues were asked for a feed, in config order.
+    expect(repo.gathered, [
       'moviebox',
       'goodshort',
       'reelshort',
       'netshort',
     ]);
+    // No generic movie source was ever walked for home rows.
+    expect(repo.walked, isNot(contains('framextv')));
+    expect(repo.walked, isNot(contains('vidsrc')));
     expect(find.text('Drama M'), findsOneWidget);
+  });
+
+  testWidgets('movie sources never reach the feed even when installed', (
+    tester,
+  ) async {
+    // A device with only generic movie sources installed must show the empty
+    // state, not a feed of feature films: the feed is short dramas and nothing
+    // else.
+    register(
+      _FakeCatalogueRepository(
+        sourceIds: const ['framextv', 'vidsrc'],
+        sections: [
+          HomeSection(title: 'Movies', items: [_item('a', 'A Film')]),
+        ],
+      ),
+    );
+
+    await pumpShorts(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PageView), findsNothing);
+    expect(find.text('A Film'), findsNothing);
+    expect(find.text('Try again'), findsOneWidget);
   });
 
   testWidgets('the feed keeps appending past the gathered pool', (tester) async {

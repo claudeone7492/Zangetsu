@@ -19,6 +19,7 @@ import '../../core/tv/tv_poster_tile.dart';
 import '../../core/tv/tv_text_field.dart';
 import '../../core/ui/content_row.dart';
 import '../../core/ui/poster_card.dart';
+import '../../core/ui/row_skeleton.dart';
 import '../../core/ui/states.dart';
 import '../../l10n/l10n.dart';
 import '../detail/detail_screen.dart';
@@ -32,17 +33,25 @@ import '../search/browse_source_screen.dart' show canonicalTargetFor;
 const String kLiveTvSourceId = 'iptv';
 
 /// The sources that carry live sports fixtures. Each exposes them through its
-/// optional `getLive` extension (a `live:`-scheme stream per fixture): MovieBox
-/// leads with its own sports feed, StreamFree adds per-sport fixtures (24/7
-/// channels plus matches). Both are asked in parallel and merged, in this
-/// order, so an installed-but-empty source simply contributes nothing. A source
-/// that isn't installed is skipped before the call.
+/// optional `getLive` extension (a `live:`-family stream per fixture): MovieBox
+/// leads with its own sports feed, CDNLive TV and TimStreams add their own
+/// fixture lists, StreamFree adds per-sport fixtures (24/7 channels plus
+/// matches). All are asked and merged, in this order, so an installed-but-empty
+/// source simply contributes nothing. A source that isn't installed is skipped
+/// before the call.
 const List<String> kLiveSportsSourceIds = <String>[
+  'moviebox',
   'cdnlivetv',
   'timstreams',
-  'moviebox',
   'streamfree',
 ];
+
+/// The sport the live-sports rail is kept to. The rail is deliberately soccer
+/// (football) only — every sports source carries a dozen other sports, and
+/// mixing them made the rail a wall of basketball, motorsport and American
+/// football. Each source normalises its own vocabulary onto this slug
+/// ([MediaItem.liveSport]), so the filter never has to match league names.
+const String kLiveSportsSport = 'soccer';
 
 /// Order the channel rows are shown in. "Default" keeps the catalogue's own
 /// order (usually popularity), which is the only one that means anything for
@@ -304,12 +313,23 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   static Future<List<MediaItem>> _fetchSports(SourceRepository repo) async {
     final installed = kLiveSportsSourceIds.where(repo.hasSource).toList();
     if (installed.isEmpty) return const [];
+    // Every installed source's `getLive` in parallel: they are independent
+    // network calls, and run in series they added up to a page-length wait on a
+    // cold cache. The merge below still honours [kLiveSportsSourceIds] order.
+    final perSource = await Future.wait([
+      for (final id in installed)
+        repo.live(sourceId: id).timeout(_timeout).catchError(
+          (_) => const <MediaItem>[],
+        ),
+    ]);
     final merged = <MediaItem>[];
-    for (final id in installed) {
-      try {
-        merged.addAll(await repo.live(sourceId: id).timeout(_timeout));
-      } catch (_) {
-        // One dead feed must not hide the others.
+    for (final list in perSource) {
+      // Keep the rail to soccer only. A source that reports no sport at all
+      // (a fixture list older than the `liveSport` field) is left out rather
+      // than assumed to be soccer, so the rail never shows basketball by
+      // accident — a blank rail is a far smaller failure than a wrong one.
+      for (final m in list) {
+        if (m.liveSport == kLiveSportsSport) merged.add(m);
       }
     }
     final indexed = merged.asMap().entries.toList();
@@ -616,7 +636,20 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
 
   Widget _phoneBrowse() {
     if (_loading) {
-      return Center(child: CircularProgressIndicator(color: AppColors.accent));
+      // Preloader, not a spinner: the page is warmed at boot (see [preload])
+      // and this paints the shape of the channel rails it is about to fill, so
+      // the first frame already reads as the finished page. A spinner in the
+      // middle of an empty page is the "loading spinner" the prewarm exists to
+      // avoid.
+      return ListView(
+        padding: const EdgeInsets.only(top: 8, bottom: 96),
+        physics: const NeverScrollableScrollPhysics(),
+        children: const [
+          RowSkeleton(itemWidth: _phoneCardWidth, itemHeight: _phoneCardHeight),
+          RowSkeleton(itemWidth: _phoneCardWidth, itemHeight: _phoneCardHeight),
+          RowSkeleton(itemWidth: _phoneCardWidth, itemHeight: _phoneCardHeight),
+        ],
+      );
     }
     if (_failed) {
       return EmptyState(

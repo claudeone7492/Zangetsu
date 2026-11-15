@@ -38,6 +38,7 @@ MediaItem _$MediaItemFromJson(Map<String, dynamic> json) => MediaItem(
   liveInfo: json['liveInfo'] as String?,
   liveStartMs: (json['liveStartMs'] as num?)?.toInt(),
   liveUnplayable: json['liveUnplayable'] as bool? ?? false,
+  liveSport: json['liveSport'] as String?,
 );
 
 Map<String, dynamic> _$MediaItemToJson(MediaItem instance) => <String, dynamic>{
@@ -68,6 +69,7 @@ Map<String, dynamic> _$MediaItemToJson(MediaItem instance) => <String, dynamic>{
   'liveInfo': instance.liveInfo,
   'liveStartMs': instance.liveStartMs,
   'liveUnplayable': instance.liveUnplayable,
+  'liveSport': instance.liveSport,
 };
 
 const _$ProviderTypeEnumMap = {

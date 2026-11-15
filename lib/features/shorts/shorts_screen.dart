@@ -10,7 +10,6 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/app_config.dart';
 import '../../core/comments/episode_comments_service.dart';
 import '../../core/di/injector.dart';
-import '../../core/mode/content_mode.dart';
 import '../../core/models/episode.dart';
 import '../../core/models/episode_title.dart';
 import '../../core/models/media_item.dart';
@@ -198,33 +197,21 @@ class _ShortsScreenState extends State<ShortsScreen> {
     super.dispose();
   }
 
-  /// Video sources worth pulling a feed from, the short-drama sources first.
-  /// Reading sources are skipped outright — a vertical "short" feed is a video
-  /// idea, and manga/novel pages belong in their own readers, so there is no
-  /// reason to even fetch their home rows.
+  /// The short-drama sources installed right now, drama catalogues first.
   ///
-  /// [kShortsPreferredSourceIds] lead so the feed is dominated by the
-  /// short-drama catalogues even when other sources were installed earlier; the
-  /// rest keep install order behind them. The cap is applied after the reorder,
-  /// so a late-installed drama source is never squeezed out by the generic
-  /// movie sources that sort ahead of it.
+  /// The feed is a SHORT-DRAMA surface: "the reels page should be only drama
+  /// shorts nothing more, no any other providers should be there". So it draws
+  /// from [kShortDramaSourceIds] only — the catalogues built end to end around
+  /// serialized short dramas — rather than walking every installed video source
+  /// and folding each one's movie/TV home rows in behind the dramas (which is
+  /// exactly how feature films leaked into the feed). The order is the config's,
+  /// so the leading catalogue is stable and the feed is drama-weighted before
+  /// its shuffle. A source that isn't installed is skipped.
   List<String> _candidateSourceIds(SourceRepository repo) {
-    final types = manifestSourceTypes();
-    final video = repo.loadedSources
-        .where((s) => sourceInMode(s.id, ContentMode.anime, types))
-        .map((s) => s.id)
+    return kShortDramaSourceIds
+        .where(repo.hasSource)
+        .take(_maxSources)
         .toList();
-    final preferred = video.where(kShortsPreferredSourceIds.contains).toList()
-      ..sort(
-        (a, b) => kShortsPreferredSourceIds
-            .indexOf(a)
-            .compareTo(kShortsPreferredSourceIds.indexOf(b)),
-      );
-    final ordered = <String>[
-      ...preferred,
-      ...video.where((id) => !kShortsPreferredSourceIds.contains(id)),
-    ];
-    return ordered.take(_maxSources).toList();
   }
 
   Future<void> _load() async {
@@ -317,41 +304,50 @@ class _ShortsScreenState extends State<ShortsScreen> {
 
   /// The rows one source contributes to the feed.
   ///
-  /// A source with a dedicated short-drama feed (`getShorts`, MovieBox today)
-  /// contributes ONLY its shorts: its general home rows are two dozen movie/TV
-  /// rails, and letting them in buries the shorts hundreds of swipes down — the
-  /// feed's whole reason for existing. Every other source keeps the generic
-  /// home-row behaviour. Never throws: one slow or dead source must not sink
-  /// the feed.
+  /// A short-drama catalogue's dedicated `getShorts` feed is used when it has
+  /// one — it is dramas and nothing else, which is the whole point of the feed.
+  /// Only when that feed is empty do the catalogues whose OWN home rows are
+  /// short dramas end to end ([kDramaOnlyHomeSourceIds]) fall back to their home
+  /// rows; MovieBox's home is two dozen movie/TV rails, so it is served by
+  /// `getShorts` alone and never leaks films into a drama feed. Every item is
+  /// run through [_dramaItems], so a reading title or a navigation handle can
+  /// never render as a dead poster. Never throws: one slow or dead source must
+  /// not sink the feed.
   Future<List<MediaItem>> _gatherFrom(SourceRepository repo, String id) async {
     try {
       final shorts = await repo
           .shorts(sourceId: id)
           .timeout(_perSourceTimeout);
-      if (shorts.isNotEmpty) return shorts;
+      final items = _dramaItems(shorts);
+      if (items.isNotEmpty) return items;
     } catch (_) {
       // Fall through to the home rows.
     }
+    if (!kDramaOnlyHomeSourceIds.contains(id)) return const [];
     try {
       final sections = await repo.home(sourceId: id).timeout(_perSourceTimeout);
-      final out = <MediaItem>[];
-      for (final section in sections) {
-        for (final item in section.items) {
-          if (item.type == ProviderType.manga ||
-              item.type == ProviderType.novel) {
-            continue;
-          }
-          // Provider-extension rows (a `browse:` platform/filter handle or a
-          // `live:` match) are navigation, not a short — they carry no episode
-          // to resolve, so they'd render as a dead poster.
-          if (isProviderExtensionUrl(item.url)) continue;
-          out.add(item);
-        }
-      }
-      return out;
+      return [for (final section in sections) ..._dramaItems(section.items)];
     } catch (_) {
       return const [];
     }
+  }
+
+  /// [items] with the rows a vertical drama feed must never show removed: the
+  /// reading titles (manga/novel belong in their own readers) and the
+  /// provider-extension rows (a `browse:` platform/filter handle or a live
+  /// match is navigation, not a short — it carries no episode to resolve, so it
+  /// would render as a dead poster).
+  List<MediaItem> _dramaItems(List<MediaItem> items) {
+    final out = <MediaItem>[];
+    for (final item in items) {
+      if (item.type == ProviderType.manga ||
+          item.type == ProviderType.novel) {
+        continue;
+      }
+      if (isProviderExtensionUrl(item.url)) continue;
+      out.add(item);
+    }
+    return out;
   }
 
   /// Resolve the first [_prefetchCount] items' streams ahead of time. Each
@@ -426,7 +422,12 @@ class _ShortsScreenState extends State<ShortsScreen> {
     // hold its first frame ready.
     if (!widget.active && !widget.prewarm) return const SizedBox.shrink();
     if (_loading) {
-      return Center(child: CircularProgressIndicator(color: AppColors.accent));
+      // A preloader shaped like a reel page, not a spinner: the feed is a
+      // full-bleed vertical surface, and a spinner in the middle of a black
+      // page reads as "broken" for the second it takes the drama sources to
+      // answer. The placeholder keeps the page's shape while the prewarm
+      // (see [widget.prewarm]) finishes behind it.
+      return const _ReelsPreloader();
     }
     if (_items.isEmpty) {
       return EmptyState(
@@ -1190,4 +1191,102 @@ class _RailButton extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The Reels feed's preloader: a full-bleed placeholder shaped like one reel
+/// page (art block, name strip, action rail) with a single shared shimmer.
+///
+/// It exists so the page is "fully populated" on mount: the dock prewarms the
+/// feed while the tab is off-screen (see [ShortsScreen.prewarm]) and this is
+/// what paints in the meantime — the same shape the real page will have, not a
+/// spinner floating in a black void.
+class _ReelsPreloader extends StatefulWidget {
+  const _ReelsPreloader();
+
+  @override
+  State<_ReelsPreloader> createState() => _ReelsPreloaderState();
+}
+
+class _ReelsPreloaderState extends State<_ReelsPreloader>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (context, _) {
+        final shimmer = AppColors.surface2.withValues(
+          alpha: 0.18 + 0.12 * _ctrl.value,
+        );
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            ColoredBox(color: AppColors.bg),
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 96, 56),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _bar(shimmer, width: 220, height: 20),
+                    const SizedBox(height: 10),
+                    _bar(shimmer, width: 140, height: 14),
+                  ],
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 20, bottom: 48),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var i = 0; i < 4; i++) ...[
+                      ClipOval(
+                        child: SizedBox(
+                          width: 44,
+                          height: 44,
+                          child: ColoredBox(color: shimmer),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _bar(Color color, {required double width, required double height}) =>
+      ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: SizedBox(
+          width: width,
+          height: height,
+          child: ColoredBox(color: color),
+        ),
+      );
 }

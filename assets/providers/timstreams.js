@@ -153,6 +153,8 @@ function _mapEvent(e, genres) {
     liveInfo: [genre, feeds.length > 1 ? feeds.length + ' feeds' : null].filter(Boolean).join(' \u00B7 ') || null
   };
   if (genre) item.genres = [genre];
+  // Canonical sport slug, lowercased ('soccer' for football).
+  if (genre) item.liveSport = String(genre).toLowerCase();
   return item;
 }
 

@@ -57,6 +57,7 @@ import 'color_profiles.dart';
 import 'shader_presets.dart';
 import 'subtitle_font_service.dart';
 import 'subtitle_style.dart' show libassOutline;
+import 'subtitle_sync_engine.dart';
 import 'player_lifecycle.dart';
 import 'playback_failover.dart';
 import 'player_engine_fallback.dart';
@@ -3813,8 +3814,29 @@ class PlayerCubit extends Cubit<PlayerState> {
     }
   }
 
+  /// Fold a caption drag into the persisted anchor.
+  ///
+  /// The gesture hands us the movement as fractions of the video surface, and
+  /// the two numbers it writes are the same ones the studio's position controls
+  /// write — [PlaybackPrefs.subtitlePositionX] and
+  /// [PlaybackPrefs.subtitlePosition] — so a drag and the sliders are one
+  /// source of truth rather than two that can disagree. The vertical fraction is
+  /// flipped because the store counts from the top (0) down (100), while the
+  /// gesture's dy grows downwards, which is the same direction.
+  Future<void> nudgeSubtitleAnchor({
+    required double dxFraction,
+    required double dyFraction,
+  }) async {
+    final prefs = sl<PlaybackPrefs>();
+    await prefs.setSubtitlePositionX(prefs.subtitlePositionX + dxFraction);
+    final y = (prefs.subtitlePosition / 100 + dyFraction).clamp(0.0, 1.0);
+    await prefs.setSubtitlePosition((y * 100).round());
+    // The overlay reads the prefs directly, but libass needs the mpv property
+    // re-sent, and the bump also repaints the Flutter overlay immediately.
+    await applySubtitleStyle();
+  }
+
   Future<void> setSubtitleDelay(Duration d) async {
-    subtitleDelay = d;
     final p = player.platform;
     if (p is NativePlayer) {
       try {
@@ -3840,6 +3862,168 @@ class PlayerCubit extends Cubit<PlayerState> {
   Future<void> _reapplySync() async {
     if (subtitleDelay != Duration.zero) await setSubtitleDelay(subtitleDelay);
     if (audioDelay != Duration.zero) await setAudioDelay(audioDelay);
+  }
+
+  /// Select a soft-sub the source already offers, by URL.
+  Future<void> setSubtitleTrackUrl(String url) async {
+    final sub = softSubs.where((s) => s.url == url).firstOrNull;
+    await player.setSubtitleTrack(
+      SubtitleTrack.uri(
+        url,
+        title: sub?.label,
+        language: sub?.lang,
+      ),
+    );
+    _wantedSubId = url;
+  }
+
+  /// The caption's drift correction — a multiplier on every authored timestamp,
+  /// for a caption timed to the wrong frame rate. 1 means no drift.
+  Future<void> setSubtitleRate(double rate) async {
+    await sl<PlaybackPrefs>().setSubtitleRate(rate);
+    await _applySubtitleRate();
+  }
+
+  /// Push the drift rate to mpv as a caption time stretch.
+  ///
+  /// mpv has no single property for this: `sub-speed` scales a caption's own
+  /// clock, and `sub-delay` shifts it. Applying both from one number keeps the
+  /// rate and the delay from fighting each other — the delay stepper stays the
+  /// only thing writing [subtitleDelay].
+  Future<void> _applySubtitleRate() async {
+    final p = player.platform;
+    if (p is! NativePlayer) return;
+    final rate = sl<PlaybackPrefs>().subtitleRate;
+    try {
+      await p.setProperty('sub-speed', rate.toString());
+    } catch (_) {}
+  }
+
+  /// Measure the caption's drift against the film's own track and apply it.
+  ///
+  /// The reference has to be a track whose timing is already right. The one
+  /// always available is another caption the source ships (a second language, or
+  /// the film's embedded track exported alongside), so that is what this uses:
+  /// the current caption is fitted against the first other text track. With
+  /// nothing to measure against it leaves the caption alone rather than guessing
+  /// — a fit invented from noise moves lines that were already correct.
+  Future<void> autoSyncSubtitles() async {
+    final target = await _currentSubCues();
+    if (target.isEmpty) {
+      _toast('Load a subtitle before syncing');
+      return;
+    }
+    final currentId = _wantedSubId;
+    Subtitle? referenceSub;
+    for (final s in softSubs) {
+      if (s.url != currentId) {
+        referenceSub = s;
+        break;
+      }
+    }
+    if (referenceSub == null) {
+      await sl<PlaybackPrefs>().setSubtitleSyncFit('');
+      _toast('No second track to sync against');
+      return;
+    }
+    final reference = await _cuesFor(referenceSub.url, softSubs);
+    if (reference.isEmpty) {
+      _toast('No second track to sync against');
+      return;
+    }
+    final fit = SubtitleSyncEngine.fit(reference: reference, target: target);
+    if (!fit.confident) {
+      await sl<PlaybackPrefs>().setSubtitleSyncFit('');
+      _toast('Couldn\'t measure the drift');
+      return;
+    }
+    final prefs = sl<PlaybackPrefs>();
+    await prefs.setSubtitleRate(fit.rate);
+    await setSubtitleDelay(Duration(milliseconds: fit.delayMillis));
+    await prefs.setSubtitleSyncFit(
+      '${fit.matchedCues} lines matched · '
+      '${fit.rate.toStringAsFixed(4)}x · '
+      '${fit.delayMillis} ms · ±${fit.residualMillis} ms',
+    );
+    await _applySubtitleRate();
+    await applySubtitleStyle();
+    _toast('Subtitles synced');
+  }
+
+  /// Undo an auto-sync: back to a 1:1 rate and no delay.
+  Future<void> resetSubtitleSync() async {
+    final prefs = sl<PlaybackPrefs>();
+    await prefs.setSubtitleRate(1);
+    await prefs.setSubtitleSyncFit('');
+    await setSubtitleDelay(Duration.zero);
+    await _applySubtitleRate();
+    await applySubtitleStyle();
+  }
+
+  /// The cues of the caption currently loaded, or an empty list when there is
+  /// nothing to read (an image-based track, or nothing selected).
+  Future<List<SubtitleCue>> _currentSubCues() async {
+    final id = _wantedSubId;
+    if (id == null || id == 'no') return const [];
+    if (File(id).existsSync()) {
+      return SubtitleExporter.parseCues(
+        decodeSubtitleText(await File(id).readAsBytes()) ?? '',
+      );
+    }
+    return _cuesFor(id, softSubs);
+  }
+
+  /// Fetch [url] and parse its cues, preferring a local file already downloaded
+  /// for it so a re-run does not re-fetch.
+  Future<List<SubtitleCue>> _cuesFor(String url, List<Subtitle> subs) async {
+    if (File(url).existsSync()) {
+      return SubtitleExporter.parseCues(
+        decodeSubtitleText(await File(url).readAsBytes()) ?? '',
+      );
+    }
+    try {
+      final resp = await _dio.get<List<int>>(
+        url,
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: state.active?.headers,
+          validateStatus: (_) => true,
+        ),
+      );
+      final text = decodeSubtitleText(
+        resp.data ?? const [],
+        declaredCharset: SubtitleTextCodec.charsetFromContentType(
+          resp.headers.value('content-type'),
+        ),
+      );
+      return SubtitleExporter.parseCues(text ?? '');
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// Writes the caption currently loaded out as an `.srt` the viewer keeps —
+  /// the studio's own "save" action, distinct from the player's export button
+  /// only in that it reports where the file landed.
+  Future<void> exportCurrentSubtitle() async {
+    final id = _wantedSubId;
+    if (id == null || id == 'no') {
+      _toast('No subtitle loaded to save');
+      return;
+    }
+    String content;
+    if (File(id).existsSync()) {
+      content = decodeSubtitleText(await File(id).readAsBytes()) ?? '';
+    } else {
+      final cues = await _cuesFor(id, softSubs);
+      if (cues.isEmpty) {
+        _toast('No subtitle loaded to save');
+        return;
+      }
+      content = SubtitleExporter.toSrt(cues);
+    }
+    final path = await exportSubtitleText(content, _exportTitle);
+    _toast(path == null ? 'Couldn\'t save the subtitle' : 'Subtitle saved');
   }
 
   /// Apply the saved subtitle styling (size / font / colour / background /

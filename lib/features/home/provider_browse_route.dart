@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/di/injector.dart';
+import '../../core/live/live_handles.dart';
 import '../../l10n/l10n.dart';
 import '../../core/models/episode.dart';
 import '../../core/models/media_item.dart';
@@ -10,12 +11,15 @@ import '../detail/detail_screen.dart';
 import '../player/player_screen.dart';
 import 'see_all_screen.dart';
 
+export '../../core/live/live_handles.dart' show isLiveHandle, kLiveHandleSchemes;
+
 /// True when [url] is a provider-extension handle rather than a playable title:
 /// a `browse:` category row (a streaming platform or a filter shortcut) or a
-/// `live:` sports stream. Both are produced by the MovieBox provider's home
-/// rows; every other source yields ordinary title urls, so this is inert there.
+/// live-sports fixture ([isLiveHandle]). Both are produced by the providers'
+/// home rows; every other source yields ordinary title urls, so this is inert
+/// there.
 bool isProviderExtensionUrl(String url) =>
-    url.startsWith('browse:') || url.startsWith('live:');
+    url.startsWith('browse:') || isLiveHandle(url);
 
 /// The bare `platform|<name>` / `filter|<spec>` handle `browseFilter` expects —
 /// the `browse:` scheme prefix is the app's own, not the provider's.
@@ -37,7 +41,7 @@ Future<bool> openProviderExtensionItem(
   final url = item.url;
   if (!isProviderExtensionUrl(url)) return false;
   final repo = repository ?? sl<CatalogueRepository>();
-  if (url.startsWith('live:')) {
+  if (isLiveHandle(url)) {
     // A text-only match centre carries no stream — tapping it would open a
     // player that resolves nothing. Say why instead of doing that.
     if (item.liveUnplayable) {

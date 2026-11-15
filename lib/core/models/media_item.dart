@@ -147,6 +147,15 @@ class MediaItem extends Equatable {
   /// carries a stream.
   final bool liveUnplayable;
 
+  /// Canonical sport slug the fixture belongs to, lowercased: `soccer`,
+  /// `basketball`, `motorsport`, … Each sports source normalises its own
+  /// vocabulary onto this (MovieBox's `type: football`, CDNLive's `Soccer`
+  /// bucket, TimStreams' genre, StreamFree's category slug), so the Live TV
+  /// screen can keep its sports rail to one sport without matching on league
+  /// names — which are free text and differ source to source. Null on every
+  /// non-sports item and on any fixture whose source didn't state a sport.
+  final String? liveSport;
+
   const MediaItem({
     required this.id,
     required this.title,
@@ -178,6 +187,7 @@ class MediaItem extends Equatable {
     this.liveInfo,
     this.liveStartMs,
     this.liveUnplayable = false,
+    this.liveSport,
   });
 
   factory MediaItem.fromJson(Map<String, dynamic> json) =>
@@ -199,6 +209,7 @@ class MediaItem extends Equatable {
     String? liveInfo,
     int? liveStartMs,
     bool? liveUnplayable,
+    String? liveSport,
     bool clearLiveStart = false,
   }) => MediaItem(
     id: id,
@@ -235,6 +246,7 @@ class MediaItem extends Equatable {
     liveInfo: liveInfo ?? this.liveInfo,
     liveStartMs: clearLiveStart ? null : (liveStartMs ?? this.liveStartMs),
     liveUnplayable: liveUnplayable ?? this.liveUnplayable,
+    liveSport: liveSport ?? this.liveSport,
   );
 
   @override
@@ -267,6 +279,7 @@ class MediaItem extends Equatable {
     liveInfo,
     liveStartMs,
     liveUnplayable,
+    liveSport,
   ];
 }
 

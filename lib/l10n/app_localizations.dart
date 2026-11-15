@@ -10497,6 +10497,467 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Experimental · Retry failed playback'**
   String get autoPlayerFallbackDescription;
+
+  /// No description provided for @subtitlePreset.
+  ///
+  /// In en, this message translates to:
+  /// **'Preset'**
+  String get subtitlePreset;
+
+  /// No description provided for @subtitleWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get subtitleWeight;
+
+  /// No description provided for @subtitleWidthAxis.
+  ///
+  /// In en, this message translates to:
+  /// **'Width axis'**
+  String get subtitleWidthAxis;
+
+  /// No description provided for @subtitleSlant.
+  ///
+  /// In en, this message translates to:
+  /// **'Slant'**
+  String get subtitleSlant;
+
+  /// No description provided for @subtitleLineHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Line height'**
+  String get subtitleLineHeight;
+
+  /// No description provided for @subtitleLetterSpacing.
+  ///
+  /// In en, this message translates to:
+  /// **'Letter spacing'**
+  String get subtitleLetterSpacing;
+
+  /// No description provided for @subtitleWordSpacing.
+  ///
+  /// In en, this message translates to:
+  /// **'Word spacing'**
+  String get subtitleWordSpacing;
+
+  /// No description provided for @subtitleUppercase.
+  ///
+  /// In en, this message translates to:
+  /// **'Uppercase'**
+  String get subtitleUppercase;
+
+  /// No description provided for @subtitleAlignment.
+  ///
+  /// In en, this message translates to:
+  /// **'Alignment'**
+  String get subtitleAlignment;
+
+  /// No description provided for @subtitleMaxLines.
+  ///
+  /// In en, this message translates to:
+  /// **'Max lines'**
+  String get subtitleMaxLines;
+
+  /// No description provided for @subtitleSyncSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync'**
+  String get subtitleSyncSection;
+
+  /// No description provided for @subtitleSyncAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-sync'**
+  String get subtitleSyncAuto;
+
+  /// No description provided for @subtitleSyncReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get subtitleSyncReset;
+
+  /// No description provided for @subtitleSyncRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate (drift)'**
+  String get subtitleSyncRate;
+
+  /// No description provided for @subtitleSyncStandard.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard'**
+  String get subtitleSyncStandard;
+
+  /// No description provided for @subtitleSyncReferenceReady.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} lines in the film\'s own track'**
+  String subtitleSyncReferenceReady(int count);
+
+  /// No description provided for @subtitleSyncReferenceNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No embedded track to measure against'**
+  String get subtitleSyncReferenceNone;
+
+  /// No description provided for @subtitleSyncMeasured.
+  ///
+  /// In en, this message translates to:
+  /// **'{matched} lines matched · {rate}x · {delay} ms · ±{residual} ms'**
+  String subtitleSyncMeasured(
+    int matched,
+    String rate,
+    int delay,
+    int residual,
+  );
+
+  /// No description provided for @subtitleDwellSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Dwell speed'**
+  String get subtitleDwellSpeed;
+
+  /// No description provided for @subtitleEntrance.
+  ///
+  /// In en, this message translates to:
+  /// **'Entrance'**
+  String get subtitleEntrance;
+
+  /// No description provided for @subtitleDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get subtitleDuration;
+
+  /// No description provided for @subtitleSpring.
+  ///
+  /// In en, this message translates to:
+  /// **'Spring'**
+  String get subtitleSpring;
+
+  /// No description provided for @subtitleStiffness.
+  ///
+  /// In en, this message translates to:
+  /// **'Stiffness'**
+  String get subtitleStiffness;
+
+  /// No description provided for @subtitleDamping.
+  ///
+  /// In en, this message translates to:
+  /// **'Damping'**
+  String get subtitleDamping;
+
+  /// No description provided for @subtitleTravel.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel'**
+  String get subtitleTravel;
+
+  /// No description provided for @subtitleStretch.
+  ///
+  /// In en, this message translates to:
+  /// **'Stretch'**
+  String get subtitleStretch;
+
+  /// No description provided for @subtitleSweep.
+  ///
+  /// In en, this message translates to:
+  /// **'Sweep'**
+  String get subtitleSweep;
+
+  /// No description provided for @subtitleReveal.
+  ///
+  /// In en, this message translates to:
+  /// **'Reveal'**
+  String get subtitleReveal;
+
+  /// No description provided for @subtitleCadence.
+  ///
+  /// In en, this message translates to:
+  /// **'Pulse'**
+  String get subtitleCadence;
+
+  /// No description provided for @subtitleCadenceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pulses the caption with the voice when the engine can supply the level.'**
+  String get subtitleCadenceHint;
+
+  /// No description provided for @subtitleAudioReactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio reactive'**
+  String get subtitleAudioReactive;
+
+  /// No description provided for @subtitleSensitivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Sensitivity'**
+  String get subtitleSensitivity;
+
+  /// No description provided for @subtitleGlowSwell.
+  ///
+  /// In en, this message translates to:
+  /// **'Glow swell'**
+  String get subtitleGlowSwell;
+
+  /// No description provided for @subtitleSmoothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Smoothing'**
+  String get subtitleSmoothing;
+
+  /// No description provided for @subtitlePlate.
+  ///
+  /// In en, this message translates to:
+  /// **'Plate'**
+  String get subtitlePlate;
+
+  /// No description provided for @subtitlePlateOpacity.
+  ///
+  /// In en, this message translates to:
+  /// **'Plate opacity'**
+  String get subtitlePlateOpacity;
+
+  /// No description provided for @subtitleCornerRadius.
+  ///
+  /// In en, this message translates to:
+  /// **'Corner radius'**
+  String get subtitleCornerRadius;
+
+  /// No description provided for @subtitlePlatePadding.
+  ///
+  /// In en, this message translates to:
+  /// **'Plate padding'**
+  String get subtitlePlatePadding;
+
+  /// No description provided for @subtitleGlowSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Glow'**
+  String get subtitleGlowSection;
+
+  /// No description provided for @subtitleEdgeGlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Edge glow'**
+  String get subtitleEdgeGlow;
+
+  /// No description provided for @subtitleGlowRadius.
+  ///
+  /// In en, this message translates to:
+  /// **'Glow radius'**
+  String get subtitleGlowRadius;
+
+  /// No description provided for @subtitleGlowIntensity.
+  ///
+  /// In en, this message translates to:
+  /// **'Glow intensity'**
+  String get subtitleGlowIntensity;
+
+  /// No description provided for @subtitleGlowColour.
+  ///
+  /// In en, this message translates to:
+  /// **'Glow colour'**
+  String get subtitleGlowColour;
+
+  /// No description provided for @subtitleShadowOffset.
+  ///
+  /// In en, this message translates to:
+  /// **'Shadow offset'**
+  String get subtitleShadowOffset;
+
+  /// No description provided for @subtitleShadowBlur.
+  ///
+  /// In en, this message translates to:
+  /// **'Shadow blur'**
+  String get subtitleShadowBlur;
+
+  /// No description provided for @subtitlePlacementSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Placement'**
+  String get subtitlePlacementSection;
+
+  /// No description provided for @subtitlePlacementMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Placement'**
+  String get subtitlePlacementMode;
+
+  /// No description provided for @subtitlePosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Position'**
+  String get subtitlePosition;
+
+  /// No description provided for @subtitleMaxShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Max shift'**
+  String get subtitleMaxShift;
+
+  /// No description provided for @subtitleShrinkToFit.
+  ///
+  /// In en, this message translates to:
+  /// **'Shrink to fit'**
+  String get subtitleShrinkToFit;
+
+  /// No description provided for @subtitleMinScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Min scale'**
+  String get subtitleMinScale;
+
+  /// No description provided for @subtitleReadabilitySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Readability'**
+  String get subtitleReadabilitySection;
+
+  /// No description provided for @subtitleHardenBright.
+  ///
+  /// In en, this message translates to:
+  /// **'Harden on bright frames'**
+  String get subtitleHardenBright;
+
+  /// No description provided for @subtitleThreshold.
+  ///
+  /// In en, this message translates to:
+  /// **'Threshold'**
+  String get subtitleThreshold;
+
+  /// No description provided for @subtitleLateNightSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Late night'**
+  String get subtitleLateNightSection;
+
+  /// No description provided for @subtitleAmbientMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Ambient mode'**
+  String get subtitleAmbientMode;
+
+  /// No description provided for @subtitleWarmth.
+  ///
+  /// In en, this message translates to:
+  /// **'Warmth'**
+  String get subtitleWarmth;
+
+  /// No description provided for @subtitleDimPicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Dim picture'**
+  String get subtitleDimPicture;
+
+  /// No description provided for @subtitleAmbientPlate.
+  ///
+  /// In en, this message translates to:
+  /// **'Ambient plate'**
+  String get subtitleAmbientPlate;
+
+  /// No description provided for @subtitlePageType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get subtitlePageType;
+
+  /// No description provided for @subtitlePageTiming.
+  ///
+  /// In en, this message translates to:
+  /// **'Timing'**
+  String get subtitlePageTiming;
+
+  /// No description provided for @subtitlePageLook.
+  ///
+  /// In en, this message translates to:
+  /// **'Look'**
+  String get subtitlePageLook;
+
+  /// No description provided for @subtitlePageFind.
+  ///
+  /// In en, this message translates to:
+  /// **'Find'**
+  String get subtitlePageFind;
+
+  /// No description provided for @subtitlePagePool.
+  ///
+  /// In en, this message translates to:
+  /// **'Pool'**
+  String get subtitlePagePool;
+
+  /// No description provided for @subtitleDragHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag the caption on the video to place it'**
+  String get subtitleDragHint;
+
+  /// No description provided for @subtitlePoolEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No captions downloaded for this title yet'**
+  String get subtitlePoolEmpty;
+
+  /// No description provided for @subtitlePoolUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Use'**
+  String get subtitlePoolUse;
+
+  /// No description provided for @subtitleUploadFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a subtitle file'**
+  String get subtitleUploadFile;
+
+  /// No description provided for @subtitleExportFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this caption to Downloads'**
+  String get subtitleExportFile;
+
+  /// No description provided for @subtitleSyncListen.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen to the film'**
+  String get subtitleSyncListen;
+
+  /// No description provided for @subtitleResetTiming.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset sync'**
+  String get subtitleResetTiming;
+
+  /// No description provided for @subtitlePresetClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get subtitlePresetClassic;
+
+  /// No description provided for @subtitlePresetCinema.
+  ///
+  /// In en, this message translates to:
+  /// **'Cinema'**
+  String get subtitlePresetCinema;
+
+  /// No description provided for @subtitlePresetBroadcast.
+  ///
+  /// In en, this message translates to:
+  /// **'Broadcast'**
+  String get subtitlePresetBroadcast;
+
+  /// No description provided for @subtitlePresetNeon.
+  ///
+  /// In en, this message translates to:
+  /// **'Neon'**
+  String get subtitlePresetNeon;
+
+  /// No description provided for @subtitlePresetLateNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Late night'**
+  String get subtitlePresetLateNight;
 }
 
 class _AppLocalizationsDelegate

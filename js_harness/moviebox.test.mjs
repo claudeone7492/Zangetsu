@@ -164,6 +164,11 @@ live('only in-play matches carry the live badge', async () => {
       statusById.get(it.id) === 'MatchIng',
       `${it.id} (${statusById.get(it.id)}) badge=${it.liveBadge}`,
     );
+    // The app keeps its rail to soccer, so every fixture must carry the
+    // canonical slug and MovieBox's own `football` must arrive as `soccer`
+    // (the app filters on the slug, never on the raw provider vocabulary).
+    assert.ok(it.liveSport, `${it.id} is missing liveSport`);
+    assert.notEqual(it.liveSport, 'football', `${it.id} was not normalised`);
   }
 });
 

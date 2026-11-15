@@ -135,6 +135,10 @@ function _mapMatch(r, category, nowSec) {
   var info = _info(r);
   if (info) item.liveInfo = info;
   if (r.league) item.genres = [r.league];
+  // Canonical sport slug, lowercased. StreamFree keys its own feed by slug and
+  // 'soccer' is already the world's game (its 'football' category is American
+  // Football), so this needs no remapping — just the one slug the app filters on.
+  if (category) item.liveSport = String(category).toLowerCase();
   return item;
 }
 

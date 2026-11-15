@@ -281,13 +281,25 @@ function _filterRail(d) {
 // from the FILTER shortcuts, then one rail per streaming platform. A rail that
 // comes back empty is dropped rather than shown as a blank row.
 function getHome(opts) {
-  return _home().then(function (d) {
+  // The live rail is fetched from the sports endpoint rather than read out of
+  // the home payload: the payload's SPORT_LIVE block omits `playType`, so it
+  // cannot tell a fixture with a video broadcast from a text-only match centre
+  // — every card would look playable and half of them would open a player with
+  // no sources. The sports list carries the flag; if that call fails we fall
+  // back to the payload rail so the row still appears.
+  return Promise.all([_home(), getLive()]).then(function (res) {
+    var d = res[0];
+    var liveItems = res[1] || [];
     var ops = d.operatingList || [];
     var out = [];
     // Live matches lead the page — they are the one row that is only useful
     // while it is current.
-    var live = _homeLive(d);
-    if (live) out.push(live);
+    if (liveItems.length) {
+      out.push({ title: 'Live', items: liveItems });
+    } else {
+      var live = _homeLive(d);
+      if (live) out.push(live);
+    }
     for (var i = 0; i < ops.length; i++) {
       var o = ops[i];
       if (!o || !o.title || o.type === 'FILTER' || o.type === 'SPORT_LIVE') continue;
@@ -676,6 +688,22 @@ function _liveInfo(m) {
   return parts.length ? parts.join(' \u00B7 ') : null;
 }
 
+// Whether a fixture actually has a video broadcast to play.
+//
+// The API tags every fixture with a `playType`: `PlayTypeVideo` for one with a
+// stream, `PlayTypeText` for a text-only match centre (live commentary, no
+// picture). Plenty of in-play football fixtures are `PlayTypeText` — they read
+// as LIVE on the poster but carry no `playPath`/`playSource`, so tapping one
+// resolves zero sources and the player reports "no sources". Marking those
+// non-playable lets the card say so instead of promising a stream it cannot
+// open. A missing `playType` (the home rail omits it) is treated as playable so
+// a payload change never hides every fixture.
+function _matchPlayable(m) {
+  if (!m) return false;
+  if (m.playType === 'PlayTypeText') return false;
+  return true;
+}
+
 function _mapMatch(m) {
   if (!m) return null;
   var t1 = m.team1 || {};
@@ -701,9 +729,19 @@ function _mapMatch(m) {
     liveBadge: _liveBadge(status, startMs),
     liveStartMs: startMs || null
   };
+  // Text-only fixtures carry no stream; flag them so the card can say so and a
+  // tap does not open a player that resolves nothing.
+  if (!_matchPlayable(m)) item.liveUnplayable = true;
   var info = _liveInfo(m);
   if (info) item.liveInfo = info;
   if (m.league) item.genres = [m.league];
+  // Canonical sport slug, so the app can keep the live rail to one sport
+  // without guessing from the league name. MovieBox calls soccer
+  // 'football'; normalise it to the slug the other sources use.
+  if (m.type) {
+    var sp = String(m.type).toLowerCase();
+    item.liveSport = sp === 'football' ? 'soccer' : sp;
+  }
   return item;
 }
 
@@ -764,14 +802,26 @@ function getShorts(opts) {
   }).catch(function () { return []; });
 }
 
-// One playable live source. The stream CDN (live-pull.aisports.mobi) answers a
-// bare request with 403 and only serves with the sports front end's referer, so
-// the sports headers ride along with the stream.
-function _liveSource(path) {
+// Resolve a live match to its stream(s). The match-list a user is browsing is a
+// snapshot: a match carries an empty `playPath` until the broadcast actually
+// starts, so a page opened before kickoff holds a handle with no URL in it and
+// tapping it at kickoff would resolve nothing. The detail endpoint is
+// authoritative and re-mints the signed URL per request, so resolve from it now
+// and fall back to whatever path the list already carried. The url is
+// `live:<id>|<path?>`.
+//
+// A match in play also carries `playSource`: the per-channel broadcast URLs
+// (`http://play.sportsteam368.com/...`) the site itself offers as "Channel 1/2/…".
+// `playPath` is empty for a good number of live fixtures (and the CDN 404s on
+// others), so when it yields nothing the channels are the only playable route —
+// without them the player reports "no sources" for a match that is on air.
+// Each channel becomes its own source, labelled, so the player's picker lists
+// them exactly like the site does.
+function _liveSource(path, label) {
   return {
     url: path,
     quality: 'Live',
-    label: 'Live',
+    label: label || 'Live',
     container: _container(path),
     headers: { 'User-Agent': UA, 'Referer': SPORTS + '/', 'Origin': SPORTS },
     kind: 'unknown',
@@ -779,13 +829,32 @@ function _liveSource(path) {
   };
 }
 
-// Resolve a live match to its stream. The match-list a user is browsing is a
-// snapshot: a match carries an empty `playPath` until the broadcast actually
-// starts, so a page opened before kickoff holds a handle with no URL in it and
-// tapping it at kickoff would resolve nothing. The detail endpoint is
-// authoritative and re-mints the signed URL per request, so resolve from it now
-// and fall back to whatever path the list already carried. The url is
-// `live:<id>|<path?>`.
+// The playable sources a match detail offers, best first: the signed CDN path,
+// then every `playSource` channel. De-duplicated by URL. Empty only when the
+// match genuinely carries nothing to play (an upcoming fixture).
+function _liveSources(d, packed) {
+  var out = [];
+  var seen = {};
+  function add(path, label) {
+    if (!path) return;
+    path = String(path);
+    if (seen[path]) return;
+    seen[path] = 1;
+    out.push(_liveSource(path, label));
+  }
+  if (d && d.playPath) add(d.playPath, 'Live');
+  var chans = (d && d.playSource) || [];
+  for (var i = 0; i < chans.length; i++) {
+    var c = chans[i];
+    if (!c || !c.path) continue;
+    add(c.path, c.title || ('Channel ' + (i + 1)));
+  }
+  // The list snapshot's own path is the last resort: it may already be a valid
+  // URL even when the detail call failed or dropped it.
+  if (!out.length && packed) add(packed, 'Live');
+  return out;
+}
+
 function getVideoSourcesLive(url) {
   var spec = String(url || '').slice('live:'.length);
   var bar = spec.indexOf('|');
@@ -793,9 +862,6 @@ function getVideoSourcesLive(url) {
   var packed = bar >= 0 ? spec.slice(bar + 1) : '';
   if (!id) return Promise.resolve([]);
   return _sportGet('/wefeed-h5api-bff/live/match-detail?id=' + encodeURIComponent(id))
-    .then(function (d) {
-      var path = (d && d.playPath) || packed;
-      return path ? [_liveSource(path)] : [];
-    })
+    .then(function (d) { return _liveSources(d, packed); })
     .catch(function () { return packed ? [_liveSource(packed)] : []; });
 }

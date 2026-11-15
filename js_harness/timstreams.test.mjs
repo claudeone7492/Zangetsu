@@ -41,6 +41,9 @@ live('getLive returns fixtures, in-play first, each with a badge', async () => {
     assert.ok(it.url.startsWith('ts:'), 'fixture url uses the ts: scheme, got ' + it.url);
     assert.equal(it.sourceId, 'timstreams');
     assert.ok(it.liveBadge, 'fixture has a status badge: ' + it.title);
+    // The app keeps its rail to soccer, so each fixture must carry the
+    // canonical slug the filter matches on.
+    assert.ok(it.liveSport, 'fixture has a sport slug: ' + it.title);
   }
   const liveIdx = items.findIndex((i) => i.liveBadge === 'LIVE');
   const otherIdx = items.findIndex((i) => i.liveBadge !== 'LIVE');

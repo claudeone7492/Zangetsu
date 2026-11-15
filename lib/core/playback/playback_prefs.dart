@@ -1080,6 +1080,339 @@ class PlaybackPrefs {
   Future<void> setSubtitlePosition(int value) =>
       _box.put('subtitlePosition', value.clamp(0, 100));
 
+  /// Horizontal subtitle anchor, 0.0 (left) … 1.0 (right). 0.5 is centred,
+  /// which is where a caption sits unless the viewer drags it. A drag writes
+  /// this and [subtitlePosition] together, so the two controls and the gesture
+  /// are one source of truth.
+  double get subtitlePositionX {
+    final value = _box.get('subtitlePositionX');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.0, 1.0)
+        : 0.5;
+  }
+
+  Future<void> setSubtitlePositionX(double value) =>
+      _box.put('subtitlePositionX', value.clamp(0.0, 1.0));
+
+  // ── The studio's richer style model ───────────────────────────────────────
+  //
+  // Ported from the reference player's SubtitleStyle. Each getter falls back to
+  // the same default the model declares and rejects a value of the wrong type,
+  // because the box is shared with older builds and hand edits.
+
+  /// The one-tap preset in effect ('classic' | 'cinema' | 'broadcast' | 'neon' |
+  /// 'late_night'). A label on top of the fields below, not a separate store:
+  /// applying a preset writes the fields, and the label is what the studio
+  /// highlights.
+  String get subtitlePreset {
+    final value = _box.get('subtitlePreset');
+    return value is String ? value : 'classic';
+  }
+
+  Future<void> setSubtitlePreset(String value) =>
+      _box.put('subtitlePreset', value);
+
+  /// Variable-font weight axis, 100..900.
+  int get subtitleWeight {
+    final value = _box.get('subtitleWeight');
+    return value is num && value.isFinite
+        ? value.toInt().clamp(100, 900)
+        : 600;
+  }
+
+  Future<void> setSubtitleWeight(int value) =>
+      _box.put('subtitleWeight', value.clamp(100, 900));
+
+  /// Variable-font width axis, as a percentage, 75..125.
+  double get subtitleWidthAxis {
+    final value = _box.get('subtitleWidthAxis');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(75.0, 125.0)
+        : 100;
+  }
+
+  Future<void> setSubtitleWidthAxis(double value) =>
+      _box.put('subtitleWidthAxis', value.clamp(75.0, 125.0));
+
+  /// Synthetic slant in degrees, -12..12.
+  double get subtitleSlant {
+    final value = _box.get('subtitleSlant');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(-12.0, 12.0)
+        : 0;
+  }
+
+  Future<void> setSubtitleSlant(double value) =>
+      _box.put('subtitleSlant', value.clamp(-12.0, 12.0));
+
+  /// Multiplier on the font's own line height.
+  double get subtitleLineHeight {
+    final value = _box.get('subtitleLineHeight');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.9, 2.2)
+        : 1.4;
+  }
+
+  Future<void> setSubtitleLineHeight(double value) =>
+      _box.put('subtitleLineHeight', value.clamp(0.9, 2.2));
+
+  /// Extra space between letters, in ems.
+  double get subtitleLetterSpacing {
+    final value = _box.get('subtitleLetterSpacing');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(-0.04, 0.12)
+        : 0;
+  }
+
+  Future<void> setSubtitleLetterSpacing(double value) =>
+      _box.put('subtitleLetterSpacing', value.clamp(-0.04, 0.12));
+
+  /// Space between words as a multiplier of the font's own.
+  double get subtitleWordSpacing {
+    final value = _box.get('subtitleWordSpacing');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.6, 2.0)
+        : 1;
+  }
+
+  Future<void> setSubtitleWordSpacing(double value) =>
+      _box.put('subtitleWordSpacing', value.clamp(0.6, 2.0));
+
+  /// Whether to draw the caption in capitals.
+  bool get subtitleUppercase =>
+      _box.get('subtitleUppercase', defaultValue: false) as bool;
+
+  Future<void> setSubtitleUppercase(bool value) =>
+      _box.put('subtitleUppercase', value);
+
+  /// Text alignment: 'start' | 'center' | 'end'.
+  String get subtitleAlign {
+    final value = _box.get('subtitleAlign');
+    return value is String ? value : 'center';
+  }
+
+  Future<void> setSubtitleAlign(String value) =>
+      _box.put('subtitleAlign', value);
+
+  /// How many lines to show before the block is split, 1..4.
+  int get subtitleMaxLines {
+    final value = _box.get('subtitleMaxLines');
+    return value is num && value.isFinite
+        ? value.toInt().clamp(1, 4)
+        : 3;
+  }
+
+  Future<void> setSubtitleMaxLines(int value) =>
+      _box.put('subtitleMaxLines', value.clamp(1, 4));
+
+  /// The plate behind the text: 'none' | 'plate' | 'block' | 'blur'.
+  String get subtitlePlateMode {
+    final value = _box.get('subtitlePlateMode');
+    return value is String ? value : 'none';
+  }
+
+  Future<void> setSubtitlePlateMode(String value) =>
+      _box.put('subtitlePlateMode', value);
+
+  double get subtitlePlateOpacity {
+    final value = _box.get('subtitlePlateOpacity');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.0, 1.0)
+        : 0.85;
+  }
+
+  Future<void> setSubtitlePlateOpacity(double value) =>
+      _box.put('subtitlePlateOpacity', value.clamp(0.0, 1.0));
+
+  double get subtitlePlateCorner {
+    final value = _box.get('subtitlePlateCorner');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.0, 32.0)
+        : 8;
+  }
+
+  Future<void> setSubtitlePlateCorner(double value) =>
+      _box.put('subtitlePlateCorner', value.clamp(0.0, 32.0));
+
+  double get subtitlePlatePadding {
+    final value = _box.get('subtitlePlatePadding');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.0, 32.0)
+        : 6;
+  }
+
+  Future<void> setSubtitlePlatePadding(double value) =>
+      _box.put('subtitlePlatePadding', value.clamp(0.0, 32.0));
+
+  bool get subtitleGlowEnabled =>
+      _box.get('subtitleGlowEnabled', defaultValue: true) as bool;
+
+  Future<void> setSubtitleGlowEnabled(bool value) =>
+      _box.put('subtitleGlowEnabled', value);
+
+  double get subtitleGlowRadius {
+    final value = _box.get('subtitleGlowRadius');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.0, 28.0)
+        : 2;
+  }
+
+  Future<void> setSubtitleGlowRadius(double value) =>
+      _box.put('subtitleGlowRadius', value.clamp(0.0, 28.0));
+
+  double get subtitleGlowIntensity {
+    final value = _box.get('subtitleGlowIntensity');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.0, 1.0)
+        : 0.9;
+  }
+
+  Future<void> setSubtitleGlowIntensity(double value) =>
+      _box.put('subtitleGlowIntensity', value.clamp(0.0, 1.0));
+
+  /// Glow colour as `#RRGGBBAA`.
+  String get subtitleGlowColorHex {
+    final value = _box.get('subtitleGlowColorHex');
+    return value is String ? value : '#000000FF';
+  }
+
+  Future<void> setSubtitleGlowColorHex(String value) =>
+      _box.put('subtitleGlowColorHex', value);
+
+  double get subtitleShadowOffset {
+    final value = _box.get('subtitleShadowOffset');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.0, 8.0)
+        : 2;
+  }
+
+  Future<void> setSubtitleShadowOffset(double value) =>
+      _box.put('subtitleShadowOffset', value.clamp(0.0, 8.0));
+
+  double get subtitleShadowBlur {
+    final value = _box.get('subtitleShadowBlur');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.0, 16.0)
+        : 4;
+  }
+
+  Future<void> setSubtitleShadowBlur(double value) =>
+      _box.put('subtitleShadowBlur', value.clamp(0.0, 16.0));
+
+  /// The entrance animation: 'none' | 'fluid_fade' | 'rise_fade' | 'spring' |
+  /// 'reveal' | 'slide'.
+  String get subtitleEntrance {
+    final value = _box.get('subtitleEntrance');
+    return value is String ? value : 'none';
+  }
+
+  Future<void> setSubtitleEntrance(String value) =>
+      _box.put('subtitleEntrance', value);
+
+  int get subtitleEntranceMs {
+    final value = _box.get('subtitleEntranceMs');
+    return value is num && value.isFinite
+        ? value.toInt().clamp(80, 700)
+        : 220;
+  }
+
+  Future<void> setSubtitleEntranceMs(int value) =>
+      _box.put('subtitleEntranceMs', value.clamp(80, 700));
+
+  /// Placement strategy: 'anchor' | 'speaker' | 'collision' | 'adaptive'.
+  String get subtitlePlacementMode {
+    final value = _box.get('subtitlePlacementMode');
+    return value is String ? value : 'anchor';
+  }
+
+  Future<void> setSubtitlePlacementMode(String value) =>
+      _box.put('subtitlePlacementMode', value);
+
+  double get subtitleMaxShift {
+    final value = _box.get('subtitleMaxShift');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.0, 0.6)
+        : 0.28;
+  }
+
+  Future<void> setSubtitleMaxShift(double value) =>
+      _box.put('subtitleMaxShift', value.clamp(0.0, 0.6));
+
+  bool get subtitleAllowScale =>
+      _box.get('subtitleAllowScale', defaultValue: true) as bool;
+
+  Future<void> setSubtitleAllowScale(bool value) =>
+      _box.put('subtitleAllowScale', value);
+
+  double get subtitleMinScale {
+    final value = _box.get('subtitleMinScale');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.4, 1.0)
+        : 0.75;
+  }
+
+  Future<void> setSubtitleMinScale(double value) =>
+      _box.put('subtitleMinScale', value.clamp(0.4, 1.0));
+
+  bool get subtitleAmbientEnabled =>
+      _box.get('subtitleAmbientEnabled', defaultValue: false) as bool;
+
+  Future<void> setSubtitleAmbientEnabled(bool value) =>
+      _box.put('subtitleAmbientEnabled', value);
+
+  double get subtitleAmbientWarmth {
+    final value = _box.get('subtitleAmbientWarmth');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.0, 1.0)
+        : 0.8;
+  }
+
+  Future<void> setSubtitleAmbientWarmth(double value) =>
+      _box.put('subtitleAmbientWarmth', value.clamp(0.0, 1.0));
+
+  double get subtitleAmbientDim {
+    final value = _box.get('subtitleAmbientDim');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.0, 0.8)
+        : 0.35;
+  }
+
+  Future<void> setSubtitleAmbientDim(double value) =>
+      _box.put('subtitleAmbientDim', value.clamp(0.0, 0.8));
+
+  /// The caption's dwell speed, for a caption that is too quick to read.
+  /// Distinct from the video speed.
+  double get subtitleSpeed {
+    final value = _box.get('subtitleSpeed');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.25, 4.0)
+        : 1.0;
+  }
+
+  Future<void> setSubtitleSpeed(double value) =>
+      _box.put('subtitleSpeed', value.clamp(0.25, 4.0));
+
+  /// The caption's drift correction: a multiplier on every authored timestamp.
+  /// 1 means no drift.
+  double get subtitleRate {
+    final value = _box.get('subtitleRate');
+    return value is num && value.isFinite
+        ? value.toDouble().clamp(0.9, 1.1)
+        : 1.0;
+  }
+
+  Future<void> setSubtitleRate(double value) =>
+      _box.put('subtitleRate', value.clamp(0.9, 1.1));
+
+  /// The last measured sync fit, kept so the studio can show its own readout.
+  String get subtitleSyncFit {
+    final value = _box.get('subtitleSyncFit');
+    return value is String ? value : '';
+  }
+
+  Future<void> setSubtitleSyncFit(String value) =>
+      _box.put('subtitleSyncFit', value);
+
   /// The single global subtitle preference: '' (Auto — no forcing), 'off'
   /// (subtitles off on every video), or an ISO-639-1 language code (auto-select
   /// the source's subtitle in that language). Stored under the legacy

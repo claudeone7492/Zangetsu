@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/widgets.dart';
 
 import '../../core/playback/playback_prefs.dart';
+import 'subtitle_style_model.dart';
 
 /// Subtitle outline-style presets for the Subtitle-style picker.
 /// `(id, label)` — `id` is what's stored in [PlaybackPrefs.subtitleOutlineType].
@@ -123,24 +124,54 @@ TextStyle buildSubtitleTextStyle(PlaybackPrefs p, {required double fontSize}) {
 /// Positions the complete subtitle block within the available video surface.
 ///
 /// Used only when libass is off — the Flutter overlay then owns the whole
-/// subtitle look, including vertical placement, which the fixed
-/// `SubtitleViewConfiguration` padding only approximated. [position] runs 0
-/// (top) … 100 (bottom) and maps onto the surface's own [Alignment].
-class PositionedSubtitle extends StatelessWidget {
+/// subtitle look, including placement, which the fixed
+/// `SubtitleViewConfiguration` padding only approximated.
+///
+/// [position] runs 0 (top) … 100 (bottom) and [anchorX] runs 0 (left) … 1
+/// (right); the two together are the caption's anchor. When [onDrag] is set the
+/// block can be dragged: the gesture reports its movement as fractions of the
+/// surface, and the caller folds them into the same anchor the position controls
+/// write, so dragging and the sliders stay one source of truth.
+///
+/// When [studio] is given the block is drawn with the studio's full style — the
+/// plate behind the text, the glow, the entrance animation and the late-night
+/// treatment — rather than just a [TextStyle]. That is what makes the studio's
+/// Look and Timing pages real on the video and not only in the preview.
+class PositionedSubtitle extends StatefulWidget {
   const PositionedSubtitle({
     super.key,
     required this.text,
     required this.position,
     required this.style,
+    this.anchorX = 0.5,
+    this.onDrag,
+    this.studio,
   });
 
   final String text;
   final int position;
   final TextStyle style;
+  final double anchorX;
+
+  /// Called with the drag movement as fractions of the surface width/height.
+  final void Function(double dxFraction, double dyFraction)? onDrag;
+
+  /// The full studio style, when the overlay should draw the plate, glow and
+  /// entrance itself. Null keeps the plain [style]-only rendering.
+  final SubtitleStyle? studio;
 
   @override
-  Widget build(BuildContext context) => IgnorePointer(
-    child: LayoutBuilder(
+  State<PositionedSubtitle> createState() => _PositionedSubtitleState();
+}
+
+class _PositionedSubtitleState extends State<PositionedSubtitle> {
+  /// The text the entrance is animating, so a new cue replays the entrance and
+  /// a redraw of the same cue does not.
+  String _entranceKey = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final child = LayoutBuilder(
       builder: (context, constraints) {
         // Keep the existing subtitle size relative to the video surface.
         final scale = math.sqrt(
@@ -149,19 +180,227 @@ class PositionedSubtitle extends StatelessWidget {
             1.0,
           ),
         );
+        final w = constraints.maxWidth <= 0 ? 1.0 : constraints.maxWidth;
+        final h = constraints.maxHeight <= 0 ? 1.0 : constraints.maxHeight;
+        final studio = widget.studio;
+        final text = studio?.displayText(widget.text) ?? widget.text;
+        final style = studio?.textStyle(
+              fontSize: widget.style.fontSize ?? 32,
+              fontFamily: widget.style.fontFamily,
+            ) ??
+            widget.style;
+        final align = studio?.textAlign ?? TextAlign.center;
+        if (studio != null && text != _entranceKey) {
+          _entranceKey = text;
+        }
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Align(
-            alignment: Alignment(0, position.clamp(0, 100) / 50 - 1),
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: style,
-              textScaler: TextScaler.linear(scale),
+            alignment: Alignment(
+              (widget.anchorX.clamp(0.0, 1.0) * 2) - 1,
+              widget.position.clamp(0, 100) / 50 - 1,
+            ),
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onPanUpdate: widget.onDrag == null
+                  ? null
+                  : (d) => widget.onDrag!(d.delta.dx / w, d.delta.dy / h),
+              child: studio == null
+                  ? Text(
+                      text,
+                      textAlign: align,
+                      style: style,
+                      textScaler: TextScaler.linear(scale),
+                    )
+                  : _StudioCaption(
+                      text: text,
+                      style: style,
+                      studio: studio,
+                      textScale: scale,
+                      align: align,
+                      entranceKey: _entranceKey,
+                    ),
             ),
           ),
         );
       },
-    ),
-  );
+    );
+    // A caption with no drag handler stays inert so it never eats a tap meant
+    // for the controls; one with a handler still lets a plain tap through (the
+    // GestureDetector only claims pans).
+    return widget.onDrag == null ? IgnorePointer(child: child) : child;
+  }
+}
+
+/// The caption as the studio draws it: the plate, the glow, the entrance and the
+/// late-night dim, all from one [SubtitleStyle].
+class _StudioCaption extends StatelessWidget {
+  const _StudioCaption({
+    required this.text,
+    required this.style,
+    required this.studio,
+    required this.textScale,
+    required this.align,
+    required this.entranceKey,
+  });
+
+  final String text;
+  final TextStyle style;
+  final SubtitleStyle studio;
+  final double textScale;
+  final TextAlign align;
+  final String entranceKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final plate = _plate();
+    final caption = DecoratedBox(
+      decoration: plate ?? const BoxDecoration(),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: studio.plateMode == SubtitlePlateMode.none
+              ? 0
+              : studio.platePadding,
+          vertical: studio.plateMode == SubtitlePlateMode.none
+              ? 0
+              : studio.platePadding * 0.5,
+        ),
+        child: Text(
+          text,
+          textAlign: align,
+          maxLines: studio.maxLines,
+          overflow: TextOverflow.ellipsis,
+          style: style,
+          textScaler: TextScaler.linear(textScale),
+        ),
+      ),
+    );
+    return _entrance(caption);
+  }
+
+  /// The plate behind the text, or null when the style asks for none.
+  BoxDecoration? _plate() {
+    if (studio.plateMode == SubtitlePlateMode.none) return null;
+    final radius = BorderRadius.circular(studio.plateCorner);
+    switch (studio.plateMode) {
+      case SubtitlePlateMode.blur:
+        // A true blur of the frame behind is not reachable from a Flutter
+        // overlay over a native surface, so a soft translucent plate stands in
+        // — the same intent (separate the text from the picture) drawn the one
+        // way the overlay can.
+        return BoxDecoration(
+          color: Color.fromRGBO(0, 0, 0, studio.plateOpacity * 0.75),
+          borderRadius: radius,
+        );
+      case SubtitlePlateMode.plate:
+      case SubtitlePlateMode.block:
+      case SubtitlePlateMode.none:
+        return BoxDecoration(
+          color: Color.fromRGBO(0, 0, 0, studio.plateOpacity),
+          borderRadius: radius,
+        );
+    }
+  }
+
+  /// The entrance animation, keyed on [entranceKey] so each new cue replays it.
+  Widget _entrance(Widget child) {
+    if (studio.entrance == SubtitleEntrance.none) return child;
+    return _EntranceTransition(
+      key: ValueKey(entranceKey),
+      entrance: studio.entrance,
+      duration: Duration(milliseconds: studio.entranceMs),
+      child: child,
+    );
+  }
+}
+
+/// Plays the studio's entrance on first build and then leaves the child alone.
+///
+/// Each entrance is a real transform of the drawn text — a slide, a rise, a
+/// scale — rather than a cross-fade of two copies, which is what makes the
+/// motion read as the caption moving rather than the screen flickering.
+class _EntranceTransition extends StatefulWidget {
+  const _EntranceTransition({
+    super.key,
+    required this.entrance,
+    required this.duration,
+    required this.child,
+  });
+
+  final SubtitleEntrance entrance;
+  final Duration duration;
+  final Widget child;
+
+  @override
+  State<_EntranceTransition> createState() => _EntranceTransitionState();
+}
+
+class _EntranceTransitionState extends State<_EntranceTransition>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: widget.duration,
+  )..forward();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final curved = CurvedAnimation(
+      parent: _c,
+      curve: widget.entrance == SubtitleEntrance.spring
+          ? Curves.elasticOut
+          : Curves.easeOutCubic,
+    );
+    return AnimatedBuilder(
+      animation: curved,
+      builder: (context, child) {
+        final t = curved.value;
+        switch (widget.entrance) {
+          case SubtitleEntrance.none:
+            return child!;
+          case SubtitleEntrance.fluidFade:
+            return Opacity(opacity: t.clamp(0.0, 1.0), child: child);
+          case SubtitleEntrance.riseFade:
+            return Opacity(
+              opacity: t.clamp(0.0, 1.0),
+              child: Transform.translate(
+                offset: Offset(0, (1 - t) * 18),
+                child: child,
+              ),
+            );
+          case SubtitleEntrance.spring:
+            return Opacity(
+              opacity: t.clamp(0.0, 1.0),
+              child: Transform.scale(scale: 0.86 + 0.14 * t, child: child),
+            );
+          case SubtitleEntrance.reveal:
+            return ClipRect(
+              child: Align(
+                widthFactor: 1,
+                alignment: Alignment.centerLeft,
+                child: FractionallySizedBox(
+                  widthFactor: t.clamp(0.0, 1.0),
+                  alignment: Alignment.centerLeft,
+                  child: Opacity(opacity: t.clamp(0.0, 1.0), child: child),
+                ),
+              ),
+            );
+          case SubtitleEntrance.slide:
+            return Opacity(
+              opacity: t.clamp(0.0, 1.0),
+              child: Transform.translate(
+                offset: Offset((1 - t) * -40, 0),
+                child: child,
+              ),
+            );
+        }
+      },
+      child: widget.child,
+    );
+  }
 }

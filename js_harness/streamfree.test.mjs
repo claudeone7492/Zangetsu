@@ -49,6 +49,9 @@ live('getLive folds every sport into one feed, in-play first', async () => {
   for (const it of items) {
     assert.ok(it.liveBadge, 'fixture has a badge: ' + it.title);
     assert.ok(it.url.startsWith('live:'));
+    // The app keeps its rail to soccer, so each fixture must carry the
+    // canonical slug the filter matches on.
+    assert.ok(it.liveSport, 'fixture has a sport slug: ' + it.title);
   }
 });
 

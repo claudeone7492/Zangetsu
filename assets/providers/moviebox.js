@@ -735,6 +735,13 @@ function _mapMatch(m) {
   var info = _liveInfo(m);
   if (info) item.liveInfo = info;
   if (m.league) item.genres = [m.league];
+  // Canonical sport slug, so the app can keep the live rail to one sport
+  // without guessing from the league name. MovieBox calls soccer
+  // 'football'; normalise it to the slug the other sources use.
+  if (m.type) {
+    var sp = String(m.type).toLowerCase();
+    item.liveSport = sp === 'football' ? 'soccer' : sp;
+  }
   return item;
 }
 

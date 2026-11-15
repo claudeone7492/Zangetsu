@@ -710,8 +710,14 @@ class _SubtitleStyleSheet extends StatefulWidget {
   State<_SubtitleStyleSheet> createState() => _SubtitleStyleSheetState();
 }
 
+/// The studio's pages, mirroring the reference player's palette.
+enum _StudioTab { type, timing, look, find, pool }
+
 class _SubtitleStyleSheetState extends State<_SubtitleStyleSheet> {
   PlaybackPrefs get _prefs => sl<PlaybackPrefs>();
+
+  /// The studio page currently shown.
+  _StudioTab _tab = _StudioTab.type;
 
   /// Which fonts are usable now (Default/bundled/downloaded). A font that isn't
   /// downloaded yet is fetched on tap. Populated in [initState].
@@ -832,9 +838,6 @@ class _SubtitleStyleSheetState extends State<_SubtitleStyleSheet> {
   @override
   Widget build(BuildContext context) {
     final h = MediaQuery.of(context).size.height;
-    final font = _prefs.subtitleFont;
-    final colorHex = _prefs.subtitleColorHex.toUpperCase();
-    final size = _prefs.subtitleScale;
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
       child: Column(
@@ -870,185 +873,603 @@ class _SubtitleStyleSheetState extends State<_SubtitleStyleSheet> {
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                context.l10n.theQuickBrownFox,
-                textAlign: TextAlign.center,
-                style: buildSubtitleTextStyle(_prefs, fontSize: 22.0 * size),
+              child: Builder(
+                builder: (context) {
+                  final studio = SubtitleStyle.fromPrefs(_prefs);
+                  return Text(
+                    context.l10n.theQuickBrownFox,
+                    textAlign: studio.textAlign,
+                    style: studio.textStyle(
+                      fontSize: 22.0 * studio.scale,
+                      fontFamily: _prefs.subtitleFont,
+                    ),
+                  );
+                },
               ),
             ),
           ),
+          // The studio's pages. Type and Look hold the styling that already
+          // existed, regrouped; Timing and the richer Look controls are the port
+          // from the reference player's studio.
+          _StudioTabs(selected: _tab, onSelect: (t) => setState(() => _tab = t)),
           Flexible(
             child: ListView(
               shrinkWrap: true,
-              children: [
-                _SheetSectionHeader(context.l10n.font),
-                ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: h * 0.28),
-                  child: ListView(
-                    shrinkWrap: true,
-                    padding: EdgeInsets.zero,
-                    children: [
-                      for (final f in kBundledSubtitleFonts)
-                        _SheetRow(
-                          label: f.isEmpty ? context.l10n.defaultLabel : f,
-                          subtitle: _downloading.contains(f)
-                              ? context.l10n.downloading
-                              : ((_fontAvailable[f] ?? true)
-                                    ? null
-                                    : context.l10n.tapToDownloadFont),
-                          loading: _downloading.contains(f),
-                          active: font == f,
-                          onTap: () => _pickFont(f),
-                        ),
-                      // The user's own fonts. Always local, so they skip the
-                      // download/availability dance entirely.
-                      for (final f in _customFonts.keys)
-                        _SheetRow(
-                          label: f,
-                          active: font == f,
-                          onTap: () => _pickFont(f),
-                          onRemove: () => _removeCustomFont(f),
-                        ),
-                      _SheetRow(
-                        label: context.l10n.addFont,
-                        icon: Icons.upload_file,
-                        active: false,
-                        onTap: _addCustomFont,
-                      ),
-                    ],
-                  ),
-                ),
-                _SheetSectionHeader(context.l10n.textColour),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                  child: Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      for (final hex in _colorHexes)
-                        _ColorSwatch(
-                          color: _colorFromHex(hex),
-                          label: _subtitleColourLabel(context.l10n, hex),
-                          active: colorHex == hex,
-                          onTap: () =>
-                              _apply(() => _prefs.setSubtitleColorHex(hex)),
-                        ),
-                    ],
-                  ),
-                ),
-                _SheetSectionHeader(context.l10n.textOpacity),
-                _SliderRow(
-                  value: _prefs.subtitleTextOpacity,
-                  min: 0.1,
-                  max: 1,
-                  divisions: 9,
-                  label: '${(_prefs.subtitleTextOpacity * 100).round()}%',
-                  onChanged: (v) =>
-                      _apply(() => _prefs.setSubtitleTextOpacity(v)),
-                ),
-                _SheetSectionHeader(context.l10n.outlineStyle),
-                // Subtitles that carry their own styling (.ass signs, karaoke)
-                // keep it while styled subtitles are on — that is the whole
-                // point of that switch — so say so here rather than let this
-                // sheet look broken for those tracks.
-                if (_prefs.styledSubtitles)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 6),
-                    child: Text(
-                      context.l10n.ownStylingKept,
-                      style: AppText.caption.copyWith(
-                        color: AppColors.textTertiary,
-                      ),
-                    ),
-                  ),
-                for (final (id, _) in kSubtitleOutlineTypes)
-                  _SheetRow(
-                    label: _subtitleOutlineLabel(context.l10n, id),
-                    active: _prefs.subtitleOutlineType == id,
-                    onTap: () =>
-                        _apply(() => _prefs.setSubtitleOutlineType(id)),
-                  ),
-                _SheetSectionHeader(context.l10n.outlineColour),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                  child: Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      for (final hex in _colorHexes)
-                        _ColorSwatch(
-                          color: _colorFromHex(hex),
-                          label: _subtitleColourLabel(context.l10n, hex),
-                          active:
-                              _prefs.subtitleOutlineColorHex.toUpperCase() ==
-                              hex,
-                          onTap: () => _apply(
-                            () => _prefs.setSubtitleOutlineColorHex(hex),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                _SheetSectionHeader(context.l10n.outlineWidth),
-                _SliderRow(
-                  value: _prefs.subtitleOutlineWidth,
-                  min: 0,
-                  max: 8,
-                  divisions: 16,
-                  label: _prefs.subtitleOutlineWidth.toStringAsFixed(1),
-                  onChanged: (v) =>
-                      _apply(() => _prefs.setSubtitleOutlineWidth(v)),
-                ),
-                _SheetSectionHeader(context.l10n.background),
-                _SliderRow(
-                  value: _prefs.subtitleBgOpacity,
-                  min: 0,
-                  max: 1,
-                  divisions: 10,
-                  label: '${(_prefs.subtitleBgOpacity * 100).round()}%',
-                  onChanged: (v) =>
-                      _apply(() => _prefs.setSubtitleBgOpacity(v)),
-                ),
-                _SheetSectionHeader(context.l10n.positionLabel),
-                _SliderRow(
-                  value: _prefs.subtitlePosition.toDouble(),
-                  min: 0,
-                  max: 100,
-                  divisions: 100,
-                  label:
-                      '${_prefs.subtitlePosition}% · '
-                      '${_prefs.subtitlePosition >= 50 ? context.l10n.positionBottom : context.l10n.positionTop}',
-                  onChanged: (v) =>
-                      _apply(() => _prefs.setSubtitlePosition(v.round())),
-                ),
-                _SheetSectionHeader(context.l10n.subtitleSize),
-                _SliderRow(
-                  value: size.clamp(0.25, 5.0),
-                  min: 0.25,
-                  max: 5.0,
-                  divisions: 95,
-                  label: '${(size * 100).round()}%',
-                  onChanged: (v) => _apply(() => _prefs.setSubtitleScale(v)),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                  child: OutlinedButton.icon(
-                    onPressed: _resetToDefault,
-                    icon: const Icon(Icons.restart_alt_rounded, size: 19),
-                    label: Text(context.l10n.resetToDefault),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textPrimary,
-                      side: BorderSide(color: AppColors.hairline),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                  ),
-                ),
-              ],
+              children: switch (_tab) {
+                _StudioTab.type => _typePage(h),
+                _StudioTab.timing => _timingPage(),
+                _StudioTab.look => _lookPage(),
+                _StudioTab.find => _findPage(),
+                _StudioTab.pool => _poolPage(),
+              },
             ),
           ),
         ],
       ),
     );
+  }
+
+  /// Type: the font, the colour, the outline, and the variable-font axes and
+  /// alignment the port adds.
+  List<Widget> _typePage(double h) {
+    final font = _prefs.subtitleFont;
+    final colorHex = _prefs.subtitleColorHex.toUpperCase();
+    final size = _prefs.subtitleScale;
+    return [
+      _SheetSectionHeader(context.l10n.font),
+      ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: h * 0.28),
+        child: ListView(
+          shrinkWrap: true,
+          padding: EdgeInsets.zero,
+          children: [
+            for (final f in kBundledSubtitleFonts)
+              _SheetRow(
+                label: f.isEmpty ? context.l10n.defaultLabel : f,
+                subtitle: _downloading.contains(f)
+                    ? context.l10n.downloading
+                    : ((_fontAvailable[f] ?? true)
+                          ? null
+                          : context.l10n.tapToDownloadFont),
+                loading: _downloading.contains(f),
+                active: font == f,
+                onTap: () => _pickFont(f),
+              ),
+            for (final f in _customFonts.keys)
+              _SheetRow(
+                label: f,
+                active: font == f,
+                onTap: () => _pickFont(f),
+                onRemove: () => _removeCustomFont(f),
+              ),
+            _SheetRow(
+              label: context.l10n.addFont,
+              icon: Icons.upload_file,
+              active: false,
+              onTap: _addCustomFont,
+            ),
+          ],
+        ),
+      ),
+      _SheetSectionHeader(context.l10n.textColour),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+        child: Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            for (final hex in _colorHexes)
+              _ColorSwatch(
+                color: _colorFromHex(hex),
+                label: _subtitleColourLabel(context.l10n, hex),
+                active: colorHex == hex,
+                onTap: () => _apply(() => _prefs.setSubtitleColorHex(hex)),
+              ),
+          ],
+        ),
+      ),
+      _SheetSectionHeader(context.l10n.textOpacity),
+      _SliderRow(
+        value: _prefs.subtitleTextOpacity,
+        min: 0.1,
+        max: 1,
+        divisions: 9,
+        label: '${(_prefs.subtitleTextOpacity * 100).round()}%',
+        onChanged: (v) => _apply(() => _prefs.setSubtitleTextOpacity(v)),
+      ),
+      _SheetSectionHeader(context.l10n.subtitleWeight),
+      _SliderRow(
+        value: _prefs.subtitleWeight.toDouble(),
+        min: 100,
+        max: 900,
+        divisions: 8,
+        label: '${_prefs.subtitleWeight}',
+        onChanged: (v) => _apply(() => _prefs.setSubtitleWeight(v.round())),
+      ),
+      _SheetSectionHeader(context.l10n.subtitleWidthAxis),
+      _SliderRow(
+        value: _prefs.subtitleWidthAxis,
+        min: 75,
+        max: 125,
+        divisions: 50,
+        label: '${_prefs.subtitleWidthAxis.round()}%',
+        onChanged: (v) => _apply(() => _prefs.setSubtitleWidthAxis(v)),
+      ),
+      _SheetSectionHeader(context.l10n.subtitleSlant),
+      _SliderRow(
+        value: _prefs.subtitleSlant,
+        min: -12,
+        max: 12,
+        divisions: 24,
+        label: '${_prefs.subtitleSlant.round()}°',
+        onChanged: (v) => _apply(() => _prefs.setSubtitleSlant(v)),
+      ),
+      _SheetSectionHeader(context.l10n.subtitleLineHeight),
+      _SliderRow(
+        value: _prefs.subtitleLineHeight,
+        min: 0.9,
+        max: 2.2,
+        divisions: 26,
+        label: _prefs.subtitleLineHeight.toStringAsFixed(2),
+        onChanged: (v) => _apply(() => _prefs.setSubtitleLineHeight(v)),
+      ),
+      _SheetSectionHeader(context.l10n.subtitleLetterSpacing),
+      _SliderRow(
+        value: _prefs.subtitleLetterSpacing,
+        min: -0.04,
+        max: 0.12,
+        divisions: 16,
+        label: '${_prefs.subtitleLetterSpacing.toStringAsFixed(3)} em',
+        onChanged: (v) => _apply(() => _prefs.setSubtitleLetterSpacing(v)),
+      ),
+      _SheetSectionHeader(context.l10n.subtitleWordSpacing),
+      _SliderRow(
+        value: _prefs.subtitleWordSpacing,
+        min: 0.6,
+        max: 2,
+        divisions: 14,
+        label: '${_prefs.subtitleWordSpacing.toStringAsFixed(2)}×',
+        onChanged: (v) => _apply(() => _prefs.setSubtitleWordSpacing(v)),
+      ),
+      _SheetRow(
+        label: context.l10n.subtitleUppercase,
+        active: false,
+        toggleValue: _prefs.subtitleUppercase,
+        onTap: () => _apply(
+          () => _prefs.setSubtitleUppercase(!_prefs.subtitleUppercase),
+        ),
+      ),
+      _SheetSectionHeader(context.l10n.subtitleAlignment),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+        child: _StudioChips(
+          labels: const ['Left', 'Centre', 'Right'],
+          selected: const ['start', 'center', 'end'].indexOf(
+            _prefs.subtitleAlign,
+          ),
+          onSelect: (i) => _apply(
+            () => _prefs.setSubtitleAlign(const ['start', 'center', 'end'][i]),
+          ),
+        ),
+      ),
+      _SheetSectionHeader(context.l10n.subtitleMaxLines),
+      _SliderRow(
+        value: _prefs.subtitleMaxLines.toDouble(),
+        min: 1,
+        max: 4,
+        divisions: 3,
+        label: '${_prefs.subtitleMaxLines}',
+        onChanged: (v) => _apply(() => _prefs.setSubtitleMaxLines(v.round())),
+      ),
+      _SheetSectionHeader(context.l10n.subtitleSize),
+      _SliderRow(
+        value: size.clamp(0.25, 5.0),
+        min: 0.25,
+        max: 5.0,
+        divisions: 95,
+        label: '${(size * 100).round()}%',
+        onChanged: (v) => _apply(() => _prefs.setSubtitleScale(v)),
+      ),
+      _SheetSectionHeader(context.l10n.outlineStyle),
+      if (_prefs.styledSubtitles)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 6),
+          child: Text(
+            context.l10n.ownStylingKept,
+            style: AppText.caption.copyWith(color: AppColors.textTertiary),
+          ),
+        ),
+      for (final (id, _) in kSubtitleOutlineTypes)
+        _SheetRow(
+          label: _subtitleOutlineLabel(context.l10n, id),
+          active: _prefs.subtitleOutlineType == id,
+          onTap: () => _apply(() => _prefs.setSubtitleOutlineType(id)),
+        ),
+      _SheetSectionHeader(context.l10n.outlineColour),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+        child: Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            for (final hex in _colorHexes)
+              _ColorSwatch(
+                color: _colorFromHex(hex),
+                label: _subtitleColourLabel(context.l10n, hex),
+                active: _prefs.subtitleOutlineColorHex.toUpperCase() == hex,
+                onTap: () =>
+                    _apply(() => _prefs.setSubtitleOutlineColorHex(hex)),
+              ),
+          ],
+        ),
+      ),
+      _SheetSectionHeader(context.l10n.outlineWidth),
+      _SliderRow(
+        value: _prefs.subtitleOutlineWidth,
+        min: 0,
+        max: 8,
+        divisions: 16,
+        label: _prefs.subtitleOutlineWidth.toStringAsFixed(1),
+        onChanged: (v) => _apply(() => _prefs.setSubtitleOutlineWidth(v)),
+      ),
+      _resetButton(),
+    ];
+  }
+
+  /// Timing: the sync, the dwell speed and the entrance.
+  List<Widget> _timingPage() => [
+    _SheetSectionHeader(context.l10n.subtitleSyncSection),
+    if (widget.controller != null)
+      _SubtitleSyncPanel(controller: widget.controller!, onChanged: _bump),
+    _SheetSectionHeader(context.l10n.subtitleDwellSpeed),
+    _SliderRow(
+      value: _prefs.subtitleSpeed,
+      min: 0.25,
+      max: 4,
+      divisions: 75,
+      label: '${_prefs.subtitleSpeed.toStringAsFixed(2)}×',
+      onChanged: (v) => _apply(() => _prefs.setSubtitleSpeed(v)),
+    ),
+    _SheetSectionHeader(context.l10n.subtitleEntrance),
+    Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: _StudioChips(
+        labels: SubtitleEntrance.values.map((e) => e.label).toList(),
+        selected: SubtitleEntrance.values.indexOf(
+          SubtitleEntrance.fromId(_prefs.subtitleEntrance),
+        ),
+        onSelect: (i) => _apply(
+          () => _prefs.setSubtitleEntrance(SubtitleEntrance.values[i].id),
+        ),
+      ),
+    ),
+    _SheetSectionHeader(context.l10n.subtitleDuration),
+    _SliderRow(
+      value: _prefs.subtitleEntranceMs.toDouble(),
+      min: 80,
+      max: 700,
+      divisions: 31,
+      label: '${_prefs.subtitleEntranceMs} ms',
+      onChanged: (v) => _apply(() => _prefs.setSubtitleEntranceMs(v.round())),
+    ),
+    _resetButton(),
+  ];
+
+  /// Look: the preset, the plate, the glow, the placement and the late-night
+  /// treatment.
+  List<Widget> _lookPage() => [
+    _SheetSectionHeader(context.l10n.subtitlePreset),
+    Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: _StudioChips(
+        labels: SubtitleStylePreset.values.map((p) => p.label).toList(),
+        selected: SubtitleStylePreset.values.indexOf(
+          SubtitleStylePreset.fromId(_prefs.subtitlePreset),
+        ),
+        onSelect: (i) => _apply(() async {
+          final preset = SubtitleStylePreset.values[i];
+          await preset.apply(SubtitleStyle.fromPrefs(_prefs)).saveTo(_prefs);
+        }),
+      ),
+    ),
+    _SheetSectionHeader(context.l10n.subtitlePlate),
+    Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: _StudioChips(
+        labels: SubtitlePlateMode.values.map((m) => m.label).toList(),
+        selected: SubtitlePlateMode.values.indexOf(
+          SubtitlePlateMode.fromId(_prefs.subtitlePlateMode),
+        ),
+        onSelect: (i) => _apply(
+          () => _prefs.setSubtitlePlateMode(SubtitlePlateMode.values[i].id),
+        ),
+      ),
+    ),
+    _SheetSectionHeader(context.l10n.subtitlePlateOpacity),
+    _SliderRow(
+      value: _prefs.subtitlePlateOpacity,
+      min: 0,
+      max: 1,
+      divisions: 20,
+      label: '${(_prefs.subtitlePlateOpacity * 100).round()}%',
+      onChanged: (v) => _apply(() => _prefs.setSubtitlePlateOpacity(v)),
+    ),
+    _SheetSectionHeader(context.l10n.subtitleCornerRadius),
+    _SliderRow(
+      value: _prefs.subtitlePlateCorner,
+      min: 0,
+      max: 32,
+      divisions: 32,
+      label: '${_prefs.subtitlePlateCorner.round()}',
+      onChanged: (v) => _apply(() => _prefs.setSubtitlePlateCorner(v)),
+    ),
+    _SheetSectionHeader(context.l10n.subtitlePlatePadding),
+    _SliderRow(
+      value: _prefs.subtitlePlatePadding,
+      min: 0,
+      max: 32,
+      divisions: 32,
+      label: '${_prefs.subtitlePlatePadding.round()}',
+      onChanged: (v) => _apply(() => _prefs.setSubtitlePlatePadding(v)),
+    ),
+    _SheetSectionHeader(context.l10n.subtitleGlowSection),
+    _SheetRow(
+      label: context.l10n.subtitleEdgeGlow,
+      active: false,
+      toggleValue: _prefs.subtitleGlowEnabled,
+      onTap: () =>
+          _apply(() => _prefs.setSubtitleGlowEnabled(!_prefs.subtitleGlowEnabled)),
+    ),
+    _SheetSectionHeader(context.l10n.subtitleGlowRadius),
+    _SliderRow(
+      value: _prefs.subtitleGlowRadius,
+      min: 0,
+      max: 28,
+      divisions: 28,
+      label: '${_prefs.subtitleGlowRadius.round()}',
+      onChanged: (v) => _apply(() => _prefs.setSubtitleGlowRadius(v)),
+    ),
+    _SheetSectionHeader(context.l10n.subtitleGlowIntensity),
+    _SliderRow(
+      value: _prefs.subtitleGlowIntensity,
+      min: 0,
+      max: 1,
+      divisions: 20,
+      label: '${(_prefs.subtitleGlowIntensity * 100).round()}%',
+      onChanged: (v) => _apply(() => _prefs.setSubtitleGlowIntensity(v)),
+    ),
+    _SheetSectionHeader(context.l10n.subtitleGlowColour),
+    Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: [
+          for (final hex in _colorHexes)
+            _ColorSwatch(
+              color: _colorFromHex(hex),
+              label: _subtitleColourLabel(context.l10n, hex),
+              active: _prefs.subtitleGlowColorHex.toUpperCase() == hex,
+              onTap: () => _apply(() => _prefs.setSubtitleGlowColorHex(hex)),
+            ),
+        ],
+      ),
+    ),
+    _SheetSectionHeader(context.l10n.subtitleShadowOffset),
+    _SliderRow(
+      value: _prefs.subtitleShadowOffset,
+      min: 0,
+      max: 8,
+      divisions: 16,
+      label: '${_prefs.subtitleShadowOffset.round()}',
+      onChanged: (v) => _apply(() => _prefs.setSubtitleShadowOffset(v)),
+    ),
+    _SheetSectionHeader(context.l10n.subtitleShadowBlur),
+    _SliderRow(
+      value: _prefs.subtitleShadowBlur,
+      min: 0,
+      max: 16,
+      divisions: 16,
+      label: '${_prefs.subtitleShadowBlur.round()}',
+      onChanged: (v) => _apply(() => _prefs.setSubtitleShadowBlur(v)),
+    ),
+    _SheetSectionHeader(context.l10n.subtitlePlacementSection),
+    Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: _StudioChips(
+        labels: SubtitlePlacementMode.values.map((m) => m.label).toList(),
+        selected: SubtitlePlacementMode.values.indexOf(
+          SubtitlePlacementMode.fromId(_prefs.subtitlePlacementMode),
+        ),
+        onSelect: (i) => _apply(
+          () => _prefs.setSubtitlePlacementMode(
+            SubtitlePlacementMode.values[i].id,
+          ),
+        ),
+      ),
+    ),
+    _SheetSectionHeader(context.l10n.subtitlePosition),
+    _SliderRow(
+      value: _prefs.subtitlePosition.toDouble(),
+      min: 0,
+      max: 100,
+      divisions: 100,
+      label: '${_prefs.subtitlePosition}%',
+      onChanged: (v) => _apply(() => _prefs.setSubtitlePosition(v.round())),
+    ),
+    Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 6),
+      child: Text(
+        context.l10n.subtitleDragHint,
+        style: AppText.caption.copyWith(color: AppColors.textTertiary),
+      ),
+    ),
+    _SheetSectionHeader(context.l10n.subtitleMaxShift),
+    _SliderRow(
+      value: _prefs.subtitleMaxShift,
+      min: 0,
+      max: 0.6,
+      divisions: 12,
+      label: '${(_prefs.subtitleMaxShift * 100).round()}%',
+      onChanged: (v) => _apply(() => _prefs.setSubtitleMaxShift(v)),
+    ),
+    _SheetRow(
+      label: context.l10n.subtitleShrinkToFit,
+      active: false,
+      toggleValue: _prefs.subtitleAllowScale,
+      onTap: () =>
+          _apply(() => _prefs.setSubtitleAllowScale(!_prefs.subtitleAllowScale)),
+    ),
+    _SheetSectionHeader(context.l10n.subtitleMinScale),
+    _SliderRow(
+      value: _prefs.subtitleMinScale,
+      min: 0.4,
+      max: 1,
+      divisions: 12,
+      label: '${(_prefs.subtitleMinScale * 100).round()}%',
+      onChanged: (v) => _apply(() => _prefs.setSubtitleMinScale(v)),
+    ),
+    _SheetSectionHeader(context.l10n.subtitleLateNightSection),
+    _SheetRow(
+      label: context.l10n.subtitleAmbientMode,
+      active: false,
+      toggleValue: _prefs.subtitleAmbientEnabled,
+      onTap: () => _apply(
+        () => _prefs.setSubtitleAmbientEnabled(!_prefs.subtitleAmbientEnabled),
+      ),
+    ),
+    _SheetSectionHeader(context.l10n.subtitleWarmth),
+    _SliderRow(
+      value: _prefs.subtitleAmbientWarmth,
+      min: 0,
+      max: 1,
+      divisions: 20,
+      label: '${(_prefs.subtitleAmbientWarmth * 100).round()}%',
+      onChanged: (v) => _apply(() => _prefs.setSubtitleAmbientWarmth(v)),
+    ),
+    _SheetSectionHeader(context.l10n.subtitleDimPicture),
+    _SliderRow(
+      value: _prefs.subtitleAmbientDim,
+      min: 0,
+      max: 0.8,
+      divisions: 16,
+      label: '${(_prefs.subtitleAmbientDim * 100).round()}%',
+      onChanged: (v) => _apply(() => _prefs.setSubtitleAmbientDim(v)),
+    ),
+    _resetButton(),
+  ];
+
+  /// Find: the online providers, a file from the device, and a save.
+  List<Widget> _findPage() => [
+    _SheetSectionHeader(context.l10n.subtitles),
+    _SheetRow(
+      label: context.l10n.searchOnline,
+      icon: Icons.search_rounded,
+      active: false,
+      onTap: _openOnlineSearch,
+    ),
+    _SheetRow(
+      label: context.l10n.subtitleUploadFile,
+      icon: Icons.upload_file,
+      active: false,
+      onTap: _uploadSubtitleFile,
+    ),
+    if (widget.controller != null)
+      _SheetRow(
+        label: context.l10n.subtitleExportFile,
+        icon: Icons.download_rounded,
+        active: false,
+        onTap: _saveCurrentSubtitle,
+      ),
+  ];
+
+  /// Pool: the captions already attached to this title, so a viewer can switch
+  /// back to one without a fresh search.
+  List<Widget> _poolPage() {
+    final subs = widget.controller?.softSubs ?? const [];
+    return [
+      _SheetSectionHeader(context.l10n.subtitlePagePool),
+      if (subs.isEmpty)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+          child: Text(
+            context.l10n.subtitlePoolEmpty,
+            style: AppText.caption.copyWith(color: AppColors.textTertiary),
+          ),
+        )
+      else
+        for (final s in subs)
+          _SheetRow(
+            label: s.label ?? s.lang,
+            active: false,
+            onTap: () => _apply(
+              () async => widget.controller?.setSubtitleTrackUrl(s.url),
+            ),
+          ),
+    ];
+  }
+
+  /// The trailing reset button, shared by the pages that own settings.
+  Widget _resetButton() => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+    child: OutlinedButton.icon(
+      onPressed: _resetToDefault,
+      icon: const Icon(Icons.restart_alt_rounded, size: 19),
+      label: Text(context.l10n.resetToDefault),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.textPrimary,
+        side: BorderSide(color: AppColors.hairline),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+      ),
+    ),
+  );
+
+  /// Refresh the sheet after a controller-side change (a sync, an apply).
+  void _bump() {
+    if (mounted) setState(() {});
+    widget.onInteract();
+  }
+
+  /// Open the online provider search over this sheet.
+  void _openOnlineSearch() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _SheetSurface(
+        blur: true,
+        opacity: 0.9,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        child: _OnlineSubtitleSheet(
+          initialQuery: '',
+          onApply: (path) async {
+            await widget.controller?.setSubtitleFromFile(path);
+            _bump();
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Load a subtitle the viewer already has on the device.
+  Future<void> _uploadSubtitleFile() async {
+    try {
+      final file = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: const ['srt', 'vtt', 'ass', 'ssa', 'sub'],
+      );
+      final path = file?.path;
+      if (path != null) await widget.controller?.setSubtitleFromFile(path);
+    } catch (_) {
+      // A cancelled or unreadable pick is not worth an error dialog here.
+    }
+    _bump();
+  }
+
+  /// Write the caption currently playing to Downloads.
+  Future<void> _saveCurrentSubtitle() async {
+    await widget.controller?.exportCurrentSubtitle();
+    _bump();
   }
 
   static Color _colorFromHex(String hex) {
@@ -1600,6 +2021,208 @@ class _SheetChips extends StatelessWidget {
                     ),
                   ),
                 ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The studio's page selector: a row of chips across the top of the sheet.
+class _StudioTabs extends StatelessWidget {
+  const _StudioTabs({required this.selected, required this.onSelect});
+
+  final _StudioTab selected;
+  final ValueChanged<_StudioTab> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final labels = <_StudioTab, String>{
+      _StudioTab.type: l10n.subtitlePageType,
+      _StudioTab.timing: l10n.subtitlePageTiming,
+      _StudioTab.look: l10n.subtitlePageLook,
+      _StudioTab.find: l10n.subtitlePageFind,
+      _StudioTab.pool: l10n.subtitlePagePool,
+    };
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 2, 12, 6),
+      child: Row(
+        children: [
+          for (final entry in labels.entries)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 3),
+                child: Material(
+                  color: entry.key == selected
+                      ? AppColors.accent
+                      : AppColors.surface2,
+                  borderRadius: BorderRadius.circular(8),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () => onSelect(entry.key),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 9),
+                      child: Text(
+                        entry.value,
+                        textAlign: TextAlign.center,
+                        style: AppText.caption.copyWith(
+                          color: entry.key == selected
+                              ? Colors.white
+                              : AppColors.textSecondary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A compact chip row, for the studio's small option sets (presets, plate
+/// modes, entrances, placement).
+class _StudioChips extends StatelessWidget {
+  const _StudioChips({
+    required this.labels,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  final List<String> labels;
+  final int selected;
+  final ValueChanged<int> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (var i = 0; i < labels.length; i++)
+          Material(
+            color: i == selected ? AppColors.accent : Colors.transparent,
+            shape: StadiumBorder(
+              side: i == selected
+                  ? BorderSide.none
+                  : BorderSide(color: Colors.white.withValues(alpha: 0.16)),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () => onSelect(i),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                child: Text(
+                  labels[i],
+                  style: AppText.caption.copyWith(
+                    color: i == selected
+                        ? Colors.white
+                        : AppColors.textSecondary,
+                    fontWeight: i == selected
+                        ? FontWeight.w700
+                        : FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// The sync page: the delay stepper the player already had, plus the drift
+/// controls the port adds — a rate for a caption timed to the wrong frame rate,
+/// and the measured fit so the viewer can see what the engine found.
+class _SubtitleSyncPanel extends StatefulWidget {
+  const _SubtitleSyncPanel({required this.controller, required this.onChanged});
+
+  final PlayerCubit controller;
+  final VoidCallback onChanged;
+
+  @override
+  State<_SubtitleSyncPanel> createState() => _SubtitleSyncPanelState();
+}
+
+class _SubtitleSyncPanelState extends State<_SubtitleSyncPanel> {
+  PlaybackPrefs get _prefs => sl<PlaybackPrefs>();
+
+  @override
+  Widget build(BuildContext context) {
+    final fit = _prefs.subtitleSyncFit;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _DelayAdjuster(
+          label: context.l10n.subtitleDelay,
+          initial: widget.controller.subtitleDelay,
+          onChanged: (d) => widget.controller.setSubtitleDelay(d),
+          sync: (
+            capture: widget.controller.captureSubSync,
+            clear: widget.controller.clearSubSync,
+            currentMs: () => widget.controller.subtitleDelay.inMilliseconds,
+            voiceOn: () => widget.controller.subSyncVoiceMs != null,
+            textOn: () => widget.controller.subSyncTextMs != null,
+          ),
+        ),
+        _SheetSectionHeader(context.l10n.subtitleSyncRate),
+        _SliderRow(
+          value: _prefs.subtitleRate,
+          min: 0.9,
+          max: 1.1,
+          divisions: 40,
+          label: '${_prefs.subtitleRate.toStringAsFixed(3)}\u00d7',
+          onChanged: (v) => widget.controller.setSubtitleRate(v),
+        ),
+        if (fit.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 2, 20, 8),
+            child: Text(
+              fit,
+              style: AppText.caption.copyWith(color: AppColors.textSecondary),
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await widget.controller.autoSyncSubtitles();
+                    widget.onChanged();
+                  },
+                  icon: const Icon(Icons.sync_rounded, size: 18),
+                  label: Text(context.l10n.subtitleSyncAuto),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textPrimary,
+                    side: BorderSide(color: AppColors.hairline),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await widget.controller.resetSubtitleSync();
+                    widget.onChanged();
+                  },
+                  icon: const Icon(Icons.restart_alt_rounded, size: 18),
+                  label: Text(context.l10n.subtitleSyncReset),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textPrimary,
+                    side: BorderSide(color: AppColors.hairline),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

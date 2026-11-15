@@ -40,6 +40,10 @@ live('getLive folds every sport into one feed, in-play first', async () => {
     assert.ok(it.url.startsWith('ev:'), 'fixture url uses the ev: scheme, got ' + it.url);
     assert.equal(it.sourceId, 'cdnlivetv');
     assert.ok(it.liveBadge, 'fixture has a status badge: ' + it.title);
+    // The app keeps its rail to soccer, so each fixture must carry a canonical
+    // slug, and CDNLive's own `football` bucket must arrive as `soccer`.
+    assert.ok(it.liveSport, 'fixture has a sport slug: ' + it.title);
+    assert.notEqual(it.liveSport, 'football', it.title + ' was not normalised');
   }
   const liveIdx = items.findIndex((i) => i.liveBadge === 'LIVE');
   const otherIdx = items.findIndex((i) => i.liveBadge !== 'LIVE');

@@ -63,6 +63,41 @@ const List<String> kShortsPreferredSourceIds = <String>[
   'netshort',
 ];
 
+/// The short-drama catalogues — the ONLY sources the Reels feed and the Shorts
+/// page draw from. Each is built end to end around serialized vertical short
+/// dramas (see their `getShorts`), so their output is dramas and nothing else.
+///
+/// The Reels feed ("drama shorts") and the Shorts page ("AI shorts") are both
+/// meant to be a pure short-drama surface, but the aggregate used to walk EVERY
+/// installed video source and fold each one's ordinary home rows in behind the
+/// dramas. That is how feature films and TV episodes leaked into both pages:
+/// MovieBox's own home carries two dozen movie/TV rails and only two short-drama
+/// ones, so its `getShorts` feed is used and its home is ignored; the generic
+/// movie sources (frameXTV, NetMirror, VidSrc, VidLink …) have no `getShorts`
+/// at all, so their whole movie catalogue came through the home-row fallback.
+/// Restricting the aggregate to these ids is what makes both pages short dramas
+/// "and nothing more".
+const List<String> kShortDramaSourceIds = <String>[
+  'moviebox',
+  'goodshort',
+  'reelshort',
+  'netshort',
+];
+
+/// Short-drama catalogues whose OWN home rows are short dramas end to end, so
+/// they are safe as a fallback when `getShorts` answers nothing.
+///
+/// MovieBox is deliberately absent: it is the one drama catalogue that ALSO
+/// aggregates movies and TV, so its home is two dozen movie/TV rails with only
+/// two short-drama ones. Falling back to its home rows when its `getShorts`
+/// came back empty would re-introduce exactly the feature films a drama page
+/// must not show, so MovieBox is served by `getShorts` alone.
+const List<String> kDramaOnlyHomeSourceIds = <String>[
+  'goodshort',
+  'reelshort',
+  'netshort',
+];
+
 /// Public directory of community source repos (Sozo Read format:
 /// `{entries:[{name,author,repoUrl,description,tags,verified}]}`). Browsed from
 /// Providers → Add repo so a user can discover community packs in one tap.

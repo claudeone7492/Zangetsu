@@ -32,6 +32,7 @@ import '../downloads/episode_download_icon.dart';
 import '../downloads/episode_download_source_sheet.dart';
 import '../../core/playback/playback_prefs.dart';
 import 'subtitle_style.dart';
+import 'subtitle_style_model.dart';
 import 'subtitle_font_service.dart';
 import 'player_lifecycle.dart';
 import '../../core/torrent/torrent_util.dart';
@@ -2533,23 +2534,29 @@ class _PlayerScreenState extends State<PlayerScreen> {
                       controller: _c.videoController,
                       controls: NoVideoControls,
                       fit: _fits[_fitIndex].$1,
-                      // libass (styled subtitles) renders its own cues on the
-                      // video surface; the Flutter overlay must stay hidden then
-                      // or the text would be drawn twice.
-                      subtitleViewConfiguration: _c.styledSubtitlesOn
-                          ? const SubtitleViewConfiguration(visible: false)
-                          : SubtitleViewConfiguration(
-                              textAlign: TextAlign.center,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              style: buildSubtitleTextStyle(
-                                sl<PlaybackPrefs>(),
-                                fontSize:
-                                    32.0 * sl<PlaybackPrefs>().subtitleScale,
-                              ),
-                            ),
+                      // media_kit's own SubtitleView defaults to visible, which
+                      // drew every cue a second time on top of the overlay below
+                      // — the "double subtitles" bug. The Flutter overlay is the
+                      // only text renderer when libass is off, and libass draws
+                      // its own when it is on, so media_kit's view is always off.
+                      subtitleViewConfiguration:
+                          const SubtitleViewConfiguration(visible: false),
                     ),
+                    // Late-night mode dims the picture under the caption. Drawn
+                    // over the video and under the caption so it never touches
+                    // the text's own contrast.
+                    if (sl<PlaybackPrefs>().subtitleAmbientEnabled &&
+                        sl<PlaybackPrefs>().subtitleAmbientDim > 0)
+                      IgnorePointer(
+                        child: ColoredBox(
+                          color: Color.fromRGBO(
+                            0,
+                            0,
+                            0,
+                            sl<PlaybackPrefs>().subtitleAmbientDim,
+                          ),
+                        ),
+                      ),
                     if (!_c.styledSubtitlesOn)
                       StreamBuilder<List<String>>(
                         stream: _c.player.stream.subtitle,
@@ -2561,10 +2568,24 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                 .where((line) => line.trim().isNotEmpty)
                                 .join('\n'),
                             position: prefs.subtitlePosition,
+                            anchorX: prefs.subtitlePositionX,
+                            // Drag the caption where you want it. The gesture
+                            // reports fractions of the surface, which the prefs
+                            // store as the same anchor the position controls
+                            // write — so a drag and the sliders cannot disagree.
+                            onDrag: (dx, dy) => _c.nudgeSubtitleAnchor(
+                              dxFraction: dx,
+                              dyFraction: dy,
+                            ),
                             style: buildSubtitleTextStyle(
                               prefs,
                               fontSize: 32 * prefs.subtitleScale,
                             ),
+                            // The studio's full style, so the plate, glow,
+                            // entrance and late-night treatment the viewer sets
+                            // are drawn on the video and not only in the
+                            // preview.
+                            studio: SubtitleStyle.fromPrefs(prefs),
                           );
                         },
                       ),

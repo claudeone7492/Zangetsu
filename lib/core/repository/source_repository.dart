@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart' show debugPrint;
 import '../aniyomi/aniyomi_filters.dart';
 import '../aniyomi/aniyomi_provider.dart';
 import '../app_config.dart';
-import '../mode/content_mode.dart';
+import '../live/live_handles.dart';
 import '../lnreader/lnreader_manager.dart';
 import '../mangayomi/mangayomi_manager.dart';
 import '../mangayomi/mangayomi_provider.dart';
@@ -1057,6 +1057,16 @@ class SourceRepository implements CatalogueRepository {
     String? sourceId,
     bool fast = false,
   }) async {
+    // A live fixture resolves to a SIGNED, short-lived stream URL that the
+    // provider re-mints per request (and that 404s once the broadcast ends).
+    // Caching it — even for the two-minute prefetch TTL — hands the player a
+    // dead link on the next open, which is one of the ways the live rail
+    // "found no source to play". Always resolve a live handle fresh.
+    if (isLiveHandle(episodeUrl)) {
+      return (await _providerReady(
+        sourceId,
+      )).getVideoSources(episodeUrl, fast: fast);
+    }
     if (fast) {
       final key = _prefetchKey(episodeUrl, sourceId);
       // 1. One-shot prefetch started on the detail screen.
@@ -1120,30 +1130,18 @@ class SourceRepository implements CatalogueRepository {
     }
   }
 
-  /// The short-drama sources installed right now, drama catalogues first.
+  /// The short-drama sources installed right now.
   ///
-  /// [kShortsPreferredSourceIds] lead so the aggregate is dominated by the
-  /// purpose-built drama sources even when generic movie sources were installed
-  /// earlier; everything else keeps install order behind them. Reading sources
-  /// are dropped outright — a "shorts" shelf is a video idea, and a manga/novel
-  /// row belongs in its own reader.
-  List<String> shortsSourceIds() {
-    final types = manifestSourceTypes();
-    final video = loadedSources
-        .where((s) => sourceInMode(s.id, ContentMode.anime, types))
-        .map((s) => s.id)
-        .toList();
-    final preferred = video.where(kShortsPreferredSourceIds.contains).toList()
-      ..sort(
-        (a, b) => kShortsPreferredSourceIds
-            .indexOf(a)
-            .compareTo(kShortsPreferredSourceIds.indexOf(b)),
-      );
-    return [
-      ...preferred,
-      ...video.where((id) => !kShortsPreferredSourceIds.contains(id)),
-    ];
-  }
+  /// The Shorts page is a SHORT-DRAMA surface — "it should be only AI shorts
+  /// fully for all sections" — so it draws from [kShortDramaSourceIds] only,
+  /// the catalogues built end to end around serialized short dramas, in config
+  /// order (the leading catalogue first). The generic movie sources are NOT
+  /// walked: they have no `getShorts`, so their movie/TV home rows would be the
+  /// only thing they could contribute, which is how feature films leaked into
+  /// every section. Reading sources never appear in the list at all. An
+  /// uninstalled id is skipped.
+  List<String> shortsSourceIds() =>
+      kShortDramaSourceIds.where(hasSource).toList();
 
   /// Home for the Shorts content mode: the drama sources' titles laid out under
   /// the SAME standard section titles every other mode shows — Trending /
@@ -1197,9 +1195,9 @@ class SourceRepository implements CatalogueRepository {
     return out;
   }
 
-  /// How many sources the Shorts Home walks. Each costs a provider round trip,
-  /// and the drama sources lead the list, so the cap only ever trims the tail
-  /// of generic movie sources.
+  /// How many drama sources the Shorts Home walks. Each costs a provider round
+  /// trip, and the list is already the drama catalogues in config order, so the
+  /// cap only ever trims the tail.
   static const int _maxShortsHomeSources = 12;
 
   /// How many dramas fill each standard Shorts row.
@@ -1217,36 +1215,48 @@ class SourceRepository implements CatalogueRepository {
   ];
 
   /// One source's contribution to the Shorts pool: its dedicated `getShorts`
-  /// feed when it has one, otherwise the video items from its own home rows.
-  /// Never throws — one slow or dead source must not sink the page.
+  /// feed when it has one, otherwise the video items from its own home rows —
+  /// but only for the catalogues whose home rows ARE short dramas end to end
+  /// ([kDramaOnlyHomeSourceIds]). MovieBox's home is movies and TV, so it is
+  /// served by `getShorts` alone and contributes nothing rather than a page of
+  /// feature films when that feed is empty. Never throws — one slow or dead
+  /// source must not sink the page.
   Future<List<MediaItem>> _shortsItems(String sourceId) async {
     try {
-      final shortsItems = await shorts(sourceId: sourceId);
+      final shortsItems = _titlesOnly(await shorts(sourceId: sourceId));
       if (shortsItems.isNotEmpty) return shortsItems;
     } catch (_) {
       // Fall through to the source's own home rows.
     }
+    if (!kDramaOnlyHomeSourceIds.contains(sourceId)) return const [];
     try {
       final sections = await home(sourceId: sourceId);
-      final items = <MediaItem>[];
-      for (final section in sections) {
-        for (final item in section.items) {
-          if (item.type == ProviderType.manga ||
-              item.type == ProviderType.novel) {
-            continue;
-          }
-          // Provider-extension rows are navigation, not titles — a dead poster
-          // in a browse grid. The Shorts Home is a title browse, so skip them.
-          // Same `browse:`/`live:` handle check the provider-browse route uses.
-          final url = item.url;
-          if (url.startsWith('browse:') || url.startsWith('live:')) continue;
-          items.add(item);
-        }
-      }
-      return items;
+      return [
+        for (final section in sections) ..._titlesOnly(section.items),
+      ];
     } catch (_) {
       return const [];
     }
+  }
+
+  /// [items] with the rows a title browse must never show removed: the reading
+  /// titles (manga/novel belong in their own readers) and the provider-extension
+  /// rows (a `browse:` platform/filter handle or a live match is navigation, not
+  /// a title — it carries nothing to open, so it would render as a dead poster).
+  /// Applied to both the `getShorts` feed and the home-row fallback so a
+  /// catalogue that mislabels a row can never leak it into the Shorts Home.
+  List<MediaItem> _titlesOnly(List<MediaItem> items) {
+    final out = <MediaItem>[];
+    for (final item in items) {
+      if (item.type == ProviderType.manga ||
+          item.type == ProviderType.novel) {
+        continue;
+      }
+      final url = item.url;
+      if (url.startsWith('browse:') || isLiveHandle(url)) continue;
+      out.add(item);
+    }
+    return out;
   }
 
   /// Resolves one provider browse category (`platform|<name>` / `filter|<spec>`

@@ -16,6 +16,7 @@ import 'package:watch_app/core/models/media_item.dart';
 import 'package:watch_app/core/models/provider_info.dart';
 import 'package:watch_app/core/playback/playback_prefs.dart';
 import 'package:watch_app/core/repository/source_repository.dart';
+import 'package:watch_app/core/ui/row_skeleton.dart';
 import 'package:watch_app/features/live/live_tv_screen.dart';
 
 MediaItem _channel(String id, String title) => MediaItem(
@@ -32,6 +33,7 @@ MediaItem _match(
   String? badge,
   String? info,
   bool unplayable = false,
+  String? sport = 'soccer',
 }) => MediaItem(
   id: id,
   title: title,
@@ -41,6 +43,7 @@ MediaItem _match(
   liveBadge: badge,
   liveInfo: info,
   liveUnplayable: unplayable,
+  liveSport: sport,
 );
 
 class _FakeSourceRepository implements SourceRepository {
@@ -386,6 +389,81 @@ void main() {
     expect(find.text('Live Sports'), findsWidgets);
     expect(find.text('England vs Croatia'), findsOneWidget);
     // The IPTV channels are still there, below the matches.
+    expect(find.text('World News'), findsOneWidget);
+  });
+
+  testWidgets('the rail keeps soccer only and drops every other sport', (
+    tester,
+  ) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+      ],
+      liveMatches: [
+        _match('s1', 'England vs Croatia'),
+        _match('b1', 'Lakers vs Celtics', sport: 'basketball'),
+        _match('m1', 'Monza GP', sport: 'motorsport'),
+      ],
+      secondaryMatches: [
+        _match('s2', 'Italy vs France'),
+        _match('t1', 'Djokovic vs Alcaraz', sport: 'tennis'),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    // Only the soccer fixtures survive the filter.
+    expect(find.text('England vs Croatia'), findsOneWidget);
+    expect(find.text('Italy vs France'), findsOneWidget);
+    expect(find.text('Lakers vs Celtics'), findsNothing);
+    expect(find.text('Monza GP'), findsNothing);
+    expect(find.text('Djokovic vs Alcaraz'), findsNothing);
+  });
+
+  testWidgets('a fixture with no sport is left out rather than assumed soccer', (
+    tester,
+  ) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+      ],
+      liveMatches: [
+        _match('s1', 'England vs Croatia'),
+        _match('x1', 'Unknown Fixture', sport: null),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.text('England vs Croatia'), findsOneWidget);
+    expect(find.text('Unknown Fixture'), findsNothing);
+  });
+
+  testWidgets('a spinner never shows: the loading state is a row preloader', (
+    tester,
+  ) async {
+    // The page is warmed at boot, so on mount it must paint the shape of the
+    // channel rails it is about to fill — never a bare spinner.
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await tester.binding.setSurfaceSize(const Size(1000, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(const MaterialApp(home: LiveTvScreen()));
+
+    // First frame: still loading, so the preloader — not a spinner.
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byType(RowSkeleton), findsWidgets);
+
+    await tester.pumpAndSettle();
     expect(find.text('World News'), findsOneWidget);
   });
 

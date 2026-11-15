@@ -218,6 +218,15 @@ function _mapEvent(e, sport) {
     liveInfo: [e.tournament || sport, e.country].filter(Boolean).join(' \u00B7 ') || null
   };
   if (e.tournament) item.genres = [e.tournament];
+  // Canonical sport slug, lowercased. The API buckets by sport name, so this
+  // is mostly a lowercase; both soccer spellings are folded onto the one slug
+  // the app filters on, so a feed that ever says 'Football' for the world's
+  // game still lands in the rail.
+  if (sport) {
+    var slug = String(sport).toLowerCase();
+    if (slug === 'football' || slug === 'soccer') slug = 'soccer';
+    item.liveSport = slug;
+  }
   return item;
 }
 
