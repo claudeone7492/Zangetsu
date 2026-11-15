@@ -489,6 +489,14 @@ class _RootShellState extends State<RootShell>
                         builder: (_, mode) => ModeBar(
                           open: _modeBarOpen,
                           current: (mode, ZModePrefs.streamKind),
+                          onLiveTv: () {
+                            setState(() => _modeBarOpen = false);
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const LiveTvScreen(),
+                              ),
+                            );
+                          },
                           onPicked: (m, k) async {
                             setState(() => _modeBarOpen = false);
                             final wasShorts =

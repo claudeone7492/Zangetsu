@@ -638,13 +638,25 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
             itemCount: section.items.length,
             itemWidth: _phoneCardWidth,
             itemHeight: _phoneCardHeight,
-            itemBuilder: (context, j) => PosterCard(
-              title: section.items[j].title,
-              imageUrl: section.items[j].cover,
-              headers: section.items[j].coverHeaders,
-              onTap: () => _open(section.items[j]),
-              cellWidth: _phoneCardWidth,
-            ),
+            itemBuilder: (context, j) {
+              final item = section.items[j];
+              return PosterCard(
+                title: item.title,
+                logoItem: item,
+                imageUrl: item.cover,
+                headers: item.coverHeaders,
+                genres: item.genres,
+                // A live-sports match carries its status chip ("LIVE", a
+                // countdown, "FT") and its competition/clock line. Both are
+                // computed by the source and refined by `_enrichSports` /
+                // `_tickCountdowns`; without passing them here the rail showed
+                // bare posters and the enrichment had nowhere to land.
+                liveBadge: item.liveBadge,
+                liveInfo: item.liveInfo,
+                onTap: () => _open(item),
+                cellWidth: _phoneCardWidth,
+              );
+            },
           ),
         );
       },
@@ -687,12 +699,19 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
         mainAxisSpacing: 16,
       ),
       itemCount: results.length,
-      itemBuilder: (context, i) => PosterCard(
-        title: results[i].title,
-        imageUrl: results[i].cover,
-        headers: results[i].coverHeaders,
-        onTap: () => _open(results[i]),
-      ),
+      itemBuilder: (context, i) {
+        final item = results[i];
+        return PosterCard(
+          title: item.title,
+          logoItem: item,
+          imageUrl: item.cover,
+          headers: item.coverHeaders,
+          genres: item.genres,
+          liveBadge: item.liveBadge,
+          liveInfo: item.liveInfo,
+          onTap: () => _open(item),
+        );
+      },
     );
   }
 

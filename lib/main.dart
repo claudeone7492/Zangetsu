@@ -743,14 +743,28 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
                   ..value = false
                   ..value = true;
               } else {
-                rootNavigatorKey.currentState?.pushReplacement(
-                  MaterialPageRoute<void>(
-                    builder: (_) => ProfileLaunchGate(child: RootShell()),
-                  ),
-                );
+                _swapToShell();
               }
             },
           );
+  }
+
+  /// Swaps the current route for the shell with NO transition.
+  ///
+  /// A default [MaterialPageRoute] animates in over ~300ms, and during that
+  /// window the incoming shell is not yet the route under the pointer, so the
+  /// first tap on the dock is swallowed — the user has to tap again before the
+  /// tab "routes". The splash→shell swap ([_pushShellRouteIfNeeded]) already
+  /// uses a zero-duration route for exactly this reason; onboarding's hand-off
+  /// must match it so the dock answers on the first tap.
+  void _swapToShell() {
+    rootNavigatorKey.currentState?.pushReplacement(
+      PageRouteBuilder<void>(
+        pageBuilder: (_, _, _) => ProfileLaunchGate(child: RootShell()),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
   }
 
   /// Swaps the splash route for the real shell (phone / Android TV only).

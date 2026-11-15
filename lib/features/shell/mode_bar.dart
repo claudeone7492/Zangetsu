@@ -65,12 +65,19 @@ class ModeBar extends StatelessWidget {
     required this.open,
     required this.current,
     required this.onPicked,
+    required this.onLiveTv,
   });
 
   final bool open;
   final (ContentMode, StreamKind) current;
 
   final void Function(ContentMode mode, StreamKind kind) onPicked;
+
+  /// Opens the Live TV destination. It is a screen, not a content mode, so it
+  /// carries no [ContentMode] and is never "selected" — but the user's content
+  /// list reads Anime / Movie / Manga / Novel / Shorts / Live TV, so the bar
+  /// offers it beside the modes just as the liquid dock's menu does.
+  final VoidCallback onLiveTv;
 
   @override
   Widget build(BuildContext context) {
@@ -106,6 +113,14 @@ class ModeBar extends StatelessWidget {
                         onTap: () => onPicked(c.mode, c.kind),
                       ),
                     ),
+                  Expanded(
+                    child: _Choice(
+                      label: context.l10n.liveTv,
+                      icon: Icons.live_tv_outlined,
+                      selected: false,
+                      onTap: onLiveTv,
+                    ),
+                  ),
                 ],
               ),
             ),

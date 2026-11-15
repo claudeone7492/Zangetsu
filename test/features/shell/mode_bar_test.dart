@@ -12,6 +12,7 @@ void main() {
       body: ModeBar(
         open: true,
         current: (ContentMode.anime, StreamKind.anime),
+        onLiveTv: () {},
         onPicked: (m, k) { mode = m; kind = k; },
       ),
     )));
@@ -28,12 +29,33 @@ void main() {
     expect(mode, ContentMode.manga);
   });
 
+  testWidgets('offers Live TV beside the modes and reports the tap', (
+    t,
+  ) async {
+    var opened = 0;
+    await t.pumpWidget(MaterialApp(home: Scaffold(
+      body: ModeBar(
+        open: true,
+        current: (ContentMode.anime, StreamKind.anime),
+        onLiveTv: () => opened++,
+        onPicked: (_, _) {},
+      ),
+    )));
+    // The user's content list is Anime / Movie / Manga / Novel / Shorts /
+    // Live TV, so the bar carries the destination too — not just the dock menu.
+    expect(find.text('Shorts'), findsOneWidget);
+    expect(find.text('Live TV'), findsOneWidget);
+    await t.tap(find.text('Live TV'));
+    expect(opened, 1);
+  });
+
   testWidgets('closed bar ignores taps', (t) async {
     var picked = 0;
     await t.pumpWidget(MaterialApp(home: Scaffold(
       body: ModeBar(
         open: false,
         current: (ContentMode.anime, StreamKind.anime),
+        onLiveTv: () {},
         onPicked: (_, _) => picked++,
       ),
     )));

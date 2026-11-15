@@ -26,13 +26,19 @@ MediaItem _channel(String id, String title) => MediaItem(
   sourceId: kLiveTvSourceId,
 );
 
-MediaItem _match(String id, String title, {String? badge}) => MediaItem(
+MediaItem _match(
+  String id,
+  String title, {
+  String? badge,
+  String? info,
+}) => MediaItem(
   id: id,
   title: title,
   url: 'live:$id|https://sports.test/$id.m3u8',
   type: ProviderType.movie,
   sourceId: kLiveSportsSourceIds.first,
   liveBadge: badge,
+  liveInfo: info,
 );
 
 class _FakeSourceRepository implements SourceRepository {
@@ -419,6 +425,30 @@ void main() {
       tester.getTopLeft(find.text('England vs Croatia')).dx,
       lessThan(tester.getTopLeft(find.text('Yesterday FC vs Old Town')).dx),
     );
+  });
+
+  testWidgets('the phone rail paints each match badge and info line', (
+    tester,
+  ) async {
+    final repo = _FakeSourceRepository(
+      sections: const [],
+      liveMatches: [
+        _match('l1', 'England vs Croatia', badge: 'LIVE', info: 'Premier · 63\''),
+        _match('u1', 'Italy vs France', badge: 'in 2h', info: 'Serie A'),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    // The badge and the info line are computed by the source and only reach the
+    // poster if the phone rail forwards them; a bare `title`/`cover` card
+    // silently dropped both, so the rail showed plain posters for live matches.
+    expect(find.text('LIVE'), findsOneWidget);
+    expect(find.text('in 2h'), findsOneWidget);
+    expect(find.text("Premier · 63'"), findsOneWidget);
+    expect(find.text('Serie A'), findsOneWidget);
   });
 
   testWidgets('a missing sports source simply drops the rail', (tester) async {
