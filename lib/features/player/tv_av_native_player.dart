@@ -350,6 +350,19 @@ class TvAvNativePlayer {
           }
         }
         return null;
+      case 'rememberSubtitle':
+        final choice = (call.arguments as Map)['choice'] as String?;
+        if (choice != null &&
+            choice.isNotEmpty &&
+            _showUrl != null &&
+            _showUrl!.isNotEmpty) {
+          await sl<TitlePrefsStore>().setSubtitleChoice(
+            _sourceId,
+            _showUrl!,
+            choice,
+          );
+        }
+        return null;
       case 'setSubtitleScale':
         final s = (call.arguments as Map)['scale'] as num?;
         if (s != null) await sl<PlaybackPrefs>().setSubtitleScale(s.toDouble());
@@ -393,13 +406,17 @@ class TvAvNativePlayer {
         return await stageSubtitleFont(font);
       case 'searchSubtitles':
         // Merged online search (OpenSubtitles when a key is set, plus the
-        // keyless FrameX TV) for the episode being shown.
+        // keyless FrameX TV) for the episode being shown. The show's own
+        // subtitle pick beats the global preference for the search language.
         final args = (call.arguments as Map?)?.cast<String, dynamic>() ?? {};
         final index = (args['index'] as num?)?.toInt() ?? -1;
         final ep = (index >= 0 && index < _episodes.length)
             ? _episodes[index]
             : null;
-        final pref = sl<PlaybackPrefs>().subtitlePreference;
+        final showSub = (_showUrl != null && _showUrl!.isNotEmpty)
+            ? sl<TitlePrefsStore>().subtitleChoice(_sourceId, _showUrl!)
+            : null;
+        final pref = showSub ?? sl<PlaybackPrefs>().subtitlePreference;
         final lang = (pref.isEmpty || pref == 'off') ? 'en' : pref;
         _subResults = await OnlineSubtitleSearch().search(
           _showTitle,

@@ -382,6 +382,21 @@ class TvNativePlayer {
           }
         }
         return null;
+      case 'rememberSubtitle':
+        // Native track pick — remember it for this show, same as the mpv
+        // player's in-player picker. 'off' is a real choice, not empty.
+        final choice = (call.arguments as Map)['choice'] as String?;
+        if (choice != null &&
+            choice.isNotEmpty &&
+            _showUrl != null &&
+            _showUrl!.isNotEmpty) {
+          await sl<TitlePrefsStore>().setSubtitleChoice(
+            _sourceId,
+            _showUrl!,
+            choice,
+          );
+        }
+        return null;
       case 'setSubtitleScale':
         // In-player subtitle-size change — persist so it sticks next launch.
         final s = (call.arguments as Map)['scale'] as num?;
@@ -422,13 +437,17 @@ class TvNativePlayer {
         // Merged online search (OpenSubtitles when a key is set, plus the
         // keyless FrameX TV) for the current episode; results cached for
         // download. FrameX keys on TMDB id + season/episode, so the native side
-        // passes the episode index it is showing.
+        // passes the episode index it is showing. The show's own pick beats the
+        // global preference for the search language.
         final args = (call.arguments as Map?)?.cast<String, dynamic>() ?? {};
         final index = (args['index'] as num?)?.toInt() ?? -1;
         final ep = (index >= 0 && index < _episodes.length)
             ? _episodes[index]
             : null;
-        final pref = sl<PlaybackPrefs>().subtitlePreference;
+        final showSub = (_showUrl != null && _showUrl!.isNotEmpty)
+            ? sl<TitlePrefsStore>().subtitleChoice(_sourceId, _showUrl!)
+            : null;
+        final pref = showSub ?? sl<PlaybackPrefs>().subtitlePreference;
         final lang = (pref.isEmpty || pref == 'off') ? 'en' : pref;
         _subResults = await OnlineSubtitleSearch().search(
           _showTitle,

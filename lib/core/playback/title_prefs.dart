@@ -2,6 +2,9 @@ import 'package:hive/hive.dart';
 import 'package:watch_app/core/hive/safe_box.dart';
 import 'package:watch_app/core/hive/hive_key.dart';
 
+import '../privacy/incognito_mode.dart';
+import 'subtitle_language.dart';
+
 /// Remembers per-title user choices (currently the sub/dub category), keyed by
 /// `"<sourceId>::<showUrl>"`. Netflix-style "remember my choice for this title".
 class TitlePrefsStore {
@@ -54,6 +57,34 @@ class TitlePrefsStore {
         ? <String, dynamic>{}
         : Map<String, dynamic>.from(_box.get(k)!);
     m['sourceLabel'] = label;
+    await _box.put(k, m);
+  }
+
+  /// The subtitle the user last picked for this title — an ISO-639-1 code, or
+  /// 'off'. Null when nothing was chosen, so callers fall back to the global
+  /// preference. Values are normalised to ISO-639-1 on the way in.
+  String? subtitleChoice(String sourceId, String showUrl) {
+    final m = _box.get(_key(sourceId, showUrl));
+    final v = m == null ? null : Map<String, dynamic>.from(m)['subtitleChoice'];
+    if (v is! String || v.isEmpty) return null;
+    return v == 'off' ? v : languageOfSource(v)?.iso1;
+  }
+
+  Future<void> setSubtitleChoice(
+    String sourceId,
+    String showUrl,
+    String choice,
+  ) async {
+    if (IncognitoMode.on) return;
+    final normalized = choice == 'off' || choice.isEmpty
+        ? choice
+        : languageOfSource(choice)?.iso1;
+    if (normalized == null) return;
+    final k = _key(sourceId, showUrl);
+    final m = _box.get(k) == null
+        ? <String, dynamic>{}
+        : Map<String, dynamic>.from(_box.get(k)!);
+    m['subtitleChoice'] = normalized;
     await _box.put(k, m);
   }
 
