@@ -119,3 +119,49 @@ TextStyle buildSubtitleTextStyle(PlaybackPrefs p, {required double fontSize}) {
     ),
   );
 }
+
+/// Positions the complete subtitle block within the available video surface.
+///
+/// Used only when libass is off — the Flutter overlay then owns the whole
+/// subtitle look, including vertical placement, which the fixed
+/// `SubtitleViewConfiguration` padding only approximated. [position] runs 0
+/// (top) … 100 (bottom) and maps onto the surface's own [Alignment].
+class PositionedSubtitle extends StatelessWidget {
+  const PositionedSubtitle({
+    super.key,
+    required this.text,
+    required this.position,
+    required this.style,
+  });
+
+  final String text;
+  final int position;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        // Keep the existing subtitle size relative to the video surface.
+        final scale = math.sqrt(
+          (constraints.maxWidth * constraints.maxHeight / (1920 * 1080)).clamp(
+            0.0,
+            1.0,
+          ),
+        );
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Align(
+            alignment: Alignment(0, position.clamp(0, 100) / 50 - 1),
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: style,
+              textScaler: TextScaler.linear(scale),
+            ),
+          ),
+        );
+      },
+    ),
+  );
+}
