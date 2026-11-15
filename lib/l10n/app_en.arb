@@ -7,6 +7,8 @@
 	"close": "Close",
 	"retry": "Retry",
 	"search": "Search",
+	"searchAllSources": "Search all sources",
+	"searchForThisTitle": "Search for this title?",
 	"off": "Off",
 	"on": "On",
 	"done": "Done",

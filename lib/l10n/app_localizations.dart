@@ -159,6 +159,18 @@ abstract class AppLocalizations {
   /// **'Search'**
   String get search;
 
+  /// No description provided for @searchAllSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Search all sources'**
+  String get searchAllSources;
+
+  /// No description provided for @searchForThisTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for this title?'**
+  String get searchForThisTitle;
+
   /// No description provided for @off.
   ///
   /// In en, this message translates to:

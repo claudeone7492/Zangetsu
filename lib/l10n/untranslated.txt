@@ -1,6 +1,8 @@
 {
   "ar": [
     "saved",
+    "searchAllSources",
+    "searchForThisTitle",
     "comments",
     "liveTv",
     "liveSports",
@@ -201,6 +203,8 @@
 
   "de": [
     "saved",
+    "searchAllSources",
+    "searchForThisTitle",
     "comments",
     "liveTv",
     "liveSports",
@@ -515,6 +519,8 @@
 
   "es": [
     "saved",
+    "searchAllSources",
+    "searchForThisTitle",
     "comments",
     "liveTv",
     "liveSports",
@@ -829,6 +835,8 @@
 
   "fr": [
     "saved",
+    "searchAllSources",
+    "searchForThisTitle",
     "comments",
     "liveTv",
     "liveSports",
@@ -1143,6 +1151,8 @@
 
   "id": [
     "saved",
+    "searchAllSources",
+    "searchForThisTitle",
     "comments",
     "liveTv",
     "liveSports",
@@ -1343,6 +1353,8 @@
 
   "it": [
     "saved",
+    "searchAllSources",
+    "searchForThisTitle",
     "comments",
     "liveTv",
     "liveSports",
@@ -1657,6 +1669,8 @@
 
   "ja": [
     "saved",
+    "searchAllSources",
+    "searchForThisTitle",
     "comments",
     "liveTv",
     "liveSports",
@@ -1971,6 +1985,8 @@
 
   "pt": [
     "saved",
+    "searchAllSources",
+    "searchForThisTitle",
     "comments",
     "liveTv",
     "liveSports",
@@ -2171,6 +2187,8 @@
 
   "tr": [
     "saved",
+    "searchAllSources",
+    "searchForThisTitle",
     "comments",
     "liveTv",
     "liveSports",
@@ -2371,6 +2389,8 @@
 
   "zh": [
     "saved",
+    "searchAllSources",
+    "searchForThisTitle",
     "comments",
     "liveTv",
     "liveSports",
@@ -2685,6 +2705,8 @@
 
   "zh_TW": [
     "saved",
+    "searchAllSources",
+    "searchForThisTitle",
     "comments",
     "liveTv",
     "liveSports",

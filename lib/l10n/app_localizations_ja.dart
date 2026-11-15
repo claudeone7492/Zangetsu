@@ -30,6 +30,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get search => '検索';
 
   @override
+  String get searchAllSources => 'Search all sources';
+
+  @override
+  String get searchForThisTitle => 'Search for this title?';
+
+  @override
   String get off => 'オフ';
 
   @override
