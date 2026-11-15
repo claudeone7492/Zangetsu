@@ -116,7 +116,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(PageView), findsOneWidget);
-    expect(find.text('Alpha'), findsOneWidget);
+    // The feed is shuffled, so either drama may open it — but both are present
+    // and the read-out counts them.
+    expect(
+      find.text('Alpha').evaluate().isNotEmpty ||
+          find.text('Bravo').evaluate().isNotEmpty,
+      isTrue,
+    );
     expect(find.text('1 / 2'), findsOneWidget);
   });
 
@@ -140,8 +146,15 @@ void main() {
     await tester.drag(find.byType(PageView), const Offset(0, -1200));
     await tester.pumpAndSettle();
 
-    expect(find.text('2 / 2'), findsOneWidget);
-    expect(find.text('Bravo'), findsOneWidget);
+    // The pager advanced to the second page. The feed is endless, so the
+    // denominator may have grown past the two gathered dramas — the numerator
+    // is what proves the swipe moved.
+    expect(find.textContaining('2 / '), findsOneWidget);
+    expect(
+      find.text('Alpha').evaluate().isNotEmpty ||
+          find.text('Bravo').evaluate().isNotEmpty,
+      isTrue,
+    );
   });
 
   testWidgets('a source that returns nothing yields the empty state', (
@@ -306,5 +319,37 @@ void main() {
       'netshort',
     ]);
     expect(find.text('Drama M'), findsOneWidget);
+  });
+
+  testWidgets('the feed keeps appending past the gathered pool', (tester) async {
+    register(
+      _FakeCatalogueRepository(
+        sections: [
+          HomeSection(
+            title: 'Trending',
+            items: [
+              for (var i = 0; i < 6; i++) _item('s$i', 'Drama $i'),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    await pumpShorts(tester);
+    await tester.pumpAndSettle();
+
+    // Only six dramas were gathered, so the read-out starts out of six.
+    expect(find.textContaining('/ 6'), findsOneWidget);
+
+    // Swipe toward the end; the feed appends a shuffled batch behind the pages
+    // already seen rather than running out.
+    for (var i = 0; i < 5; i++) {
+      await tester.drag(find.byType(PageView), const Offset(0, -1200));
+      await tester.pumpAndSettle();
+    }
+
+    // The denominator grew: the pool was reshuffled and appended.
+    expect(find.textContaining('/ 6'), findsNothing);
+    expect(find.textContaining('/ '), findsOneWidget);
   });
 }

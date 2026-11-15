@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -94,6 +95,20 @@ class _ShortsScreenState extends State<ShortsScreen> {
   bool _loadStarted = false;
   List<MediaItem> _items = const [];
   int _index = 0;
+
+  /// The whole gathered feed before paging: [_items] starts as a shuffled copy
+  /// of it and [_appendMore] keeps drawing shuffled batches from it, so the
+  /// feed never repeats the same drama back-to-back and never runs out.
+  List<MediaItem> _pool = const [];
+
+  /// Guards [_appendMore] against re-entering while a batch is being built.
+  bool _appending = false;
+
+  /// How many pages [_appendMore] adds each time the feed nears its end, and
+  /// how many shuffled passes it may make through the pool to find that many
+  /// unseen items. Bounded so a small pool simply stops instead of spinning.
+  static const int _appendBatch = 12;
+  static const int _maxAppendPasses = 4;
 
   /// The source ids the last gather walked. A docked tab warms at boot, but
   /// providers finish loading on their own schedule, so the first gather can
@@ -243,14 +258,61 @@ class _ShortsScreenState extends State<ShortsScreen> {
         if (seen.add('${item.sourceId}:${item.id}')) gathered.add(item);
       }
     }
+    // Shuffle the pool so the feed is a discovery surface, not a replay of the
+    // first source's rails in the same order every launch — the source rows
+    // are near-identical between opens, so an unshuffled feed shows the same
+    // dramas at the top forever. The drama sources still lead the gather, so
+    // the pool is drama-weighted before the shuffle.
+    _pool = _shuffled(gathered);
     setState(() {
-      _items = gathered;
+      _items = _pool;
       _index = 0;
       _loading = false;
     });
     // Warm the opening pages' streams now, in the background, so the first
     // swipes play instead of resolving on the spot.
     _prefetchLeading();
+  }
+
+  /// [items] reordered with a fresh random seed. The pool is the whole feed, so
+  /// the shuffle is what keeps two visits from opening on the same dramas.
+  List<MediaItem> _shuffled(List<MediaItem> items) {
+    final copy = List<MediaItem>.of(items);
+    copy.shuffle(Random());
+    return copy;
+  }
+
+  /// Appends the next batch of the pool when the feed nears its end, so the
+  /// swipe never hits a wall. Unseen dramas are drawn first; once the pool is
+  /// exhausted it is reshuffled and cycled again, and the same drama is never
+  /// appended twice in a row — the endless scroll the feed is for.
+  void _appendMore() {
+    if (_pool.isEmpty || _appending) return;
+    _appending = true;
+    final shown = {for (final i in _items) '${i.sourceId}:${i.id}'};
+    final batch = <MediaItem>[];
+    String? lastKey = _items.isEmpty
+        ? null
+        : '${_items.last.sourceId}:${_items.last.id}';
+    for (
+      var pass = 0;
+      pass < _maxAppendPasses && batch.length < _appendBatch;
+      pass++
+    ) {
+      final unseenOnly = pass == 0;
+      for (final item in _shuffled(_pool)) {
+        final key = '${item.sourceId}:${item.id}';
+        if (unseenOnly && shown.contains(key)) continue;
+        if (key == lastKey) continue;
+        batch.add(item);
+        shown.add(key);
+        lastKey = key;
+        if (batch.length >= _appendBatch) break;
+      }
+    }
+    _appending = false;
+    if (batch.isEmpty || !mounted) return;
+    setState(() => _items = [..._items, ...batch]);
   }
 
   /// The rows one source contributes to the feed.
@@ -383,7 +445,12 @@ class _ShortsScreenState extends State<ShortsScreen> {
           controller: _pageController,
           scrollDirection: Axis.vertical,
           itemCount: _items.length,
-          onPageChanged: (i) => setState(() => _index = i),
+          onPageChanged: (i) {
+            setState(() => _index = i);
+            // Approaching the end: append a fresh shuffled batch behind the
+            // pages already seen so the swipe keeps going.
+            if (i >= _items.length - _prefetchCount) _appendMore();
+          },
           itemBuilder: (context, i) => _ShortPage(
             key: ValueKey('${_items[i].sourceId}:${_items[i].id}'),
             item: _items[i],
@@ -681,6 +748,27 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
     return episodeDisplayTitle(ep, number: ep.number?.toInt());
   }
 
+  /// The compact fact chips under the title: live state, score, year, quality
+  /// and the first couple of genres. Only what the item actually carries — a
+  /// bare title with no metadata renders no chip row at all.
+  List<Widget> _metaChips(MediaItem item) {
+    final chips = <Widget>[];
+    if (item.liveBadge != null && item.liveBadge!.trim().isNotEmpty) {
+      chips.add(_MetaChip(label: item.liveBadge!, live: true));
+    }
+    if (item.score != null && item.score! > 0) {
+      chips.add(_MetaChip(label: '★ ${(item.score! / 10).toStringAsFixed(1)}'));
+    }
+    if (item.year != null) chips.add(_MetaChip(label: '${item.year}'));
+    if (item.quality != null && item.quality!.trim().isNotEmpty) {
+      chips.add(_MetaChip(label: item.quality!));
+    }
+    for (final g in item.genres.take(2)) {
+      chips.add(_MetaChip(label: g));
+    }
+    return chips;
+  }
+
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
@@ -796,6 +884,14 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
+              // Enrichment: the facts a viewer uses to decide whether to keep
+              // watching — score, year, quality, live state, genres — as one
+              // compact chip row, so the card reads like a discovery card and
+              // not just a title over a video.
+              if (_metaChips(item).isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Wrap(spacing: 6, runSpacing: 6, children: _metaChips(item)),
+              ],
             ],
           ),
         ),
@@ -821,6 +917,42 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// A small translucent pill for the fact row on a reels card. [live] tints it
+/// with the accent so a live badge reads as live, not as another genre tag.
+class _MetaChip extends StatelessWidget {
+  const _MetaChip({required this.label, this.live = false});
+
+  final String label;
+  final bool live;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: live
+            ? AppColors.accent.withValues(alpha: 0.22)
+            : Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: live
+              ? AppColors.accent.withValues(alpha: 0.6)
+              : Colors.white.withValues(alpha: 0.14),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        child: Text(
+          label,
+          style: AppText.caption.copyWith(
+            color: live ? AppColors.accent : Colors.white,
+            fontWeight: live ? FontWeight.w600 : FontWeight.w500,
+          ),
+        ),
+      ),
     );
   }
 }
