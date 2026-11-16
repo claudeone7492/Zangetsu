@@ -1,8 +1,7 @@
-import 'dart:async';
-
+import 'package:currency_converter/currency.dart';
+import 'package:currency_converter/currency_converter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:geo_currencies/geo_currencies.dart';
 import 'package:intl/intl.dart';
 
 import '../hive/safe_box.dart';
@@ -55,7 +54,6 @@ class GeoPricing {
   static const Duration _ttl = Duration(hours: 24);
 
   static GeoQuote? _memo;
-  static bool _inflight = false;
 
   /// The device's local currency + rate, or null when it cannot be resolved,
   /// is not African, or the network is unavailable and nothing is cached.
@@ -94,14 +92,20 @@ class GeoPricing {
 
   /// Resolves the local ISO 4217 code from the timezone, then the locale
   /// region. Returns null for a non-African device.
+  ///
+  /// The timezone lookup is bounded: a platform whose channel never answers
+  /// must not stall the paywall, so a slow or absent reply falls through to the
+  /// locale region instead.
   static Future<String?> _localCurrency() async {
     try {
-      final tz = await FlutterTimezone.getLocalTimezone();
+      final tz = await FlutterTimezone.getLocalTimezone().timeout(
+        const Duration(milliseconds: 800),
+      );
       final byTz = currencyForTimezone(tz.identifier);
       if (byTz != null) return byTz;
     } catch (_) {
-      // No native handler (tests, unsupported platform) — fall through to the
-      // locale region.
+      // Timeout, no native handler (tests, unsupported platform), or an
+      // unexpected reply — fall through to the locale region.
     }
     final region = PlatformDispatcher.instance.locale.countryCode;
     if (region != null) return currencyForCountry(region);
@@ -109,26 +113,31 @@ class GeoPricing {
   }
 
   static Future<num?> _fetchRate(String code) async {
-    if (_inflight) return null;
-    _inflight = true;
+    final target = _currencyEnum(code);
+    if (target == null || target == Currency.usd) return null;
     try {
-      final geo = GeoCurrencies(
-        config: GeoCurrenciesConfig(
-          geoCurrenciesType: GeoCurrenciesType.live,
-        ),
-      );
-      final data = await geo.convertAmountWithCurrenciesCodes(
+      // `currency_converter` reads the fawazahmed0 currency-api through
+      // jsDelivr, with the pages.dev mirror as its own fallback. It is
+      // stateless and needs no key.
+      final rate = await CurrencyConverter.convert(
+        from: Currency.usd,
+        to: target,
         amount: 1,
-        fromCurrencyCodeIso4217: 'USD',
-        toCurrencyCodeIso4217: code,
+        withoutRounding: true,
       );
-      if (data == null || !data.succeeded) return null;
-      return data.rate;
+      return (rate == null || rate <= 0) ? null : rate;
     } catch (_) {
       return null;
-    } finally {
-      _inflight = false;
     }
+  }
+
+  /// Maps an ISO 4217 code onto the package's enum; null when it has no entry.
+  static Currency? _currencyEnum(String code) {
+    final lower = code.toLowerCase();
+    for (final c in Currency.values) {
+      if (c.name == lower) return c;
+    }
+    return null;
   }
 
   /// Test seam: clears the memoised quote so a test can re-resolve.
@@ -138,7 +147,8 @@ class GeoPricing {
 /// IANA timezone → ISO 4217, covering the African zones the checkout serves.
 /// Zones that use a non-African currency (e.g. `Indian/Reunion` → EUR) are
 /// deliberately absent, so those devices simply see no approximate price.
-const Map<String, String> _tzCurrency = {
+@visibleForTesting
+const Map<String, String> kGeoTimezoneCurrencies = {
   // North
   'Africa/Cairo': 'EGP',
   'Africa/Tripoli': 'LYD',
@@ -204,7 +214,8 @@ const Map<String, String> _tzCurrency = {
 };
 
 /// ISO 3166-1 alpha-2 → ISO 4217 for Africa, used when the timezone is unknown.
-const Map<String, String> _countryCurrency = {
+@visibleForTesting
+const Map<String, String> kGeoCountryCurrencies = {
   'NG': 'NGN', 'GH': 'GHS', 'KE': 'KES', 'ZA': 'ZAR', 'EG': 'EGP',
   'TZ': 'TZS', 'UG': 'UGX', 'RW': 'RWF', 'BI': 'BIF', 'ET': 'ETB',
   'ER': 'ERN', 'DJ': 'DJF', 'SO': 'SOS', 'SS': 'SSP', 'MG': 'MGA',
@@ -220,12 +231,12 @@ const Map<String, String> _countryCurrency = {
 
 @visibleForTesting
 String? currencyForTimezone(String identifier) {
-  final direct = _tzCurrency[identifier];
+  final direct = kGeoTimezoneCurrencies[identifier];
   if (direct != null) return direct;
   // Some platforms report a zone link (e.g. `Africa/Asmera`); match on the
   // city tail case-insensitively as a fallback.
   final tail = identifier.split('/').last.toLowerCase();
-  for (final entry in _tzCurrency.entries) {
+  for (final entry in kGeoTimezoneCurrencies.entries) {
     if (entry.key.split('/').last.toLowerCase() == tail) return entry.value;
   }
   return null;
@@ -233,4 +244,4 @@ String? currencyForTimezone(String identifier) {
 
 @visibleForTesting
 String? currencyForCountry(String countryCode) =>
-    _countryCurrency[countryCode.toUpperCase()];
+    kGeoCountryCurrencies[countryCode.toUpperCase()];

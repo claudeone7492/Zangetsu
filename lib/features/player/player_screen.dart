@@ -669,7 +669,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     if (!mounted) return;
     final allowed = await ensureEntitled(
       context,
-      reason: 'Watch with Zangetsu',
+      reason: 'Keep watching — this one is a Zangetsu exclusive',
     );
     if (!mounted) return;
     if (!allowed) {

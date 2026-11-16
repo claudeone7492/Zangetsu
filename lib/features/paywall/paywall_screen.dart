@@ -125,36 +125,11 @@ class _PaywallSheetState extends State<PaywallSheet> {
                 ),
               ),
             ),
-            const SizedBox(height: 18),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.accentSoft,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Launch offer · ${state.discountPct}% off',
-                    style: AppText.caption.copyWith(color: AppColors.accent),
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: 14),
-            Text(
-              widget.reason ?? 'Choose your plan. Stream without limits.',
-              style: AppText.title,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Cancel anytime. First 14 days free on Standard & Premium.',
-              style: AppText.body.copyWith(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 18),
+            _hero(state),
+            const SizedBox(height: 20),
+            _benefits(),
+            const SizedBox(height: 20),
             for (final plan in state.plans) ...[
               _PlanCard(
                 plan: plan,
@@ -188,6 +163,117 @@ class _PaywallSheetState extends State<PaywallSheet> {
           ],
         ),
       ),
+    );
+  }
+
+  /// The headline: a warm, benefit-led pitch rather than a state name. The
+  /// reason line comes from whoever triggered the gate, so a viewer who tapped
+  /// a locked title reads why they landed here.
+  Widget _hero(SubscriptionState state) {
+    final identity = state.identity;
+    final trialLeft = state.trialEligible;
+    final days = state.selected?.trialDays ?? 14;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppColors.accentSoft,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Launch offer · ${state.discountPct}% off',
+                style: AppText.caption.copyWith(color: AppColors.accent),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text(
+          widget.reason ?? 'Unlock everything on Zangetsu',
+          style: AppText.title,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          trialLeft
+              ? 'Start your $days-day free trial and watch every drama, short '
+                    'and live match — no card needed to begin.'
+              : 'Keep watching every drama, short and live match, on any device.',
+          style: AppText.body.copyWith(color: AppColors.textSecondary),
+        ),
+        if (identity != null && identity.daysLeft > 0 && !identity.entitled) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Your access ended ${identity.daysLeft} day'
+            '${identity.daysLeft == 1 ? '' : 's'} ago.',
+            style: AppText.caption.copyWith(color: AppColors.textTertiary),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Three plain-language benefits, so the card sells the outcome rather than
+  /// listing tiers with no context.
+  Widget _benefits() {
+    const items = <(IconData, String, String)>[
+      (
+        Icons.play_circle_outline,
+        'Every drama, unlocked',
+        'Full seasons and the drama shorts feed',
+      ),
+      (
+        Icons.bolt_outlined,
+        'Live matches as they happen',
+        'Soccer streams resolved the moment you tap',
+      ),
+      (
+        Icons.devices_outlined,
+        'Any device, offline too',
+        'Phone, TV and tablet — download and watch',
+      ),
+    ];
+    return Column(
+      children: [
+        for (final (icon, title, sub) in items)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.accentSoft,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, size: 19, color: AppColors.accent),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: AppText.body),
+                      const SizedBox(height: 2),
+                      Text(
+                        sub,
+                        style: AppText.caption.copyWith(
+                          color: AppColors.textTertiary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 
@@ -297,6 +383,17 @@ class _PaywallSheetState extends State<PaywallSheet> {
         total: true,
       ),
     );
+
+    final saved = state.listCents - state.totalCents;
+    if (saved > 0) {
+      rows.add(
+        _SummaryRow(
+          label: 'You save',
+          value: money(saved),
+          accent: true,
+        ),
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

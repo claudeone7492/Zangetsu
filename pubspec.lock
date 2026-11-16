@@ -345,6 +345,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.1"
+  currency_converter:
+    dependency: "direct main"
+    description:
+      name: currency_converter
+      sha256: f527e505baa9cae56fa1bc68f2c62d646dcf23563a171251a6aba81960ef868d
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
   d4rt:
     dependency: transitive
     description:
@@ -1039,14 +1047,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.2"
-  geo_currencies:
-    dependency: "direct main"
-    description:
-      name: geo_currencies
-      sha256: e57f43082239dbdd37bc5c5e61cd7b2cca35e9d12a740d63a347d6ccd462c50a
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.6"
   get_it:
     dependency: "direct main"
     description:

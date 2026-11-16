@@ -1,3 +1,4 @@
+import 'package:currency_converter/currency.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watch_app/core/subscription/geo_pricing.dart';
 
@@ -38,6 +39,20 @@ void main() {
       expect(currencyForCountry('NG'), 'NGN');
       expect(currencyForCountry('ng'), 'NGN');
       expect(currencyForCountry('GB'), isNull);
+    });
+
+    test('every mapped currency exists in the converter', () {
+      final supported = Currency.values.map((c) => c.name).toSet();
+      final mapped = <String>{
+        ...kGeoTimezoneCurrencies.values,
+        ...kGeoCountryCurrencies.values,
+      };
+      final missing = mapped.where((c) => !supported.contains(c.toLowerCase()));
+      expect(
+        missing,
+        isEmpty,
+        reason: 'these currencies have no Currency enum entry: $missing',
+      );
     });
   });
 }
