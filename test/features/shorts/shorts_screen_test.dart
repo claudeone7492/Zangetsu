@@ -224,7 +224,7 @@ void main() {
     expect(find.text('1 / 1'), findsOneWidget);
   });
 
-  testWidgets('the card hides the provider name and shows fact chips', (
+  testWidgets('the card hides the provider name and shows top fact pills', (
     tester,
   ) async {
     register(
@@ -258,13 +258,48 @@ void main() {
     // The provider's display name ("goodshort") must not appear on the card —
     // the drama is what the viewer is choosing, not the catalogue it came from.
     expect(find.text('goodshort'), findsNothing);
-    // Enrichment: score, year, quality, status, dub and genre chips are drawn.
+    // The top bar is at most three pills: score, year, quality — the facts a
+    // viewer scans first. The rest (status, dub, genres) live on the detail
+    // page, so the card never turns into a wall of chips.
     expect(find.text('★ 8.7'), findsOneWidget);
     expect(find.text('2024'), findsOneWidget);
     expect(find.text('HD'), findsOneWidget);
-    expect(find.text('Ongoing'), findsOneWidget);
-    expect(find.text('DUB'), findsOneWidget);
-    expect(find.text('Romance'), findsOneWidget);
+    expect(find.text('Ongoing'), findsNothing);
+    expect(find.text('DUB'), findsNothing);
+    expect(find.text('Romance'), findsNothing);
+  });
+
+  testWidgets('the card shows the source synopsis and a read-out button', (
+    tester,
+  ) async {
+    register(
+      _FakeCatalogueRepository(
+        sections: [
+          HomeSection(
+            title: 'Trending',
+            items: [
+              MediaItem(
+                id: 'a',
+                title: 'Alpha',
+                url: 'https://src.test/goodshort/a',
+                type: ProviderType.movie,
+                sourceId: 'goodshort',
+                description: 'She signed to escape a scandal.',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    await pumpShorts(tester);
+    await tester.pumpAndSettle();
+
+    // The read-out is drawn as a button (grid glyph + "1 / 1") in the rail.
+    expect(find.text('1 / 1'), findsOneWidget);
+    expect(find.byIcon(Icons.grid_view_rounded), findsOneWidget);
+    // The source's own synopsis rides under the title as one muted line.
+    expect(find.text('She signed to escape a scandal.'), findsOneWidget);
   });
 
   testWidgets('every page carries the TikTok-style action rail', (
@@ -281,11 +316,13 @@ void main() {
     await pumpShorts(tester);
     await tester.pumpAndSettle();
 
-    // Save / comments / share / details — the four actions down the right edge.
+    // Save / comments / share — the actions down the right edge. The title
+    // above the rail is the route to the detail page, so there is no separate
+    // "Show details" button any more.
     expect(find.text('Save'), findsOneWidget);
     expect(find.text('Comments'), findsOneWidget);
     expect(find.text('Share'), findsOneWidget);
-    expect(find.text('Show details'), findsOneWidget);
+    expect(find.text('Show details'), findsNothing);
   });
 
   testWidgets('prewarm gathers the feed while the tab is still off-screen', (

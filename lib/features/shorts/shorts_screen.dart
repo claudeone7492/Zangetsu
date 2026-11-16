@@ -20,6 +20,7 @@ import '../../core/repository/source_repository.dart';
 import '../../core/share/share_link.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import '../../core/ui/dock_visibility.dart';
 import '../../core/ui/route_observer.dart';
 import '../../core/ui/states.dart';
 import '../../l10n/l10n.dart';
@@ -71,7 +72,12 @@ class ShortsScreen extends StatefulWidget {
 /// The one thing a page needs to play its preview: a direct stream URL and the
 /// headers it wants. Null when nothing could be resolved.
 class _VideoFeedSource {
-  const _VideoFeedSource({required this.url, this.headers, this.episode});
+  const _VideoFeedSource({
+    required this.url,
+    this.headers,
+    this.episode,
+    this.episodes = const [],
+  });
 
   final String url;
   final Map<String, String>? headers;
@@ -79,6 +85,11 @@ class _VideoFeedSource {
   /// The episode this preview came from, so the comment thread and the
   /// "Episode N" label name the same thing the player will.
   final Episode? episode;
+
+  /// Every episode the title offers, so the read-out button can open the
+  /// episode grid and a tap can jump straight to another part. Empty for a
+  /// source that returned no episode list at all.
+  final List<Episode> episodes;
 }
 
 class _ShortsScreenState extends State<ShortsScreen> {
@@ -399,7 +410,12 @@ class _ShortsScreenState extends State<ShortsScreen> {
       if (sources.isEmpty) return null;
       final v = sources.first;
       if (v.url.trim().isEmpty) return null;
-      return _VideoFeedSource(url: v.url, headers: v.headers, episode: ep);
+      return _VideoFeedSource(
+        url: v.url,
+        headers: v.headers,
+        episode: ep,
+        episodes: episodes,
+      );
     } catch (_) {
       return null;
     }
@@ -469,25 +485,8 @@ class _ShortsScreenState extends State<ShortsScreen> {
             onToggleMute: () => setState(() => _muted = !_muted),
             onOpen: () => _open(_items[i]),
             resolveVideo: () => _resolveCached(_items[i]),
-          ),
-        ),
-        // Position read-out — a long feed with no sense of place is
-        // disorienting, and the dock hides the scrollbar.
-        Positioned(
-          left: 12,
-          bottom: 24,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              child: Text(
-                '${_index + 1} / ${_items.length}',
-                style: AppText.caption.copyWith(color: Colors.white),
-              ),
-            ),
+            pageNumber: i + 1,
+            pageCount: _items.length,
           ),
         ),
       ],
@@ -508,10 +507,19 @@ class _ShortPage extends StatefulWidget {
     required this.onOpen,
     required this.resolveVideo,
     this.near = false,
+    this.pageNumber = 1,
+    this.pageCount = 1,
   });
 
   final MediaItem item;
   final bool active;
+
+  /// 1-based position of this page in the feed, and how many pages the feed
+  /// currently holds — the read-out button's label. The feed grows as the user
+  /// scrolls (see [_ShortsScreenState._appendMore]), so both are passed down
+  /// fresh on every rebuild rather than read once.
+  final int pageNumber;
+  final int pageCount;
 
   /// True for the pages one step either side of the visible one. They resolve
   /// their stream and hold the first frame paused, so the swipe that brings one
@@ -548,6 +556,15 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
   /// starts playing instead of holding a paused first frame — the race that
   /// left a page frozen on a still until the next swipe.
   bool _wantPlay = false;
+
+  /// The episode list the read-out button opens, or null while the panel is
+  /// closed. Populated from the resolved source the first time the panel is
+  /// opened, so the grid shows the real parts of the drama.
+  List<Episode>? _episodes;
+
+  /// The episode a pick is switching to, or null. Guards against a second tap
+  /// while the first is still resolving.
+  bool _switching = false;
 
   /// Transient "−10s" / "+10s" badge shown after a double-tap seek, fading out
   /// once the jump has landed. Null when no seek is in flight.
@@ -979,44 +996,104 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
     return episodeDisplayTitle(ep, number: ep.number?.toInt());
   }
 
-  /// The compact fact chips under the title: live state, score, year, quality,
-  /// run status, dub/audio tag and the first couple of genres. Only what the
-  /// item actually carries — a bare title with no metadata renders no chip row
-  /// at all.
-  List<Widget> _metaChips(MediaItem item) {
-    final chips = <Widget>[];
+  /// The one muted synopsis line under the episode label: the source's own
+  /// description when the listing carried one, else nothing. Trimmed so a
+  /// whitespace-only value renders no line.
+  String? get _synopsis {
+    final d = widget.item.description?.trim();
+    return (d == null || d.isEmpty) ? null : d;
+  }
+
+  /// Open the episodes grid. The list comes from the resolved source, so a page
+  /// whose stream is still resolving opens onto the panel it already has, and
+  /// the first open after a resolve shows every part.
+  void _openEpisodes() {
+    final eps = _source?.episodes ?? const <Episode>[];
+    if (eps.isEmpty) return;
+    setState(() => _episodes = eps);
+  }
+
+  void _closeEpisodes() {
+    if (_episodes == null) return;
+    setState(() => _episodes = null);
+  }
+
+  /// Switch the preview to [episode]'s stream and play it. Best-effort, like
+  /// the initial resolve: a failure closes the panel and leaves the current
+  /// preview up rather than blanking the page.
+  Future<void> _pickEpisode(Episode episode) async {
+    if (_switching || !sl.isRegistered<SourceRepository>()) return;
+    _switching = true;
+    setState(() => _episodes = null);
+    try {
+      final repo = sl<SourceRepository>();
+      final sources = await repo
+          .sources(episode.url, sourceId: widget.item.sourceId, fast: true)
+          .timeout(const Duration(seconds: 12));
+      if (!mounted) return;
+      if (sources.isEmpty || sources.first.url.trim().isEmpty) return;
+      final v = sources.first;
+      final next = _VideoFeedSource(
+        url: v.url,
+        headers: v.headers,
+        episode: episode,
+        episodes: _source?.episodes ?? const [],
+      );
+      _source = next;
+      // Re-open the player on the new stream. Dispose first so the old decoder
+      // is released before the new one opens.
+      _playingSub?.cancel();
+      _playingSub = null;
+      _completedSub?.cancel();
+      _completedSub = null;
+      _disposePlayer();
+      _wantPlay = true;
+      await _startPlayback(next);
+      if (mounted) setState(() {});
+    } catch (_) {
+      // Keep the current preview up.
+    } finally {
+      _switching = false;
+    }
+  }
+
+  /// The fact pills shown at the very top of the card, at most three: score,
+  /// year and quality — the three a viewer scans before the rest. Live state
+  /// takes the first slot when present, so a live fixture never loses its
+  /// badge to the score. The remaining facts live on the Detail page.
+  List<Widget> _topPills(MediaItem item) {
+    final pills = <Widget>[];
+    void add(String label, {bool live = false}) {
+      if (pills.length >= 3) return;
+      pills.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 3),
+          child: _MetaChip(label: label, live: live),
+        ),
+      );
+    }
+
     if (item.liveBadge != null && item.liveBadge!.trim().isNotEmpty) {
-      chips.add(_MetaChip(label: item.liveBadge!, live: true));
+      add(item.liveBadge!, live: true);
     }
     if (item.score != null && item.score! > 0) {
-      chips.add(_MetaChip(label: '★ ${(item.score! / 10).toStringAsFixed(1)}'));
+      add('★ ${(item.score! / 10).toStringAsFixed(1)}');
     }
-    if (item.year != null) chips.add(_MetaChip(label: '${item.year}'));
+    if (item.year != null) add('${item.year}');
     if (item.quality != null && item.quality!.trim().isNotEmpty) {
-      chips.add(_MetaChip(label: item.quality!));
+      add(item.quality!);
     }
-    // Run status — "Ongoing" / "Completed" — the single fact a drama viewer
-    // looks for before committing to a binge.
-    final status = switch (item.status) {
-      MediaStatus.ongoing => 'Ongoing',
-      MediaStatus.completed => 'Completed',
-      MediaStatus.hiatus => 'Hiatus',
-      MediaStatus.cancelled => 'Cancelled',
-      MediaStatus.unknown || null => null,
-    };
-    if (status != null) chips.add(_MetaChip(label: status));
-    // Audio availability: the provider's own dub tag, else a DUB chip when the
-    // item reports dub tracks at all.
-    final dub = item.dubBadge?.trim();
-    if (dub != null && dub.isNotEmpty) {
-      chips.add(_MetaChip(label: dub));
-    } else if ((item.dubCount ?? 0) > 0) {
-      chips.add(const _MetaChip(label: 'DUB'));
+    if (pills.length < 3) {
+      final status = switch (item.status) {
+        MediaStatus.ongoing => 'Ongoing',
+        MediaStatus.completed => 'Completed',
+        MediaStatus.hiatus => 'Hiatus',
+        MediaStatus.cancelled => 'Cancelled',
+        MediaStatus.unknown || null => null,
+      };
+      if (status != null) add(status);
     }
-    for (final g in item.genres.take(2)) {
-      chips.add(_MetaChip(label: g));
-    }
-    return chips;
+    return pills;
   }
 
   @override
@@ -1184,7 +1261,18 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
               color: Colors.white70,
             ),
           ),
-        // Bottom-up scrim so the title stays readable over any art or video.
+        // Bottom-up scrim so the title stays readable over any art or video,
+        // and the top-down scrim so the centred pills stay legible over a
+        // bright frame.
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.center,
+              colors: [Colors.black54, Colors.transparent],
+            ),
+          ),
+        ),
         const DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -1194,17 +1282,32 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
             ),
           ),
         ),
+        // Top bar: at most THREE fact pills, centred — the score, the year and
+        // the quality are what a viewer scans first, and a wall of pills over
+        // the art reads as clutter. The rest of the facts ride along in the
+        // detail page the title opens.
+        if (_topPills(item).isNotEmpty)
+          Positioned(
+            top: MediaQuery.paddingOf(context).top + 12,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: _topPills(item),
+            ),
+          ),
+        // Meta block, lifted clear of the dock so nothing sits under the tab
+        // bar: title (the route to the full page), the episode glyph + label,
+        // and one muted synopsis line. No volume icon — the tap surface and
+        // the right-edge strip already own sound.
         Positioned(
           left: 20,
           right: 84,
-          bottom: 56,
+          bottom: kDockClearance + 22,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // The title doubles as a route to the full page: the tap surface
-              // above only toggles sound, so without this the name was the one
-              // bit of the card that looked tappable and wasn't.
               GestureDetector(
                 onTap: widget.onOpen,
                 child: Text(
@@ -1214,59 +1317,83 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              // The episode the preview resolved, so a swipe into a drama shows
-              // which part is playing rather than a bare title.
+              // The episode the preview resolved, named with a film glyph so
+              // the card says which part is playing rather than a bare title.
               if (_episodeLabel != null) ...[
                 const SizedBox(height: 6),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.movie_outlined,
+                      size: 15,
+                      color: Colors.white70,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        _episodeLabel!,
+                        style: AppText.caption.copyWith(color: Colors.white70),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              // One muted synopsis line, when the source gave one, so the card
+              // says what the drama is and not only its name.
+              if (_synopsis != null) ...[
+                const SizedBox(height: 6),
                 Text(
-                  _episodeLabel!,
-                  style: AppText.caption.copyWith(color: Colors.white70),
+                  _synopsis!,
+                  style: AppText.caption.copyWith(
+                    color: Colors.white.withValues(alpha: 0.58),
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-              // Enrichment: the facts a viewer uses to decide whether to keep
-              // watching — score, year, quality, live state, genres — as one
-              // compact chip row, so the card reads like a discovery card and
-              // not just a title over a video.
-              if (_metaChips(item).isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Wrap(spacing: 6, runSpacing: 6, children: _metaChips(item)),
-              ],
             ],
           ),
         ),
-        if (controller != null)
-          Positioned(
-            left: 20,
-            bottom: 24,
-            child: Icon(
-              widget.muted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-              color: Colors.white70,
-              size: 20,
-            ),
-          ),
-        // Thin scrub bar pinned to the very bottom edge: the reels equivalent
-        // of the player's timeline. It reads the position stream itself, so a
+        // Thin scrub bar lifted above the dock: the reels equivalent of the
+        // player's timeline. It reads the position stream itself, so a
         // frame-by-frame tick never rebuilds the video widget above it.
         if (controller != null)
           Positioned(
             left: 0,
             right: 0,
-            bottom: 0,
+            bottom: kDockClearance + 8,
             child: _FeedProgressBar(player: controller.player),
           ),
+        // Action rail, vertically centred and clear of the dock: the read-out
+        // button that opens the episode grid, then Save / Comments / Share.
         Positioned(
           right: 10,
-          bottom: 48,
-          child: _ActionRail(
-            saved: _saved,
-            onSave: _toggleSave,
-            onComments: _comments,
-            onShare: _share,
-            onDetails: widget.onOpen,
+          top: 0,
+          bottom: kDockClearance,
+          child: Center(
+            child: _ActionRail(
+              saved: _saved,
+              pageLabel: '${widget.pageNumber} / ${widget.pageCount}',
+              onEpisodes: (_source?.episodes.isNotEmpty ?? false)
+                  ? _openEpisodes
+                  : null,
+              onSave: _toggleSave,
+              onComments: _comments,
+              onShare: _share,
+            ),
           ),
         ),
+        // The episodes grid, when open — the read-out button's panel.
+        if (_episodes != null)
+          _EpisodesSheet(
+            episodes: _episodes!,
+            currentId: _source?.episode?.id,
+            onClose: _closeEpisodes,
+            onPick: _pickEpisode,
+          ),
       ],
     );
   }
@@ -1370,28 +1497,36 @@ class _MetaChip extends StatelessWidget {
   }
 }
 
-/// The vertical column of round actions down the right edge — save, comments,
-/// share, and a way through to the title's full page.
+/// The vertical column down the right edge: the position read-out as a button
+/// that opens the episode grid, then Save / Comments / Share. There is no
+/// Details button — the title above is the route to the full page.
 class _ActionRail extends StatelessWidget {
   const _ActionRail({
     required this.saved,
+    required this.pageLabel,
+    required this.onEpisodes,
     required this.onSave,
     required this.onComments,
     required this.onShare,
-    required this.onDetails,
   });
 
   final bool saved;
+  final String pageLabel;
+
+  /// Null until the page's source resolves, or when it returned no episodes —
+  /// the read-out still shows, it just isn't a button.
+  final VoidCallback? onEpisodes;
   final VoidCallback onSave;
   final VoidCallback onComments;
   final VoidCallback onShare;
-  final VoidCallback onDetails;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        _PagerButton(label: pageLabel, onTap: onEpisodes),
+        const SizedBox(height: 14),
         _RailButton(
           icon: saved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
           label: saved ? context.l10n.saved : context.l10n.save,
@@ -1407,12 +1542,58 @@ class _ActionRail extends StatelessWidget {
           label: context.l10n.share,
           onTap: onShare,
         ),
-        _RailButton(
-          icon: Icons.info_outline_rounded,
-          label: context.l10n.showDetails,
-          onTap: onDetails,
-        ),
       ],
+    );
+  }
+}
+
+/// The "1 / 24" read-out, drawn as a pill button: tapping it opens the episode
+/// grid. It reads as a control (accent-tinted border when the grid is
+/// available) rather than a bare label, which is what the grid tap needs.
+class _PagerButton extends StatelessWidget {
+  const _PagerButton({required this.label, this.onTap});
+
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onTap != null;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.55),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: enabled
+                ? AppColors.accent.withValues(alpha: 0.7)
+                : Colors.white.withValues(alpha: 0.22),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.grid_view_rounded,
+                size: 15,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                label,
+                style: AppText.caption.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -1455,6 +1636,297 @@ class _RailButton extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The episodes grid the read-out button opens: a bottom sheet, 78% tall,
+/// showing every part of the drama as a thumbnail card — the number badge, the
+/// caption, a check on the parts already seen, and an accent ring + play glyph
+/// on the one playing. Tapping a card switches the preview to that episode.
+class _EpisodesSheet extends StatelessWidget {
+  const _EpisodesSheet({
+    required this.episodes,
+    required this.currentId,
+    required this.onClose,
+    required this.onPick,
+  });
+
+  final List<Episode> episodes;
+  final String? currentId;
+  final VoidCallback onClose;
+  final void Function(Episode episode) onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final currentIndex = currentId == null
+        ? -1
+        : episodes.indexWhere((e) => e.id == currentId);
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      height: MediaQuery.sizeOf(context).height * 0.78,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: const Color(0xFA0C0C10),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
+          border: Border(
+            top: BorderSide(color: Colors.white.withValues(alpha: 0.14)),
+          ),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 10, bottom: 4),
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 6, 18, 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Episodes',
+                          style: AppText.title.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${episodes.length} '
+                          '${episodes.length == 1 ? 'episode' : 'episodes'}'
+                          ' \u00b7 tap a thumbnail to play',
+                          style: AppText.caption.copyWith(
+                            color: Colors.white54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    onTap: onClose,
+                    customBorder: const CircleBorder(),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.10),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.all(7),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.fromLTRB(14, 2, 14, 18),
+                gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 1.6,
+                    ),
+                itemCount: episodes.length,
+                itemBuilder: (context, i) => _EpisodeTile(
+                  episode: episodes[i],
+                  index: i,
+                  current: i == currentIndex,
+                  seen: currentIndex >= 0 && i < currentIndex,
+                  onTap: () => onPick(episodes[i]),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One cell of the episodes grid: the episode's own thumbnail (or a
+/// deterministic gradient when the source gave none), the number badge, the
+/// caption, a check when already seen, and an accent ring + play glyph when it
+/// is the part playing.
+class _EpisodeTile extends StatelessWidget {
+  const _EpisodeTile({
+    required this.episode,
+    required this.index,
+    required this.current,
+    required this.seen,
+    required this.onTap,
+  });
+
+  final Episode episode;
+  final int index;
+  final bool current;
+  final bool seen;
+  final VoidCallback onTap;
+
+  /// A stable colour pair per episode, so a source with no thumbnails still
+  /// gives each cell a distinct frame instead of a wall of one colour.
+  static const List<List<Color>> _palette = [
+    [Color(0xFF6D2B3A), Color(0xFF2A1018)],
+    [Color(0xFF3A2B6D), Color(0xFF16102A)],
+    [Color(0xFF2B6D5A), Color(0xFF102A24)],
+    [Color(0xFF6D5A2B), Color(0xFF2A2410)],
+    [Color(0xFF5A2B6D), Color(0xFF24102A)],
+    [Color(0xFF2B4A6D), Color(0xFF101E2A)],
+    [Color(0xFF6D2B2B), Color(0xFF2A1010)],
+    [Color(0xFF2B6D3A), Color(0xFF102A16)],
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final thumb = episode.thumbnail?.trim();
+    final colors = _palette[index % _palette.length];
+    final num = episode.number?.toInt();
+    final caption = (episode.title.trim().isEmpty || episode.title == episode.id)
+        ? (num != null ? 'Episode $num' : 'Episode ${index + 1}')
+        : episode.title;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: current
+                ? AppColors.accent
+                : Colors.white.withValues(alpha: 0.10),
+            width: current ? 2 : 1,
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(11),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (thumb != null && thumb.isNotEmpty)
+                CachedNetworkImage(
+                  imageUrl: thumb,
+                  fit: BoxFit.cover,
+                  placeholder: (_, _) => _gradient(colors),
+                  errorWidget: (_, _, _) => _gradient(colors),
+                )
+              else
+                _gradient(colors),
+              if (seen && !current)
+                ColoredBox(color: Colors.black.withValues(alpha: 0.45)),
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.center,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black87],
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 6,
+                top: 6,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: current
+                        ? AppColors.accent
+                        : Colors.black.withValues(alpha: 0.62),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.18),
+                    ),
+                  ),
+                  child: Text(
+                    '${num ?? index + 1}',
+                    style: AppText.caption.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11.5,
+                    ),
+                  ),
+                ),
+              ),
+              if (seen && !current)
+                const Positioned(
+                  right: 6,
+                  top: 6,
+                  child: Icon(
+                    Icons.check_circle_rounded,
+                    size: 18,
+                    color: Colors.white70,
+                  ),
+                ),
+              if (current)
+                Center(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Icon(
+                        Icons.play_arrow_rounded,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              Positioned(
+                left: 7,
+                right: 7,
+                bottom: 5,
+                child: Text(
+                  caption,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.caption.copyWith(
+                    color: Colors.white.withValues(
+                      alpha: seen && !current ? 0.6 : 0.82,
+                    ),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _gradient(List<Color> colors) => DecoratedBox(
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: colors,
+      ),
+    ),
+  );
 }
 
 /// The Reels feed's preloader: a full-bleed placeholder shaped like one reel

@@ -156,6 +156,18 @@ class MediaItem extends Equatable {
   /// non-sports item and on any fixture whose source didn't state a sport.
   final String? liveSport;
 
+  /// Short synopsis, when the source provides one on the listing itself (the
+  /// short-drama catalogues carry one per show, and `getShorts` attaches it).
+  /// Drives the single muted line the Reels card shows under the episode
+  /// label, so the card says what the drama is rather than only its name.
+  ///
+  /// Read from the provider JSON (so a JS listing's `description` lands here)
+  /// but deliberately NOT written back by [toJson]: it is a browse-time hint,
+  /// and keeping it out means the stored shape (and the generated serializer's
+  /// persistence half) is untouched — My List and cloud payloads are unaffected.
+  @JsonKey(includeToJson: false)
+  final String? description;
+
   const MediaItem({
     required this.id,
     required this.title,
@@ -188,6 +200,7 @@ class MediaItem extends Equatable {
     this.liveStartMs,
     this.liveUnplayable = false,
     this.liveSport,
+    this.description,
   });
 
   factory MediaItem.fromJson(Map<String, dynamic> json) =>
@@ -210,6 +223,7 @@ class MediaItem extends Equatable {
     int? liveStartMs,
     bool? liveUnplayable,
     String? liveSport,
+    String? description,
     bool clearLiveStart = false,
   }) => MediaItem(
     id: id,
@@ -247,6 +261,7 @@ class MediaItem extends Equatable {
     liveStartMs: clearLiveStart ? null : (liveStartMs ?? this.liveStartMs),
     liveUnplayable: liveUnplayable ?? this.liveUnplayable,
     liveSport: liveSport ?? this.liveSport,
+    description: description ?? this.description,
   );
 
   @override
@@ -280,6 +295,7 @@ class MediaItem extends Equatable {
     liveStartMs,
     liveUnplayable,
     liveSport,
+    description,
   ];
 }
 

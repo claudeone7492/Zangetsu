@@ -199,6 +199,10 @@ function _mapSubject(s) {
   if (genres.length) item.genres = genres;
   var score = _score(s);
   if (score != null) item.score = score;
+  // Short synopsis for the reels card's one-line description. The home rails
+  // don't always carry it, so only set what's actually there.
+  var synopsis = htmlText(s.description || s.introduction || '');
+  if (synopsis) item.description = synopsis;
   return item;
 }
 

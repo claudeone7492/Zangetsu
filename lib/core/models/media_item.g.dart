@@ -39,6 +39,7 @@ MediaItem _$MediaItemFromJson(Map<String, dynamic> json) => MediaItem(
   liveStartMs: (json['liveStartMs'] as num?)?.toInt(),
   liveUnplayable: json['liveUnplayable'] as bool? ?? false,
   liveSport: json['liveSport'] as String?,
+  description: json['description'] as String?,
 );
 
 Map<String, dynamic> _$MediaItemToJson(MediaItem instance) => <String, dynamic>{
