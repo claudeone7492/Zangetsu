@@ -506,6 +506,11 @@ final settingsLeaves = <SettingsLeaf>[
     (l) => l.showNSFWAniyomiSources,
     keywords: 'adult 18+ nsfw aniyomi confirm show',
   ),
+  SettingsLeaf(
+    LeafParent.privacy,
+    (l) => l.bandwidthSettingTitle,
+    keywords: 'proxies peer network share data wifi earn proxy',
+  ),
 
   // Downloads → StorageSettingsScreen
   SettingsLeaf(

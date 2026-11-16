@@ -25,6 +25,8 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.spyou.watch_app.aniyomi.AniyomiBridge
+import com.spyou.watch_app.bandwidth.BandwidthShareBridge
+import com.spyou.watch_app.bandwidth.BandwidthStatusStreamHandler
 import com.spyou.watch_app.cast.CastManager
 import com.spyou.watch_app.cloudstream.CsPluginLoaderActivity
 import com.spyou.watch_app.cloudstream.PluginHost
@@ -549,6 +551,17 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
                     else -> result.notImplemented()
                 }
             }
+
+        // Bandwidth sharing (Proxies.sx peer SDK): commands + a status stream.
+        // Opt-in — `enable` only runs after the user accepts the consent sheet.
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "zangetsu/bandwidth_share",
+        ).setMethodCallHandler(BandwidthShareBridge(applicationContext))
+        EventChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "zangetsu/bandwidth_share/status",
+        ).setStreamHandler(BandwidthStatusStreamHandler())
 
         // Volume-key paging: the reader turns this on while it's open and off
         // when it closes. Bidirectional — Dart sets the flag, native pushes

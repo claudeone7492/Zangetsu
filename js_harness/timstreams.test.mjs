@@ -42,8 +42,14 @@ live('getLive returns fixtures, in-play first, each with a badge', async () => {
     assert.equal(it.sourceId, 'timstreams');
     assert.ok(it.liveBadge, 'fixture has a status badge: ' + it.title);
     // The app keeps its rail to soccer, so each fixture must carry the
-    // canonical slug the filter matches on.
+    // canonical slug the filter matches on — never the feed's own "Football"
+    // spelling, which would be dropped as an unknown sport.
     assert.ok(it.liveSport, 'fixture has a sport slug: ' + it.title);
+    assert.notEqual(
+      it.liveSport,
+      'football',
+      'football folds onto the soccer slug: ' + it.title,
+    );
   }
   const liveIdx = items.findIndex((i) => i.liveBadge === 'LIVE');
   const otherIdx = items.findIndex((i) => i.liveBadge !== 'LIVE');

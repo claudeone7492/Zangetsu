@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/app_config.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
 import '../../core/live/live_match_enrichment.dart';
@@ -33,18 +34,9 @@ import '../search/browse_source_screen.dart' show canonicalTargetFor;
 const String kLiveTvSourceId = 'iptv';
 
 /// The sources that carry live sports fixtures. Each exposes them through its
-/// optional `getLive` extension (a `live:`-family stream per fixture): MovieBox
-/// leads with its own sports feed, CDNLive TV and TimStreams add their own
-/// fixture lists, StreamFree adds per-sport fixtures (24/7 channels plus
-/// matches). All are asked and merged, in this order, so an installed-but-empty
-/// source simply contributes nothing. A source that isn't installed is skipped
-/// before the call.
-const List<String> kLiveSportsSourceIds = <String>[
-  'moviebox',
-  'cdnlivetv',
-  'timstreams',
-  'streamfree',
-];
+/// optional `getLive` extension (a `live:`-family stream per fixture). The
+/// list itself lives in [kLiveSportsSourceIds] (app_config) because the source
+/// repository shares it for cross-provider resolution.
 
 /// The sport the live-sports rail is kept to. The rail is deliberately soccer
 /// (football) only — every sports source carries a dozen other sports, and
@@ -324,12 +316,19 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     ]);
     final merged = <MediaItem>[];
     for (final list in perSource) {
-      // Keep the rail to soccer only. A source that reports no sport at all
-      // (a fixture list older than the `liveSport` field) is left out rather
-      // than assumed to be soccer, so the rail never shows basketball by
-      // accident — a blank rail is a far smaller failure than a wrong one.
+      // Keep the rail to soccer only, and to fixtures that actually have a
+      // video broadcast. A text-only match centre (MovieBox tags it
+      // `PlayTypeText`) carries no stream, so a card for it can only explain
+      // that it will not play — the rail is for what the user can watch, so
+      // those are dropped rather than shown greyed out. A source that reports
+      // no sport at all (a fixture list older than the `liveSport` field) is
+      // left out rather than assumed to be soccer, so the rail never shows
+      // basketball by accident — a blank rail is a far smaller failure than a
+      // wrong one.
       for (final m in list) {
-        if (m.liveSport == kLiveSportsSport) merged.add(m);
+        if (m.liveSport != kLiveSportsSport) continue;
+        if (m.liveUnplayable) continue;
+        merged.add(m);
       }
     }
     final indexed = merged.asMap().entries.toList();
@@ -341,12 +340,10 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   }
 
   /// Ordering rank for a fixture. A playable in-play match leads (0), then a
-  /// playable upcoming one (1), a playable finished one (2). Text-only
-  /// fixtures — no video broadcast, so a tap can only explain that — sink to
-  /// the end (3): they are real fixtures worth showing, but they must never
-  /// push something the user can actually watch below the fold.
+  /// playable upcoming one (1), a playable finished one (2). Unplayable
+  /// fixtures never reach here — [_fetchSports] drops them — so this is only
+  /// about what the user can watch: live first, then soon, then results.
   static int _liveRank(MediaItem m) {
-    if (m.liveUnplayable) return 3;
     final badge = m.liveBadge?.toUpperCase();
     if (badge == 'LIVE') return 0;
     if (badge == 'FT') return 2;

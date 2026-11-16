@@ -155,6 +155,15 @@ class CatalogueRouter implements CatalogueRepository {
   Future<List<MediaItem>> live({String? sourceId}) =>
       _source.live(sourceId: sourceId);
 
+  // A live fixture is always a source handle, so its cross-provider resolution
+  // belongs to the source catalogue too — never the metadata one.
+  @override
+  Future<List<VideoSource>> liveSources(
+    String episodeUrl, {
+    String? sourceId,
+    String? title,
+  }) => _source.liveSources(episodeUrl, sourceId: sourceId, title: title);
+
   @override
   Future<List<MediaItem>> shorts({String? sourceId}) =>
       _source.shorts(sourceId: sourceId);

@@ -90,6 +90,44 @@ int bestFixtureMatch(
   return best;
 }
 
+/// Index of the fixture in [titles] that names the same match as [title], or
+/// -1 when none clears the bar.
+///
+/// Each title is split into its two sides on the "vs"/"v" separator and scored
+/// with [bestFixtureMatch], so two providers that title the same match slightly
+/// differently ("France vs Germany" / "France v Germany") still line up while
+/// "France vs Spain" never matches Germany. A title that does not read as a
+/// fixture (no separator) is skipped.
+int bestFixtureTitleMatch(
+  String title,
+  List<String> titles, {
+  double min = 0.6,
+}) {
+  final rows = <List<String>>[];
+  final index = <int>[];
+  for (var i = 0; i < titles.length; i++) {
+    final sides = splitFixtureSides(titles[i]);
+    if (sides.length != 2) continue;
+    rows.add(sides);
+    index.add(i);
+  }
+  if (rows.isEmpty) return -1;
+  final hit = bestFixtureMatch(title, rows, min: min);
+  return hit < 0 ? -1 : index[hit];
+}
+
+/// Split a fixture title into its two sides on the "vs"/"v"/"vs." separator.
+///
+/// A source that prints the score on the card ("France 2 - 1 Germany", MovieBox
+/// does) has no "vs", so the inline score is rewritten to a separator first and
+/// the two teams are still recoverable.
+List<String> splitFixtureSides(String title) => title
+    .replaceAll(RegExp(r'\s+\d+\s*-\s*\d+\s+'), ' vs ')
+    .split(RegExp(r'\s+(?:vs?\.?|v)\s+', caseSensitive: false))
+    .map((s) => s.trim())
+    .where((s) => s.isNotEmpty)
+    .toList();
+
 /// The card's second line for a scoreboard row, or null when the row adds
 /// nothing a source wouldn't already say (a fixture that hasn't kicked off).
 ///

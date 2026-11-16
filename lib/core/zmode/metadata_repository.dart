@@ -1147,6 +1147,13 @@ class MetadataRepository implements CatalogueRepository {
       _src.live(sourceId: sourceId);
 
   @override
+  Future<List<VideoSource>> liveSources(
+    String episodeUrl, {
+    String? sourceId,
+    String? title,
+  }) => _src.liveSources(episodeUrl, sourceId: sourceId, title: title);
+
+  @override
   Future<List<MediaItem>> shorts({String? sourceId}) =>
       _src.shorts(sourceId: sourceId);
 

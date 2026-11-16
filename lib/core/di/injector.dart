@@ -16,6 +16,7 @@ import 'package:zangetsu_source_bridge/zangetsu_source_bridge.dart';
 
 import '../announce/announcement.dart';
 import '../backup/backup_cloud.dart';
+import '../bandwidth/bandwidth_share.dart';
 import '../logging/log_report_service.dart';
 import '../mangayomi/mangayomi_manager.dart';
 import '../announce/announcement_service.dart';
@@ -521,6 +522,8 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   await AnimationPrefs.init(); // list/grid reveal toggle (phone/iOS only)
   await DetailPrefs.init(); // episode lists open reversed when enabled
   await IncognitoMode.init(); // privacy: pause history/tracking/RPC when on
+  // Bandwidth sharing (Proxies.sx peer SDK). Opt-in; inert on non-Android.
+  sl.registerLazySingleton<BandwidthShare>(BandwidthShare.new);
   await PinnedSources.init(); // favourite sources pinned atop the source picker
   await SearchSourcePrefs.init();
   sl.registerSingleton<SearchSourcePrefs>(SearchSourcePrefs());

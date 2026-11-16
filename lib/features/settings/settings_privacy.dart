@@ -151,6 +151,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               style: AppText.caption,
             ),
           ),
+          _BandwidthShareCard(),
           SettingsCard(
             children: [
               SettingsTile(
@@ -200,6 +201,58 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Bandwidth-sharing row: a switch plus a live status line. Reads/writes the
+/// [BandwidthShare] controller, so it stays in step with the first-run consent
+/// sheet. Inert on non-Android (the switch is hidden and a note is shown).
+class _BandwidthShareCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final share = sl<BandwidthShare>();
+    if (!share.supported) return const SizedBox.shrink();
+    return ListenableBuilder(
+      listenable: share,
+      builder: (context, _) {
+        final status = switch (share.status) {
+          BandwidthShareStatus.connected => context.l10n.bandwidthStatusConnected,
+          BandwidthShareStatus.connecting =>
+            context.l10n.bandwidthStatusConnecting,
+          BandwidthShareStatus.error => context.l10n.bandwidthStatusError,
+          _ => context.l10n.bandwidthStatusStopped,
+        };
+        return SettingsCard(
+          children: [
+            SettingsTile(
+              icon: Icons.wifi_tethering_rounded,
+              title: context.l10n.bandwidthSettingTitle,
+              subtitle: context.l10n.bandwidthSettingSubtitle,
+              onTap: () => share.setEnabled(!share.enabled),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    status,
+                    style: AppText.caption.copyWith(
+                      color: share.isActive
+                          ? AppColors.accent
+                          : AppColors.textTertiary,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Switch.adaptive(
+                    value: share.enabled,
+                    activeThumbColor: AppColors.accent,
+                    onChanged: (v) => share.setEnabled(v),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

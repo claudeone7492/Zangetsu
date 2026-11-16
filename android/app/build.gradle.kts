@@ -51,9 +51,23 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Proxies.sx peer SDK key (bandwidth sharing). Read from the gitignored
+        // android/proxies.properties so the secret never lands in git. Blank when
+        // absent, which makes the SDK inert rather than a broken build.
+        val proxiesProperties = Properties()
+        val proxiesFile = rootProject.file("proxies.properties")
+        if (proxiesFile.exists()) {
+            proxiesProperties.load(FileInputStream(proxiesFile))
+        }
+        val proxiesApiKey = (proxiesProperties["PROXIES_API_KEY"] as String?) ?: ""
+        buildConfigField("String", "PROXIES_API_KEY", "\"$proxiesApiKey\"")
     }
 
-    buildFeatures { prefab = true }
+    buildFeatures {
+        prefab = true
+        buildConfig = true
+    }
 
     // Drop x86/x86_64 (emulator-only) native libs from every output — including
     // the prebuilt plugin lib (libmpv) that abiFilters / --target-platform do
@@ -187,6 +201,10 @@ configurations.configureEach {
 // it. GPL-3.0 — see docs/cloudstream-integration-spec.md §7.
 dependencies {
     implementation("com.github.recloudstream.cloudstream:library:v4.8.0")
+    // Proxies.sx peer SDK — powers opt-in bandwidth sharing. JitPack artifact
+    // (repo added in android/build.gradle.kts). Ships its own foreground service
+    // and merges the permissions it needs.
+    implementation("com.github.bolivian-peru:android-peer-sdk:v1.3.2")
     // Jackson is already on the RUNTIME classpath (CloudStream library transitive
     // dep). compileOnly lets our clean-room DataStore reference JsonMapper for the
     // plugin-settings API without duplicating Jackson at runtime. Same version.

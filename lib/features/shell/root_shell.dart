@@ -14,6 +14,7 @@ import '../shorts/shorts_screen.dart';
 import '../live/live_tv_screen.dart';
 import '../home/home_catalogue_prefs.dart';
 import '../../core/app_mode.dart';
+import '../../core/bandwidth/bandwidth_consent_sheet.dart';
 import '../../core/di/injector.dart';
 import '../../core/playback/my_list.dart';
 import '../../core/playback/category_store.dart';
@@ -171,6 +172,11 @@ class _RootShellState extends State<RootShell>
         _onProfileContextChanged,
       );
     }
+    // Bandwidth-sharing consent: show the disclosure sheet once, after the
+    // shell is on screen. Inert on non-Android and after it's been answered.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(maybeShowBandwidthConsent(context));
+    });
   }
 
   void _onProfileChanged() {

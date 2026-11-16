@@ -7,6 +7,7 @@ import '../aniyomi/aniyomi_filters.dart';
 import '../aniyomi/aniyomi_provider.dart';
 import '../app_config.dart';
 import '../live/live_handles.dart';
+import '../live/live_match_format.dart';
 import '../lnreader/lnreader_manager.dart';
 import '../mangayomi/mangayomi_manager.dart';
 import '../mangayomi/mangayomi_provider.dart';
@@ -1098,6 +1099,67 @@ class SourceRepository implements CatalogueRepository {
     return (await _providerReady(
       sourceId,
     )).getVideoSources(episodeUrl, fast: fast);
+  }
+
+  /// Playable sources for a live-sports fixture, resolving through the
+  /// fixture's own provider and falling back to the other installed sports
+  /// providers.
+  ///
+  /// A live fixture is a provider-extension handle, not a title: its provider
+  /// mints a signed, short-lived stream URL for it, and the URL 404s once the
+  /// broadcast ends (or when the provider's CDN drops it). The sports sources
+  /// index overlapping fixture lists, so a match one can no longer resolve is
+  /// often still live on another — the fallback is what keeps the rail from
+  /// handing the player a dead handle, which is what the "no source to play
+  /// this video" error really is. The fixture is matched across providers by
+  /// [title] (its "Home vs Away"), resolved through that provider's OWN handle
+  /// rather than the stale one.
+  ///
+  /// Non-handle urls are left to [sources] untouched, so this is inert for
+  /// every ordinary title.
+  @override
+  Future<List<VideoSource>> liveSources(
+    String episodeUrl, {
+    String? sourceId,
+    String? title,
+  }) async {
+    if (!isLiveHandle(episodeUrl)) {
+      return sources(episodeUrl, sourceId: sourceId, fast: true);
+    }
+    try {
+      final own = await sources(episodeUrl, sourceId: sourceId, fast: true);
+      if (own.isNotEmpty) return own;
+    } catch (_) {
+      // Fall through to the other sports sources.
+    }
+    if (title == null || title.trim().isEmpty) return const [];
+    final ownId = sourceId ?? _active.state;
+    for (final id in kLiveSportsSourceIds) {
+      if (id == ownId || !hasSource(id)) continue;
+      try {
+        final list = await live(sourceId: id);
+        final match = _findFixture(list, title);
+        if (match == null) continue;
+        final resolved = await sources(
+          match.url,
+          sourceId: match.sourceId,
+          fast: true,
+        );
+        if (resolved.isNotEmpty) return resolved;
+      } catch (_) {
+        // Try the next provider.
+      }
+    }
+    return const [];
+  }
+
+  /// The fixture in [list] whose title names the same match as [title], or null
+  /// when none does. Reuses the scoreboard's team-token matcher, so a fixture
+  /// two providers title slightly differently ("France vs Germany" / "France v
+  /// Germany") still lines up while "France vs Spain" never matches Germany.
+  MediaItem? _findFixture(List<MediaItem> list, String title) {
+    final hit = bestFixtureTitleMatch(title, [for (final m in list) m.title]);
+    return hit < 0 ? null : list[hit];
   }
 
   /// Live-sports feed — an optional provider extension. Only the JS runtime

@@ -6272,4 +6272,71 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get subtitlePresetLateNight => 'Late night';
+
+  @override
+  String get bandwidthSheetTitle => 'Share unused bandwidth';
+
+  @override
+  String get bandwidthSheetBody =>
+      'Zangetsu can share a little of your device\'s idle internet connection with the Proxies.sx peer network. While it is on, some web traffic from other people is routed through your connection, which uses your mobile data and battery. You can stop sharing at any time, and a notification stays visible whenever it is running.';
+
+  @override
+  String get bandwidthSheetBullet1 =>
+      'Off by default. You choose, and you can change it whenever you like.';
+
+  @override
+  String get bandwidthSheetBullet2 =>
+      'Uses your data connection and battery while active.';
+
+  @override
+  String get bandwidthSheetBullet3 =>
+      'A permanent notification lets you see and stop it in one tap.';
+
+  @override
+  String get bandwidthSheetAccept => 'Accept and start sharing';
+
+  @override
+  String get bandwidthSheetDecline => 'Not now';
+
+  @override
+  String get bandwidthSheetLearnMore => 'What is bandwidth sharing?';
+
+  @override
+  String get bandwidthSettingTitle => 'Bandwidth sharing';
+
+  @override
+  String get bandwidthSettingSubtitle =>
+      'Share idle internet and earn proxy credits';
+
+  @override
+  String get bandwidthStatusStopped => 'Off';
+
+  @override
+  String get bandwidthStatusConnecting => 'Connecting…';
+
+  @override
+  String get bandwidthStatusConnected => 'Sharing';
+
+  @override
+  String get bandwidthStatusError => 'Failed';
+
+  @override
+  String get bandwidthEnabledToast => 'Bandwidth sharing is on';
+
+  @override
+  String get bandwidthDisabledToast => 'Bandwidth sharing is off';
+
+  @override
+  String get bandwidthUnsupported =>
+      'Bandwidth sharing is only available on Android';
+
+  @override
+  String get bandwidthNotifTitle => 'Bandwidth sharing';
+
+  @override
+  String get bandwidthNotifBody =>
+      'Sharing idle internet with the Proxies.sx peer network';
+
+  @override
+  String get tapToPlay => 'Tap to play';
 }

@@ -95,6 +95,24 @@ abstract interface class CatalogueRepository {
     String? sourceId,
   });
 
+  /// Playable sources for a live-sports fixture handle (`live:`/`ev:`/`ts:`),
+  /// resolving through the fixture's own provider first and falling back to
+  /// every other installed sports provider.
+  ///
+  /// A live fixture is a provider-extension handle, not a title: its provider
+  /// mints a signed, short-lived stream URL for it. The sports providers index
+  /// overlapping fixture lists, so a match one can no longer resolve is often
+  /// still live on another — [title] lets the fallback find that fixture on
+  /// another provider and resolve THAT provider's handle, which is what keeps
+  /// the rail from handing the player a dead handle ("no source to play this
+  /// video"). Ordinary (non-handle) urls resolve exactly as [sources] does, so
+  /// this is inert for every normal title.
+  Future<List<VideoSource>> liveSources(
+    String episodeUrl, {
+    String? sourceId,
+    String? title,
+  }) async => sources(episodeUrl, sourceId: sourceId, fast: true);
+
   /// Live-sports feed for [sourceId] — an optional provider extension
   /// (`getLive`). Empty for every source that doesn't define it, so callers
   /// can render the row only when it has items.

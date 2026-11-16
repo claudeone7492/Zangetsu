@@ -50,19 +50,6 @@ const String kDefaultSourceId = 'anikoto';
 /// sources fill in behind it. A missing/uninstalled id is simply skipped.
 const String kShortsDefaultSourceId = 'moviebox';
 
-/// Short-drama sources the vertical Shorts feed hoists ahead of the generic
-/// movie sources. MovieBox, GoodShort, ReelShort and NetShort are all built
-/// around serialized short dramas — exactly what the feed is for — while the
-/// generic movie sources (frameXTV, VidSrc, …) mostly offer feature films. The
-/// feed caps how many sources it walks, so without this the cap fills with the
-/// generic movie sources and the drama catalogues never reach the feed.
-const List<String> kShortsPreferredSourceIds = <String>[
-  'moviebox',
-  'goodshort',
-  'reelshort',
-  'netshort',
-];
-
 /// The short-drama catalogues — the ONLY sources the Reels feed and the Shorts
 /// page draw from. Each is built end to end around serialized vertical short
 /// dramas (see their `getShorts`), so their output is dramas and nothing else.
@@ -96,6 +83,23 @@ const List<String> kDramaOnlyHomeSourceIds = <String>[
   'goodshort',
   'reelshort',
   'netshort',
+];
+
+/// The sports sources the Live TV rail merges, in the order their fixtures
+/// read. MovieBox carries a full fixture list (a `PlayTypeText` match centre
+/// plus live broadcasts), CDNLive/TimStreams publish a broadcaster schedule,
+/// StreamFree adds per-sport fixtures (24/7 channels plus matches). All are
+/// asked and merged so an installed-but-empty source simply contributes
+/// nothing; a source that isn't installed is skipped before the call.
+///
+/// Shared with the source repository's cross-provider live resolution: a
+/// fixture's own provider may no longer mint a URL for it, so the same fixture
+/// is looked up on the others.
+const List<String> kLiveSportsSourceIds = <String>[
+  'moviebox',
+  'cdnlivetv',
+  'timstreams',
+  'streamfree',
 ];
 
 /// Public directory of community source repos (Sozo Read format:

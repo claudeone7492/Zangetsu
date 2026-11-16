@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
+import 'package:watch_app/core/app_config.dart';
 import 'package:watch_app/core/app_mode.dart';
 import 'package:watch_app/core/di/injector.dart';
 import 'package:watch_app/core/models/home_section.dart';
@@ -512,14 +513,15 @@ void main() {
     );
   });
 
-  testWidgets('text-only fixtures sink below playable ones', (tester) async {
+  testWidgets('text-only fixtures are dropped from the rail', (tester) async {
     final repo = _FakeSourceRepository(
       sections: [
         HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
       ],
-      // A text-only match centre carries no stream, so a tap could only ever
-      // explain that. It must not push a fixture the user can actually watch
-      // off the front of the rail, whatever its in-play badge says.
+      // A text-only match centre carries no stream, so a card for it could only
+      // ever explain that it will not play. The rail is for what the user can
+      // watch, so it is dropped entirely rather than shown greyed out — even
+      // with an in-play LIVE badge.
       liveMatches: [
         _match('t1', 'Text Only United', badge: 'LIVE', unplayable: true),
         _match('p1', 'England vs Croatia', badge: 'LIVE'),
@@ -530,26 +532,28 @@ void main() {
     await pumpLive(tester);
     await tester.pumpAndSettle();
 
-    expect(
-      tester.getTopLeft(find.text('England vs Croatia')).dx,
-      lessThan(tester.getTopLeft(find.text('Text Only United')).dx),
-    );
+    expect(find.text('England vs Croatia'), findsOneWidget);
+    expect(find.text('Text Only United'), findsNothing);
+    expect(find.text('Text only'), findsNothing);
   });
 
-  testWidgets('a text-only fixture is marked on its card', (tester) async {
+  testWidgets('a rail of nothing but text-only fixtures collapses away', (
+    tester,
+  ) async {
     final repo = _FakeSourceRepository(
       sections: const [],
-      liveMatches: [_match('t1', 'Text Only United', badge: 'LIVE', unplayable: true)],
+      liveMatches: [
+        _match('t1', 'Text Only United', badge: 'LIVE', unplayable: true),
+      ],
     );
     sl.registerSingleton<SourceRepository>(repo);
 
     await pumpLive(tester);
     await tester.pumpAndSettle();
 
-    // The badge alone says "LIVE"; the marker is what tells the user the card
-    // will not play.
-    expect(find.text('LIVE'), findsOneWidget);
-    expect(find.text('Text only'), findsOneWidget);
+    // No playable fixture → no sports rail at all, and no dead card.
+    expect(find.text('Text Only United'), findsNothing);
+    expect(find.text('Text only'), findsNothing);
   });
 
   testWidgets('the phone rail paints each match badge and info line', (

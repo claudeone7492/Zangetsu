@@ -85,8 +85,15 @@ void _openLive(BuildContext context, MediaItem item, CatalogueRepository repo) {
         episodes: [ep],
         startIndex: 0,
         resume: sl<ResumeStore>(),
-        resolveSources: (_) =>
-            repo.sources(item.url, sourceId: item.sourceId, fast: true),
+        // A live fixture resolves through its own provider and, when that
+        // provider can no longer mint a URL for it, through the other installed
+        // sports providers (matched by title) — so a fixture that is still on
+        // air somewhere does not dead-end on "no source to play this video".
+        resolveSources: (_) => repo.liveSources(
+          item.url,
+          sourceId: item.sourceId,
+          title: item.title,
+        ),
         showTitle: item.title,
         cover: item.cover,
         coverHeaders: item.coverHeaders,

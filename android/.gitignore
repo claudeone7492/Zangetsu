@@ -16,3 +16,6 @@ key.properties
 # Firebase config — keep the project id/key out of the public repo. Each build
 # machine needs its own copy from the Firebase console at android/app/.
 app/google-services.json
+
+# Proxies.sx peer SDK key (bandwidth sharing) — never commit.
+proxies.properties

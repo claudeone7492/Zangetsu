@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/anilist/anilist_service.dart';
 import '../../core/app_config.dart';
+import '../../core/bandwidth/bandwidth_share.dart';
 import '../../core/app_mode.dart';
 import '../../core/metadata/streaming_providers.dart';
 import '../../core/tracker/tracker_hub.dart';

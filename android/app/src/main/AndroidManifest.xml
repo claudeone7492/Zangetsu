@@ -310,6 +310,17 @@
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
             </intent-filter>
         </receiver>
+        <!-- Bandwidth sharing: restart the peer SDK after a reboot or update,
+             but only when the user opted in (see PeerShareBootReceiver). -->
+        <receiver
+            android:exported="false"
+            android:name=".bandwidth.PeerShareBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.videoprovider"

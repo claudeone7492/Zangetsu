@@ -389,6 +389,17 @@ class _ShortsScreenState extends State<ShortsScreen> {
     );
   }
 
+  /// Re-resolve [item] from scratch, dropping the memoised result first.
+  ///
+  /// The retry button on a failed reel has to bypass the cache: the first
+  /// attempt stored a null future, and re-awaiting it would hand back the same
+  /// failure forever. Clearing the key lets the next resolve hit the source
+  /// again — the whole point of a manual retry.
+  Future<_VideoFeedSource?> _resolveFresh(MediaItem item) {
+    _resolved.remove('${item.sourceId}:${item.id}');
+    return _resolveCached(item);
+  }
+
   /// Resolve the first playable stream for [item]'s first available episode.
   /// Best-effort: any failure (no episodes, no mirrors, a slow source) yields
   /// null and the page simply falls back to its poster.
@@ -485,6 +496,7 @@ class _ShortsScreenState extends State<ShortsScreen> {
             onToggleMute: () => setState(() => _muted = !_muted),
             onOpen: () => _open(_items[i]),
             resolveVideo: () => _resolveCached(_items[i]),
+            resolveFresh: () => _resolveFresh(_items[i]),
             pageNumber: i + 1,
             pageCount: _items.length,
           ),
@@ -506,6 +518,7 @@ class _ShortPage extends StatefulWidget {
     required this.onToggleMute,
     required this.onOpen,
     required this.resolveVideo,
+    required this.resolveFresh,
     this.near = false,
     this.pageNumber = 1,
     this.pageCount = 1,
@@ -529,6 +542,10 @@ class _ShortPage extends StatefulWidget {
   final VoidCallback onToggleMute;
   final VoidCallback onOpen;
   final Future<_VideoFeedSource?> Function() resolveVideo;
+
+  /// Like [resolveVideo] but bypassing the feed's memoised result, so the
+  /// retry button re-queries the source instead of replaying the failure.
+  final Future<_VideoFeedSource?> Function() resolveFresh;
 
   @override
   State<_ShortPage> createState() => _ShortPageState();
@@ -700,14 +717,42 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
     await _resolveAndOpen();
   }
 
+  /// The user tapped the play affordance on a page whose automatic resolve
+  /// failed. Resolve again from scratch and, when a stream comes back, play it.
+  ///
+  /// Deliberately a retry, not a tap-to-open: a reel that could not find a
+  /// stream is exactly where a manual retry is worth offering, so the tap
+  /// re-runs the resolve rather than pushing the Detail page. A second failure
+  /// simply restores the affordance — the user can retry again, and the title
+  /// itself still opens the full page.
+  Future<void> _retryResolve() async {
+    if (_resolving || _player != null) return;
+    _wantPlay = true;
+    setState(() {
+      _resolved = false;
+      _failed = false;
+      _source = null;
+    });
+    await _resolveAndOpen(widget.resolveFresh);
+  }
+
   /// Resolve [widget.item]'s stream and open a player for it. Whether it starts
   /// playing is read from [_wantPlay] at the moment the stream opens, so a page
   /// the user has already swiped onto plays even if the resolve began as a
   /// preload — see [_startPlayback].
-  Future<void> _resolveAndOpen() async {
+  ///
+  /// [resolve] defaults to the memoised [widget.resolveVideo]; the retry passes
+  /// [widget.resolveFresh] so a failed first attempt does not replay from the
+  /// feed's cache.
+  Future<void> _resolveAndOpen([
+    Future<_VideoFeedSource?> Function()? resolve,
+  ]) async {
     if (_resolving || _player != null) return;
-    setState(() => _resolving = true);
-    final source = await widget.resolveVideo();
+    setState(() {
+      _resolving = true;
+      _failed = false;
+    });
+    final source = await (resolve ?? widget.resolveVideo)();
     if (!mounted) return;
     // The page was recycled while the resolve was in flight (the user swiped
     // well past it). Drop the result rather than spinning up a player nothing
@@ -1196,11 +1241,51 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
             ),
           ),
         if (_resolved && _failed && controller == null)
-          const Center(
-            child: Icon(
-              Icons.play_circle_outline_rounded,
-              size: 56,
-              color: Colors.white70,
+          Center(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _retryResolve,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.play_circle_outline_rounded,
+                    size: 56,
+                    color: Colors.white70,
+                  ),
+                  const SizedBox(height: 10),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.refresh_rounded,
+                            size: 18,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            context.l10n.tapToPlay,
+                            style: AppText.body.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         // Transient seek badge, centred like the ±10s feedback every modern
@@ -1263,22 +1348,28 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
           ),
         // Bottom-up scrim so the title stays readable over any art or video,
         // and the top-down scrim so the centred pills stay legible over a
-        // bright frame.
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.center,
-              colors: [Colors.black54, Colors.transparent],
+        // bright frame. Both are decoration, so they must not eat pointer
+        // events: painted above the tap surface and the retry button, a
+        // hit-testable scrim would swallow every tap in its band.
+        const IgnorePointer(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.center,
+                colors: [Colors.black54, Colors.transparent],
+              ),
             ),
           ),
         ),
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.center,
-              end: Alignment.bottomCenter,
-              colors: [Colors.transparent, Colors.black87],
+        const IgnorePointer(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.center,
+                end: Alignment.bottomCenter,
+                colors: [Colors.transparent, Colors.black87],
+              ),
             ),
           ),
         ),

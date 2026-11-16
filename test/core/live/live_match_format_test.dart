@@ -126,6 +126,39 @@ void main() {
     });
   });
 
+  group('bestFixtureTitleMatch', () {
+    test('matches a fixture the two providers title differently', () {
+      expect(
+        bestFixtureTitleMatch('France vs Germany', [
+          'France v Germany',
+          'Spain vs Italy',
+        ]),
+        0,
+      );
+    });
+
+    test('matches when a source prints the inline score', () {
+      expect(
+        bestFixtureTitleMatch('France vs Germany', [
+          'France 2 - 1 Germany',
+          'Spain vs Italy',
+        ]),
+        0,
+      );
+    });
+
+    test('does not match a different fixture', () {
+      expect(
+        bestFixtureTitleMatch('France vs Germany', ['France vs Spain']),
+        -1,
+      );
+    });
+
+    test('skips titles that do not read as a fixture', () {
+      expect(bestFixtureTitleMatch('France vs Germany', ['Highlights']), -1);
+    });
+  });
+
   group('liveCountdown', () {
     final now = DateTime.utc(2026, 1, 1, 12, 0, 0);
 

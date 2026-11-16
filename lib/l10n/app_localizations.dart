@@ -10958,6 +10958,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Late night'**
   String get subtitlePresetLateNight;
+
+  /// No description provided for @bandwidthSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share unused bandwidth'**
+  String get bandwidthSheetTitle;
+
+  /// No description provided for @bandwidthSheetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Zangetsu can share a little of your device\'s idle internet connection with the Proxies.sx peer network. While it is on, some web traffic from other people is routed through your connection, which uses your mobile data and battery. You can stop sharing at any time, and a notification stays visible whenever it is running.'**
+  String get bandwidthSheetBody;
+
+  /// No description provided for @bandwidthSheetBullet1.
+  ///
+  /// In en, this message translates to:
+  /// **'Off by default. You choose, and you can change it whenever you like.'**
+  String get bandwidthSheetBullet1;
+
+  /// No description provided for @bandwidthSheetBullet2.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses your data connection and battery while active.'**
+  String get bandwidthSheetBullet2;
+
+  /// No description provided for @bandwidthSheetBullet3.
+  ///
+  /// In en, this message translates to:
+  /// **'A permanent notification lets you see and stop it in one tap.'**
+  String get bandwidthSheetBullet3;
+
+  /// No description provided for @bandwidthSheetAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept and start sharing'**
+  String get bandwidthSheetAccept;
+
+  /// No description provided for @bandwidthSheetDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get bandwidthSheetDecline;
+
+  /// No description provided for @bandwidthSheetLearnMore.
+  ///
+  /// In en, this message translates to:
+  /// **'What is bandwidth sharing?'**
+  String get bandwidthSheetLearnMore;
+
+  /// No description provided for @bandwidthSettingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bandwidth sharing'**
+  String get bandwidthSettingTitle;
+
+  /// No description provided for @bandwidthSettingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share idle internet and earn proxy credits'**
+  String get bandwidthSettingSubtitle;
+
+  /// No description provided for @bandwidthStatusStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get bandwidthStatusStopped;
+
+  /// No description provided for @bandwidthStatusConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting…'**
+  String get bandwidthStatusConnecting;
+
+  /// No description provided for @bandwidthStatusConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharing'**
+  String get bandwidthStatusConnected;
+
+  /// No description provided for @bandwidthStatusError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get bandwidthStatusError;
+
+  /// No description provided for @bandwidthEnabledToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Bandwidth sharing is on'**
+  String get bandwidthEnabledToast;
+
+  /// No description provided for @bandwidthDisabledToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Bandwidth sharing is off'**
+  String get bandwidthDisabledToast;
+
+  /// No description provided for @bandwidthUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Bandwidth sharing is only available on Android'**
+  String get bandwidthUnsupported;
+
+  /// No description provided for @bandwidthNotifTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bandwidth sharing'**
+  String get bandwidthNotifTitle;
+
+  /// No description provided for @bandwidthNotifBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharing idle internet with the Proxies.sx peer network'**
+  String get bandwidthNotifBody;
+
+  /// No description provided for @tapToPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to play'**
+  String get tapToPlay;
 }
 
 class _AppLocalizationsDelegate
