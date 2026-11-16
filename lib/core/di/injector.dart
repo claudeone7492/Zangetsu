@@ -36,6 +36,7 @@ import '../ui/streaming_prefs.dart';
 import '../ui/nav_prefs.dart';
 import '../playback/search_source_prefs.dart';
 import '../playback/source_health_store.dart';
+import '../subscription/subscription_repository.dart';
 import '../../features/player/mpv_player_pool.dart';
 import '../schedule/airing_service.dart';
 import '../schedule/coming_soon_service.dart';
@@ -284,6 +285,11 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   );
   sl.registerLazySingleton<TvPairingService>(
     () => TvPairingService(sl<SupabaseService>()),
+  );
+  // Subscription + promo access. Device-fingerprint identity; all reads/writes
+  // go through SECURITY DEFINER RPCs, so no table is exposed to the client.
+  sl.registerLazySingleton<SubscriptionRepository>(
+    () => SubscriptionRepository(sl<SupabaseService>().client),
   );
   // Resolved lazily so cached signed-in accounts can keep local offline writes.
   String? currentUserId() => sl.isRegistered<AuthCubit>()

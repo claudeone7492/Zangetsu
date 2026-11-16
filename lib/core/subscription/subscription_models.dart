@@ -1,0 +1,207 @@
+/// Subscription + promo models. All prices are USD cents.
+library;
+
+/// A purchasable tier, loaded from `subscription_plans`.
+class SubscriptionPlan {
+  const SubscriptionPlan({
+    required this.key,
+    required this.label,
+    required this.priceCents,
+    required this.periodDays,
+    required this.trialDays,
+    required this.features,
+    required this.sortOrder,
+  });
+
+  final String key;
+  final String label;
+  final int priceCents;
+  final int periodDays;
+  final int trialDays;
+  final List<String> features;
+  final int sortOrder;
+
+  bool get hasTrial => trialDays > 0;
+
+  /// List price in dollars, e.g. `4.11`.
+  double get listDollars => priceCents / 100;
+
+  static SubscriptionPlan? fromMap(Map<String, dynamic> m) {
+    final key = m['key'];
+    final label = m['label'];
+    if (key is! String || label is! String) return null;
+    return SubscriptionPlan(
+      key: key,
+      label: label,
+      priceCents: (m['price_usd_cents'] as num?)?.toInt() ?? 0,
+      periodDays: (m['period_days'] as num?)?.toInt() ?? 30,
+      trialDays: (m['trial_days'] as num?)?.toInt() ?? 0,
+      features: ((m['features'] as List?) ?? const [])
+          .map((e) => '$e')
+          .toList(growable: false),
+      sortOrder: (m['sort_order'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+
+/// The resolved result of typing a promo code. Never exposes the catalogue.
+class PromoResult {
+  const PromoResult({
+    required this.code,
+    required this.percentOff,
+    required this.kind,
+    this.label,
+  });
+
+  final String code;
+  final int percentOff;
+  final String kind; // 'free' | 'percent'
+  final String? label;
+
+  bool get isFree => kind == 'free' || percentOff >= 100;
+
+  static PromoResult? fromMap(Map<String, dynamic> m) {
+    final code = m['code'];
+    if (code is! String) return null;
+    return PromoResult(
+      code: code,
+      percentOff: (m['percent_off'] as num?)?.toInt() ?? 0,
+      kind: (m['kind'] as String?) ?? 'percent',
+      label: m['label'] as String?,
+    );
+  }
+}
+
+/// This device's identity + current subscription, from `identify_device`.
+class DeviceIdentity {
+  const DeviceIdentity({
+    required this.sessionId,
+    required this.isNew,
+    required this.trialUsed,
+    this.planKey,
+    this.status = 'inactive',
+    this.periodEnd,
+  });
+
+  final String sessionId;
+  final bool isNew;
+  final bool trialUsed;
+  final String? planKey;
+  final String status;
+  final DateTime? periodEnd;
+
+  bool get isActive =>
+      status == 'active' || status == 'grace' || status == 'trial';
+
+  static DeviceIdentity? fromMap(Map<String, dynamic> m) {
+    final session = m['session_id'];
+    if (session is! String) return null;
+    final end = m['period_end'];
+    return DeviceIdentity(
+      sessionId: session,
+      isNew: m['is_new'] == true,
+      trialUsed: m['trial_used'] == true,
+      planKey: m['plan_key'] as String?,
+      status: (m['status'] as String?) ?? 'inactive',
+      periodEnd: end is String ? DateTime.tryParse(end) : null,
+    );
+  }
+}
+
+/// A row of the admin Devices table, from `admin_devices`.
+class AdminDeviceRow {
+  const AdminDeviceRow({
+    required this.fingerprint,
+    this.platform,
+    this.plan,
+    this.promo,
+    this.percentOff = 0,
+    this.paidCents = 0,
+    this.status = 'inactive',
+    this.renewsAt,
+    this.watch = 0,
+    this.lastSeenAt,
+  });
+
+  final String fingerprint;
+  final String? platform;
+  final String? plan;
+  final String? promo;
+  final int percentOff;
+  final int paidCents;
+  final String status;
+  final DateTime? renewsAt;
+  final int watch;
+  final DateTime? lastSeenAt;
+
+  static AdminDeviceRow fromMap(Map<String, dynamic> m) => AdminDeviceRow(
+    fingerprint: '${m['fingerprint']}',
+    platform: m['platform'] as String?,
+    plan: m['plan'] as String?,
+    promo: m['promo'] as String?,
+    percentOff: (m['percent_off'] as num?)?.toInt() ?? 0,
+    paidCents: (m['paid_cents'] as num?)?.toInt() ?? 0,
+    status: (m['status'] as String?) ?? 'inactive',
+    renewsAt: _dt(m['renews_at']),
+    watch: (m['watch'] as num?)?.toInt() ?? 0,
+    lastSeenAt: _dt(m['last_seen_at']),
+  );
+}
+
+/// A row of the admin Promo Codes table, from `admin_promos`.
+class AdminPromoRow {
+  const AdminPromoRow({
+    required this.code,
+    required this.percentOff,
+    required this.kind,
+    required this.active,
+    this.maxUses,
+    this.usedCount = 0,
+    this.expiresAt,
+  });
+
+  final String code;
+  final int percentOff;
+  final String kind;
+  final bool active;
+  final int? maxUses;
+  final int usedCount;
+  final DateTime? expiresAt;
+
+  static AdminPromoRow fromMap(Map<String, dynamic> m) => AdminPromoRow(
+    code: '${m['code']}',
+    percentOff: (m['percent_off'] as num?)?.toInt() ?? 0,
+    kind: (m['kind'] as String?) ?? 'percent',
+    active: m['active'] == true,
+    maxUses: (m['max_uses'] as num?)?.toInt(),
+    usedCount: (m['used_count'] as num?)?.toInt() ?? 0,
+    expiresAt: _dt(m['expires_at']),
+  );
+}
+
+/// A row of the admin Subscriptions table, from `admin_subscriptions`.
+class AdminPlanRow {
+  const AdminPlanRow({
+    required this.plan,
+    required this.subscribers,
+    required this.priceCents,
+    required this.revenueCents,
+  });
+
+  final String plan;
+  final int subscribers;
+  final int priceCents;
+  final int revenueCents;
+
+  static AdminPlanRow fromMap(Map<String, dynamic> m) => AdminPlanRow(
+    plan: '${m['plan']}',
+    subscribers: (m['subscribers'] as num?)?.toInt() ?? 0,
+    priceCents: (m['price_usd_cents'] as num?)?.toInt() ?? 0,
+    revenueCents: (m['revenue_cents'] as num?)?.toInt() ?? 0,
+  );
+}
+
+DateTime? _dt(Object? v) => v is String ? DateTime.tryParse(v) : null;
+
+/// Formats USD cents as `$1.99`.
+String money(int cents) => '\$${(cents / 100).toStringAsFixed(2)}';

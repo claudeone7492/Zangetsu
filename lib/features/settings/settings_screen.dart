@@ -94,6 +94,8 @@ import 'connections_screen_tv.dart';
 import 'settings_search_index.dart';
 import 'cubit/settings_cubit.dart';
 import '../../core/tv/tv_focusable.dart';
+import '../admin/admin_screen.dart';
+import '../paywall/paywall_screen.dart';
 
 part 'settings_playback.dart';
 part 'settings_storage.dart';
@@ -974,6 +976,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           );
       },
+    ),
+    _SettingsEntry(
+      section: SettingsSection.account,
+      icon: Icons.workspace_premium_outlined,
+      title: 'Subscription',
+      subtitle: 'Manage your plan, apply a promo code',
+      keywords: 'subscription plan premium pay promo upgrade billing',
+      onTap: () => showPaywall(context),
+    ),
+    _SettingsEntry(
+      section: SettingsSection.account,
+      icon: Icons.admin_panel_settings_outlined,
+      title: 'Admin console',
+      subtitle: 'Devices, promo codes and subscriptions',
+      keywords: 'admin console dashboard devices promo manage',
+      onTap: () => showAdminConsole(context),
     ),
     _SettingsEntry(
       section: SettingsSection.account,

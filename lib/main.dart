@@ -17,6 +17,7 @@ import 'core/app_config.dart';
 import 'core/app_mode.dart';
 import 'core/boot_network.dart';
 import 'core/di/injector.dart';
+import 'core/subscription/subscription_repository.dart';
 import 'core/ui/splash_style.dart';
 import 'core/hive/safe_box.dart';
 import 'core/discord/discord_rpc.dart';
@@ -626,6 +627,12 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
     // a custom notification to all users from the Firebase Console. Independent
     // of onboarding + fire-and-forget so it never delays launch.
     unawaited(PushService.instance.init());
+    // Register this device's fingerprint + subscription so the admin console
+    // (and the paywall's trial gate) sees it. Fire-and-forget: identity is
+    // cached locally, so a slow or dead network never delays launch.
+    if (sl.isRegistered<SubscriptionRepository>()) {
+      unawaited(sl<SubscriptionRepository>().identify());
+    }
     final elapsed = DateTime.now().difference(start);
     // The intro animation is 1600ms, so anything past that is just dead
     // waiting. Give it a hair over (1700) so the logo lands, then go — used
