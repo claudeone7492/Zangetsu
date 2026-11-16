@@ -23,6 +23,7 @@ class PlayerWatchPage extends StatefulWidget {
   const PlayerWatchPage({
     super.key,
     required this.video,
+    this.caption,
     required this.header,
     this.coverHeaders,
     this.loading = false,
@@ -76,6 +77,10 @@ class PlayerWatchPage extends StatefulWidget {
 
   /// The one video surface, built by the parent. This page only sizes it.
   final Widget video;
+
+  /// The caption overlay, drawn on top of the video (and above the page's own
+  /// gestures) so it stays touchable for dragging / tapping. Null hides it.
+  final Widget? caption;
   final WatchPageHeader header;
   final Map<String, String>? coverHeaders;
 
@@ -834,6 +839,10 @@ class _PlayerWatchPageState extends State<PlayerWatchPage> {
                 ),
               ),
               Positioned(left: 0, right: 0, bottom: 0, child: _seekRow()),
+              // Caption on top: interactive, so it must sit above the page's own
+              // gesture surface (which claims the whole card).
+              if (widget.caption != null)
+                Positioned.fill(child: widget.caption!),
             ],
           ),
         ),

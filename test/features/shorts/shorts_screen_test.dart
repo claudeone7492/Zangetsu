@@ -15,6 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:watch_app/core/di/injector.dart';
 import 'package:watch_app/core/models/home_section.dart';
+import 'package:watch_app/core/models/media_detail.dart' show MediaStatus;
 import 'package:watch_app/core/models/media_item.dart';
 import 'package:watch_app/core/models/provider_info.dart';
 import 'package:watch_app/core/repository/catalogue_repository.dart';
@@ -35,16 +36,12 @@ class _FakeCatalogueRepository implements CatalogueRepository, SourceRepository 
     this.sections = const [],
     this.throwOnHome = false,
     this.sourceIds = const ['goodshort'],
-    this.itemsBySource = const {},
     this.shortsBySource = const {},
   });
 
   final List<HomeSection> sections;
   final bool throwOnHome;
   final List<String> sourceIds;
-
-  /// Per-source home rows, so a test can prove which sources the feed walked.
-  final Map<String, List<HomeSection>> itemsBySource;
 
   /// Per-source dedicated `getShorts` feed.
   final Map<String, List<MediaItem>> shortsBySource;
@@ -87,9 +84,6 @@ class _FakeCatalogueRepository implements CatalogueRepository, SourceRepository 
   }) async {
     if (sourceId != null) walked.add(sourceId);
     if (throwOnHome) throw StateError('source down');
-    if (sourceId != null && itemsBySource.containsKey(sourceId)) {
-      return itemsBySource[sourceId]!;
-    }
     return sections;
   }
 }
@@ -228,6 +222,49 @@ void main() {
     expect(find.text('Alpha'), findsOneWidget);
     expect(find.text('A Manga'), findsNothing);
     expect(find.text('1 / 1'), findsOneWidget);
+  });
+
+  testWidgets('the card hides the provider name and shows fact chips', (
+    tester,
+  ) async {
+    register(
+      _FakeCatalogueRepository(
+        sections: [
+          HomeSection(
+            title: 'Trending',
+            items: [
+              MediaItem(
+                id: 'a',
+                title: 'Alpha',
+                url: 'https://src.test/goodshort/a',
+                type: ProviderType.movie,
+                sourceId: 'goodshort',
+                score: 87,
+                year: 2024,
+                quality: 'HD',
+                genres: const ['Romance'],
+                status: MediaStatus.ongoing,
+                dubCount: 3,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    await pumpShorts(tester);
+    await tester.pumpAndSettle();
+
+    // The provider's display name ("goodshort") must not appear on the card —
+    // the drama is what the viewer is choosing, not the catalogue it came from.
+    expect(find.text('goodshort'), findsNothing);
+    // Enrichment: score, year, quality, status, dub and genre chips are drawn.
+    expect(find.text('★ 8.7'), findsOneWidget);
+    expect(find.text('2024'), findsOneWidget);
+    expect(find.text('HD'), findsOneWidget);
+    expect(find.text('Ongoing'), findsOneWidget);
+    expect(find.text('DUB'), findsOneWidget);
+    expect(find.text('Romance'), findsOneWidget);
   });
 
   testWidgets('every page carries the TikTok-style action rail', (

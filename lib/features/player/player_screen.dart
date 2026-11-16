@@ -2557,38 +2557,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           ),
                         ),
                       ),
-                    if (!_c.styledSubtitlesOn)
-                      StreamBuilder<List<String>>(
-                        stream: _c.player.stream.subtitle,
-                        initialData: _c.player.state.subtitle,
-                        builder: (context, snapshot) {
-                          final prefs = sl<PlaybackPrefs>();
-                          return PositionedSubtitle(
-                            text: (snapshot.data ?? const <String>[])
-                                .where((line) => line.trim().isNotEmpty)
-                                .join('\n'),
-                            position: prefs.subtitlePosition,
-                            anchorX: prefs.subtitlePositionX,
-                            // Drag the caption where you want it. The gesture
-                            // reports fractions of the surface, which the prefs
-                            // store as the same anchor the position controls
-                            // write — so a drag and the sliders cannot disagree.
-                            onDrag: (dx, dy) => _c.nudgeSubtitleAnchor(
-                              dxFraction: dx,
-                              dyFraction: dy,
-                            ),
-                            style: buildSubtitleTextStyle(
-                              prefs,
-                              fontSize: 32 * prefs.subtitleScale,
-                            ),
-                            // The studio's full style, so the plate, glow,
-                            // entrance and late-night treatment the viewer sets
-                            // are drawn on the video and not only in the
-                            // preview.
-                            studio: SubtitleStyle.fromPrefs(prefs),
-                          );
-                        },
-                      ),
+                    // The caption is NOT drawn here. It is interactive now, and
+                    // this surface sits under the player's opaque gesture layer,
+                    // so it would be untouchable. It is added as the topmost
+                    // layer of both the fullscreen stack and the watch page
+                    // instead — see _SubtitleOverlay.
                   ],
                 ),
               ),
@@ -3133,6 +3106,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
     final nextNum = next == null ? null : episodeNumberInt(next);
     return PlayerWatchPage(
       video: _buildVideoSurface(),
+      caption: (!_c.styledSubtitlesOn &&
+              sl<CastController>().state != CastState.connected)
+          ? _SubtitleOverlay(controller: _c)
+          : null,
       header: header,
       isMovie: widget.isMovie,
       coverHeaders: widget.coverHeaders,
@@ -4509,6 +4486,13 @@ class _PlayerScreenState extends State<PlayerScreen> {
                       );
                     },
                   ),
+
+                  // 10. The caption, on top of everything so it is touchable.
+                  // Gated on libass being off (libass draws its own) and on no
+                  // cast session (the remote panel owns the screen then).
+                  if (!_c.styledSubtitlesOn &&
+                      sl<CastController>().state != CastState.connected)
+                    Positioned.fill(child: _SubtitleOverlay(controller: _c)),
                 ],
               ),
             );
@@ -4553,6 +4537,67 @@ class _PlayerScreenState extends State<PlayerScreen> {
         _handleCloseRequest();
       },
       child: scaffold,
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Subtitle overlay — the caption drawn on the video when libass is off.
+//
+// It sits at the TOP of the player's stack rather than under the video's own
+// transform, for one reason: the caption is now interactive. The video's
+// gesture layer (brightness/volume/scrub) is opaque and claims the whole
+// surface, so a caption drawn beneath it could never be touched — the user's
+// finger landed on the gesture layer, not the text, which is exactly the
+// "the hit area is somewhere else" report. Above it, a drag on the caption
+// reaches the caption, and every touch that misses the block still falls
+// through to the gestures below.
+class _SubtitleOverlay extends StatelessWidget {
+  const _SubtitleOverlay({required this.controller});
+
+  final PlayerCubit controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<int>(
+      valueListenable: controller.subtitleStyleRev,
+      builder: (context, _, _) {
+        final prefs = sl<PlaybackPrefs>();
+        return StreamBuilder<List<String>>(
+          stream: controller.player.stream.subtitle,
+          initialData: controller.player.state.subtitle,
+          builder: (context, snapshot) {
+            return PositionedSubtitle(
+              text: (snapshot.data ?? const <String>[])
+                  .where((line) => line.trim().isNotEmpty)
+                  .join('\n'),
+              position: prefs.subtitlePosition,
+              anchorX: prefs.subtitlePositionX,
+              // Drag the caption where you want it. The gesture reports
+              // fractions of the surface, which the prefs store as the same
+              // anchor the position controls write — so a drag and the sliders
+              // cannot disagree.
+              onDrag: (dx, dy) =>
+                  controller.nudgeSubtitleAnchor(dxFraction: dx, dyFraction: dy),
+              // Tap cycles the plate; pinch resizes. Both act on the caption
+              // itself, so the background and the size can be changed right on
+              // the video instead of only in the studio sheet.
+              onTap: () => unawaited(controller.cycleSubtitlePlate()),
+              onScale: (f) => unawaited(controller.nudgeSubtitleScale(f)),
+              style: buildSubtitleTextStyle(
+                prefs,
+                // 40 (was 32) so the default caption reads comfortably on a
+                // phone; [subtitleScale] still multiplies it.
+                fontSize: 40 * prefs.subtitleScale,
+              ),
+              // The studio's full style, so the plate, glow, entrance and
+              // late-night treatment the viewer sets are drawn on the video and
+              // not only in the preview.
+              studio: SubtitleStyle.fromPrefs(prefs),
+            );
+          },
+        );
+      },
     );
   }
 }

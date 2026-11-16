@@ -57,6 +57,7 @@ import 'color_profiles.dart';
 import 'shader_presets.dart';
 import 'subtitle_font_service.dart';
 import 'subtitle_style.dart' show libassOutline;
+import 'subtitle_style_model.dart' show SubtitlePlateMode;
 import 'subtitle_sync_engine.dart';
 import 'player_lifecycle.dart';
 import 'playback_failover.dart';
@@ -2068,10 +2069,30 @@ class PlayerCubit extends Cubit<PlayerState> {
       _subApplied = true;
       return;
     }
-    // '' (Auto) → don't force anything.
+    // '' (Auto) → don't force a *language*, but DO populate whatever the source
+    // already offers. A source that ships subtitles is offering them for a
+    // reason, and leaving the engine empty until the viewer opens the picker
+    // reads as "the subtitles never loaded". Prefer English when the source has
+    // it, else take the first track on offer.
     if (prefRaw.isEmpty) {
+      if (softSubs.isNotEmpty) {
+        final en = languageByPref('en');
+        final pick = (en == null ? null : pickPreferredSub(softSubs, en)) ??
+            softSubs.first;
+        unawaited(
+          _setRemoteSub(
+            pick.url,
+            title: pick.label ?? pick.lang,
+            language: pick.lang,
+          ),
+        );
+        _subApplied = true;
+        return;
+      }
       _wantedSubId = null;
-      _subApplied = true;
+      // Leave _subApplied false: the source's soft-subs may not have reached
+      // `state.active` yet, and the tracks-stream retry will re-check and pick
+      // one up the moment they do.
       return;
     }
     // A language code → source subtitle first, then embedded, then download.
@@ -3831,8 +3852,34 @@ class PlayerCubit extends Cubit<PlayerState> {
     await prefs.setSubtitlePositionX(prefs.subtitlePositionX + dxFraction);
     final y = (prefs.subtitlePosition / 100 + dyFraction).clamp(0.0, 1.0);
     await prefs.setSubtitlePosition((y * 100).round());
-    // The overlay reads the prefs directly, but libass needs the mpv property
-    // re-sent, and the bump also repaints the Flutter overlay immediately.
+    // Repaint the Flutter overlay NOW, synchronously, so the caption tracks the
+    // finger without waiting on the mpv round-trip below — the laggy drag was
+    // the overlay waiting for `setProperty` on every frame.
+    subtitleStyleRev.value++;
+    // Then push the position to libass (inert while the overlay renders, needed
+    // when styled subtitles are on). Not awaited: the drag must not queue behind
+    // it.
+    unawaited(applySubtitleStyle());
+  }
+
+  /// Cycle the plate behind the caption: transparent → plate → glass → block.
+  /// Bound to a tap on the caption itself, so the background can be changed
+  /// right where the text is. [applySubtitleStyle] bumps [subtitleStyleRev], so
+  /// the overlay repaints.
+  Future<void> cycleSubtitlePlate() async {
+    final prefs = sl<PlaybackPrefs>();
+    final current = SubtitlePlateMode.fromId(prefs.subtitlePlateMode);
+    await prefs.setSubtitlePlateMode(current.nextOnTap.id);
+    await applySubtitleStyle();
+  }
+
+  /// Nudge the caption size by a pinch factor, clamped to a sane range. The
+  /// renderer reads [PlaybackPrefs.subtitleScale], so a pinch on the caption
+  /// resizes it live.
+  Future<void> nudgeSubtitleScale(double factor) async {
+    final prefs = sl<PlaybackPrefs>();
+    final next = (prefs.subtitleScale * factor).clamp(0.5, 2.5);
+    await prefs.setSubtitleScale(next);
     await applySubtitleStyle();
   }
 

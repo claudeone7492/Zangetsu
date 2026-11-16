@@ -79,6 +79,20 @@ void main() {
     expect(restored.allowScale, isFalse);
   });
 
+  test('a tap on the caption cycles solid → glass → block → transparent', () {
+    // The order matters: the first tap has to change a transparent caption, so
+    // solid leads, and every mode is reachable before it wraps.
+    expect(SubtitlePlateMode.none.nextOnTap, SubtitlePlateMode.plate);
+    expect(SubtitlePlateMode.plate.nextOnTap, SubtitlePlateMode.blur);
+    expect(SubtitlePlateMode.blur.nextOnTap, SubtitlePlateMode.block);
+    expect(SubtitlePlateMode.block.nextOnTap, SubtitlePlateMode.none);
+    // Every mode is in the cycle — none is unreachable by tapping.
+    expect(
+      SubtitlePlateMode.tapCycle.toSet(),
+      SubtitlePlateMode.values.toSet(),
+    );
+  });
+
   test('a stored value of the wrong type reads as the default', () async {
     final box = Hive.box<dynamic>(PlaybackPrefs.boxName);
     await box.put('subtitleWeight', 'heavy');

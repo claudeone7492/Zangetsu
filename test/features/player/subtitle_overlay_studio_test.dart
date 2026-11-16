@@ -45,9 +45,7 @@ void main() {
     expect(total.dy, closeTo(-0.05, 0.02));
   });
 
-  testWidgets('without a drag handler the caption lets taps through', (
-    tester,
-  ) async {
+  testWidgets('without a gesture handler the caption is inert', (tester) async {
     await pump(
       tester,
       PositionedSubtitle(
@@ -56,17 +54,62 @@ void main() {
         style: const TextStyle(fontSize: 14),
       ),
     );
-    // An IgnorePointer wraps the block, so a tap on the text does not reach a
-    // GestureDetector inside it.
+    // No handler at all → no GestureDetector, and an IgnorePointer wraps the
+    // block so a tap on the text does not reach a layer inside it.
     expect(
       find.descendant(
         of: find.byType(PositionedSubtitle),
         matching: find.byType(GestureDetector),
       ),
-      findsOneWidget,
+      findsNothing,
     );
-    expect(tester.widget<IgnorePointer>(find.byType(IgnorePointer)).ignoring,
-        isTrue);
+    expect(
+      tester.widget<IgnorePointer>(find.byType(IgnorePointer)).ignoring,
+      isTrue,
+    );
+  });
+
+  testWidgets('a tap on the caption is reported', (tester) async {
+    var taps = 0;
+    await pump(
+      tester,
+      PositionedSubtitle(
+        text: 'Line',
+        position: 90,
+        style: const TextStyle(fontSize: 14),
+        onTap: () => taps++,
+      ),
+    );
+    await tester.tap(find.text('Line'));
+    await tester.pump();
+    expect(taps, 1);
+  });
+
+  testWidgets('a pinch on the caption reports a relative multiplier', (
+    tester,
+  ) async {
+    final factors = <double>[];
+    await pump(
+      tester,
+      PositionedSubtitle(
+        text: 'A reasonably long caption line',
+        position: 90,
+        style: const TextStyle(fontSize: 20),
+        onScale: factors.add,
+      ),
+    );
+    final center = tester.getCenter(find.text('A reasonably long caption line'));
+    final g1 = await tester.startGesture(center - const Offset(10, 0));
+    final g2 = await tester.startGesture(center + const Offset(10, 0));
+    await tester.pump();
+    await g1.moveTo(center - const Offset(30, 0));
+    await g2.moveTo(center + const Offset(30, 0));
+    await tester.pump();
+    await g1.up();
+    await g2.up();
+    await tester.pump();
+    expect(factors, isNotEmpty);
+    expect(factors.reduce((a, b) => a * b), greaterThan(1.0));
   });
 
   testWidgets('the studio plate wraps the text', (tester) async {

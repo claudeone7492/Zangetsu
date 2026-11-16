@@ -145,6 +145,8 @@ class PositionedSubtitle extends StatefulWidget {
     required this.style,
     this.anchorX = 0.5,
     this.onDrag,
+    this.onTap,
+    this.onScale,
     this.studio,
   });
 
@@ -155,6 +157,17 @@ class PositionedSubtitle extends StatefulWidget {
 
   /// Called with the drag movement as fractions of the surface width/height.
   final void Function(double dxFraction, double dyFraction)? onDrag;
+
+  /// Called on a plain tap of the caption. The player uses it to cycle the
+  /// plate behind the text (transparent → plate → glass → block) so the
+  /// background can be changed right where the caption is, without a trip to
+  /// the studio sheet.
+  final VoidCallback? onTap;
+
+  /// Called on a pinch of the caption, with the multiplier relative to the
+  /// gesture's start. The player folds it into the subtitle scale so the text
+  /// can be resized by pinching it directly.
+  final ValueChanged<double>? onScale;
 
   /// The full studio style, when the overlay should draw the plate, glow and
   /// entrance itself. Null keeps the plain [style]-only rendering.
@@ -168,6 +181,10 @@ class _PositionedSubtitleState extends State<PositionedSubtitle> {
   /// The text the entrance is animating, so a new cue replays the entrance and
   /// a redraw of the same cue does not.
   String _entranceKey = '';
+
+  /// Pinch base, captured on scale start so the multiplier is relative to where
+  /// the gesture began rather than compounding each frame.
+  double _scaleBase = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -193,6 +210,56 @@ class _PositionedSubtitleState extends State<PositionedSubtitle> {
         if (studio != null && text != _entranceKey) {
           _entranceKey = text;
         }
+        final caption = studio == null
+            ? Text(
+                text,
+                textAlign: align,
+                style: style,
+                textScaler: TextScaler.linear(scale),
+              )
+            : _StudioCaption(
+                text: text,
+                style: style,
+                studio: studio,
+                textScale: scale,
+                align: align,
+                entranceKey: _entranceKey,
+              );
+        final interactive = widget.onDrag != null ||
+            widget.onTap != null ||
+            widget.onScale != null;
+        // Wrap ONLY the caption block, not the whole surface. The gesture then
+        // sits on the glyphs themselves, so the touch area and what the user
+        // sees are the same rectangle — the old full-surface wrap left a drag
+        // starting anywhere but on the text doing nothing, which read as the
+        // hit box being "somewhere else".
+        //
+        // A single scale recognizer carries BOTH the drag and the pinch: pan
+        // and scale recognizers cannot coexist on one detector (scale is a
+        // superset of pan), so the drag reads [focalPointDelta] and the pinch
+        // reads [scale].
+        final block = interactive
+            ? GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: widget.onTap,
+                onScaleStart: (_) => _scaleBase = 1,
+                onScaleUpdate: (d) {
+                  final drag = widget.onDrag;
+                  if (drag != null && d.pointerCount <= 1) {
+                    final delta = d.focalPointDelta;
+                    if (delta != Offset.zero) {
+                      drag(delta.dx / w, delta.dy / h);
+                    }
+                  }
+                  final scale = widget.onScale;
+                  if (scale != null && d.pointerCount > 1 && d.scale > 0) {
+                    scale(d.scale / _scaleBase);
+                    _scaleBase = d.scale;
+                  }
+                },
+                child: caption,
+              )
+            : caption;
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Align(
@@ -200,35 +267,17 @@ class _PositionedSubtitleState extends State<PositionedSubtitle> {
               (widget.anchorX.clamp(0.0, 1.0) * 2) - 1,
               widget.position.clamp(0, 100) / 50 - 1,
             ),
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onPanUpdate: widget.onDrag == null
-                  ? null
-                  : (d) => widget.onDrag!(d.delta.dx / w, d.delta.dy / h),
-              child: studio == null
-                  ? Text(
-                      text,
-                      textAlign: align,
-                      style: style,
-                      textScaler: TextScaler.linear(scale),
-                    )
-                  : _StudioCaption(
-                      text: text,
-                      style: style,
-                      studio: studio,
-                      textScale: scale,
-                      align: align,
-                      entranceKey: _entranceKey,
-                    ),
-            ),
+            child: block,
           ),
         );
       },
     );
-    // A caption with no drag handler stays inert so it never eats a tap meant
-    // for the controls; one with a handler still lets a plain tap through (the
-    // GestureDetector only claims pans).
-    return widget.onDrag == null ? IgnorePointer(child: child) : child;
+    // A caption with no gesture stays inert so it never eats a tap meant for
+    // the controls.
+    final interactive = widget.onDrag != null ||
+        widget.onTap != null ||
+        widget.onScale != null;
+    return interactive ? child : IgnorePointer(child: child);
   }
 }
 
@@ -285,12 +334,16 @@ class _StudioCaption extends StatelessWidget {
     switch (studio.plateMode) {
       case SubtitlePlateMode.blur:
         // A true blur of the frame behind is not reachable from a Flutter
-        // overlay over a native surface, so a soft translucent plate stands in
-        // — the same intent (separate the text from the picture) drawn the one
-        // way the overlay can.
+        // overlay over a native surface, so "glass" is approximated: a lighter
+        // translucent fill with a hairline highlight edge, which reads as
+        // frosted rather than as the flat black of the solid plate.
         return BoxDecoration(
-          color: Color.fromRGBO(0, 0, 0, studio.plateOpacity * 0.75),
+          color: Color.fromRGBO(0, 0, 0, studio.plateOpacity * 0.55),
           borderRadius: radius,
+          border: Border.all(
+            color: const Color(0x4DFFFFFF),
+            width: 1,
+          ),
         );
       case SubtitlePlateMode.plate:
       case SubtitlePlateMode.block:

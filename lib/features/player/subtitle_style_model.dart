@@ -410,7 +410,7 @@ enum SubtitlePlateMode {
   none('none', 'None'),
   plate('plate', 'Plate'),
   block('block', 'Block'),
-  blur('blur', 'Blur behind');
+  blur('blur', 'Glass');
 
   const SubtitlePlateMode(this.id, this.label);
 
@@ -419,6 +419,23 @@ enum SubtitlePlateMode {
 
   static SubtitlePlateMode fromId(String? id) =>
       values.firstWhere((m) => m.id == id, orElse: () => SubtitlePlateMode.none);
+
+  /// The order a tap cycles the background through: solid → glass → block →
+  /// transparent, then back to solid. Solid first so the very first tap does
+  /// something visible on a caption that starts transparent. Pure, so the tap
+  /// behaviour is testable without a player.
+  static const List<SubtitlePlateMode> tapCycle = [
+    plate,
+    blur,
+    block,
+    none,
+  ];
+
+  /// The mode one tap ahead of [current] in [tapCycle].
+  SubtitlePlateMode get nextOnTap {
+    final i = tapCycle.indexOf(this);
+    return tapCycle[(i + 1) % tapCycle.length];
+  }
 }
 
 /// How a line arrives and leaves.

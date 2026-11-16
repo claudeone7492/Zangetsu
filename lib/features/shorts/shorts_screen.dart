@@ -12,10 +12,10 @@ import '../../core/comments/episode_comments_service.dart';
 import '../../core/di/injector.dart';
 import '../../core/models/episode.dart';
 import '../../core/models/episode_title.dart';
+import '../../core/models/media_detail.dart' show MediaStatus;
 import '../../core/models/media_item.dart';
 import '../../core/models/provider_info.dart';
 import '../../core/playback/my_list.dart';
-import '../../core/repository/catalogue_repository.dart';
 import '../../core/repository/source_repository.dart';
 import '../../core/share/share_link.dart';
 import '../../core/theme/app_colors.dart';
@@ -530,6 +530,7 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
   Player? _player;
   VideoController? _videoController;
   StreamSubscription<bool>? _playingSub;
+  StreamSubscription<bool>? _completedSub;
   _VideoFeedSource? _source;
   bool _resolving = false;
   bool _resolved = false;
@@ -540,10 +541,38 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
   /// player's position stream directly, so it does not rebuild the video.
   bool _paused = false;
 
+  /// Whether this page should be playing. The visible page sets this true; a
+  /// page being warmed, or one the destination has left, sets it false. The
+  /// stream open reads it at the instant it opens rather than trusting the flag
+  /// it was started with, so a preload the user overtakes with a fast swipe
+  /// starts playing instead of holding a paused first frame — the race that
+  /// left a page frozen on a still until the next swipe.
+  bool _wantPlay = false;
+
   /// Transient "−10s" / "+10s" badge shown after a double-tap seek, fading out
   /// once the jump has landed. Null when no seek is in flight.
   String? _seekFlash;
   Timer? _seekFlashTimer;
+
+  /// Gesture HUD: the value the active drag/long-press is applying — volume,
+  /// brightness, playback speed, or a scrub position. Null when idle.
+  String? _hud;
+  Timer? _hudTimer;
+
+  /// Local playback volume (0–100). Kept separately from the shared mute
+  /// toggle so a right-edge drag can pick a level without unmuting the feed.
+  double _volume = 100;
+
+  /// Screen brightness as a scrim over the video (0.15–1.0). An app cannot
+  /// touch the system backlight, so a reels player dims the frame itself.
+  double _brightness = 1;
+
+  /// Playback rate. Held at 2× for the duration of a long press.
+  double _speed = 1;
+
+  /// In-flight scrub accumulator and the position a scrub started from.
+  double _dragDx = 0;
+  Duration _dragSeekStart = Duration.zero;
 
   /// True while another route (a Detail page opened from the rail) sits on
   /// top. The preview pauses rather than decoding video behind what the user
@@ -583,7 +612,10 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
   void didPopNext() {
     _covered = false;
     final player = _player;
-    if (widget.active && player != null) unawaited(player.play());
+    if (widget.active && player != null) {
+      _wantPlay = true;
+      unawaited(player.play());
+    }
   }
 
   @override
@@ -604,8 +636,10 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
     // behind the tab the user switched to.
     if (widget.near) {
       if (!old.near) _preload();
+      _wantPlay = false;
       unawaited(_player?.pause());
     } else if (old.active || old.near) {
+      _wantPlay = false;
       _deactivate();
     }
   }
@@ -614,7 +648,9 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
   void dispose() {
     if (_route != null) appRouteObserver.unsubscribe(this);
     _playingSub?.cancel();
+    _completedSub?.cancel();
     _seekFlashTimer?.cancel();
+    _hudTimer?.cancel();
     _disposePlayer();
     super.dispose();
   }
@@ -628,13 +664,15 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
   /// [_preload] only needs resuming — its player holds the first frame.
   Future<void> _activate() async {
     if (!sl.isRegistered<MpvPlayerPool>()) return;
+    _wantPlay = true;
     final existing = _player;
     if (existing != null) {
       _applyVolume();
+      unawaited(existing.setRate(_speed));
       unawaited(existing.play());
       return;
     }
-    await _resolveAndOpen(play: true);
+    await _resolveAndOpen();
   }
 
   /// Resolve the preview and open it paused, so the first frame is decoded and
@@ -642,17 +680,25 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
   Future<void> _preload() async {
     if (!sl.isRegistered<MpvPlayerPool>()) return;
     if (_player != null || _resolving) return;
-    await _resolveAndOpen(play: false);
+    await _resolveAndOpen();
   }
 
-  /// Resolve [widget.item]'s stream and open a player for it. [play] decides
-  /// whether it starts immediately (the visible page) or holds its first frame
-  /// (a neighbour being warmed).
-  Future<void> _resolveAndOpen({required bool play}) async {
+  /// Resolve [widget.item]'s stream and open a player for it. Whether it starts
+  /// playing is read from [_wantPlay] at the moment the stream opens, so a page
+  /// the user has already swiped onto plays even if the resolve began as a
+  /// preload — see [_startPlayback].
+  Future<void> _resolveAndOpen() async {
     if (_resolving || _player != null) return;
     setState(() => _resolving = true);
     final source = await widget.resolveVideo();
     if (!mounted) return;
+    // The page was recycled while the resolve was in flight (the user swiped
+    // well past it). Drop the result rather than spinning up a player nothing
+    // will show — the resolve is the expensive part and it is already paid for.
+    if (!widget.active && !widget.near) {
+      setState(() => _resolving = false);
+      return;
+    }
     if (source == null) {
       setState(() {
         _resolving = false;
@@ -662,7 +708,7 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
       return;
     }
     _source = source;
-    await _startPlayback(source, play: play);
+    await _startPlayback(source);
     if (!mounted) return;
     setState(() {
       _resolving = false;
@@ -670,10 +716,7 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
     });
   }
 
-  Future<void> _startPlayback(
-    _VideoFeedSource source, {
-    required bool play,
-  }) async {
+  Future<void> _startPlayback(_VideoFeedSource source) async {
     final pool = sl<MpvPlayerPool>();
     final player = pool.acquire(libass: false);
     final controller = VideoController(player);
@@ -689,16 +732,36 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
       // a stale frame while the decoder spins up.
       if (mounted) setState(() => _paused = !playing);
     });
+    // Belt-and-braces loop: restart on completion, covering engines where
+    // PlaylistMode.single doesn't auto-restart a single media (same guard the
+    // detail hero carries). A reels feed that stops on the last frame reads as
+    // broken.
+    _completedSub = player.stream.completed.listen((done) {
+      if (!done || !mounted || player != _player || !_wantPlay || _covered) {
+        return;
+      }
+      unawaited(player.seek(Duration.zero));
+      unawaited(player.play());
+    });
     try {
-      await player.setVolume(widget.muted ? 0 : 100);
+      await player.setVolume(widget.muted ? 0 : _volume);
+      await player.setRate(_speed);
       await player.setPlaylistMode(PlaylistMode.single);
       await player.open(
         Media(source.url, httpHeaders: source.headers),
-        // A preloaded neighbour opens paused to hold its frame; the visible
-        // page opens playing. If a Detail page was opened while the preview was
-        // resolving, don't start decoding behind it — didPopNext resumes.
-        play: play && !_covered,
+        // Open paused, then play explicitly below — do NOT rely on the autoplay
+        // flag alone. Some engines/platforms don't honour open(play:) until a
+        // user interaction, which is what left the reel frozen on a still until
+        // the next swipe. (The detail hero documents the same engine quirk.)
+        play: false,
       );
+      if (!mounted || player != _player) return;
+      // _wantPlay is re-read HERE, not at entry: a preload the user has since
+      // swiped onto has flipped it true and must start now. A page that lost
+      // visibility mid-resolve stays paused. If a Detail page was opened while
+      // the preview was resolving, don't start decoding behind it — didPopNext
+      // resumes.
+      if (_wantPlay && !_covered) await player.play();
     } catch (_) {
       if (!mounted) return;
       setState(() => _failed = true);
@@ -708,6 +771,8 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
   void _deactivate() {
     _playingSub?.cancel();
     _playingSub = null;
+    _completedSub?.cancel();
+    _completedSub = null;
     _disposePlayer();
     if (mounted) setState(() {});
   }
@@ -722,7 +787,24 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
   void _applyVolume() {
     final player = _player;
     if (player == null) return;
-    unawaited(player.setVolume(widget.muted ? 0 : 100));
+    unawaited(player.setVolume(widget.muted ? 0 : _volume));
+  }
+
+  /// Show the gesture HUD. [autoHide] clears it after a moment; a value with no
+  /// timeout (a long-press speed, a live drag) is cleared by its own end event.
+  void _showHud(String text, {bool autoHide = true}) {
+    _hudTimer?.cancel();
+    if (mounted) setState(() => _hud = text);
+    if (autoHide) {
+      _hudTimer = Timer(const Duration(milliseconds: 900), () {
+        if (mounted) setState(() => _hud = null);
+      });
+    }
+  }
+
+  void _clearHud() {
+    _hudTimer?.cancel();
+    if (_hud != null && mounted) setState(() => _hud = null);
   }
 
   /// Double-tap seek: jump [delta] from the current position, clamped into the
@@ -747,7 +829,24 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
   void _togglePlay() {
     final player = _player;
     if (player == null) return;
+    _wantPlay = _paused;
     unawaited(player.playOrPause());
+  }
+
+  /// Single tap: before a preview resolves it opens the title; with a preview
+  /// up it resumes a paused page (the "tap doesn't play" complaint), otherwise
+  /// toggles sound. The middle third of a double tap does the same play/pause.
+  void _onTap() {
+    if (_player == null) {
+      widget.onOpen();
+      return;
+    }
+    if (_paused) {
+      _wantPlay = true;
+      unawaited(_player!.play());
+      return;
+    }
+    widget.onToggleMute();
   }
 
   /// Right/left thirds are the seek zones (the TikTok gesture); the middle
@@ -767,6 +866,82 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
     } else {
       _togglePlay();
     }
+  }
+
+  // ── Drag gestures ─────────────────────────────────────────────────────────
+  // The feed pages vertically, so the full-screen surface only claims the
+  // HORIZONTAL axis (scrub) — a vertical drag there is left to the PageView.
+  // Brightness/volume live on narrow translucent edge strips instead, so a
+  // vertical drag that starts on an edge adjusts a control and one that starts
+  // in the middle still pages. Standard reels/YouTube layout.
+
+  void _onScrubStart(DragStartDetails details) {
+    _dragDx = 0;
+    _dragSeekStart = _player?.state.position ?? Duration.zero;
+  }
+
+  void _onScrubUpdate(DragUpdateDetails details, double width) {
+    final player = _player;
+    if (player == null) return;
+    final duration = player.state.duration;
+    if (duration <= Duration.zero) return;
+    _dragDx += details.delta.dx;
+    // A full width sweep is a minute of clip; clamp into the clip.
+    final target =
+        _dragSeekStart + Duration(seconds: (_dragDx / width * 60).round());
+    final clamped = target < Duration.zero
+        ? Duration.zero
+        : (target > duration ? duration : target);
+    unawaited(player.seek(clamped));
+    _showHud('${_fmt(clamped)} / ${_fmt(duration)}', autoHide: false);
+  }
+
+  void _onScrubEnd(DragEndDetails details) => _clearHud();
+
+  /// Vertical drag on an edge strip: [right] true is volume, false brightness.
+  /// Up is more; a 70%-height sweep is the whole range.
+  void _onEdgeDragUpdate(
+    DragUpdateDetails details,
+    double height, {
+    required bool right,
+  }) {
+    final player = _player;
+    final frac = -details.delta.dy / (height * 0.7);
+    if (right) {
+      _volume = (_volume + frac * 100).clamp(0, 100);
+      if (player != null) {
+        unawaited(player.setVolume(widget.muted ? 0 : _volume));
+      }
+      _showHud('Volume ${_volume.round()}%', autoHide: false);
+    } else {
+      _brightness = (_brightness + frac).clamp(0.15, 1.0);
+      _showHud('Brightness ${(_brightness * 100).round()}%', autoHide: false);
+    }
+  }
+
+  // ── Long-press speed ──────────────────────────────────────────────────────
+  // Hold to play at 2×, release to return to normal — the reels "watch faster"
+  // gesture. Only while a preview is up.
+
+  void _onLongPressStart(LongPressStartDetails details) {
+    final player = _player;
+    if (player == null) return;
+    _speed = 2;
+    unawaited(player.setRate(_speed));
+    _showHud('2× ▶▶', autoHide: false);
+  }
+
+  void _onLongPressEnd(LongPressEndDetails details) {
+    final player = _player;
+    _speed = 1;
+    if (player != null) unawaited(player.setRate(_speed));
+    _clearHud();
+  }
+
+  static String _fmt(Duration d) {
+    final m = d.inMinutes;
+    final s = d.inSeconds % 60;
+    return '$m:${s.toString().padLeft(2, '0')}';
   }
 
   Future<void> _toggleSave() async {
@@ -804,9 +979,10 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
     return episodeDisplayTitle(ep, number: ep.number?.toInt());
   }
 
-  /// The compact fact chips under the title: live state, score, year, quality
-  /// and the first couple of genres. Only what the item actually carries — a
-  /// bare title with no metadata renders no chip row at all.
+  /// The compact fact chips under the title: live state, score, year, quality,
+  /// run status, dub/audio tag and the first couple of genres. Only what the
+  /// item actually carries — a bare title with no metadata renders no chip row
+  /// at all.
   List<Widget> _metaChips(MediaItem item) {
     final chips = <Widget>[];
     if (item.liveBadge != null && item.liveBadge!.trim().isNotEmpty) {
@@ -818,6 +994,24 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
     if (item.year != null) chips.add(_MetaChip(label: '${item.year}'));
     if (item.quality != null && item.quality!.trim().isNotEmpty) {
       chips.add(_MetaChip(label: item.quality!));
+    }
+    // Run status — "Ongoing" / "Completed" — the single fact a drama viewer
+    // looks for before committing to a binge.
+    final status = switch (item.status) {
+      MediaStatus.ongoing => 'Ongoing',
+      MediaStatus.completed => 'Completed',
+      MediaStatus.hiatus => 'Hiatus',
+      MediaStatus.cancelled => 'Cancelled',
+      MediaStatus.unknown || null => null,
+    };
+    if (status != null) chips.add(_MetaChip(label: status));
+    // Audio availability: the provider's own dub tag, else a DUB chip when the
+    // item reports dub tracks at all.
+    final dub = item.dubBadge?.trim();
+    if (dub != null && dub.isNotEmpty) {
+      chips.add(_MetaChip(label: dub));
+    } else if ((item.dubCount ?? 0) > 0) {
+      chips.add(const _MetaChip(label: 'DUB'));
     }
     for (final g in item.genres.take(2)) {
       chips.add(_MetaChip(label: g));
@@ -831,9 +1025,6 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
     final art = item.banner?.trim().isNotEmpty == true
         ? item.banner!
         : item.cover;
-    final sourceName = sl.isRegistered<CatalogueRepository>()
-        ? sl<CatalogueRepository>().displayName(item.sourceId)
-        : item.sourceId;
     final controller = _videoController;
     return Stack(
       fit: StackFit.expand,
@@ -856,23 +1047,69 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
           )
         else
           ColoredBox(color: AppColors.surface),
+        // Brightness scrim: an app cannot dim the panel, so the left-edge drag
+        // paints a black veil over the frame instead. Above the video, below
+        // every control so the HUD and rail stay legible.
+        if (_brightness < 1)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: ColoredBox(
+                color: Colors.black.withValues(alpha: 1 - _brightness),
+              ),
+            ),
+          ),
         // Gesture surface. With a preview up it is the TikTok layout: double
         // tap left/right thirds to jump ±10s, double tap the middle to play or
-        // pause, single tap toggles sound (long press would fight the swipe).
-        // Before a preview resolves, a tap simply opens the title. Sits below
-        // the rail so the rail buttons stay independent.
+        // pause, single tap resumes a paused page or toggles sound, a long
+        // press plays at 2×, and a horizontal drag scrubs. Vertical drags are
+        // left to the PageView so the feed still pages; brightness/volume live
+        // on the edge strips below. Before a preview resolves, a tap simply
+        // opens the title. Sits below the rail so the rail buttons stay
+        // independent.
         Positioned.fill(
           child: LayoutBuilder(
             builder: (context, constraints) => GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: controller != null ? widget.onToggleMute : widget.onOpen,
+              onTap: _onTap,
               onDoubleTapDown: controller != null
                   ? (d) => _onDoubleTapDown(d, constraints.maxWidth)
                   : null,
               onDoubleTap: () {},
+              onLongPressStart: controller != null ? _onLongPressStart : null,
+              onLongPressEnd: controller != null ? _onLongPressEnd : null,
+              onHorizontalDragStart: controller != null ? _onScrubStart : null,
+              onHorizontalDragUpdate: controller != null
+                  ? (d) => _onScrubUpdate(d, constraints.maxWidth)
+                  : null,
+              onHorizontalDragEnd: controller != null ? _onScrubEnd : null,
             ),
           ),
         ),
+        // Edge strips: a vertical drag on the left sets brightness, on the
+        // right volume. Kept narrow and translucent so the rail (right) and the
+        // vertical pager still get the drags that start away from the edges.
+        if (controller != null) ...[
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 56,
+            child: _EdgeGestureStrip(
+              onUpdate: (d, h) => _onEdgeDragUpdate(d, h, right: false),
+              onEnd: (_) => _clearHud(),
+            ),
+          ),
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: 56,
+            child: _EdgeGestureStrip(
+              onUpdate: (d, h) => _onEdgeDragUpdate(d, h, right: true),
+              onEnd: (_) => _clearHud(),
+            ),
+          ),
+        ],
         if (_resolving && controller == null)
           const Center(
             child: SizedBox(
@@ -913,9 +1150,33 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
               ),
             ),
           ),
+        // Gesture HUD: the value a live drag or long press is applying, centred
+        // like every modern player's volume/brightness/speed read-out.
+        if (_hud != null)
+          Center(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 10,
+                ),
+                child: Text(
+                  _hud!,
+                  style: AppText.title.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
         // Paused affordance: a soft play glyph over the frame so a paused
         // preview reads as paused, not frozen.
-        if (controller != null && _paused && _seekFlash == null)
+        if (controller != null && _paused && _seekFlash == null && _hud == null)
           const Center(
             child: Icon(
               Icons.play_arrow_rounded,
@@ -953,32 +1214,13 @@ class _ShortPageState extends State<_ShortPage> with RouteAware {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(
-                    Icons.play_circle_fill_rounded,
-                    color: AppColors.accent,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      sourceName,
-                      style: AppText.caption.copyWith(color: Colors.white70),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
               // The episode the preview resolved, so a swipe into a drama shows
               // which part is playing rather than a bare title.
               if (_episodeLabel != null) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
                   _episodeLabel!,
-                  style: AppText.caption.copyWith(color: Colors.white60),
+                  style: AppText.caption.copyWith(color: Colors.white70),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1066,6 +1308,28 @@ class _FeedProgressBar extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+/// A narrow, translucent strip down one screen edge that turns a vertical drag
+/// into a brightness (left) or volume (right) change. It is kept transparent
+/// and out of the way so it never paints over the video; its only job is to
+/// claim the vertical drags near the edge, leaving the middle for the pager.
+class _EdgeGestureStrip extends StatelessWidget {
+  const _EdgeGestureStrip({required this.onUpdate, required this.onEnd});
+
+  final void Function(DragUpdateDetails details, double height) onUpdate;
+  final void Function(DragEndDetails details) onEnd;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) => GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onVerticalDragUpdate: (d) => onUpdate(d, constraints.maxHeight),
+        onVerticalDragEnd: onEnd,
+      ),
     );
   }
 }
