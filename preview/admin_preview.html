@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Zangetsu — Admin Console Preview</title>
+<style>
+  :root {
+    --bg: #0B0B0F;
+    --surface: #16161C;
+    --surface2: #20212A;
+    --accent: #FF4D57;
+    --accent-soft: rgba(255, 77, 87, 0.15);
+    --text-primary: #FFFFFF;
+    --text-secondary: #A7A7B2;
+    --text-tertiary: #6E6E78;
+    --hairline: rgba(255, 255, 255, 0.08);
+    --green: #34C759;
+    --amber: #F5C451;
+    --blue: #5B8DEF;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(1100px 640px at 12% -8%, rgba(255,77,87,0.18), transparent 58%),
+      radial-gradient(900px 560px at 100% 0%, rgba(80,90,255,0.14), transparent 55%),
+      linear-gradient(180deg, #0d0d14 0%, #07070b 100%);
+    color: var(--text-primary);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 22px; min-height: 100dvh;
+  }
+  .app {
+    width: 100%; max-width: 1180px;
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(22,22,28,0.72), rgba(11,11,15,0.86));
+    border: 1px solid var(--hairline);
+    box-shadow: 0 40px 120px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05);
+    backdrop-filter: blur(14px);
+    overflow: hidden;
+  }
+  /* ---- top bar ---- */
+  .bar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px; border-bottom: 1px solid var(--hairline);
+    background: linear-gradient(180deg, rgba(32,33,42,0.5), rgba(22,22,28,0.2));
+  }
+  .bar .mark {
+    width: 34px; height: 34px; border-radius: 10px; background: var(--accent-soft);
+    display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  }
+  .bar .mark svg { width: 18px; height: 18px; }
+  .bar h1 { font-size: 16px; font-weight: 800; margin: 0; letter-spacing: -0.2px; }
+  .bar .who { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .admin-chip {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800;
+    letter-spacing: .4px; text-transform: uppercase; color: #0b0b0f;
+    background: linear-gradient(90deg, var(--amber), #ffe08a); padding: 5px 10px; border-radius: 999px;
+  }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); display:flex; align-items:center; justify-content:center; font-size: 12px; font-weight: 800; }
+
+  /* ---- tabs ---- */
+  .tabs { display: flex; gap: 6px; padding: 12px 16px 0; flex-wrap: wrap; }
+  .tab {
+    border: none; cursor: pointer; font-size: 12.5px; font-weight: 700; color: var(--text-secondary);
+    background: rgba(255,255,255,0.05); border: 1px solid var(--hairline);
+    padding: 8px 13px; border-radius: 999px; transition: all .15s;
+  }
+  .tab:hover { color: #fff; }
+  .tab.on { color: #fff; background: var(--accent-soft); border-color: var(--accent); }
+
+  /* ---- KPI cards ---- */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; padding: 14px 16px 4px; }
+  .kpi {
+    border-radius: 14px; border: 1px solid var(--hairline); background: rgba(255,255,255,0.03);
+    padding: 12px 13px;
+  }
+  .kpi .k { font-size: 10.5px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-tertiary); }
+  .kpi .v { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; margin-top: 4px; }
+  .kpi .d { font-size: 11px; color: var(--green); margin-top: 2px; font-weight: 600; }
+  .kpi .d.flat { color: var(--text-tertiary); }
+
+  /* ---- table ---- */
+  .panel { padding: 14px 16px 20px; }
+  .panel-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .panel-head h2 { font-size: 14px; font-weight: 800; margin: 0; }
+  .panel-head .sub { font-size: 11.5px; color: var(--text-tertiary); }
+  .search {
+    margin-left: auto; background: rgba(0,0,0,0.35); border: 1.5px solid var(--hairline);
+    border-radius: 11px; padding: 8px 12px; color: #fff; font-size: 12.5px; outline: none; min-width: 160px;
+  }
+  .search:focus { border-color: rgba(255,255,255,0.25); }
+
+  .table-wrap { border: 1px solid var(--hairline); border-radius: 14px; overflow-x: auto; background: rgba(0,0,0,0.22); }
+  table { border-collapse: collapse; width: 100%; min-width: 760px; }
+  thead th {
+    text-align: left; font-size: 10.5px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase;
+    color: var(--text-tertiary); padding: 11px 12px; border-bottom: 1px solid var(--hairline);
+    background: rgba(255,255,255,0.03); position: sticky; top: 0; white-space: nowrap;
+  }
+  tbody td { font-size: 12.5px; padding: 11px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-secondary); white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: rgba(255,255,255,0.025); }
+  .fp { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; color: var(--text-primary); }
+  .strong { color: var(--text-primary); font-weight: 600; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700;
+    padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+  }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .pill.active { color: var(--green); background: rgba(52,199,89,0.12); }
+  .pill.active .dot { background: var(--green); }
+  .pill.trial { color: var(--blue); background: rgba(91,141,239,0.14); }
+  .pill.trial .dot { background: var(--blue); }
+  .pill.expired { color: var(--accent); background: var(--accent-soft); }
+  .pill.expired .dot { background: var(--accent); }
+  .pill.free { color: var(--amber); background: rgba(245,196,81,0.14); }
+  .pill.free .dot { background: var(--amber); }
+  .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; color: var(--text-primary); }
+  .code.none { color: var(--text-tertiary); }
+  .pct { font-weight: 800; }
+  .pct.p100 { color: var(--amber); } .pct.p85 { color: var(--green); }
+  .pct.p50 { color: var(--blue); } .pct.low { color: var(--text-secondary); }
+  .toggle {
+    width: 38px; height: 22px; border-radius: 999px; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.15); position: relative; transition: background .18s; vertical-align: middle;
+  }
+  .toggle.on { background: var(--green); }
+  .toggle i { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .18s; }
+  .toggle.on i { left: 18px; }
+  .rowbtn {
+    border: 1px solid var(--hairline); background: rgba(255,255,255,0.05); color: var(--text-secondary);
+    font-size: 11px; font-weight: 700; padding: 5px 9px; border-radius: 8px; cursor: pointer;
+  }
+  .rowbtn:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
+  .usage { display: inline-flex; align-items: center; gap: 6px; }
+  .usage .bar { width: 54px; height: 6px; border-radius: 999px; background: rgba(255,255,255,0.1); overflow: hidden; }
+  .usage .bar i { display: block; height: 100%; background: var(--accent); }
+  .hint { font-size: 11px; color: var(--text-tertiary); margin-top: 10px; }
+  .note {
+    margin: 14px 16px 0; padding: 11px 13px; border-radius: 12px; font-size: 12px; line-height: 1.45;
+    background: rgba(91,141,239,0.10); border: 1px solid rgba(91,141,239,0.3); color: var(--text-secondary);
+  }
+  .note b { color: var(--text-primary); }
+
+  @media (max-width: 640px) {
+    body { padding: 10px; }
+    .app { border-radius: 18px; }
+    .bar { padding: 13px 14px; }
+    .bar h1 { font-size: 14.5px; }
+    .tabs { padding: 10px 12px 0; }
+    .kpis { padding: 12px 12px 2px; }
+    .panel { padding: 12px 12px 16px; }
+    .panel-head .search { margin-left: 0; width: 100%; }
+    table { min-width: 680px; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="bar">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#FF4D57"/><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#0B0B0F"/></svg>
+      </div>
+      <h1>Zangetsu Admin Console</h1>
+      <div class="who">
+        <span class="admin-chip">Admin</span>
+        <div class="avatar">A</div>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-tab="devices">Devices &amp; Users</button>
+      <button class="tab" data-tab="promos">Promo Codes</button>
+      <button class="tab" data-tab="subs">Subscriptions</button>
+      <button class="tab" data-tab="profiles">Profiles</button>
+    </div>
+
+    <!-- ===== KPIs ===== -->
+    <div class="kpis">
+      <div class="kpi"><div class="k">Devices</div><div class="v">1,284</div><div class="d">+42 today</div></div>
+      <div class="kpi"><div class="k">Active subs</div><div class="v">617</div><div class="d">48.0% of devices</div></div>
+      <div class="kpi"><div class="k">MRR</div><div class="v">$2,301</div><div class="d">+6.2% wk</div></div>
+      <div class="kpi"><div class="k">Free access</div><div class="v">93</div><div class="d flat">via 100% codes</div></div>
+      <div class="kpi"><div class="k">Profiles</div><div class="v">2,061</div><div class="d flat">avg 1.6 / device</div></div>
+    </div>
+
+    <!-- ===== Devices & Users ===== -->
+    <div class="panel" id="panel-devices">
+      <div class="panel-head">
+        <h2>Devices &amp; Users</h2>
+        <span class="sub">identity = device fingerprint · no sign-in</span>
+        <input class="search" placeholder="Search fingerprint / code / plan" />
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Device fingerprint</th><th>Platform</th><th>Plan</th><th>Promo used</th>
+              <th>% off</th><th>Paid / mo</th><th>Status</th><th>Renews</th><th>Watch</th><th>Last seen</th>
+            </tr>
+          </thead>
+          <tbody id="devices-body"></tbody>
+        </table>
+      </div>
+      <div class="hint">Fingerprints are hashed on-device; the raw hardware ids never leave the phone.</div>
+    </div>
+
+    <!-- ===== Promo Codes ===== -->
+    <div class="panel" id="panel-promos" style="display:none">
+      <div class="panel-head">
+        <h2>Promo Codes</h2>
+        <span class="sub">48 seeded · hidden from users · edit expiry &amp; status in-app</span>
+        <input class="search" placeholder="Search code" />
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Code</th><th>% off</th><th>Redeemed by</th><th>Max uses</th><th>Expires</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody id="promos-body"></tbody>
+        </table>
+      </div>
+      <div class="hint">Redemption counts update as devices apply a code. Nothing is shown to end users.</div>
+    </div>
+
+    <!-- ===== Subscriptions ===== -->
+    <div class="panel" id="panel-subs" style="display:none">
+      <div class="panel-head"><h2>Subscriptions</h2><span class="sub">revenue by tier</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Plan</th><th>Subscribers</th><th>List price</th><th>App price</th><th>Revenue / mo</th><th>Churn</th></tr></thead>
+          <tbody id="subs-body"></tbody>
+        </table>
+      </div>
+      <div class="note"><b>Note:</b> every row here is keyed by device fingerprint, not an account. A reinstall keeps the same identity as long as the fingerprint is stable.</div>
+    </div>
+
+    <!-- ===== Profiles ===== -->
+    <div class="panel" id="panel-profiles" style="display:none">
+      <div class="panel-head"><h2>Profiles</h2><span class="sub">per-device viewing profiles</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Profile</th><th>Device fingerprint</th><th>Kind</th><th>Titles watched</th><th>Mins watched</th><th>Last active</th></tr></thead>
+          <tbody id="profiles-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ---- Devices ----
+  const DEVICES = [
+    { fp:'a91f…7c2e', plat:'Android 14', plan:'Premium',  code:'NETFLIX85!',  pct:85,  paid:'$0.90',  st:'active',  renew:'Dec 12', watch:312, seen:'2 min ago' },
+    { fp:'3d8b…f104', plat:'iOS 18',     plan:'Standard', code:'$EDGES',      pct:100, paid:'$0.00',  st:'free',    renew:'—',      watch:874, seen:'11 min ago' },
+    { fp:'77ce…21aa', plat:'Android TV', plan:'Premium',  code:'DISNEY+50',   pct:50,  paid:'$3.00',  st:'active',  renew:'Dec 02', watch:145, seen:'1 hr ago' },
+    { fp:'c0d4…88b1', plat:'Android 13', plan:'Basic',    code:'PRIME25!',    pct:25,  paid:'$1.49',  st:'active',  renew:'Nov 28', watch:56,  seen:'3 hrs ago' },
+    { fp:'1b2c…9d3f', plat:'iOS 17',     plan:'Standard', code:'—',           pct:0,   paid:'$3.49',  st:'active',  renew:'Dec 09', watch:401, seen:'5 hrs ago' },
+    { fp:'ee10…4477', plat:'Android 14', plan:'Premium',  code:'BOSSSLINGZS', pct:100, paid:'$0.00',  st:'free',    renew:'—',      watch:620, seen:'yesterday' },
+    { fp:'90af…6c55', plat:'Android 12', plan:'Basic',    code:'HULU#10',     pct:10,  paid:'$1.79',  st:'trial',   renew:'Nov 22', watch:18,  seen:'yesterday' },
+    { fp:'5f7a…0b12', plat:'iOS 18',     plan:'Standard', code:'STARZ_85',    pct:85,  paid:'$0.52',  st:'active',  renew:'Dec 15', watch:233, seen:'2 days ago' },
+    { fp:'b3e9…aa70', plat:'Android TV', plan:'Premium',  code:'APPLE50!',    pct:50,  paid:'$3.00',  st:'active',  renew:'Dec 04', watch:98,  seen:'2 days ago' },
+    { fp:'2c66…d1e8', plat:'Android 14', plan:'Basic',    code:'TUBI_10',     pct:10,  paid:'$1.79',  st:'expired', renew:'Nov 10', watch:9,   seen:'6 days ago' },
+  ];
+  const stPill = (st) => {
+    const map = { active:['active','Active'], trial:['trial','Trial'], free:['free','Free access'], expired:['expired','Expired'] };
+    const [cls,label] = map[st];
+    return `<span class="pill ${cls}"><span class="dot"></span>${label}</span>`;
+  };
+  const pctCls = (p) => p===100?'p100':p>=85?'p85':p>=50?'p50':'low';
+  document.getElementById('devices-body').innerHTML = DEVICES.map(d => `
+    <tr>
+      <td class="fp">${d.fp}</td>
+      <td>${d.plat}</td>
+      <td class="strong">${d.plan}</td>
+      <td class="code ${d.code==='—'?'none':''}">${d.code}</td>
+      <td><span class="pct ${pctCls(d.pct)}">${d.pct}%</span></td>
+      <td class="strong">${d.paid}</td>
+      <td>${stPill(d.st)}</td>
+      <td>${d.renew}</td>
+      <td><span class="usage"><span class="bar"><i style="width:${Math.min(100,d.watch/9)}%"></i></span>${d.watch}</span></td>
+      <td>${d.seen}</td>
+    </tr>`).join('');
+
+  // ---- Promos ----
+  const PROMOS = [
+    { code:'$EDGES',      pct:100, by:24, max:'∞', exp:'—',         on:true },
+    { code:'BOSSSLINGZS', pct:100, by:69, max:'∞', exp:'—',         on:true },
+    { code:'NETFLIX$100', pct:100, by:0,  max:100, exp:'Jan 01',    on:true },
+    { code:'NETFLIX85!',  pct:85,  by:51, max:'∞', exp:'—',         on:true },
+    { code:'STARZ_85',    pct:85,  by:12, max:200, exp:'Dec 31',    on:true },
+    { code:'STREMIO75!',  pct:75,  by:7,  max:200, exp:'Dec 31',    on:true },
+    { code:'SHOWMAX65!',  pct:65,  by:18, max:'∞', exp:'—',         on:true },
+    { code:'DISNEY+50',   pct:50,  by:44, max:'∞', exp:'—',         on:true },
+    { code:'PARAMOUNT50!',pct:50,  by:5,  max:100, exp:'Dec 15',    on:true },
+    { code:'CRUNCHY35!',  pct:35,  by:9,  max:'∞', exp:'—',         on:true },
+    { code:'PRIME25!',    pct:25,  by:63, max:'∞', exp:'—',         on:true },
+    { code:'ROKU_25',     pct:25,  by:21, max:500, exp:'Feb 01',    on:true },
+    { code:'HULU#10',     pct:10,  by:88, max:'∞', exp:'—',         on:true },
+    { code:'VUDU#10',     pct:10,  by:3,  max:100, exp:'Nov 30',    on:false },
+  ];
+  document.getElementById('promos-body').innerHTML = PROMOS.map((p,i) => `
+    <tr>
+      <td class="code">${p.code}</td>
+      <td><span class="pct ${pctCls(p.pct)}">${p.pct}%</span></td>
+      <td class="strong">${p.by}</td>
+      <td>${p.max}</td>
+      <td>${p.exp}</td>
+      <td><button class="toggle ${p.on?'on':''}" data-i="${i}"><i></i></button></td>
+      <td><button class="rowbtn">Edit expiry</button></td>
+    </tr>`).join('');
+  document.getElementById('promos-body').addEventListener('click', (e) => {
+    const t = e.target.closest('.toggle'); if (!t) return;
+    t.classList.toggle('on');
+  });
+
+  // ---- Subscriptions ----
+  const SUBS = [
+    { plan:'Basic (with ads)', subs:142, list:'$2.34', app:'$1.99', rev:'$283',   churn:'4.1%' },
+    { plan:'Standard',         subs:331, list:'$4.11', app:'$3.49', rev:'$1,155', churn:'2.8%' },
+    { plan:'Premium',          subs:144, list:'$7.05', app:'$5.99', rev:'$863',   churn:'1.9%' },
+    { plan:'Free access (100%)',subs:93, list:'—',     app:'$0.00', rev:'$0',     churn:'—' },
+  ];
+  document.getElementById('subs-body').innerHTML = SUBS.map(s => `
+    <tr>
+      <td class="strong">${s.plan}</td><td>${s.subs}</td><td>${s.list}</td>
+      <td>${s.app}</td><td class="strong">${s.rev}</td><td>${s.churn}</td>
+    </tr>`).join('');
+
+  // ---- Profiles ----
+  const PROFILES = [
+    { name:'Ada',    fp:'a91f…7c2e', kind:'Adult', titles:212, mins:6420, seen:'2 min ago' },
+    { name:'Kids',   fp:'a91f…7c2e', kind:'Kids',  titles:88,  mins:1980, seen:'1 hr ago' },
+    { name:'Guest',  fp:'3d8b…f104', kind:'Adult', titles:401, mins:9102, seen:'11 min ago' },
+    { name:'Sam',    fp:'77ce…21aa', kind:'Adult', titles:96,  mins:2210, seen:'1 hr ago' },
+    { name:'Nina',   fp:'c0d4…88b1', kind:'Teen',  titles:41,  mins:860,  seen:'3 hrs ago' },
+    { name:'Ola',    fp:'1b2c…9d3f', kind:'Adult', titles:301, mins:7740, seen:'5 hrs ago' },
+  ];
+  document.getElementById('profiles-body').innerHTML = PROFILES.map(p => `
+    <tr>
+      <td class="strong">${p.name}</td><td class="fp">${p.fp}</td><td>${p.kind}</td>
+      <td>${p.titles}</td><td>${p.mins.toLocaleString()}</td><td>${p.seen}</td>
+    </tr>`).join('');
+
+  // ---- tab switching ----
+  const tabs = document.getElementById('tabs');
+  tabs.addEventListener('click', (e) => {
+    const t = e.target.closest('.tab'); if (!t) return;
+    tabs.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
+    ['devices','promos','subs','profiles'].forEach(k => {
+      document.getElementById('panel-' + k).style.display = (k === t.dataset.tab) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>
