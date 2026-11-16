@@ -81,6 +81,10 @@ class DeviceIdentity {
     this.planKey,
     this.status = 'inactive',
     this.periodEnd,
+    this.entitled = false,
+    this.showPaywall = true,
+    this.trialAvailable = false,
+    this.daysLeft = 0,
   });
 
   final String sessionId;
@@ -90,8 +94,20 @@ class DeviceIdentity {
   final String status;
   final DateTime? periodEnd;
 
+  /// Server verdict: this device may watch right now.
+  final bool entitled;
+
+  /// Server verdict: the paywall must be shown (no entitlement).
+  final bool showPaywall;
+
+  /// First-time device that has never used its trial.
+  final bool trialAvailable;
+
+  /// Whole days left in the current period.
+  final int daysLeft;
+
   bool get isActive =>
-      status == 'active' || status == 'grace' || status == 'trial';
+      entitled || status == 'active' || status == 'grace' || status == 'trial';
 
   static DeviceIdentity? fromMap(Map<String, dynamic> m) {
     final session = m['session_id'];
@@ -104,8 +120,45 @@ class DeviceIdentity {
       planKey: m['plan_key'] as String?,
       status: (m['status'] as String?) ?? 'inactive',
       periodEnd: end is String ? DateTime.tryParse(end) : null,
+      entitled: m['entitled'] == true,
+      showPaywall: m['show_paywall'] != false,
+      trialAvailable: m['trial_available'] == true,
+      daysLeft: (m['days_left'] as num?)?.toInt() ?? 0,
     );
   }
+}
+
+/// The result of starting a checkout, from the `stream-subscribe` function.
+class CheckoutResult {
+  const CheckoutResult({
+    required this.ok,
+    required this.free,
+    this.checkoutUrl,
+    this.reference,
+    this.planKey,
+    this.amountCents = 0,
+    this.error,
+  });
+
+  final bool ok;
+
+  /// The promo covered the full price, so access was granted without a charge.
+  final bool free;
+  final String? checkoutUrl;
+  final String? reference;
+  final String? planKey;
+  final int amountCents;
+  final String? error;
+
+  static CheckoutResult fromMap(Map<String, dynamic> m) => CheckoutResult(
+    ok: m['ok'] == true,
+    free: m['free'] == true,
+    checkoutUrl: m['checkoutUrl'] as String?,
+    reference: m['reference'] as String?,
+    planKey: m['planKey'] as String?,
+    amountCents: (m['amountUsdCents'] as num?)?.toInt() ?? 0,
+    error: m['error'] as String?,
+  );
 }
 
 /// A row of the admin Devices table, from `admin_devices`.

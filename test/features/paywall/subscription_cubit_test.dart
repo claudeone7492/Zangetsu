@@ -204,4 +204,108 @@ void main() {
       expect(api.redemptions.single['after'], 76);
     });
   });
+
+  group('SubscriptionCubit checkout', () {
+    test('beginCheckout sends the selected plan and current promo', () async {
+      final api = FakeSubscriptionApi(
+        plansResult: samplePlans(),
+        identityResult: const DeviceIdentity(
+          sessionId: 's1',
+          isNew: false,
+          trialUsed: true,
+        ),
+        promoResult: const PromoResult(
+          code: 'STARZ_85',
+          percentOff: 85,
+          kind: 'percent',
+        ),
+      );
+      final cubit = SubscriptionCubit(api);
+      await cubit.load();
+      cubit.selectPlan('stream_premium');
+      await cubit.applyPromo('STARZ_85');
+
+      final result = await cubit.beginCheckout();
+
+      expect(result?.ok, isTrue);
+      expect(api.startCheckoutCalls, 1);
+      expect(api.lastCheckoutPlan, 'stream_premium');
+      expect(api.lastCheckoutPromo, 'STARZ_85');
+      expect(cubit.state.stage, PaywallStage.ready);
+    });
+
+    test('beginCheckout surfaces a server failure as a message', () async {
+      final api = FakeSubscriptionApi(
+        plansResult: samplePlans(),
+        identityResult: const DeviceIdentity(
+          sessionId: 's1',
+          isNew: false,
+          trialUsed: true,
+        ),
+      )..checkoutResult = const CheckoutResult(
+        ok: false,
+        free: false,
+        error: 'korapay_init_failed',
+      );
+      final cubit = SubscriptionCubit(api);
+      await cubit.load();
+
+      final result = await cubit.beginCheckout();
+
+      expect(result?.ok, isFalse);
+      expect(cubit.state.stage, PaywallStage.ready);
+      expect(cubit.state.promoRejected, isTrue);
+      expect(cubit.state.message, contains('Could not start checkout'));
+    });
+
+    test('a free checkout needs no URL', () async {
+      final api = FakeSubscriptionApi(
+        plansResult: samplePlans(),
+        identityResult: const DeviceIdentity(
+          sessionId: 's1',
+          isNew: false,
+          trialUsed: true,
+        ),
+      )..checkoutResult = const CheckoutResult(ok: true, free: true);
+      final cubit = SubscriptionCubit(api);
+      await cubit.load();
+
+      final result = await cubit.beginCheckout();
+
+      expect(result?.ok, isTrue);
+      expect(result?.free, isTrue);
+      expect(result?.checkoutUrl, isNull);
+    });
+
+    test('refreshEntitlement re-reads the server verdict', () async {
+      final api = FakeSubscriptionApi(
+        plansResult: samplePlans(),
+        identityResult: const DeviceIdentity(
+          sessionId: 's1',
+          isNew: false,
+          trialUsed: true,
+          entitled: false,
+        ),
+      );
+      final cubit = SubscriptionCubit(api);
+      await cubit.load();
+      expect(cubit.state.identity?.entitled, isFalse);
+
+      // The webhook settled the charge while the WebView was open.
+      api.identityResult = const DeviceIdentity(
+        sessionId: 's1',
+        isNew: false,
+        trialUsed: true,
+        planKey: 'stream_standard',
+        status: 'active',
+        entitled: true,
+        showPaywall: false,
+        daysLeft: 30,
+      );
+      final entitled = await cubit.refreshEntitlement();
+
+      expect(entitled, isTrue);
+      expect(cubit.state.identity?.daysLeft, 30);
+    });
+  });
 }

@@ -98,6 +98,13 @@ void _driftGuard() {
       // Device-specific: holds a SAF content:// URI that is meaningless (and
       // unwritable) on another device.
       'download_prefs': 'device-specific download location',
+      // The device fingerprint is the app's account. Restoring it onto another
+      // device would collapse two devices onto one identity — and hand the
+      // second device the first one's trial and entitlement.
+      'device_identity': 'device-specific identity',
+      // Local FX rate + currency for the approximate price. Re-resolved on the
+      // restoring device, where the currency is almost certainly different.
+      'geo_pricing': 'device-specific FX cache',
       // Reference source ids the restoring device may not have installed.
       'pinned_sources': 'source ids',
       'subscriptions': 'source ids',

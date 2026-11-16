@@ -18,6 +18,13 @@ abstract class SubscriptionApi {
   });
   Future<String?> startTrial(String planKey);
 
+  /// Starts a checkout for [planKey] on this device and returns the result,
+  /// which carries either a Korapay checkout URL or a free-access grant.
+  Future<CheckoutResult> startCheckout({
+    required String planKey,
+    String? promoCode,
+  });
+
   Future<bool> adminConfigured();
   Future<bool> adminCheck(String passcode);
   Future<bool> adminSetup(String passcode);
@@ -137,6 +144,35 @@ class SubscriptionRepository implements SubscriptionApi {
       {'p_fingerprint': fp, 'p_plan': planKey},
       (d) => d is String ? d : null,
     );
+  }
+
+  /// Starts a checkout through the `stream-subscribe` edge function.
+  ///
+  /// A function error is returned as a [CheckoutResult] with `ok == false`
+  /// rather than thrown, so the UI can show a reason without a try/catch.
+  @override
+  Future<CheckoutResult> startCheckout({
+    required String planKey,
+    String? promoCode,
+  }) async {
+    final fp = await _fingerprint();
+    try {
+      final res = await _client.functions.invoke(
+        'stream-subscribe',
+        body: {
+          'fingerprint': fp,
+          'planKey': planKey,
+          if (promoCode != null && promoCode.isNotEmpty) 'promoCode': promoCode,
+        },
+      );
+      final data = res.data;
+      if (data is Map) {
+        return CheckoutResult.fromMap(data.cast<String, dynamic>());
+      }
+      return const CheckoutResult(ok: false, free: false, error: 'bad_response');
+    } catch (e) {
+      return CheckoutResult(ok: false, free: false, error: '$e');
+    }
   }
 
   // ---- Admin -------------------------------------------------------------

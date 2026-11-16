@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../core/subscription/geo_pricing.dart';
 import '../../core/subscription/subscription_models.dart';
 import '../../core/subscription/subscription_repository.dart';
 
@@ -25,6 +26,7 @@ class SubscriptionState extends Equatable {
     this.message,
     this.promoRejected = false,
     this.discountPct = 15,
+    this.geoQuote,
   });
 
   final PaywallStage stage;
@@ -39,6 +41,9 @@ class SubscriptionState extends Equatable {
 
   /// Launch-offer percentage off list (from app_config; 15 by default).
   final int discountPct;
+
+  /// Approximate local-currency price, when the device is on African rails.
+  final GeoQuote? geoQuote;
 
   SubscriptionPlan? get selected {
     final key = selectedKey;
@@ -69,6 +74,10 @@ class SubscriptionState extends Equatable {
 
   bool get isFreeAccess => promo?.isFree == true || totalCents == 0;
 
+  /// Approximate price in the device's local currency, shown under the offer
+  /// price. Null when the device is not on African rails or no rate is known.
+  String? get geoApprox => geoQuote?.format(offerCents / 100);
+
     SubscriptionState copyWith({
     PaywallStage? stage,
     List<SubscriptionPlan>? plans,
@@ -78,6 +87,7 @@ class SubscriptionState extends Equatable {
     String? Function()? message,
     bool? promoRejected,
     int? discountPct,
+    GeoQuote? geoQuote,
   }) => SubscriptionState(
     stage: stage ?? this.stage,
     plans: plans ?? this.plans,
@@ -87,6 +97,7 @@ class SubscriptionState extends Equatable {
     message: message != null ? message() : this.message,
     promoRejected: promoRejected ?? this.promoRejected,
     discountPct: discountPct ?? this.discountPct,
+    geoQuote: geoQuote ?? this.geoQuote,
   );
 
   @override
@@ -95,11 +106,20 @@ class SubscriptionState extends Equatable {
     plans.length,
     identity?.sessionId,
     identity?.trialUsed,
+    // Entitlement fields matter: a payment settles without changing the
+    // session id, and without these the state compares equal and the rebuild
+    // is dropped, leaving the paywall up after a successful charge.
+    identity?.entitled,
+    identity?.showPaywall,
+    identity?.status,
+    identity?.daysLeft,
     selectedKey,
     promo?.code,
     message,
     promoRejected,
     discountPct,
+    geoQuote?.currency,
+    geoQuote?.rate,
   ];
 }
 
@@ -116,9 +136,11 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     final results = await Future.wait([
       _repo.plans(),
       _repo.identify(),
+      GeoPricing.quote(),
     ]);
     final plans = results[0] as List<SubscriptionPlan>;
     final identity = results[1] as DeviceIdentity?;
+    final geoQuote = results[2] as GeoQuote?;
 
     // Default to the most popular tier (middle of the list), else the first.
     final defaultKey = state.selectedKey ??
@@ -132,6 +154,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         plans: plans,
         identity: identity,
         selectedKey: defaultKey,
+        geoQuote: geoQuote,
         message: () => plans.isEmpty ? 'Could not load plans.' : null,
       ),
     );
@@ -207,6 +230,41 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       ),
     );
     return true;
+  }
+
+  /// Starts a paid checkout for the selected plan.
+  ///
+  /// Returns the result so the caller can open the Korapay checkout. When the
+  /// promo covers the whole price the server grants access immediately and
+  /// [CheckoutResult.free] is true, with no checkout URL to open.
+  Future<CheckoutResult?> beginCheckout() async {
+    final plan = state.selected;
+    if (plan == null) return null;
+    emit(state.copyWith(stage: PaywallStage.activating, message: () => null));
+    final result = await _repo.startCheckout(
+      planKey: plan.key,
+      promoCode: state.promo?.code,
+    );
+    if (!result.ok) {
+      emit(
+        state.copyWith(
+          stage: PaywallStage.ready,
+          message: () => 'Could not start checkout. Please try again.',
+          promoRejected: true,
+        ),
+      );
+      return result;
+    }
+    emit(state.copyWith(stage: PaywallStage.ready));
+    return result;
+  }
+
+  /// Re-reads this device's entitlement after a payment, so the unlock reflects
+  /// the server's verdict rather than the WebView's return.
+  Future<bool> refreshEntitlement() async {
+    final identity = await _repo.identify();
+    emit(state.copyWith(identity: identity));
+    return identity?.entitled ?? false;
   }
 
   /// Redeems the current promo (if any) against this device. Best-effort: a

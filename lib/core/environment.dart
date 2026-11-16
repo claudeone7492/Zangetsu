@@ -20,6 +20,22 @@ class Environment {
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvZ3d6cmxmb2VyY2Z3Y2Z3bG12Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzNjgzODIsImV4cCI6MjA5OTk0NDM4Mn0.qr-nHnB9vb7BodP55XJ9-6Rwp__eOGCS6txhLiuWVZw',
   );
 
+  // Subscription backend. The paywall, promo catalogue and admin console live
+  // in the "Sophie" project, which is separate from the app's own project
+  // above, so they get their own URL + anon key. The anon key is a public
+  // client key (same class of value as [supabaseAnonKey]); every subscription
+  // read and write goes through a SECURITY DEFINER RPC or an edge function, so
+  // the client is never trusted for entitlement.
+  static const String subscriptionUrl = String.fromEnvironment(
+    'SUBSCRIPTION_URL',
+    defaultValue: 'https://lmjeickcvynwqsvustwq.supabase.co',
+  );
+  static const String subscriptionAnonKey = String.fromEnvironment(
+    'SUBSCRIPTION_ANON_KEY',
+    defaultValue:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtamVpY2tjdnlud3FzdnVzdHdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1OTE2MTksImV4cCI6MjExMDE2NzYxOX0.jlXh4KYsmMRHIKIPhBvkEgu1mtHGeZHNCvFwrMtaNCI',
+  );
+
   // Supabase issues auth tokens; all app cloud-data sync uses the VPS.
   static const String vpsSyncUrl = String.fromEnvironment(
     'VPS_SYNC_URL',

@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/di/injector.dart';
+import '../../core/subscription/geo_pricing.dart';
 import '../../core/subscription/subscription_models.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import 'korapay_checkout.dart';
 import 'subscription_cubit.dart';
 
 /// Opens the subscription card as a frosted modal. Resolves true when the user
@@ -149,7 +151,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
             ),
             const SizedBox(height: 6),
             Text(
-              'Cancel anytime. First 7 days free on Standard & Premium.',
+              'Cancel anytime. First 14 days free on Standard & Premium.',
               style: AppText.body.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 18),
@@ -158,6 +160,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
                 plan: plan,
                 selected: plan.key == state.selectedKey,
                 discountPct: state.discountPct,
+                geoQuote: state.geoQuote,
                 onTap: () => cubit.selectPlan(plan.key),
               ),
               const SizedBox(height: 10),
@@ -329,8 +332,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
                   if (ok && context.mounted) Navigator.of(context).pop(true);
                   return;
                 }
-                await cubit.commitPromo();
-                if (context.mounted) Navigator.of(context).pop(true);
+                await _pay(context, cubit);
               },
         style: FilledButton.styleFrom(
           backgroundColor: Colors.white,
@@ -352,6 +354,46 @@ class _PaywallSheetState extends State<PaywallSheet> {
       ),
     );
   }
+
+  /// Runs the paid path: start the checkout server-side, then either finish
+  /// (a free promo already granted access) or open the Korapay WebView and
+  /// re-check entitlement on the way back.
+  Future<void> _pay(BuildContext context, SubscriptionCubit cubit) async {
+    final result = await cubit.beginCheckout();
+    if (!context.mounted || result == null || !result.ok) return;
+
+    if (result.free) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+
+    final url = result.checkoutUrl;
+    if (url == null) {
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(
+          const SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text('Checkout is unavailable right now.'),
+          ),
+        );
+      return;
+    }
+
+    final paid = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => KoraPayCheckout(checkoutUrl: url),
+        fullscreenDialog: true,
+      ),
+    );
+    if (!context.mounted) return;
+
+    // The WebView returning only means the user came back. Entitlement is
+    // re-read from the server, which the webhook settles independently.
+    if (paid == true && await cubit.refreshEntitlement()) {
+      if (context.mounted) Navigator.of(context).pop(true);
+    }
+  }
 }
 
 class _PlanCard extends StatelessWidget {
@@ -360,11 +402,13 @@ class _PlanCard extends StatelessWidget {
     required this.selected,
     required this.discountPct,
     required this.onTap,
+    this.geoQuote,
   });
 
   final SubscriptionPlan plan;
   final bool selected;
   final int discountPct;
+  final GeoQuote? geoQuote;
   final VoidCallback onTap;
 
   @override
@@ -451,6 +495,15 @@ class _PlanCard extends StatelessWidget {
                     decoration: TextDecoration.lineThrough,
                   ),
                 ),
+                if (geoQuote != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    '≈ ${geoQuote!.format(offer / 100)}',
+                    style: AppText.caption.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                ],
               ],
             ),
           ],

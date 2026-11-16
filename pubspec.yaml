@@ -187,6 +187,7 @@ dependencies:
   enough_convert: ^1.7.1
   flutter_timezone: ^5.1.1
   timezone: ^0.9.4
+  geo_currencies: ^0.0.6
 dev_dependencies:
   http: ^1.6.0
   video_player_platform_interface: ^6.9.0

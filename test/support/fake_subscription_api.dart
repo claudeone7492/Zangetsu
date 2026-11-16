@@ -20,10 +20,19 @@ class FakeSubscriptionApi implements SubscriptionApi {
   DeviceIdentity? identityResult;
   PromoResult? promoResult;
   String? trialResult;
+  CheckoutResult checkoutResult = const CheckoutResult(
+    ok: true,
+    free: false,
+    checkoutUrl: 'https://checkout.test/pay',
+  );
   bool adminConfiguredResult;
   bool adminCheckResult;
 
   int startTrialCalls = 0;
+  int startCheckoutCalls = 0;
+  String? lastCheckoutPlan;
+  String? lastCheckoutPromo;
+  int identifyCalls = 0;
   final List<Map<String, Object?>> redemptions = [];
   final List<Map<String, Object?>> promoWrites = [];
 
@@ -31,7 +40,10 @@ class FakeSubscriptionApi implements SubscriptionApi {
   Future<List<SubscriptionPlan>> plans() async => plansResult;
 
   @override
-  Future<DeviceIdentity?> identify() async => identityResult;
+  Future<DeviceIdentity?> identify() async {
+    identifyCalls++;
+    return identityResult;
+  }
 
   @override
   Future<PromoResult?> resolvePromo(String code, {String? planKey}) async =>
@@ -57,6 +69,17 @@ class FakeSubscriptionApi implements SubscriptionApi {
   Future<String?> startTrial(String planKey) async {
     startTrialCalls++;
     return trialResult;
+  }
+
+  @override
+  Future<CheckoutResult> startCheckout({
+    required String planKey,
+    String? promoCode,
+  }) async {
+    startCheckoutCalls++;
+    lastCheckoutPlan = planKey;
+    lastCheckoutPromo = promoCode;
+    return checkoutResult;
   }
 
   @override
@@ -111,7 +134,7 @@ List<SubscriptionPlan> samplePlans() => const [
     label: 'Standard',
     priceCents: 349,
     periodDays: 30,
-    trialDays: 7,
+    trialDays: 14,
     features: ['Full HD', '2 screens', 'Downloads'],
     sortOrder: 2,
   ),
@@ -120,7 +143,7 @@ List<SubscriptionPlan> samplePlans() => const [
     label: 'Premium',
     priceCents: 599,
     periodDays: 30,
-    trialDays: 7,
+    trialDays: 14,
     features: ['4K', '4 screens', 'Downloads'],
     sortOrder: 3,
   ),

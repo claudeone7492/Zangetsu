@@ -26,6 +26,7 @@ import '../../core/logging/app_logger.dart';
 import 'phone_playback_launch.dart';
 import 'episode_player_route.dart';
 import 'player_engine_fallback.dart';
+import '../paywall/entitlement_gate.dart';
 import '../../core/download/download_manager.dart';
 import '../../core/download/download_record.dart';
 import '../downloads/episode_download_icon.dart';
@@ -654,6 +655,31 @@ class _PlayerScreenState extends State<PlayerScreen> {
     // Refresh the "enhancement shaders downloaded?" flag so the in-player picker
     // gates correctly (they're fetched on demand from Settings). Fire-and-forget.
     unawaited(ShaderPresets.refreshDownloaded());
+    // Playback is the one place entitlement is enforced, so every route into the
+    // player (Home, History, Downloads, share links, watch-together) is covered.
+    unawaited(_gateThenInit());
+  }
+
+  /// Checks this device's entitlement before any playback starts, then runs the
+  /// normal init. An unentitled device gets the paywall and the route is popped
+  /// if it is still unentitled afterwards.
+  Future<void> _gateThenInit() async {
+    // One frame so the overlay/route is ready to host the modal.
+    await Future<void>.delayed(Duration.zero);
+    if (!mounted) return;
+    final allowed = await ensureEntitled(
+      context,
+      reason: 'Watch with Zangetsu',
+    );
+    if (!mounted) return;
+    if (!allowed) {
+      Navigator.of(context).maybePop();
+      return;
+    }
+    _initAfterGate();
+  }
+
+  void _initAfterGate() {
     if (Platform.isAndroid && _chosenPlayer == PlaybackPrefs.androidPlayerId) {
       _launchExoThenPop();
       return;
