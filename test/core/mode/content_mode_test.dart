@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watch_app/core/app_config.dart';
 import 'package:watch_app/core/mode/content_mode.dart';
 import 'package:watch_app/core/models/provider_info.dart';
 
@@ -28,7 +29,9 @@ void main() {
     expect(ContentMode.manga.matchesProvider(ProviderType.manga), isTrue);
     expect(ContentMode.novel.matchesProvider(ProviderType.novel), isTrue);
     expect(ContentMode.manga.matchesProvider(ProviderType.novel), isFalse);
-    // Shorts is a video shelf: it takes the video types exactly as anime does.
+    // At the TYPE level Shorts still accepts the video types (a drama
+    // catalogue is declared `movie`); the drama-only narrowing is by id, in
+    // sourceIdMatchesContentMode.
     expect(ContentMode.shorts.matchesProvider(ProviderType.anime), isTrue);
     expect(ContentMode.shorts.matchesProvider(ProviderType.movie), isTrue);
     expect(ContentMode.shorts.matchesProvider(ProviderType.manga), isFalse);
@@ -139,6 +142,44 @@ void main() {
         ),
         isFalse,
       );
+    });
+
+    // "it should be only shorts dramas only … other movies are slipping in":
+    // Shorts narrows to the drama catalogues by id, so a generic movie source
+    // can never appear in its picker or fill its page.
+    test('Shorts admits only the drama catalogues', () {
+      for (final id in kShortDramaSourceIds) {
+        expect(
+          sourceIdMatchesContentMode(
+            id,
+            ContentMode.shorts,
+            typeFromManifest: manifestType,
+          ),
+          isTrue,
+          reason: '$id is a drama catalogue',
+        );
+      }
+      for (final id in const ['framextv', 'netweb', 'vidsrc', 'anikoto']) {
+        expect(
+          sourceIdMatchesContentMode(
+            id,
+            ContentMode.shorts,
+            typeFromManifest: manifestType,
+          ),
+          isFalse,
+          reason: '$id is not a drama catalogue',
+        );
+      }
+    });
+
+    test('a manga/novel id is never a Shorts source', () {
+      expect(
+        sourceIdMatchesContentMode('mangakakalot', ContentMode.shorts),
+        isFalse,
+      );
+      expect(sourceIdMatchesContentMode('gutenberg', ContentMode.shorts), isFalse);
+      expect(sourceIdMatchesContentMode('mihon:17', ContentMode.shorts), isFalse);
+      expect(sourceIdMatchesContentMode('lnr:9', ContentMode.shorts), isFalse);
     });
   });
 

@@ -544,10 +544,21 @@ SourceBuckets filterBucketsForMode(SourceBuckets buckets, ContentMode mode) {
   // repos — see ProviderRegistry's composite repoUrl+sourceId key), and a
   // map would collapse those into one row, silently dropping one from the
   // picker/search.
+  // ID-aware, not just type-aware: Shorts narrows to the drama catalogues by
+  // id (see sourceIdMatchesContentMode), so a type-only check would leave every
+  // movie/anime source in the picker and let the user switch Shorts onto a
+  // feature-film catalogue. For anime/manga/novel this is identical to
+  // `mode.matchesProvider(typeOf(id))`.
   List<({String id, String label, String? repo, String? icon})> filter(
     List<({String id, String label, String? repo, String? icon})> rows,
   ) => rows
-      .where((r) => mode.matchesProvider(_typeOfFromMap(r.id, typeMap)))
+      .where(
+        (r) => sourceIdMatchesContentMode(
+          r.id,
+          mode,
+          typeFromManifest: (id) => _typeOfFromMap(id, typeMap),
+        ),
+      )
       .toList();
 
   return (

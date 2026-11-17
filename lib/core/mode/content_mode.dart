@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:zangetsu_source_bridge/zangetsu_source_bridge.dart';
 
+import '../app_config.dart';
 import '../mangayomi/mangayomi_source_id.dart';
 import '../models/provider_info.dart';
 import '../provider/provider_registry.dart';
@@ -52,15 +53,25 @@ bool sourceIdMatchesContentMode(
   ContentMode mode, {
   SourceTypeResolver? typeFromManifest,
 }) {
+  // Shorts is a SHORT-DRAMA surface, not a video shelf: "it should be only
+  // shorts dramas only … other movies are slipping in". So it narrows by ID to
+  // the drama catalogues in [kShortDramaSourceIds] — the sources built end to
+  // end around serialized short dramas — rather than accepting every video
+  // source the way anime does. Without this, the source picker and the
+  // source-switch fallback offered every movie/anime catalogue in Shorts mode,
+  // and picking one filled the page with feature films. Checked before the
+  // mangayomi/prefix branches, which would otherwise call a drama catalogue
+  // generic video.
+  if (mode == ContentMode.shorts) {
+    return kShortDramaSourceIds.contains(sourceId);
+  }
   final mangayomiType = mangayomiContentTypeOf(sourceId);
   if (mangayomiType != null) {
     return switch (mode) {
       ContentMode.anime => mangayomiType == MangayomiContentType.video,
       ContentMode.manga => mangayomiType == MangayomiContentType.manga,
       ContentMode.novel => mangayomiType == MangayomiContentType.novel,
-      // Shorts is a video shelf, so it takes the video family exactly as anime
-      // does — the drama catalogues are declared as video sources.
-      ContentMode.shorts => mangayomiType == MangayomiContentType.video,
+      ContentMode.shorts => false, // handled above
       // Music has no provider-backed sources, so no id belongs to it.
       ContentMode.music => false,
     };
@@ -181,5 +192,17 @@ Map<String, T> filterSourcesForMode<T>(
   ContentMode mode,
   ProviderType Function(T) typeOf,
 ) => Map.fromEntries(
-  sources.entries.where((e) => mode.matchesProvider(typeOf(e.value))),
+  // ID-aware, not just type-aware, so Shorts keeps only its drama catalogues
+  // (see [sourceIdMatchesContentMode]); anime/manga/novel resolve exactly as
+  // `mode.matchesProvider(typeOf(id))` did.
+  sources.entries.where(
+    (e) => sourceIdMatchesContentMode(
+      e.key,
+      mode,
+      typeFromManifest: (id) {
+        final value = sources[id];
+        return value == null ? null : typeOf(value);
+      },
+    ),
+  ),
 );

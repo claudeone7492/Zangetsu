@@ -95,7 +95,7 @@ function _showUrl(bookId, slug) { return 'rs:' + bookId + '|' + slug; }
 function _mapBook(b) {
   if (!b || !b.book_id) return null;
   var slug = _filterTitle(b.book_title);
-  return {
+  var item = {
     id: String(b.book_id),
     title: b.book_title || String(b.book_id),
     cover: b.book_pic || b.default_pic || null,
@@ -104,6 +104,12 @@ function _mapBook(b) {
     type: 'movie',
     sourceId: SOURCE_ID
   };
+  // One-line synopsis for the reels card, when the rail carries it.
+  var synopsis = htmlText(
+    b.book_intro || b.introduction || b.description || b.special_desc || ''
+  );
+  if (synopsis) item.description = synopsis;
+  return item;
 }
 
 function _mapBooks(list) {

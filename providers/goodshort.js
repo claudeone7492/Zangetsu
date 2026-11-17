@@ -59,7 +59,7 @@ function _showUrl(bookId, resourceUrl) {
 function _mapBook(b) {
   if (!b || !b.bookId) return null;
   var res = b.bookResourceUrl || b.seoBookName || '';
-  return {
+  var item = {
     id: String(b.bookId),
     title: b.bookName || b.seoBookName || String(b.bookId),
     cover: b.cover || b.cover2 || b.bannerUrl || null,
@@ -68,6 +68,12 @@ function _mapBook(b) {
     type: 'movie',
     sourceId: SOURCE_ID
   };
+  // One-line synopsis for the reels card, when the rail carries it. The home
+  // listing doesn't always include it (the detail endpoint does), so only set
+  // what's actually there rather than a placeholder.
+  var synopsis = htmlText(b.introduction || b.intro || b.description || '');
+  if (synopsis) item.description = synopsis;
+  return item;
 }
 
 function _mapBooks(list) {

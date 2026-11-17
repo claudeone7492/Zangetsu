@@ -125,6 +125,16 @@ function _genreName(genres, id) {
   return '';
 }
 
+// The app filters the live rail on one canonical slug, and this feed names the
+// world's game "Football". Fold both spellings onto "soccer" so the fixtures
+// land in the rail instead of being dropped as an unknown sport (the same fold
+// CDNLive TV does).
+function _sportSlug(name) {
+  var slug = String(name || '').toLowerCase().replace(/^\s+|\s+$/g, '');
+  if (slug === 'football' || slug === 'soccer') return 'soccer';
+  return slug;
+}
+
 function _mapEvent(e, genres) {
   if (!e || !e.name) return null;
   if (e.vip) return null;
@@ -153,8 +163,9 @@ function _mapEvent(e, genres) {
     liveInfo: [genre, feeds.length > 1 ? feeds.length + ' feeds' : null].filter(Boolean).join(' \u00B7 ') || null
   };
   if (genre) item.genres = [genre];
-  // Canonical sport slug, lowercased ('soccer' for football).
-  if (genre) item.liveSport = String(genre).toLowerCase();
+  // Canonical sport slug, lowercased and folded onto the one slug the app's
+  // rail filters on ('soccer' for football).
+  if (genre) item.liveSport = _sportSlug(genre);
   return item;
 }
 

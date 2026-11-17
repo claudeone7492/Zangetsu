@@ -12,6 +12,9 @@ import 'package:watch_app/core/repository/catalogue_repository.dart';
 import 'package:watch_app/core/tracker/tracker.dart';
 import 'package:watch_app/core/tracker/tracker_hub.dart';
 import 'package:watch_app/core/di/injector.dart';
+import 'package:watch_app/core/mode/content_mode.dart';
+import 'package:watch_app/core/mode/content_mode_cubit.dart';
+import 'package:watch_app/core/state/active_source_cubit.dart';
 import 'package:watch_app/core/ui/home_rows_prefs.dart';
 import 'package:watch_app/core/zmode/metadata_provider_prefs.dart';
 import 'package:watch_app/core/zmode/zmode_prefs.dart';
@@ -38,6 +41,13 @@ HomeSection _csSection(String title) => HomeSection(
   more: const BrowseMore(sourceId: 'cs:Example', kind: 'cs_mainpage'),
 );
 
+/// A Shorts-mode section: the drama aggregate the mode composes.
+HomeSection _shortsSection(String title) => HomeSection(
+  title: title,
+  items: [_item(title)],
+  more: const BrowseMore(sourceId: 'moviebox', kind: 'shorts'),
+);
+
 MediaItem _item(String t) => MediaItem(
   id: t,
   title: t,
@@ -60,6 +70,13 @@ class _StubRepo implements CatalogueRepository {
     String category = 'sub',
     String? sourceId,
   }) async {
+    homeCount++;
+    return _sections;
+  }
+
+  /// Shorts mode routes the fetch here instead of [home].
+  @override
+  Future<List<HomeSection>> shortsHome() async {
     homeCount++;
     return _sections;
   }
@@ -216,6 +233,36 @@ void main() {
       'section:Popular',
     ]);
     expect(cubit.state.rows!.any((r) => isTrackerRowId(r.id)), isFalse);
+  });
+
+  // Shorts must be dramas only: its layout is the local Continue row on top of
+  // the provider sections, and Continue is the user's own history — feature
+  // films and series they played elsewhere. Leaving it in put non-drama titles
+  // on a page that must be dramas only, so the cubit drops it for this mode.
+  test('Shorts mode drops the local Continue row', () async {
+    final active = ActiveSourceCubit(fallback: 'test');
+    final mode = await ContentModeCubit.create(active);
+    addTearDown(mode.close);
+    if (sl.isRegistered<ContentModeCubit>()) sl.unregister<ContentModeCubit>();
+    sl.registerSingleton<ContentModeCubit>(mode);
+    addTearDown(() {
+      if (sl.isRegistered<ContentModeCubit>()) {
+        sl.unregister<ContentModeCubit>();
+      }
+    });
+    await mode.setMode(ContentMode.shorts);
+
+    final t = _FakeTracker();
+    final cubit = HomeCubit(
+      _StubRepo([_shortsSection('Trending Now')]),
+      trackerHub: TrackerHub([t]),
+    );
+    addTearDown(cubit.close);
+
+    await cubit.load();
+
+    expect(cubit.state.rows?.map((r) => r.id), isNot(contains('local:continue')));
+    expect(cubit.state.rows?.map((r) => r.id), contains('section:Trending Now'));
   });
 
   test(

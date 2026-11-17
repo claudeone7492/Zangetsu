@@ -424,7 +424,7 @@ class HomeCubit extends Cubit<HomeState> {
       withStreamingRail: withRail,
     );
     final saved = HomeRowsPrefs.savedFor(layoutKey);
-    final layout = sanitizeLayout(
+    final arranged = sanitizeLayout(
       saved ??
           defaultLayout(
             [for (final s in rowSections) 'section:${s.title}'],
@@ -434,6 +434,16 @@ class HomeCubit extends Cubit<HomeState> {
           ),
       available,
     );
+    // Shorts is a pure short-drama surface. The local Continue row is the
+    // user's own watch history — feature films, series and anime they played
+    // anywhere in the app — so leaving it in puts non-drama titles at the top
+    // of a page that must be dramas only. Drop it for this mode.
+    final layout = _mode == ContentMode.shorts
+        ? [
+            for (final e in arranged)
+              if (e.id != localContinueRowId) e,
+          ]
+        : arranged;
     return mergeHomeRows(
       layout: layout,
       rowSections: rowSections,

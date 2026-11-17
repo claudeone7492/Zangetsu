@@ -694,18 +694,20 @@ function _liveInfo(m) {
 
 // Whether a fixture actually has a video broadcast to play.
 //
-// The API tags every fixture with a `playType`: `PlayTypeVideo` for one with a
-// stream, `PlayTypeText` for a text-only match centre (live commentary, no
-// picture). Plenty of in-play football fixtures are `PlayTypeText` — they read
-// as LIVE on the poster but carry no `playPath`/`playSource`, so tapping one
-// resolves zero sources and the player reports "no sources". Marking those
-// non-playable lets the card say so instead of promising a stream it cannot
-// open. A missing `playType` (the home rail omits it) is treated as playable so
-// a payload change never hides every fixture.
+// A match is playable when it actually carries a stream. `playType` is
+// 'PlayTypeText' for EVERY fixture (the match centre defaults to text), so it
+// says nothing about playability — an in-play match still carries a signed
+// `playPath` (and often `playSource` channels). Keying on those is what lets a
+// live match reach the rail instead of being dropped as "text only"; a fixture
+// with neither is genuinely stream-less until it kicks off.
 function _matchPlayable(m) {
   if (!m) return false;
-  if (m.playType === 'PlayTypeText') return false;
-  return true;
+  if (m.playPath) return true;
+  var chans = m.playSource || [];
+  for (var i = 0; i < chans.length; i++) {
+    if (chans[i] && chans[i].path) return true;
+  }
+  return false;
 }
 
 function _mapMatch(m) {
