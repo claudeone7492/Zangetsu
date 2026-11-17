@@ -84,6 +84,59 @@ void main() {
       final state = withPlan(samplePlans()[1], discountPct: 0);
       expect(state.payableCents, 349);
     });
+
+    test('defaults to no discount until the server config loads', () {
+      const state = SubscriptionState();
+      expect(state.discountPct, 0);
+      expect(state.offerCents, 0);
+    });
+  });
+
+  group('SubscriptionConfig', () {
+    test('parses the launch discount and currency', () {
+      final config = SubscriptionConfig.fromMap(const {
+        'launch_discount_pct': 15,
+        'display_currency': 'NGN',
+      });
+      expect(config.launchDiscountPct, 15);
+      expect(config.displayCurrency, 'NGN');
+    });
+
+    test('defaults to no discount and USD on a bad row', () {
+      final config = SubscriptionConfig.fromMap(const {});
+      expect(config.launchDiscountPct, 0);
+      expect(config.displayCurrency, 'USD');
+    });
+
+    test('clamps an out-of-range discount', () {
+      expect(
+        SubscriptionConfig.fromMap(const {'launch_discount_pct': 250})
+            .launchDiscountPct,
+        100,
+      );
+      expect(
+        SubscriptionConfig.fromMap(const {'launch_discount_pct': -5})
+            .launchDiscountPct,
+        0,
+      );
+    });
+  });
+
+  group('period labels', () {
+    test('a 30-day plan reads as monthly', () {
+      expect(periodSuffix(30), '/mo');
+      expect(periodWord(30), 'monthly');
+    });
+
+    test('a 365-day plan reads as yearly', () {
+      expect(periodSuffix(365), '/yr');
+      expect(periodWord(365), 'yearly');
+    });
+
+    test('an odd period falls back to days', () {
+      expect(periodSuffix(90), '/90d');
+      expect(periodWord(90), 'every 90 days');
+    });
   });
 
   group('SubscriptionCubit', () {
@@ -116,6 +169,19 @@ void main() {
 
       expect(cubit.state.stage, PaywallStage.error);
       expect(cubit.state.message, isNotNull);
+    });
+
+    test('load takes the launch discount from the server config', () async {
+      final api = FakeSubscriptionApi(
+        plansResult: samplePlans(),
+        configResult: const SubscriptionConfig(launchDiscountPct: 20),
+      );
+      final cubit = SubscriptionCubit(api);
+      await cubit.load();
+
+      expect(cubit.state.discountPct, 20);
+      // Standard is 349c; 20% off -> 279c.
+      expect(cubit.state.offerCents, 279);
     });
 
     test('unknown promo is rejected without clearing the plan', () async {
@@ -217,6 +283,7 @@ void main() {
         () async {
       final api = FakeSubscriptionApi(
         plansResult: samplePlans(),
+        configResult: const SubscriptionConfig(launchDiscountPct: 15),
         identityResult: const DeviceIdentity(
           sessionId: 's1',
           isNew: true,

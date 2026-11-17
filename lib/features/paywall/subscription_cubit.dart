@@ -43,8 +43,9 @@ class SubscriptionState extends Equatable {
   final String? message;
   final bool promoRejected;
 
-  /// Launch-offer percentage off list. Defaults to 0: the card quotes the list
-  /// price unless an admin discount is explicitly applied.
+  /// Launch-offer percentage off list, read from `subscription_config`.
+  /// Defaults to 0: the card quotes the list price unless an admin discount is
+  /// explicitly applied, and a config fetch that failed never over-promises.
   final int discountPct;
 
   /// Approximate local-currency price, when the device is on African rails.
@@ -150,10 +151,12 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       _repo.plans(),
       _repo.identify(),
       GeoPricing.quote(),
+      _repo.config(),
     ]);
     final plans = results[0] as List<SubscriptionPlan>;
     final identity = results[1] as DeviceIdentity?;
     final geoQuote = results[2] as GeoQuote?;
+    final config = results[3] as SubscriptionConfig;
 
     // One product: the premium subscription at the standard price. The backend
     // still carries a tiered catalogue, so collapse it to a single card rather
@@ -167,6 +170,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         identity: identity,
         selectedKey: single?.key,
         geoQuote: geoQuote,
+        discountPct: config.launchDiscountPct,
         message: () => single == null ? 'Could not load plans.' : null,
       ),
     );

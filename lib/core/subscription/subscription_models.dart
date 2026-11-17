@@ -294,6 +294,28 @@ class AdminPlanRow {
 
 DateTime? _dt(Object? v) => v is String ? DateTime.tryParse(v) : null;
 
+/// Admin-managed paywall display config, from the `subscription_config` RPC.
+///
+/// The launch discount lives in the database so it can change without a
+/// release; the card must quote whatever the server will actually charge.
+class SubscriptionConfig {
+  const SubscriptionConfig({
+    this.launchDiscountPct = 0,
+    this.displayCurrency = 'USD',
+  });
+
+  final int launchDiscountPct;
+  final String displayCurrency;
+
+  static SubscriptionConfig fromMap(Map<String, dynamic> m) => SubscriptionConfig(
+    launchDiscountPct: ((m['launch_discount_pct'] as num?)?.toInt() ?? 0)
+        .clamp(0, 100),
+    displayCurrency: (m['display_currency'] as String?)?.isNotEmpty == true
+        ? m['display_currency'] as String
+        : 'USD',
+  );
+}
+
 /// Formats USD cents as `$1.99`.
 String money(int cents) => '\$${(cents / 100).toStringAsFixed(2)}';
 

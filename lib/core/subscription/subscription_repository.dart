@@ -8,6 +8,7 @@ import 'subscription_models.dart';
 /// implementation stays the only place that knows about the network.
 abstract class SubscriptionApi {
   Future<List<SubscriptionPlan>> plans();
+  Future<SubscriptionConfig> config();
   Future<DeviceIdentity?> identify();
   Future<PromoResult?> resolvePromo(String code, {String? planKey});
   Future<int?> redeemPromo({
@@ -88,6 +89,20 @@ class SubscriptionRepository implements SubscriptionApi {
           .toList();
     });
     return res ?? const [];
+  }
+
+  /// Paywall display config (launch discount, display currency).
+  ///
+  /// Falls back to [SubscriptionConfig]'s defaults — a 0% discount — when the
+  /// call fails, so an offline paywall never quotes a discount the server
+  /// might not honour.
+  @override
+  Future<SubscriptionConfig> config() async {
+    final res = await _rpc('subscription_config', const {}, (d) {
+      final rows = _rows(d);
+      return rows.isEmpty ? null : SubscriptionConfig.fromMap(rows.first);
+    });
+    return res ?? const SubscriptionConfig();
   }
 
   /// Upserts this device and returns its identity + subscription. Call on boot.

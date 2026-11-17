@@ -90,7 +90,10 @@ void main() {
   testWidgets('rejects an unknown promo and then applies a real one', (
     t,
   ) async {
-    final api = FakeSubscriptionApi(plansResult: samplePlans());
+    final api = FakeSubscriptionApi(
+      plansResult: samplePlans(),
+      configResult: const SubscriptionConfig(launchDiscountPct: 15),
+    );
     final cubit = await loaded(api, t);
 
     await t.pumpWidget(host(cubit));
@@ -180,7 +183,10 @@ void main() {
   testWidgets('shows the approximate local price on the plan card', (
     t,
   ) async {
-    final api = FakeSubscriptionApi(plansResult: samplePlans());
+    final api = FakeSubscriptionApi(
+      plansResult: samplePlans(),
+      configResult: const SubscriptionConfig(launchDiscountPct: 15),
+    );
     final cubit = await loaded(api, t);
     cubit.emit(
       cubit.state.copyWith(

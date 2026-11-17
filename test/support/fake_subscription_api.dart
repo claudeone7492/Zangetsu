@@ -14,12 +14,14 @@ class FakeSubscriptionApi implements SubscriptionApi {
     this.trialResult = 'sub-id',
     this.adminConfiguredResult = false,
     this.adminCheckResult = true,
+    this.configResult = const SubscriptionConfig(),
   });
 
   List<SubscriptionPlan> plansResult;
   DeviceIdentity? identityResult;
   PromoResult? promoResult;
   String? trialResult;
+  SubscriptionConfig configResult;
   CheckoutResult checkoutResult = const CheckoutResult(
     ok: true,
     free: false,
@@ -38,6 +40,9 @@ class FakeSubscriptionApi implements SubscriptionApi {
 
   @override
   Future<List<SubscriptionPlan>> plans() async => plansResult;
+
+  @override
+  Future<SubscriptionConfig> config() async => configResult;
 
   @override
   Future<DeviceIdentity?> identify() async {
