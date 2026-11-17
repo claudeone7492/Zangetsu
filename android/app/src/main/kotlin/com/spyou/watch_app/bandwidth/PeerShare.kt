@@ -70,6 +70,18 @@ object PeerShare {
         }
     }
 
+    /**
+     * Bring sharing back if the user opted in — the Android 15+ path, where
+     * [PeerShareBootReceiver] cannot start the SDK's `dataSync` foreground
+     * service from BOOT_COMPLETED. Called on Activity resume; a no-op when
+     * sharing was never enabled, or is already running.
+     */
+    fun resumeIfOptedIn(context: Context) {
+        if (!BandwidthSharePrefs.isEnabled(context)) return
+        if (isRunning(context)) return
+        start(context)
+    }
+
     fun stop(context: Context) {
         if (!initialized) return
         try {

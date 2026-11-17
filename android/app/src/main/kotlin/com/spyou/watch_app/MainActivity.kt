@@ -27,6 +27,7 @@ import androidx.work.WorkManager
 import com.spyou.watch_app.aniyomi.AniyomiBridge
 import com.spyou.watch_app.bandwidth.BandwidthShareBridge
 import com.spyou.watch_app.bandwidth.BandwidthStatusStreamHandler
+import com.spyou.watch_app.bandwidth.PeerShare
 import com.spyou.watch_app.cast.CastManager
 import com.spyou.watch_app.cloudstream.CsPluginLoaderActivity
 import com.spyou.watch_app.cloudstream.PluginHost
@@ -278,6 +279,11 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
         super.onResume()
         playerOrientationObserver?.enable()
         current = java.lang.ref.WeakReference(this)
+        // Android 15+ blocks the boot receiver from restarting the peer SDK's
+        // dataSync foreground service, so the user's opt-in is honoured here
+        // instead — the first moment the system allows the service to start.
+        // No-op when sharing was never enabled.
+        PeerShare.resumeIfOptedIn(this)
         // CloudStream plugins that store their own settings grab a per-plugin
         // SharedPreferences via CommonActivity.getActivity().getSharedPreferences(name)
         // at load time (e.g. PlayzTV/Crickyfy live-TV category). Register the host
