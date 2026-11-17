@@ -97,7 +97,7 @@ function _episodeUrl(shortPlayId, path, episodeNo) {
 
 function _mapShow(s) {
   if (!s || !s.shortPlayId) return null;
-  return {
+  var item = {
     id: String(s.shortPlayId),
     title: s.shortPlayNameNoHL || s.shortPlayName || String(s.shortPlayId),
     cover: s.shortPlayCover || null,
@@ -106,6 +106,12 @@ function _mapShow(s) {
     type: 'movie',
     sourceId: SOURCE_ID
   };
+  // One-line synopsis for the reels card, when the listing carries it.
+  var synopsis = htmlText(
+    s.shortPlayIntroduce || s.introduction || s.description || ''
+  );
+  if (synopsis) item.description = synopsis;
+  return item;
 }
 
 // The catalogue is embedded as several `{"list":[…]}` rails; collect them all
