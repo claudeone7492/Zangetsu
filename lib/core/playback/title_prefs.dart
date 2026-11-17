@@ -1,9 +1,13 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
+
+import '../models/video_source.dart';
+import '../privacy/incognito_mode.dart';
+import 'subtitle_language.dart';
 import 'package:hive/hive.dart';
 import 'package:watch_app/core/hive/safe_box.dart';
 import 'package:watch_app/core/hive/hive_key.dart';
-
-import '../privacy/incognito_mode.dart';
-import 'subtitle_language.dart';
 
 /// Remembers per-title user choices (currently the sub/dub category), keyed by
 /// `"<sourceId>::<showUrl>"`. Netflix-style "remember my choice for this title".
@@ -60,9 +64,69 @@ class TitlePrefsStore {
     await _box.put(k, m);
   }
 
-  /// The subtitle the user last picked for this title — an ISO-639-1 code, or
-  /// 'off'. Null when nothing was chosen, so callers fall back to the global
-  /// preference. Values are normalised to ISO-639-1 on the way in.
+  VideoSource? preferredStremioLink(
+    String episodeUrl,
+    List<VideoSource> sources, {
+    String? showUrl,
+  }) {
+    final saved = _box.get(_key('stremio', episodeUrl));
+    if (saved != null) {
+      for (final source in sources) {
+        if (sha256.convert(utf8.encode(source.url)).toString() ==
+            saved['linkHash']) {
+          return source;
+        }
+      }
+      final label = saved['linkLabel'];
+      if (label is String && label.isNotEmpty) {
+        for (final source in sources) {
+          if (source.label == label) return source;
+        }
+      }
+    }
+    final group = showUrl == null ? null : stremioBingeGroup(showUrl);
+    if (group != null) {
+      for (final source in sources) {
+        if (source.bingeGroup == group) return source;
+      }
+    }
+    return null;
+  }
+
+  Future<void> rememberStremioLink(
+    String episodeUrl,
+    VideoSource source,
+  ) async {
+    final key = _key('stremio', episodeUrl);
+    await _box.put(key, {
+      ...?_box.get(key),
+      'linkHash': sha256.convert(utf8.encode(source.url)).toString(),
+      'linkLabel': source.label,
+    });
+  }
+
+  /// The Stremio `behaviorHints.bingeGroup` of the link last played for this
+  /// title. Same group = same release family, used to pick the matching
+  /// stream on the next episode. Null when the played
+  /// link carried no group or nothing was remembered yet.
+  String? stremioBingeGroup(String showUrl) {
+    final m = _box.get(_key('stremio', showUrl));
+    final v = m == null ? null : Map<String, dynamic>.from(m)['bingeGroup'];
+    return (v is String && v.isNotEmpty) ? v : null;
+  }
+
+  Future<void> rememberStremioBingeGroup(
+    String showUrl,
+    String? bingeGroup,
+  ) async {
+    if (bingeGroup == null || bingeGroup.isEmpty) return;
+    final key = _key('stremio', showUrl);
+    await _box.put(key, {...?_box.get(key), 'bingeGroup': bingeGroup});
+  }
+
+  /// The subtitle pick remembered for this title: a language code or 'off'.
+  /// Beats the global preference when set — the show's own choice wins.
+  /// Both Stremio and non-Stremio remember here, keyed by source+show.
   String? subtitleChoice(String sourceId, String showUrl) {
     final m = _box.get(_key(sourceId, showUrl));
     final v = m == null ? null : Map<String, dynamic>.from(m)['subtitleChoice'];
@@ -117,11 +181,7 @@ class TitlePrefsStore {
     return (v is String && v.isNotEmpty) ? v : null;
   }
 
-  Future<void> setQuality(
-    String sourceId,
-    String showUrl,
-    String pref,
-  ) async {
+  Future<void> setQuality(String sourceId, String showUrl, String pref) async {
     final k = _key(sourceId, showUrl);
     final m = _box.get(k) == null
         ? <String, dynamic>{}
@@ -138,11 +198,7 @@ class TitlePrefsStore {
     return v is num ? v.toDouble() : null;
   }
 
-  Future<void> setSpeed(
-    String sourceId,
-    String showUrl,
-    double rate,
-  ) async {
+  Future<void> setSpeed(String sourceId, String showUrl, double rate) async {
     final k = _key(sourceId, showUrl);
     final m = _box.get(k) == null
         ? <String, dynamic>{}

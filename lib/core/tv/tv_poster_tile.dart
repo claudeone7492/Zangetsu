@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/media_item.dart';
+import '../stremio/stremio_poster_shape.dart';
 import '../theme/app_colors.dart';
 import '../playback/playback_prefs.dart';
 import '../ui/poster_card.dart';
@@ -22,6 +23,7 @@ class TvPosterTile extends StatelessWidget {
     this.genres = const [],
     this.isAdult = false,
     this.progressBadge,
+    this.topRightBadge,
     this.liveBadge,
     this.liveInfo,
     this.liveUnplayable = false,
@@ -44,6 +46,7 @@ class TvPosterTile extends StatelessWidget {
   final List<String> genres;
   final bool isAdult;
   final String? progressBadge;
+  final Widget? topRightBadge;
 
   /// Live-sports chip + info line. See [PosterCard.liveBadge].
   final String? liveBadge;
@@ -59,46 +62,64 @@ class TvPosterTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final wide = posterLayout(context) == PosterCardLayout.wide;
-    final titleInside = posterTitleInside(context, wide: wide);
+    final defaultWide = posterLayout(context) == PosterCardLayout.wide;
+    final aspect = logoItem == null
+        ? null
+        : stremioPosterAspect(logoItem!, landscape: defaultWide);
+    final wide = aspect == null ? defaultWide : aspect > 1;
+    final titleInside = posterTitleInside(context, wide: wide, item: logoItem);
     return LayoutBuilder(
       builder: (context, tileConstraints) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          AspectRatio(
-            aspectRatio: wide ? 16 / 9 : 2 / 3,
-            child: TvFocusable(
-              autofocus: autofocus,
-              variant: TvFocusVariant.float,
-              scale: 1.04,
-              borderRadius: 12,
-              onTap: onTap,
-              onLongPress: onLongPress,
-              semanticLabel: title,
-              child: LayoutBuilder(
-                builder: (context, constraints) => PosterCard(
-                  title: title,
-                  logoItem: logoItem,
-                  imageUrl: imageUrl,
-                  wideImageUrl: wideImageUrl,
-                  headers: headers,
-                  tags: tags,
-                  qualityBadge: qualityBadge,
-                  dubBadge: dubBadge,
-                  scoreBadge: scoreBadge,
-                  genres: genres,
-                  isAdult: isAdult,
-                  progressBadge: progressBadge,
-                  liveBadge: liveBadge,
-                  liveInfo: liveInfo,
-                  liveUnplayable: liveUnplayable,
-                  cellWidth: constraints.maxWidth,
-                  showTitle: false,
-                  // Touch gestures are disabled on TV; TvFocusable handles OK-key
-                  // (including held-OK long-press when [onLongPress] is set).
-                  onTap: null,
-                  onLongPress: null,
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight:
+                  logoItem?.sourceId == 'stremio' &&
+                      !titleInside &&
+                      tileConstraints.maxHeight.isFinite
+                  ? (tileConstraints.maxHeight - 28)
+                        .clamp(0, double.infinity)
+                        .toDouble()
+                  : double.infinity,
+            ),
+            child: AspectRatio(
+              aspectRatio: aspect ?? (wide ? 16 / 9 : 2 / 3),
+              child: TvFocusable(
+                autofocus: autofocus,
+                variant: TvFocusVariant.float,
+                scale: 1.04,
+                borderRadius: 12,
+                onTap: onTap,
+                onLongPress: onLongPress,
+                semanticLabel: title,
+                child: LayoutBuilder(
+                  builder: (context, constraints) => PosterCard(
+                    title: title,
+                    logoItem: logoItem,
+                    imageUrl: imageUrl,
+                    wideImageUrl: wideImageUrl,
+                    headers: headers,
+                    tags: tags,
+                    qualityBadge: qualityBadge,
+                    dubBadge: dubBadge,
+                    scoreBadge: scoreBadge,
+                    genres: genres,
+                    isAdult: isAdult,
+                    progressBadge: progressBadge,
+                    topRightBadge: topRightBadge,
+                    liveBadge: liveBadge,
+                    liveInfo: liveInfo,
+                    liveUnplayable: liveUnplayable,
+                    cellWidth: constraints.maxWidth,
+                    showTitle: false,
+                    wideOverride: aspect == null ? null : wide,
+                    // Touch gestures are disabled on TV; TvFocusable handles OK-key
+                    // (including held-OK long-press when [onLongPress] is set).
+                    onTap: null,
+                    onLongPress: null,
+                  ),
                 ),
               ),
             ),

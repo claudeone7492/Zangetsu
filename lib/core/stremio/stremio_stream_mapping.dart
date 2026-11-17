@@ -1,6 +1,7 @@
 import 'package:zangetsu_source_bridge/stremio.dart';
 
 import '../models/video_source.dart';
+import '../playback/subtitle_language.dart';
 import '../torrent/torrent_util.dart';
 import 'stremio_link_session.dart';
 import 'stremio_ref.dart';
@@ -8,20 +9,25 @@ import 'stremio_ref.dart';
 /// Converts a playable Stremio link for the existing player.
 VideoSource? stremioVideoSource(
   StremioLinkChoice choice, {
-  List<StremioSubtitle> extraSubtitles = const [],
+  List<Subtitle> extraSubtitles = const [],
+  String? streamAddonName,
   bool allowTorrent = true,
 }) {
   final stream = choice.stream;
   final seen = <String>{};
   final subtitles = <Subtitle>[
-    for (final subtitle in [...stream.subtitles, ...extraSubtitles])
-      if (seen.add(subtitle.url))
+    for (final subtitle in [
+      for (final track in stream.subtitles)
         Subtitle(
-          url: subtitle.url,
-          lang: subtitle.lang,
-          label: subtitle.lang,
-          format: subtitle.format,
+          url: track.url,
+          lang: track.lang,
+          label: languageOfSource(track.lang)?.name ?? track.lang,
+          format: track.format,
+          providerName: streamAddonName,
         ),
+      ...extraSubtitles,
+    ])
+      if (seen.add(subtitle.url)) subtitle,
   ];
 
   final quality = stremioStreamQuality(
@@ -37,6 +43,7 @@ VideoSource? stremioVideoSource(
       label: choice.label,
       container: stremioStreamContainer(url),
       headers: stream.headers.isEmpty ? null : stream.headers,
+      bingeGroup: stream.bingeGroup,
       subtitles: subtitles,
     );
   }
@@ -56,6 +63,7 @@ VideoSource? stremioVideoSource(
       label: choice.label,
       container: SourceContainer.torrent,
       torrentFileIndex: stream.fileIndex,
+      bingeGroup: stream.bingeGroup,
       subtitles: subtitles,
     );
   }

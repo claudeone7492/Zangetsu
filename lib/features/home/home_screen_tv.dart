@@ -18,6 +18,7 @@ import '../../core/platform/apple_tv.dart';
 import '../../core/ui/global_messenger.dart';
 import '../../core/ui/native_cover_provider.dart';
 import '../../core/ui/banner_image_preloader.dart';
+import '../../core/stremio/stremio_poster_shape.dart';
 import '../../core/metadata/title_logo_service.dart';
 import '../../core/mihon/mihon_extension_service.dart';
 import '../../core/mangayomi/mangayomi_cloudflare.dart';
