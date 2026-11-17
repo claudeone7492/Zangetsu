@@ -202,6 +202,29 @@ class AdminDeviceRow {
   final int watch;
   final DateTime? lastSeenAt;
 
+  /// Whether this device counts as "active" on the dashboard: the app checked in
+  /// recently. A device the operator is looking at is only useful to know about
+  /// while it is still checking in; a row last seen weeks ago is history, not a
+  /// live device. [identify_device] stamps `last_seen_at` on every launch, so a
+  /// short window is a reliable "someone is using this right now" signal.
+  bool get isActive {
+    final seen = lastSeenAt;
+    if (seen == null) return false;
+    return DateTime.now().difference(seen) < const Duration(hours: 24);
+  }
+
+  /// A human label for how long ago the device last checked in, e.g. `2m`,
+  /// `3h`, `4d`. Empty when there is no timestamp.
+  String get lastSeenLabel {
+    final seen = lastSeenAt;
+    if (seen == null) return '';
+    final d = DateTime.now().difference(seen);
+    if (d.inMinutes < 1) return 'now';
+    if (d.inMinutes < 60) return '${d.inMinutes}m';
+    if (d.inHours < 24) return '${d.inHours}h';
+    return '${d.inDays}d';
+  }
+
   static AdminDeviceRow fromMap(Map<String, dynamic> m) => AdminDeviceRow(
     fingerprint: '${m['fingerprint']}',
     platform: m['platform'] as String?,

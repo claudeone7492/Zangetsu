@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
+import '../app_config.dart';
 import 'daily_picks_prefs.dart';
 import 'notification_router.dart';
 
@@ -145,7 +146,7 @@ class NotificationService {
     );
     await _plugin.show(
       _sourceUpdatesNotifId,
-      'Source updates available',
+      '$kAppName — $kAppTagline',
       count == 1 ? '1 source has an update' : '$count sources have updates',
       details,
     );
@@ -183,7 +184,7 @@ class NotificationService {
       android: AndroidNotificationDetails(
         'announcements',
         'Announcements',
-        channelDescription: 'News and updates from Zangetsu',
+        channelDescription: 'News and updates from $kAppName — $kAppTagline',
         importance: Importance.high,
         priority: Priority.high,
         styleInformation: style,
@@ -212,7 +213,13 @@ class NotificationService {
   }) async {
     if (!Platform.isAndroid) return;
     if (!_inited) await init();
-    final styleInfo = await _dailyPickStyle(style, title, body, imageUrl, lines);
+    final styleInfo = await _dailyPickStyle(
+      style,
+      title,
+      body,
+      imageUrl,
+      lines,
+    );
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
         'daily_picks',
@@ -247,7 +254,13 @@ class NotificationService {
   }) async {
     if (!Platform.isAndroid) return;
     if (!_inited) await init();
-    final styleInfo = await _dailyPickStyle(style, title, body, imageUrl, lines);
+    final styleInfo = await _dailyPickStyle(
+      style,
+      title,
+      body,
+      imageUrl,
+      lines,
+    );
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
         'daily_picks',

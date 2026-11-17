@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watch_app/core/subscription/subscription_models.dart';
 import 'package:watch_app/features/admin/admin_cubit.dart';
 
 import '../../support/fake_subscription_api.dart';
@@ -72,6 +73,46 @@ void main() {
       expect(api.promoWrites, hasLength(1));
       expect(api.promoWrites.single['code'], 'LAUNCH50');
       expect(api.promoWrites.single['percentOff'], 50);
+    });
+  });
+
+  group('Admin dashboard device activity', () {
+    AdminDeviceRow device({
+      required Duration seenAgo,
+      String status = 'active',
+    }) => AdminDeviceRow(
+      fingerprint: 'abcdef0123456789',
+      status: status,
+      lastSeenAt: DateTime.now().subtract(seenAgo),
+    );
+
+    test('a device seen recently counts as active', () {
+      final row = device(seenAgo: const Duration(minutes: 5));
+      expect(row.isActive, isTrue);
+      expect(row.lastSeenLabel, '5m');
+    });
+
+    test('a device seen long ago is idle, not active', () {
+      final row = device(seenAgo: const Duration(days: 3));
+      expect(row.isActive, isFalse);
+      expect(row.lastSeenLabel, '3d');
+    });
+
+    test('a device with no timestamp is never active', () {
+      const row = AdminDeviceRow(fingerprint: 'abcdef0123456789');
+      expect(row.isActive, isFalse);
+      expect(row.lastSeenLabel, isEmpty);
+    });
+
+    test('the state counts active devices for the KPI', () {
+      final state = AdminState(
+        devices: [
+          device(seenAgo: const Duration(minutes: 1)),
+          device(seenAgo: const Duration(hours: 2)),
+          device(seenAgo: const Duration(days: 9)),
+        ],
+      );
+      expect(state.activeDevices, 2);
     });
   });
 }

@@ -311,7 +311,10 @@
             </intent-filter>
         </receiver>
         <!-- Bandwidth sharing: restart the peer SDK after a reboot or update,
-             but only when the user opted in (see PeerShareBootReceiver). -->
+             but only when the user opted in (see PeerShareBootReceiver). The
+             action list must match PeerShareBootReceiver.ACTIONS exactly: a
+             filter with an action the receiver ignores is dead weight, and one
+             the receiver handles but the filter omits never arrives. -->
         <receiver
             android:exported="false"
             android:name=".bandwidth.PeerShareBootReceiver">
@@ -319,6 +322,7 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
                 <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
             </intent-filter>
         </receiver>
         <provider

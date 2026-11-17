@@ -17,13 +17,23 @@ void main() {
 
     test('each slot uses a different card design', () {
       // The whole point of the feature: three notifications a day, each a
-      // different industry-standard layout — big-text, big-picture, inbox.
+      // different industry-standard layout — big-picture, big-text, inbox.
       final styles = DailyPickSlot.values.map((s) => s.style).toSet();
       expect(styles.length, 3);
       expect(styles, {
-        DailyPickStyle.bigText,
         DailyPickStyle.bigPicture,
+        DailyPickStyle.bigText,
         DailyPickStyle.inbox,
+      });
+    });
+
+    test('each slot is a different kind of suggestion', () {
+      // One trending, one picked-for-you, one new — the Netflix trio.
+      final kinds = DailyPickSlot.values.map((s) => s.kind).toSet();
+      expect(kinds, {
+        DailyPickKind.trending,
+        DailyPickKind.recommended,
+        DailyPickKind.newRelease,
       });
     });
 
@@ -37,10 +47,73 @@ void main() {
       expect(minutes.toSet().length, 3);
     });
 
+    test('the jitter windows never overlap', () {
+      // Random per-day offsets are only safe while the windows stay disjoint;
+      // overlapping windows would let the evening card fire before the morning
+      // one on some days.
+      var previousEnd = -1;
+      for (final s in DailyPickSlot.values) {
+        final start = s.baseMinuteOfDay - s.jitterMinutes;
+        final end = s.baseMinuteOfDay + s.jitterMinutes;
+        expect(start, greaterThan(previousEnd));
+        previousEnd = end;
+      }
+    });
+
     test('every slot carries an l10n label key', () {
       for (final s in DailyPickSlot.values) {
         expect(s.titleKey, startsWith('dailyPicks'));
       }
+    });
+  });
+
+  group('Daily picks random time', () {
+    late Directory dir;
+
+    setUp(() async {
+      dir = await Directory.systemTemp.createTemp();
+      Hive.init(dir.path);
+      await Hive.openBox(DailyPicksPrefs.boxName);
+    });
+
+    tearDown(() async {
+      await Hive.deleteFromDisk();
+      if (dir.existsSync()) await dir.delete(recursive: true);
+    });
+
+    test('the chosen minute is inside the slot window', () async {
+      const day = '2026-01-01';
+      for (final slot in DailyPickSlot.values) {
+        final minute = await DailyPicksPrefs.resolveMinuteOfDay(slot, day);
+        expect(
+          minute,
+          greaterThanOrEqualTo(slot.baseMinuteOfDay - slot.jitterMinutes),
+        );
+        expect(
+          minute,
+          lessThanOrEqualTo(slot.baseMinuteOfDay + slot.jitterMinutes),
+        );
+      }
+    });
+
+    test('the choice is stable within a day and redrawn the next', () async {
+      const day = '2026-01-01';
+      final first = await DailyPicksPrefs.resolveMinuteOfDay(
+        DailyPickSlot.morning,
+        day,
+      );
+      final again = await DailyPicksPrefs.resolveMinuteOfDay(
+        DailyPickSlot.morning,
+        day,
+      );
+      expect(again, first);
+      // A new day has no stored offset, so the previous day's stamp no longer
+      // answers for it.
+      await DailyPicksPrefs.resolveMinuteOfDay(
+        DailyPickSlot.morning,
+        '2026-01-02',
+      );
+      expect(DailyPicksPrefs.jitter(DailyPickSlot.morning, day), isNull);
     });
   });
 

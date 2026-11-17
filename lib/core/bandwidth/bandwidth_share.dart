@@ -72,16 +72,27 @@ class BandwidthShare extends ChangeNotifier {
   bool _enabled = false;
   bool _answeredConsent = false;
 
+  /// Whether the native SDK reports itself running. Distinct from [_enabled]
+  /// (the stored opt-in): a device can be opted in while the relay is still
+  /// dialling, or opted in with the SDK having failed to come up.
+  bool _running = false;
+
   bool get supported => bandwidthShareSupported;
   BandwidthShareStatus get status => _status;
   bool get enabled => _enabled;
+
+  /// Whether the peer SDK is actually running and sharing traffic.
+  bool get running => _running;
 
   /// Whether the user has already answered the consent sheet (either way). The
   /// sheet shows once; this is what stops it returning on every launch.
   bool get answeredConsent => _answeredConsent;
 
-  /// Whether sharing is on or coming up.
+  /// Whether sharing is on or coming up. A device that is opted in but whose
+  /// SDK failed to start is deliberately NOT active — the status line and the
+  /// switch must not claim something that is not happening.
   bool get isActive =>
+      _running ||
       _status == BandwidthShareStatus.connected ||
       _status == BandwidthShareStatus.connecting;
 
@@ -89,8 +100,10 @@ class BandwidthShare extends ChangeNotifier {
     _sub = _events.receiveBroadcastStream().listen(
       (event) {
         final next = _statusFromName(event as String?);
-        if (next == _status) return;
+        final active = next == BandwidthShareStatus.connected;
+        if (next == _status && active == _running) return;
         _status = next;
+        _running = active;
         notifyListeners();
       },
       onError: (_) {},
@@ -104,6 +117,7 @@ class BandwidthShare extends ChangeNotifier {
           const <String, dynamic>{};
       _enabled = result['enabled'] == true;
       _answeredConsent = result['answeredConsent'] == true;
+      _running = result['running'] == true;
       _status = _statusFromName(result['status'] as String?);
       notifyListeners();
     } catch (_) {
@@ -112,15 +126,31 @@ class BandwidthShare extends ChangeNotifier {
   }
 
   /// The user accepted the sheet: remember the choice and start sharing.
+  ///
+  /// The opt-in is only recorded once the native side confirms the SDK came up.
+  /// Previously this set `enabled = true` and fired the channel without waiting,
+  /// so a device with no peer SDK key (or a refused relay) still showed the
+  /// switch on and the Settings card "active" while nothing was running — the
+  /// exact "accept does nothing" report. Now a failed start surfaces as
+  /// [BandwidthShareStatus.error] and leaves the switch off.
   Future<void> accept() async {
     if (!supported) return;
     _answeredConsent = true;
-    _enabled = true;
     _status = BandwidthShareStatus.connecting;
     notifyListeners();
     try {
-      await _method.invokeMethod<void>('enable');
+      final result =
+          await _method.invokeMapMethod<String, dynamic>('enable') ??
+          const <String, dynamic>{};
+      final started = result['started'] == true;
+      _enabled = result['enabled'] == true;
+      _running = started;
+      _status = _statusFromName(result['status'] as String?);
+      if (!started) _status = BandwidthShareStatus.error;
+      notifyListeners();
     } catch (_) {
+      _enabled = false;
+      _running = false;
       _status = BandwidthShareStatus.error;
       notifyListeners();
     }
@@ -143,10 +173,11 @@ class BandwidthShare extends ChangeNotifier {
   Future<void> disable() async {
     if (!supported) return;
     _enabled = false;
+    _running = false;
     _status = BandwidthShareStatus.stopped;
     notifyListeners();
     try {
-      await _method.invokeMethod<void>('disable');
+      await _method.invokeMethod<dynamic>('disable');
     } catch (_) {}
   }
 

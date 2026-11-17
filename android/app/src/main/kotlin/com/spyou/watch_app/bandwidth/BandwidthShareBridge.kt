@@ -27,13 +27,29 @@ class BandwidthShareBridge(context: Context) : MethodChannel.MethodCallHandler {
             "enable" -> {
                 BandwidthSharePrefs.setAnswered(appContext, true)
                 BandwidthSharePrefs.setEnabled(appContext, true)
-                PeerShare.start(appContext)
-                result.success(null)
+                // Report whether the SDK actually came up. If it did not (no key
+                // compiled in, relay refused), the flag is rolled back so the
+                // switch does not lie and the boot receiver does not try to
+                // resurrect a service that never started.
+                val started = PeerShare.start(appContext)
+                if (!started) BandwidthSharePrefs.setEnabled(appContext, false)
+                result.success(
+                    mapOf(
+                        "started" to started,
+                        "enabled" to BandwidthSharePrefs.isEnabled(appContext),
+                        "status" to PeerShare.currentStatus(appContext),
+                    ),
+                )
             }
             "disable" -> {
                 BandwidthSharePrefs.setEnabled(appContext, false)
                 PeerShare.stop(appContext)
-                result.success(null)
+                result.success(
+                    mapOf(
+                        "enabled" to false,
+                        "status" to PeerShare.currentStatus(appContext),
+                    ),
+                )
             }
             "markAnswered" -> {
                 BandwidthSharePrefs.setAnswered(appContext, true)
@@ -43,6 +59,7 @@ class BandwidthShareBridge(context: Context) : MethodChannel.MethodCallHandler {
                 mapOf(
                     "enabled" to BandwidthSharePrefs.isEnabled(appContext),
                     "answeredConsent" to BandwidthSharePrefs.isAnswered(appContext),
+                    "running" to PeerShare.isRunning(appContext),
                     "status" to PeerShare.currentStatus(appContext),
                 ),
             )

@@ -54,18 +54,15 @@ class _DailyPicksScreenState extends State<DailyPicksScreen> {
             title: l10n.dailyPicksEnable,
             subtitle: l10n.dailyPicksSubtitle,
             subtitleMaxLines: 2,
-            trailing: Switch(
-              value: _enabled,
-              onChanged: _toggle,
-            ),
+            trailing: Switch(value: _enabled, onChanged: _toggle),
           ),
           if (_enabled) ...[
             const SizedBox(height: 8),
             for (final slot in DailyPickSlot.values)
               SettingsTile(
-                icon: _iconFor(slot.style),
+                icon: _iconFor(slot.kind),
                 title: _label(l10n, slot),
-                subtitle: _time(slot),
+                subtitle: _window(slot),
               ),
             const SizedBox(height: 8),
             SettingsTile(
@@ -85,13 +82,21 @@ class _DailyPicksScreenState extends State<DailyPicksScreen> {
     DailyPickSlot.evening => l10n.dailyPicksEvening,
   };
 
-  IconData _iconFor(DailyPickStyle style) => switch (style) {
-    DailyPickStyle.bigText => Icons.subject_rounded,
-    DailyPickStyle.bigPicture => Icons.image_rounded,
-    DailyPickStyle.inbox => Icons.list_rounded,
+  IconData _iconFor(DailyPickKind kind) => switch (kind) {
+    DailyPickKind.trending => Icons.local_fire_department_rounded,
+    DailyPickKind.recommended => Icons.recommend_rounded,
+    DailyPickKind.newRelease => Icons.fiber_new_rounded,
   };
 
-  String _time(DailyPickSlot slot) =>
-      '${slot.hour.toString().padLeft(2, '0')}:'
-      '${slot.minute.toString().padLeft(2, '0')}';
+  /// The window the slot lands in, e.g. `07:30–09:30`. The exact minute is
+  /// drawn at random inside this window each day, so showing a single time
+  /// would be a lie.
+  String _window(DailyPickSlot slot) {
+    final start = slot.baseMinuteOfDay - slot.jitterMinutes;
+    final end = slot.baseMinuteOfDay + slot.jitterMinutes;
+    String hhmm(int m) =>
+        '${(m ~/ 60).toString().padLeft(2, '0')}:'
+        '${(m % 60).toString().padLeft(2, '0')}';
+    return '${hhmm(start)}–${hhmm(end)}';
+  }
 }

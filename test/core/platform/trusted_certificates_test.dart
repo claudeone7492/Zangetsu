@@ -26,9 +26,18 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   // Flutter's fake HTTP client would return 400 without exercising TLS at all.
   HttpOverrides.global = null;
+  // Generating the throwaway CA needs the JDK's keytool. A host without one
+  // (a bare `flutter test`, or the CI `test` job, which installs no Java) skips
+  // these cases instead of failing the run; the Android build job has a JDK, so
+  // the handshake paths are still exercised there.
+  final skipReason = EphemeralTlsCertificates.keytoolAvailable
+      ? null
+      : 'No JDK keytool on this host';
   EphemeralTlsCertificates? certificates;
   setUpAll(() async {
-    certificates = await EphemeralTlsCertificates.create();
+    if (skipReason == null) {
+      certificates = await EphemeralTlsCertificates.create();
+    }
   });
   tearDownAll(() async {
     await certificates?.dispose();
@@ -41,6 +50,7 @@ void main() {
         context: SecurityContext(withTrustedRoots: false),
       );
     },
+    skip: skipReason,
   );
 
   for (final fixture in ['server', 'untrusted', 'wrong_host']) {
@@ -80,6 +90,6 @@ void main() {
       } else {
         await expectLater(request, throwsA(isA<HandshakeException>()));
       }
-    });
+    }, skip: skipReason);
   }
 }

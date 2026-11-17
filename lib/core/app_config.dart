@@ -3,6 +3,10 @@
 /// rename (`flutter pub run rename` or manual android/ios edits).
 const String kAppName = 'Zangetsu';
 
+/// Short brand line shown under the app name in notifications and about-style
+/// copy. Kept beside [kAppName] so the two never drift.
+const String kAppTagline = 'Streaming, manga & light novels';
+
 /// Running app version shown in Settings/About. Populated from the real build
 /// (PackageInfo) at boot so it never goes stale; this literal is just the
 /// pre-boot fallback.

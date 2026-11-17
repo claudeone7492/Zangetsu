@@ -58,13 +58,15 @@ object PeerShare {
         }
     }
 
-    fun start(context: Context) {
+    fun start(context: Context): Boolean {
         ensureInit(context)
-        if (!initialized) return
-        try {
+        if (!initialized) return false
+        return try {
             ProxiesPeerSDK.getInstance().start()
+            true
         } catch (t: Throwable) {
             Log.w(TAG, "start failed: ${t.message}")
+            false
         }
     }
 
@@ -74,6 +76,17 @@ object PeerShare {
             ProxiesPeerSDK.getInstance().stop()
         } catch (t: Throwable) {
             Log.w(TAG, "stop failed: ${t.message}")
+        }
+    }
+
+    /** Whether the SDK actually started and the device is sharing. */
+    fun isRunning(context: Context): Boolean {
+        ensureInit(context)
+        if (!initialized) return false
+        return try {
+            ProxiesPeerSDK.getInstance().isRunning()
+        } catch (t: Throwable) {
+            false
         }
     }
 

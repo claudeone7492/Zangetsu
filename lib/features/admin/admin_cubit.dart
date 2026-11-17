@@ -28,6 +28,7 @@ class AdminState extends Equatable {
   final List<AdminPlanRow> plans;
 
   int get activeSubs => devices.where((d) => d.status == 'active').length;
+  int get activeDevices => devices.where((d) => d.isActive).length;
   int get mrrCents => plans.fold(0, (s, p) => s + p.revenueCents);
   int get freeAccess => devices.where((d) => d.percentOff >= 100).length;
 

@@ -5,6 +5,7 @@ import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
 
+import '../app_config.dart';
 import '../di/injector.dart';
 import '../mode/content_mode.dart';
 import '../models/media_item.dart';
@@ -16,12 +17,12 @@ import 'subscription_store.dart';
 
 /// The three-a-day "daily picks" digest.
 ///
-/// Three notifications a day, each with a different card design, drawn from the
-/// same two things the app already knows: subscribed shows and the metadata
-/// catalogue's trending rows. The three slots are staggered across the day
-/// (morning / afternoon / evening) and each uses a different Android expanded
-/// layout ([DailyPickStyle]), so the user sees big-text, big-picture and inbox
-/// cards — the three industry-standard designs — rather than one repeated.
+/// Three notifications a day, each with a different card design and each about
+/// a different *kind* of suggestion — trending, picked for you, and new — the
+/// way Netflix's daily cards are one "New & Hot", one "Trending now" and one
+/// "Picks for you". The three slots are spread across the day and each lands at
+/// a random minute inside its window ([DailyPickSlot.jitterMinutes]), so the
+/// cadence is three-a-day without arriving on a metronome.
 ///
 /// Delivery is intentionally opportunistic. A precise daily alarm needs the
 /// exact-alarm permission and, on many OEM ROMs, a background service the
@@ -82,21 +83,22 @@ class DailyPicksService {
   /// alarms that make the cadence exact on a device that is awake; [_fillDueSlots]
   /// is the catch-up for the times the device was not.
   Future<void> _scheduleAlarms() async {
-    // Content is resolved now and baked into the alarm. That means the card a
-    // user sees at 08:30 is fixed at the last app open rather than built at
-    // fire time (a background isolate cannot reach the catalogue), but it is a
-    // real card with a real show, not an empty title-less notification.
-    final picks = await _picks();
-    if (picks.isEmpty) return;
+    final today = _dayStamp(DateTime.now());
     for (final slot in DailyPickSlot.values) {
+      // Content is resolved now and baked into the alarm. That means the card a
+      // user sees at 08:30 is fixed at the last app open rather than built at
+      // fire time (a background isolate cannot reach the catalogue), but it is a
+      // real card with a real show, not an empty title-less notification.
+      final picks = await _picksFor(slot.kind);
+      if (picks.isEmpty) continue;
       final lead = picks.first;
       try {
         await NotificationService.instance.scheduleDailyPick(
           id: _slotIds[slot]!,
-          title: lead.title,
-          body: _bodyFor(slot.style, picks),
+          title: _titleFor(slot),
+          body: _bodyFor(slot, picks),
           style: slot.style,
-          when: _nextInstanceOf(slot),
+          when: _nextInstanceOf(slot, await _minuteOfDay(slot, today)),
           imageUrl: lead.banner ?? lead.cover,
           lines: [for (final p in picks) p.title],
           payload: _payload(slot, lead),
@@ -108,16 +110,22 @@ class DailyPicksService {
     }
   }
 
-  /// The next occurrence of [slot]'s hour/minute in local time.
-  tz.TZDateTime _nextInstanceOf(DailyPickSlot slot) {
+  /// The minute-of-day [slot] fires today. A random offset inside the slot's
+  /// window, drawn once per day and remembered, so the three land at different
+  /// times each day (and a re-run never moves the target).
+  Future<int> _minuteOfDay(DailyPickSlot slot, String day) =>
+      DailyPicksPrefs.resolveMinuteOfDay(slot, day);
+
+  /// The next occurrence of [slot]'s chosen time in local time.
+  tz.TZDateTime _nextInstanceOf(DailyPickSlot slot, int minuteOfDay) {
     final now = tz.TZDateTime.now(tz.local);
     var when = tz.TZDateTime(
       tz.local,
       now.year,
       now.month,
       now.day,
-      slot.hour,
-      slot.minute,
+      minuteOfDay ~/ 60,
+      minuteOfDay % 60,
     );
     if (!when.isAfter(now)) when = when.add(const Duration(days: 1));
     return when;
@@ -129,11 +137,13 @@ class DailyPicksService {
   Future<void> _fillDueSlots({bool force = false}) async {
     final now = DateTime.now();
     final today = _dayStamp(now);
-    final due = DailyPickSlot.values.where((s) {
-      if (!DailyPicksPrefs.needsFill(s, today)) return false;
-      if (force) return true;
-      return now.hour > s.hour || (now.hour == s.hour && now.minute >= s.minute);
-    }).toList();
+    final nowMinute = now.hour * 60 + now.minute;
+    final due = <DailyPickSlot>[];
+    for (final slot in DailyPickSlot.values) {
+      if (!DailyPicksPrefs.needsFill(slot, today)) continue;
+      if (!force && nowMinute < await _minuteOfDay(slot, today)) continue;
+      due.add(slot);
+    }
     if (due.isEmpty) return;
     // Force fills one slot; the normal path may catch up several missed ones.
     final toFill = force ? [due.first] : due;
@@ -146,13 +156,13 @@ class DailyPicksService {
   /// Build and show the card for [slot]. Returns false when there is nothing
   /// worth saying, so the slot is left unfilled and retried later.
   Future<bool> _post(DailyPickSlot slot) async {
-    final picks = await _picks();
+    final picks = await _picksFor(slot.kind);
     if (picks.isEmpty) return false;
     final lead = picks.first;
     await NotificationService.instance.showDailyPick(
       id: _slotIds[slot]!,
-      title: lead.title,
-      body: _bodyFor(slot.style, picks),
+      title: _titleFor(slot),
+      body: _bodyFor(slot, picks),
       style: slot.style,
       imageUrl: lead.banner ?? lead.cover,
       lines: [for (final p in picks) p.title],
@@ -161,11 +171,23 @@ class DailyPicksService {
     return true;
   }
 
+  /// The headline for a slot's card. Each slot is a different *kind* of
+  /// suggestion, so each gets its own headline the way Netflix labels its
+  /// "New arrivals", "Trending now" and "Picks for you" cards.
+  String _titleFor(DailyPickSlot slot) => switch (slot.kind) {
+    DailyPickKind.trending => 'Trending on $kAppName',
+    DailyPickKind.recommended => 'Picked for you',
+    DailyPickKind.newRelease => 'New on $kAppName',
+  };
+
   /// The body text for a slot's card. Big-text wants the long story form; the
   /// other two carry the detail in the image / line list, so they get a short
-  /// one-liner.
-  String _bodyFor(DailyPickStyle style, List<MediaItem> picks) =>
-      style == DailyPickStyle.bigText ? _bigTextBody(picks) : _shortBody(picks);
+  /// one-liner. The lead title is always in the body, so the show being
+  /// suggested reads clearly under the kind headline.
+  String _bodyFor(DailyPickSlot slot, List<MediaItem> picks) =>
+      slot.style == DailyPickStyle.bigText
+      ? _bigTextBody(picks)
+      : _shortBody(picks);
 
   /// `"daily:<slot>:<sourceId>|<url>"` — the router strips the slot and opens
   /// the lead item's Detail screen. Falls back to a bare `"daily:<slot>"` when
@@ -177,24 +199,36 @@ class DailyPicksService {
   }
 
   String _bigTextBody(List<MediaItem> picks) {
-    final rest = picks.skip(1).map((p) => p.title).toList();
     final lead = picks.first;
+    final rest = picks.skip(1).map((p) => p.title).toList();
     final tagline = lead.genres.isNotEmpty
         ? lead.genres.take(2).join(' · ')
         : (lead.quality ?? '');
     final buffer = StringBuffer();
-    if (tagline.isNotEmpty) buffer.write('$tagline — ');
-    buffer.write('plus ${rest.length} more to watch');
+    if (tagline.isNotEmpty) buffer.write('$tagline · ');
+    buffer.write(lead.title);
+    if (rest.isNotEmpty) buffer.write(' — plus ${rest.length} more');
     return buffer.toString();
   }
 
-  String _shortBody(List<MediaItem> picks) =>
-      picks.length > 1 ? 'plus ${picks.length - 1} more to watch' : 'A pick for you';
+  String _shortBody(List<MediaItem> picks) {
+    final lead = picks.first;
+    if (picks.length > 1) return '${lead.title} + ${picks.length - 1} more';
+    return lead.title.isEmpty ? 'A pick for you' : lead.title;
+  }
 
-  /// The items behind today's picks: the user's subscribed shows first (a new
-  /// chapter/episode is the most useful nudge), topped up with a trending row
-  /// so a user with no subscriptions still gets suggestions.
-  Future<List<MediaItem>> _picks() async {
+  /// The items behind one kind of pick. Each kind draws from a different source
+  /// so the three cards a day are different suggestions:
+  ///
+  ///   • [DailyPickKind.trending]    — the catalogue's trending home rows.
+  ///   • [DailyPickKind.recommended] — the user's own subscriptions.
+  ///   • [DailyPickKind.newRelease]  — the catalogue's newest rows.
+  ///
+  /// Every kind falls back to the trending rows, so a user with no
+  /// subscriptions (or a catalogue that only returns one row) still gets three
+  /// cards rather than silence.
+  Future<List<MediaItem>> _picksFor(DailyPickKind kind) async {
+    final trending = await _cataloguePicks();
     final out = <MediaItem>[];
     final seen = <String>{};
     void add(MediaItem m) {
@@ -202,11 +236,30 @@ class DailyPicksService {
       if (seen.add(key)) out.add(m);
     }
 
-    // Subscribed shows, newest first.
+    if (kind == DailyPickKind.recommended) {
+      for (final m in _subscriptionPicks()) {
+        add(m);
+      }
+    }
+    if (kind == DailyPickKind.newRelease) {
+      for (final m in _newestPicks(trending)) {
+        add(m);
+      }
+    }
+    for (final m in trending) {
+      add(m);
+    }
+    return out.take(5).toList();
+  }
+
+  /// The user's subscribed shows, newest first — a new chapter or episode is the
+  /// most useful nudge the app can give.
+  List<MediaItem> _subscriptionPicks() {
+    final out = <MediaItem>[];
     try {
       if (sl.isRegistered<SubscriptionStore>()) {
         for (final s in sl<SubscriptionStore>().all()) {
-          add(
+          out.add(
             MediaItem(
               id: s.url,
               title: s.title,
@@ -226,21 +279,28 @@ class DailyPicksService {
         }
       }
     } catch (_) {}
-
-    // Trending top-up from the metadata catalogue.
-    if (out.length < 5 && sl.isRegistered<MetadataRepository>()) {
-      try {
-        final rows = await sl<MetadataRepository>().home();
-        for (final row in rows) {
-          for (final item in row.items) {
-            add(item);
-            if (out.length >= 5) break;
-          }
-          if (out.length >= 5) break;
-        }
-      } catch (_) {}
-    }
     return out;
+  }
+
+  /// Items from the catalogue's home rows, flattened in row order. Row order is
+  /// the provider's own: the first rows are its trending / "now" rows.
+  Future<List<MediaItem>> _cataloguePicks() async {
+    if (!sl.isRegistered<MetadataRepository>()) return const [];
+    try {
+      final rows = await sl<MetadataRepository>().home();
+      return [for (final row in rows) ...row.items];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// The tail of the trending list — the rows a trending card leads with are
+  /// the most popular, so the last items read as "just added" rather than
+  /// repeating the top of the chart. Falls back to the list itself when it is
+  /// too short to split.
+  List<MediaItem> _newestPicks(List<MediaItem> trending) {
+    if (trending.length <= 2) return trending;
+    return trending.sublist(trending.length ~/ 2);
   }
 
   static String _dayStamp(DateTime d) {

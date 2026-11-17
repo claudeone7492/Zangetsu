@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../announce/announcement.dart';
+import '../app_config.dart';
 import '../di/injector.dart';
 import 'notification_service.dart';
 
@@ -63,7 +64,7 @@ class PushService {
       if (n != null) {
         NotificationService.instance.showMessage(
           id: m.hashCode & 0x7fffffff,
-          title: n.title ?? 'Zangetsu',
+          title: n.title ?? kAppName,
           body: n.body ?? '',
           imageUrl: n.android?.imageUrl,
         );
@@ -86,23 +87,26 @@ class PushService {
       final id = 'push_${m.messageId ?? m.hashCode}';
       if (store.has(id)) return;
       final rawLink = m.data['url'] ?? m.data['link'];
-      final link = rawLink is String &&
+      final link =
+          rawLink is String &&
               (rawLink.startsWith('http://') || rawLink.startsWith('https://'))
           ? rawLink
           : null;
-      unawaited(store.saveNew(
-        Announcement(
-          id: id,
-          title: n.title ?? 'Zangetsu',
-          body: n.body ?? '',
-          actionLabel: link != null ? 'Open' : null,
-          actionUrl: link,
-          date: _today(m.sentTime),
-          imageUrl: n.android?.imageUrl,
+      unawaited(
+        store.saveNew(
+          Announcement(
+            id: id,
+            title: n.title ?? kAppName,
+            body: n.body ?? '',
+            actionLabel: link != null ? 'Open' : null,
+            actionUrl: link,
+            date: _today(m.sentTime),
+            imageUrl: n.android?.imageUrl,
+          ),
+          m.sentTime?.millisecondsSinceEpoch ??
+              DateTime.now().millisecondsSinceEpoch,
         ),
-        m.sentTime?.millisecondsSinceEpoch ??
-            DateTime.now().millisecondsSinceEpoch,
-      ));
+      );
     } catch (_) {}
   }
 

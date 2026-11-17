@@ -18,6 +18,25 @@ class EphemeralTlsCertificates {
   /// Public test CA used by the client; its private key stays in the temp store.
   File get rootCertificate => File('${directory.path}/root.pem');
 
+  /// Whether a JDK `keytool` can be run here.
+  ///
+  /// Certificate generation is the only part of the suite that needs a JDK, so a
+  /// host without one (a plain `flutter test` runner, or the CI `test` job,
+  /// which installs no Java) must skip the TLS cases rather than fail the whole
+  /// run on a missing tool. Callers pass this to `test(..., skip: ...)`.
+  static bool get keytoolAvailable {
+    final javaHome = Platform.environment['JAVA_HOME'];
+    final executable = (javaHome == null || javaHome.isEmpty)
+        ? 'keytool'
+        : '$javaHome/bin/keytool${Platform.isWindows ? '.exe' : ''}';
+    try {
+      final result = Process.runSync(executable, const ['-help']);
+      return result.exitCode == 0 || '${result.stderr}'.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Generates one trusted server, one untrusted server, and one wrong-host peer.
   static Future<EphemeralTlsCertificates> create() async {
     final random = Random.secure();

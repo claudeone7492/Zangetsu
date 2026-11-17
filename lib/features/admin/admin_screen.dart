@@ -282,6 +282,7 @@ class _Kpis extends StatelessWidget {
       child: Row(
         children: [
           _Kpi(label: 'Devices', value: '${state.devices.length}'),
+          _Kpi(label: 'Active now', value: '${state.activeDevices}'),
           _Kpi(label: 'Active subs', value: '${state.activeSubs}'),
           _Kpi(label: 'MRR', value: mrr),
           _Kpi(label: 'Free access', value: '${state.freeAccess}'),
@@ -392,6 +393,8 @@ class _DevicesTable extends StatelessWidget {
       '% off',
       'Paid/mo',
       'Status',
+      'Active',
+      'Seen',
       'Watch',
     ],
     rows: [
@@ -404,6 +407,8 @@ class _DevicesTable extends StatelessWidget {
           '${r.percentOff}%',
           money(r.paidCents),
           r.status,
+          r.isActive ? 'active' : 'idle',
+          r.lastSeenLabel.isEmpty ? '—' : r.lastSeenLabel,
           '${r.watch}',
         ],
     ],
