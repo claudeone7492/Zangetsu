@@ -76,15 +76,23 @@ class _PaywallSheetState extends State<PaywallSheet> {
         filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
         child: Container(
           decoration: BoxDecoration(
+            // Glass: a light sheen at the top fading into a mostly-transparent
+            // body, with a bright top hairline. The blurred artwork behind the
+            // modal must read through the card, so the fill stays well under
+            // half-opaque instead of covering it with a solid panel.
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                const Color(0xFF20212A).withValues(alpha: 0.72),
-                const Color(0xFF16161C).withValues(alpha: 0.80),
+                Colors.white.withValues(alpha: 0.12),
+                AppColors.surface.withValues(alpha: 0.34),
+                AppColors.bg.withValues(alpha: 0.42),
               ],
+              stops: const [0.0, 0.28, 1.0],
             ),
-            border: Border(top: BorderSide(color: AppColors.hairline)),
+            border: Border(
+              top: BorderSide(color: Colors.white.withValues(alpha: 0.22)),
+            ),
           ),
           child: SafeArea(
             top: false,
@@ -323,18 +331,22 @@ class _PaywallSheetState extends State<PaywallSheet> {
                     color: AppColors.textTertiary,
                   ),
                   filled: true,
-                  fillColor: AppColors.bg.withValues(alpha: 0.5),
+                  fillColor: Colors.white.withValues(alpha: 0.06),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 14,
                     vertical: 14,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppColors.hairline),
+                    borderSide: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.12),
+                    ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppColors.hairline),
+                    borderSide: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.12),
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -426,9 +438,9 @@ class _PaywallSheetState extends State<PaywallSheet> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.bg.withValues(alpha: 0.4),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.hairline),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
       ),
       child: Column(children: rows),
     );
@@ -443,7 +455,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
     final label = state.isFreeAccess
         ? 'Activate free access'
         : state.trialEligible
-        ? 'Activate free trial'
+        ? 'Start ${state.selected?.trialDays ?? 14} days free trial'
         : 'Continue to payment · ${money(state.totalCents)}'
               '${periodSuffix(state.selected?.periodDays ?? 30)}';
 
@@ -549,10 +561,12 @@ class _PlanCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected
               ? AppColors.accentSoft
-              : AppColors.surface.withValues(alpha: 0.55),
+              : Colors.white.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: selected ? AppColors.accent : AppColors.hairline,
+            color: selected
+                ? AppColors.accent
+                : Colors.white.withValues(alpha: 0.12),
             width: selected ? 1.5 : 1,
           ),
         ),

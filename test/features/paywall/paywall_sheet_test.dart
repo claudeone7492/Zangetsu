@@ -57,6 +57,8 @@ void main() {
     );
     // A first-time device is pitched the trial.
     expect(find.textContaining('14-day free trial'), findsOneWidget);
+    // ...and the CTA itself offers to start it.
+    expect(find.text('Start 14 days free trial'), findsOneWidget);
     // The internal state word must never reach the screen.
     expect(find.textContaining('unentitled'), findsNothing);
     expect(find.textContaining('entitled'), findsNothing);
