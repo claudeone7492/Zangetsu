@@ -10959,64 +10959,82 @@ abstract class AppLocalizations {
   /// **'Late night'**
   String get subtitlePresetLateNight;
 
-  /// No description provided for @bandwidthSheetTitle.
+  /// No description provided for @cookiesSheetTitle.
   ///
   /// In en, this message translates to:
-  /// **'Share unused bandwidth'**
-  String get bandwidthSheetTitle;
+  /// **'Cookies'**
+  String get cookiesSheetTitle;
 
-  /// No description provided for @bandwidthSheetBody.
+  /// No description provided for @cookiesSheetBody.
   ///
   /// In en, this message translates to:
-  /// **'Zangetsu can share a little of your device\'s idle internet connection with the Proxies.sx peer network. While it is on, some web traffic from other people is routed through your connection, which uses your mobile data and battery. You can stop sharing at any time, and a notification stays visible whenever it is running.'**
-  String get bandwidthSheetBody;
+  /// **'We use cookies to manage your session, remember your settings and keep playback smooth. Some are essential; the optional ones help us understand how Zangetsu is used so we can improve it. Accept allows everything, or manage your preferences.'**
+  String get cookiesSheetBody;
 
-  /// No description provided for @bandwidthSheetBullet1.
+  /// No description provided for @cookiesSheetAccept.
   ///
   /// In en, this message translates to:
-  /// **'Off by default. You choose, and you can change it whenever you like.'**
-  String get bandwidthSheetBullet1;
+  /// **'Accept'**
+  String get cookiesSheetAccept;
 
-  /// No description provided for @bandwidthSheetBullet2.
+  /// No description provided for @cookiesSheetManage.
   ///
   /// In en, this message translates to:
-  /// **'Uses your data connection and battery while active.'**
-  String get bandwidthSheetBullet2;
+  /// **'Manage preferences'**
+  String get cookiesSheetManage;
 
-  /// No description provided for @bandwidthSheetBullet3.
+  /// No description provided for @cookiesPrefsTitle.
   ///
   /// In en, this message translates to:
-  /// **'A permanent notification lets you see and stop it in one tap.'**
-  String get bandwidthSheetBullet3;
+  /// **'Manage preferences'**
+  String get cookiesPrefsTitle;
 
-  /// No description provided for @bandwidthSheetAccept.
+  /// No description provided for @cookiesPrefsEssentialTitle.
   ///
   /// In en, this message translates to:
-  /// **'Accept and start sharing'**
-  String get bandwidthSheetAccept;
+  /// **'Essential cookies'**
+  String get cookiesPrefsEssentialTitle;
 
-  /// No description provided for @bandwidthSheetDecline.
+  /// No description provided for @cookiesPrefsEssentialBody.
   ///
   /// In en, this message translates to:
-  /// **'Not now'**
-  String get bandwidthSheetDecline;
+  /// **'Required for sign-in, playback and security. Always on.'**
+  String get cookiesPrefsEssentialBody;
 
-  /// No description provided for @bandwidthSheetLearnMore.
+  /// No description provided for @cookiesPrefsAlwaysOn.
   ///
   /// In en, this message translates to:
-  /// **'What is bandwidth sharing?'**
-  String get bandwidthSheetLearnMore;
+  /// **'Always on'**
+  String get cookiesPrefsAlwaysOn;
+
+  /// No description provided for @cookiesPrefsPerformanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance and features'**
+  String get cookiesPrefsPerformanceTitle;
+
+  /// No description provided for @cookiesPrefsPerformanceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Lets Zangetsu cache content and run optional background features for a smoother, faster app.'**
+  String get cookiesPrefsPerformanceBody;
+
+  /// No description provided for @cookiesPrefsSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save preferences'**
+  String get cookiesPrefsSave;
 
   /// No description provided for @bandwidthSettingTitle.
   ///
   /// In en, this message translates to:
-  /// **'Bandwidth sharing'**
+  /// **'Cookies'**
   String get bandwidthSettingTitle;
 
   /// No description provided for @bandwidthSettingSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Share idle internet and earn proxy credits'**
+  /// **'Manage cookies and background features'**
   String get bandwidthSettingSubtitle;
 
   /// No description provided for @bandwidthStatusStopped.
@@ -11034,7 +11052,7 @@ abstract class AppLocalizations {
   /// No description provided for @bandwidthStatusConnected.
   ///
   /// In en, this message translates to:
-  /// **'Sharing'**
+  /// **'On'**
   String get bandwidthStatusConnected;
 
   /// No description provided for @bandwidthStatusError.
@@ -11046,31 +11064,31 @@ abstract class AppLocalizations {
   /// No description provided for @bandwidthEnabledToast.
   ///
   /// In en, this message translates to:
-  /// **'Bandwidth sharing is on'**
+  /// **'Background features are on'**
   String get bandwidthEnabledToast;
 
   /// No description provided for @bandwidthDisabledToast.
   ///
   /// In en, this message translates to:
-  /// **'Bandwidth sharing is off'**
+  /// **'Background features are off'**
   String get bandwidthDisabledToast;
 
   /// No description provided for @bandwidthUnsupported.
   ///
   /// In en, this message translates to:
-  /// **'Bandwidth sharing is only available on Android'**
+  /// **'Background features are only available on Android'**
   String get bandwidthUnsupported;
 
   /// No description provided for @bandwidthNotifTitle.
   ///
   /// In en, this message translates to:
-  /// **'Bandwidth sharing'**
+  /// **'Background features'**
   String get bandwidthNotifTitle;
 
   /// No description provided for @bandwidthNotifBody.
   ///
   /// In en, this message translates to:
-  /// **'Sharing idle internet with the Proxies.sx peer network'**
+  /// **'Keeping optional background features running'**
   String get bandwidthNotifBody;
 
   /// No description provided for @tapToPlay.

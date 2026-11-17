@@ -61,6 +61,7 @@ import 'features/home/cubit/home_cubit.dart';
 import 'features/live/live_tv_screen.dart';
 import 'features/onboarding/boot_error_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
+import 'features/paywall/subscription_gate.dart';
 import 'features/profiles/profile_launch_gate.dart';
 import 'features/shell/root_shell.dart';
 import 'features/watch_together/ui/party_bar.dart';
@@ -738,7 +739,7 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
   Widget _buildShellHome() {
     final onboarded = _onboardedOverride ?? isOnboarded();
     return onboarded
-        ? ProfileLaunchGate(child: RootShell())
+        ? _gatedShell()
         : OnboardingScreen(
             onDone: () {
               setState(() => _onboardedOverride = true);
@@ -756,6 +757,13 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
           );
   }
 
+  /// The shell wrapped in the subscription gate, so the profile picker and
+  /// Home stay hidden until this device is entitled. Placed here (not inside
+  /// RootShell) so nothing behind the paywall — profiles included — builds
+  /// before payment or a promo is verified.
+  Widget _gatedShell() =>
+      SubscriptionGate(child: ProfileLaunchGate(child: RootShell()));
+
   /// Swaps the current route for the shell with NO transition.
   ///
   /// A default [MaterialPageRoute] animates in over ~300ms, and during that
@@ -767,7 +775,7 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
   void _swapToShell() {
     rootNavigatorKey.currentState?.pushReplacement(
       PageRouteBuilder<void>(
-        pageBuilder: (_, _, _) => ProfileLaunchGate(child: RootShell()),
+        pageBuilder: (_, _, _) => _gatedShell(),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
       ),

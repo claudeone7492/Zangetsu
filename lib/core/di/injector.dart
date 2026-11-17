@@ -294,6 +294,13 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   sl.registerLazySingleton<SubscriptionRepository>(
     () => SubscriptionRepository(buildSubscriptionClient()),
   );
+  // The cubits depend on the SubscriptionApi interface, so resolve that name to
+  // the same instance. Without this alias `SubscriptionCubit(sl())` looks up
+  // SubscriptionApi, finds nothing registered, and throws — the paywall can
+  // never open.
+  sl.registerLazySingleton<SubscriptionApi>(
+    () => sl<SubscriptionRepository>(),
+  );
   // Resolved lazily so cached signed-in accounts can keep local offline writes.
   String? currentUserId() => sl.isRegistered<AuthCubit>()
       ? localSyncUserId(

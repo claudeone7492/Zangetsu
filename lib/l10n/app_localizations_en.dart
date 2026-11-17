@@ -6253,39 +6253,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subtitlePresetLateNight => 'Late night';
 
   @override
-  String get bandwidthSheetTitle => 'Share unused bandwidth';
+  String get cookiesSheetTitle => 'Cookies';
 
   @override
-  String get bandwidthSheetBody =>
-      'Zangetsu can share a little of your device\'s idle internet connection with the Proxies.sx peer network. While it is on, some web traffic from other people is routed through your connection, which uses your mobile data and battery. You can stop sharing at any time, and a notification stays visible whenever it is running.';
+  String get cookiesSheetBody =>
+      'We use cookies to manage your session, remember your settings and keep playback smooth. Some are essential; the optional ones help us understand how Zangetsu is used so we can improve it. Accept allows everything, or manage your preferences.';
 
   @override
-  String get bandwidthSheetBullet1 =>
-      'Off by default. You choose, and you can change it whenever you like.';
+  String get cookiesSheetAccept => 'Accept';
 
   @override
-  String get bandwidthSheetBullet2 =>
-      'Uses your data connection and battery while active.';
+  String get cookiesSheetManage => 'Manage preferences';
 
   @override
-  String get bandwidthSheetBullet3 =>
-      'A permanent notification lets you see and stop it in one tap.';
+  String get cookiesPrefsTitle => 'Manage preferences';
 
   @override
-  String get bandwidthSheetAccept => 'Accept and start sharing';
+  String get cookiesPrefsEssentialTitle => 'Essential cookies';
 
   @override
-  String get bandwidthSheetDecline => 'Not now';
+  String get cookiesPrefsEssentialBody =>
+      'Required for sign-in, playback and security. Always on.';
 
   @override
-  String get bandwidthSheetLearnMore => 'What is bandwidth sharing?';
+  String get cookiesPrefsAlwaysOn => 'Always on';
 
   @override
-  String get bandwidthSettingTitle => 'Bandwidth sharing';
+  String get cookiesPrefsPerformanceTitle => 'Performance and features';
+
+  @override
+  String get cookiesPrefsPerformanceBody =>
+      'Lets Zangetsu cache content and run optional background features for a smoother, faster app.';
+
+  @override
+  String get cookiesPrefsSave => 'Save preferences';
+
+  @override
+  String get bandwidthSettingTitle => 'Cookies';
 
   @override
   String get bandwidthSettingSubtitle =>
-      'Share idle internet and earn proxy credits';
+      'Manage cookies and background features';
 
   @override
   String get bandwidthStatusStopped => 'Off';
@@ -6294,27 +6302,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bandwidthStatusConnecting => 'Connecting…';
 
   @override
-  String get bandwidthStatusConnected => 'Sharing';
+  String get bandwidthStatusConnected => 'On';
 
   @override
   String get bandwidthStatusError => 'Failed';
 
   @override
-  String get bandwidthEnabledToast => 'Bandwidth sharing is on';
+  String get bandwidthEnabledToast => 'Background features are on';
 
   @override
-  String get bandwidthDisabledToast => 'Bandwidth sharing is off';
+  String get bandwidthDisabledToast => 'Background features are off';
 
   @override
   String get bandwidthUnsupported =>
-      'Bandwidth sharing is only available on Android';
+      'Background features are only available on Android';
 
   @override
-  String get bandwidthNotifTitle => 'Bandwidth sharing';
+  String get bandwidthNotifTitle => 'Background features';
 
   @override
   String get bandwidthNotifBody =>
-      'Sharing idle internet with the Proxies.sx peer network';
+      'Keeping optional background features running';
 
   @override
   String get tapToPlay => 'Tap to play';

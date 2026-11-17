@@ -172,10 +172,10 @@ class _RootShellState extends State<RootShell>
         _onProfileContextChanged,
       );
     }
-    // Bandwidth-sharing consent: show the disclosure sheet once, after the
-    // shell is on screen. Inert on non-Android and after it's been answered.
+    // Cookie consent: show the glass card once, after the shell is on screen.
+    // Inert on non-Android and after it's been answered.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) unawaited(maybeShowBandwidthConsent(context));
+      if (mounted) unawaited(maybeShowCookiesConsent(context));
     });
   }
 

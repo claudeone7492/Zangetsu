@@ -1,6 +1,11 @@
 /// Subscription + promo models. All prices are USD cents.
 library;
 
+/// The single product the paywall sells. The backend catalogue is tiered, but
+/// the app presents one premium subscription at the standard price, so this is
+/// the label every card and summary row uses.
+const String kPremiumPlanLabel = 'Premium subscription';
+
 /// A purchasable tier, loaded from `subscription_plans`.
 class SubscriptionPlan {
   const SubscriptionPlan({
@@ -25,6 +30,16 @@ class SubscriptionPlan {
 
   /// List price in dollars, e.g. `4.11`.
   double get listDollars => priceCents / 100;
+
+  SubscriptionPlan copyWith({String? label}) => SubscriptionPlan(
+    key: key,
+    label: label ?? this.label,
+    priceCents: priceCents,
+    periodDays: periodDays,
+    trialDays: trialDays,
+    features: features,
+    sortOrder: sortOrder,
+  );
 
   static SubscriptionPlan? fromMap(Map<String, dynamic> m) {
     final key = m['key'];
@@ -258,3 +273,19 @@ DateTime? _dt(Object? v) => v is String ? DateTime.tryParse(v) : null;
 
 /// Formats USD cents as `$1.99`.
 String money(int cents) => '\$${(cents / 100).toStringAsFixed(2)}';
+
+/// Compact billing-period suffix for a plan: `/mo` for a ~monthly period,
+/// `/yr` for ~yearly, else `/Nd`. Keeps the card honest when a plan is not
+/// monthly rather than hardcoding `/mo`.
+String periodSuffix(int periodDays) {
+  if (periodDays >= 360) return '/yr';
+  if (periodDays >= 28 && periodDays <= 31) return '/mo';
+  return '/${periodDays}d';
+}
+
+/// Spelled-out billing period for labels, e.g. `monthly` / `yearly`.
+String periodWord(int periodDays) {
+  if (periodDays >= 360) return 'yearly';
+  if (periodDays >= 28 && periodDays <= 31) return 'monthly';
+  return 'every $periodDays days';
+}

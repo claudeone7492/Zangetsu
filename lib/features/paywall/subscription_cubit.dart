@@ -12,10 +12,14 @@ enum PaywallStage { loading, ready, activating, error }
 
 /// Paywall + subscription state.
 ///
-/// Pricing rule: every plan has a LIST price (already set to African
-/// purchasing-power levels, in USD). The launch offer takes 15% off the list,
-/// then a promo takes its percentage off that. 100% promos are free access and
-/// never reach a payment step.
+/// There is one product: a premium subscription at the standard price. Every
+/// plan carries a LIST price (already set to African purchasing-power levels,
+/// in USD); the card quotes that price, and a promo takes its percentage off
+/// it. 100% promos are free access and never reach a payment step.
+///
+/// [discountPct] stays a field so an admin-set launch discount could be fed in
+/// later, but the client no longer invents one: the price shown is the price
+/// charged, so the card can never quote less than the server captures.
 class SubscriptionState extends Equatable {
   const SubscriptionState({
     this.stage = PaywallStage.loading,
@@ -25,7 +29,7 @@ class SubscriptionState extends Equatable {
     this.promo,
     this.message,
     this.promoRejected = false,
-    this.discountPct = 15,
+    this.discountPct = 0,
     this.geoQuote,
   });
 
@@ -39,7 +43,8 @@ class SubscriptionState extends Equatable {
   final String? message;
   final bool promoRejected;
 
-  /// Launch-offer percentage off list (from app_config; 15 by default).
+  /// Launch-offer percentage off list. Defaults to 0: the card quotes the list
+  /// price unless an admin discount is explicitly applied.
   final int discountPct;
 
   /// Approximate local-currency price, when the device is on African rails.
@@ -142,22 +147,40 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     final identity = results[1] as DeviceIdentity?;
     final geoQuote = results[2] as GeoQuote?;
 
-    // Default to the most popular tier (middle of the list), else the first.
-    final defaultKey = state.selectedKey ??
-        (plans.isNotEmpty
-            ? plans[plans.length ~/ 2].key
-            : null);
+    // One product: the premium subscription at the standard price. The backend
+    // still carries a tiered catalogue, so collapse it to a single card rather
+    // than offer a basic/standard/premium choice.
+    final single = _singlePremiumPlan(plans);
 
     emit(
       state.copyWith(
-        stage: plans.isEmpty ? PaywallStage.error : PaywallStage.ready,
-        plans: plans,
+        stage: single == null ? PaywallStage.error : PaywallStage.ready,
+        plans: single == null ? const [] : [single],
         identity: identity,
-        selectedKey: defaultKey,
+        selectedKey: single?.key,
         geoQuote: geoQuote,
-        message: () => plans.isEmpty ? 'Could not load plans.' : null,
+        message: () => single == null ? 'Could not load plans.' : null,
       ),
     );
+  }
+
+  /// Collapses the catalogue to the one plan the paywall sells: the standard
+  /// tier at its standard price, shown as "Premium subscription". Falls back to
+  /// the premium tier, then the first plan, so a catalogue that renames its keys
+  /// still yields a single card.
+  static SubscriptionPlan? _singlePremiumPlan(List<SubscriptionPlan> plans) {
+    if (plans.isEmpty) return null;
+    SubscriptionPlan pick = plans.first;
+    for (final key in const ['stream_standard', 'stream_premium']) {
+      final match = plans.where((p) => p.key == key);
+      if (match.isNotEmpty) {
+        pick = match.first;
+        break;
+      }
+    }
+    return pick.label == kPremiumPlanLabel
+        ? pick
+        : pick.copyWith(label: kPremiumPlanLabel);
   }
 
   void selectPlan(String key) {

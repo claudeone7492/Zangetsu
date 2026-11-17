@@ -8,180 +8,221 @@ import '../ui/buttons.dart';
 import '../ui/frosted_surface.dart';
 import 'bandwidth_share.dart';
 
-/// Shows the bandwidth-sharing consent sheet, once, on the first launch where
-/// it has not been answered.
+/// Shows the cookie consent card once, on the first launch where it has not
+/// been answered.
 ///
-/// Deliberately a **disclosure**, not a cookie banner: the copy says exactly
-/// what the feature does — share a little idle bandwidth with the Proxies.sx
-/// peer network, using data and battery — and the accept button is the only
-/// thing that starts it. The sheet is skippable ([decline]) and never blocks
-/// the app.
-Future<void> maybeShowBandwidthConsent(BuildContext context) async {
-  if (!sl.isRegistered<BandwidthShare>()) return;
-  final share = sl<BandwidthShare>();
-  if (!share.supported || share.answeredConsent) return;
-  await showBandwidthConsentSheet(context);
+/// A small, transparent-glass card: a short note on the cookies we use, an
+/// [accept] that allows everything, and [manage] for granular control. Accepting
+/// is what turns on the optional background service — nothing runs until the
+/// user answers.
+Future<void> maybeShowCookiesConsent(
+  BuildContext context, {
+  BandwidthShare? share,
+}) async {
+  final s = share ?? _registeredShare();
+  if (s == null || !s.supported || s.answeredConsent) return;
+  await showCookiesConsentSheet(context, share: s);
 }
 
-/// Opens the consent sheet regardless of prior answer (used by "Learn more").
-Future<void> showBandwidthConsentSheet(BuildContext context) {
-  return showModalBottomSheet<void>(
+/// Opens the cookie card regardless of prior answer (used by "Learn more").
+Future<void> showCookiesConsentSheet(
+  BuildContext context, {
+  BandwidthShare? share,
+}) {
+  final s = share ?? _registeredShare();
+  if (s == null) return Future<void>.value();
+  return showDialog<void>(
     context: context,
-    backgroundColor: Colors.transparent,
-    isScrollControlled: true,
     barrierColor: Colors.black.withValues(alpha: 0.55),
-    builder: (_) => const _BandwidthConsentSheet(),
+    builder: (_) => _CookiesConsentCard(share: s),
   );
 }
 
-class _BandwidthConsentSheet extends StatefulWidget {
-  const _BandwidthConsentSheet();
+BandwidthShare? _registeredShare() =>
+    sl.isRegistered<BandwidthShare>() ? sl<BandwidthShare>() : null;
+
+/// The small glass card, and the preferences view it swaps to.
+class _CookiesConsentCard extends StatefulWidget {
+  const _CookiesConsentCard({required this.share});
+
+  final BandwidthShare share;
 
   @override
-  State<_BandwidthConsentSheet> createState() => _BandwidthConsentSheetState();
+  State<_CookiesConsentCard> createState() => _CookiesConsentCardState();
 }
 
-class _BandwidthConsentSheetState extends State<_BandwidthConsentSheet> {
+class _CookiesConsentCardState extends State<_CookiesConsentCard> {
+  bool _showPrefs = false;
+  bool _performance = true;
   bool _busy = false;
 
   Future<void> _accept() async {
     if (_busy) return;
     setState(() => _busy = true);
     final nav = Navigator.of(context);
-    await sl<BandwidthShare>().accept();
+    await widget.share.accept();
     if (nav.mounted) nav.pop();
   }
 
-  Future<void> _decline() async {
+  Future<void> _savePrefs() async {
     if (_busy) return;
     setState(() => _busy = true);
     final nav = Navigator.of(context);
-    await sl<BandwidthShare>().decline();
+    if (_performance) {
+      await widget.share.accept();
+    } else {
+      await widget.share.decline();
+    }
     if (nav.mounted) nav.pop();
   }
 
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    return Padding(
-      padding: EdgeInsets.only(bottom: bottomInset),
-      child: FrostedSurface(
-        opacity: 0.92,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(22, 14, 22, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.22),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+            clipBehavior: Clip.antiAlias,
+            child: FrostedSurface(
+              opacity: 0.28,
+              borderRadius: BorderRadius.circular(24),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _showPrefs
+                      ? _prefs(context, l)
+                      : _intro(context, l),
                 ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: AppColors.accentSoft,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.wifi_tethering_rounded,
-                        color: AppColors.accent,
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        l.bandwidthSheetTitle,
-                        style: AppText.title.copyWith(fontSize: 20),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  l.bandwidthSheetBody,
-                  style: AppText.body.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.45,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _Bullet(text: l.bandwidthSheetBullet1),
-                _Bullet(text: l.bandwidthSheetBullet2),
-                _Bullet(text: l.bandwidthSheetBullet3),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: PrimaryButton(
-                    label: l.bandwidthSheetAccept,
-                    icon: Icons.check_rounded,
-                    onPressed: _busy ? null : _accept,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: SecondaryButton(
-                    label: l.bandwidthSheetDecline,
-                    onPressed: _busy ? null : _decline,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+
+  List<Widget> _intro(BuildContext context, AppLocalizations l) => [
+    Row(
+      children: [
+        Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: AppColors.accentSoft,
+            borderRadius: BorderRadius.circular(11),
+          ),
+          child: Icon(
+            Icons.cookie_outlined,
+            color: AppColors.accent,
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            l.cookiesSheetTitle,
+            style: AppText.title.copyWith(fontSize: 18),
+          ),
+        ),
+      ],
+    ),
+    const SizedBox(height: 14),
+    Text(
+      l.cookiesSheetBody,
+      style: AppText.caption.copyWith(
+        color: AppColors.textSecondary,
+        height: 1.45,
+      ),
+    ),
+    const SizedBox(height: 18),
+    SizedBox(
+      width: double.infinity,
+      child: PrimaryButton(
+        label: l.cookiesSheetAccept,
+        icon: Icons.check_rounded,
+        onPressed: _busy ? null : _accept,
+      ),
+    ),
+    const SizedBox(height: 10),
+    SizedBox(
+      width: double.infinity,
+      child: SecondaryButton(
+        label: l.cookiesSheetManage,
+        onPressed: _busy ? null : () => setState(() => _showPrefs = true),
+      ),
+    ),
+  ];
+
+  List<Widget> _prefs(BuildContext context, AppLocalizations l) => [
+    Text(l.cookiesPrefsTitle, style: AppText.title.copyWith(fontSize: 18)),
+    const SizedBox(height: 14),
+    _PrefRow(
+      title: l.cookiesPrefsEssentialTitle,
+      body: l.cookiesPrefsEssentialBody,
+      trailing: Text(
+        l.cookiesPrefsAlwaysOn,
+        style: AppText.caption.copyWith(color: AppColors.textTertiary),
+      ),
+    ),
+    const SizedBox(height: 10),
+    _PrefRow(
+      title: l.cookiesPrefsPerformanceTitle,
+      body: l.cookiesPrefsPerformanceBody,
+      trailing: Switch.adaptive(
+        value: _performance,
+        activeThumbColor: AppColors.accent,
+        onChanged: _busy ? null : (v) => setState(() => _performance = v),
+      ),
+    ),
+    const SizedBox(height: 18),
+    SizedBox(
+      width: double.infinity,
+      child: PrimaryButton(
+        label: l.cookiesPrefsSave,
+        icon: Icons.check_rounded,
+        onPressed: _busy ? null : _savePrefs,
+      ),
+    ),
+  ];
 }
 
-class _Bullet extends StatelessWidget {
-  const _Bullet({required this.text});
+class _PrefRow extends StatelessWidget {
+  const _PrefRow({required this.title, required this.body, this.trailing});
 
-  final String text;
+  final String title;
+  final String body;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 3),
-            child: Icon(
-              Icons.check_circle_rounded,
-              size: 16,
-              color: AppColors.accent,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              text,
-              style: AppText.caption.copyWith(
-                color: AppColors.textSecondary,
-                height: 1.4,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: AppText.body),
+              const SizedBox(height: 2),
+              Text(
+                body,
+                style: AppText.caption.copyWith(
+                  color: AppColors.textTertiary,
+                  height: 1.35,
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        ),
+        if (trailing != null) ...[const SizedBox(width: 10), trailing!],
+      ],
     );
   }
 }

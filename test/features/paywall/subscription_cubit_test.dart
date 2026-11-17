@@ -55,7 +55,7 @@ void main() {
   });
 
   group('SubscriptionCubit', () {
-    test('load defaults to the middle tier and becomes ready', () async {
+    test('load collapses to the single premium subscription', () async {
       final api = FakeSubscriptionApi(
         plansResult: samplePlans(),
         identityResult: const DeviceIdentity(
@@ -68,7 +68,12 @@ void main() {
       await cubit.load();
 
       expect(cubit.state.stage, PaywallStage.ready);
+      // One product only: the standard tier at the standard price, shown as
+      // "Premium subscription".
+      expect(cubit.state.plans, hasLength(1));
       expect(cubit.state.selectedKey, 'stream_standard');
+      expect(cubit.state.selected?.label, kPremiumPlanLabel);
+      expect(cubit.state.selected?.priceCents, 349);
       expect(cubit.state.trialEligible, isTrue);
     });
 
@@ -193,15 +198,15 @@ void main() {
       );
       final cubit = SubscriptionCubit(api);
       await cubit.load();
-      cubit.selectPlan('stream_premium');
       await cubit.applyPromo('PRIME85!');
       await cubit.commitPromo();
 
       expect(api.redemptions, hasLength(1));
       expect(api.redemptions.single['code'], 'PRIME85!');
-      expect(api.redemptions.single['planKey'], 'stream_premium');
-      expect(api.redemptions.single['before'], 599);
-      expect(api.redemptions.single['after'], 76);
+      expect(api.redemptions.single['planKey'], 'stream_standard');
+      // No launch discount: 349c list, 85% off -> 52c.
+      expect(api.redemptions.single['before'], 349);
+      expect(api.redemptions.single['after'], 52);
     });
   });
 
@@ -222,14 +227,13 @@ void main() {
       );
       final cubit = SubscriptionCubit(api);
       await cubit.load();
-      cubit.selectPlan('stream_premium');
       await cubit.applyPromo('STARZ_85');
 
       final result = await cubit.beginCheckout();
 
       expect(result?.ok, isTrue);
       expect(api.startCheckoutCalls, 1);
-      expect(api.lastCheckoutPlan, 'stream_premium');
+      expect(api.lastCheckoutPlan, 'stream_standard');
       expect(api.lastCheckoutPromo, 'STARZ_85');
       expect(cubit.state.stage, PaywallStage.ready);
     });

@@ -111,10 +111,11 @@ void main() {
     expect(find.textContaining('50% off applied'), findsOneWidget);
     expect(find.text('Promo · 50% off'), findsOneWidget);
     expect(find.text('You save'), findsOneWidget);
-    expect(find.text('Total / month'), findsOneWidget);
-    // Standard: 349c list, 15% off -> 297c, then 50% off -> 149c.
-    expect(find.text('\$1.49'), findsOneWidget);
-    expect(find.text('\$2.00'), findsOneWidget); // 349 - 149
+    expect(find.text('Total'), findsOneWidget);
+    // One product: standard list 349c, no launch discount, then 50% off -> 175c.
+    expect(find.text('\$1.75'), findsOneWidget);
+    // The promo discount and the "You save" row both read 174c.
+    expect(find.text('\$1.74'), findsWidgets);
   });
 
   testWidgets('a free promo turns the CTA into free activation', (t) async {
@@ -152,7 +153,27 @@ void main() {
     await t.pumpWidget(host(cubit));
     await t.pump();
 
-    // Standard: 349c list, 15% off -> 297c -> $2.97 -> ~N4,016.
-    expect(find.textContaining('₦4,016'), findsWidgets);
+    // Standard list 349c at the current rate -> $3.49 -> ~N4,719.
+    expect(find.textContaining('₦4,719'), findsWidgets);
+  });
+
+  testWidgets('shows a single plan labelled "Premium subscription"', (
+    t,
+  ) async {
+    final api = FakeSubscriptionApi(plansResult: samplePlans());
+    final cubit = await loaded(api, t);
+
+    await t.pumpWidget(host(cubit));
+    await t.pump();
+
+    // One card, labelled as the premium subscription — no basic/standard tiers.
+    expect(find.text(kPremiumPlanLabel), findsOneWidget);
+    expect(find.text('Standard'), findsNothing);
+    expect(find.text('Basic (with ads)'), findsNothing);
+    expect(find.text('Premium'), findsNothing);
+    // The price shown is the standard list price, not a discounted offer
+    // (it appears on the plan card and again in the summary "Price" row).
+    expect(find.text('\$3.49'), findsWidgets);
+    expect(find.textContaining('Launch offer'), findsNothing);
   });
 }

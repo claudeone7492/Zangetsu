@@ -1,0 +1,93 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
+import 'package:watch_app/core/subscription/subscription_models.dart';
+import 'package:watch_app/core/subscription/subscription_repository.dart';
+import 'package:watch_app/features/paywall/subscription_gate.dart';
+
+import '../../support/fake_subscription_api.dart';
+
+/// The gate is what keeps Home and the profile picker hidden until the device
+/// is entitled, so these tests pin its three decisions: allow an entitled
+/// device, allow when the server cannot be reached (fail open), and hold an
+/// unentitled device at the paywall.
+void main() {
+  final sl = GetIt.instance;
+
+  setUp(() => sl.reset());
+  tearDown(() => sl.reset());
+
+  Widget host(FakeSubscriptionApi api) => MaterialApp(
+    home: SubscriptionGate(
+      api: api,
+      child: const Scaffold(body: Text('HOME')),
+    ),
+  );
+
+  /// Pumps a few frames so the post-frame entitlement check, the modal route
+  /// animation and the paywall's async load all land. Deliberately not
+  /// [pumpAndSettle]: the loading spinner never settles. The 2.4s of fake time
+  /// is enough for GeoPricing's 800ms timezone lookup to time out in tests.
+  Future<void> settle(WidgetTester t) async {
+    for (var i = 0; i < 16; i++) {
+      await t.pump(const Duration(milliseconds: 150));
+    }
+  }
+
+  testWidgets('an entitled device goes straight to the app', (t) async {
+    final api = FakeSubscriptionApi(
+      plansResult: samplePlans(),
+      identityResult: const DeviceIdentity(
+        sessionId: 's1',
+        isNew: false,
+        trialUsed: true,
+        status: 'active',
+        entitled: true,
+        showPaywall: false,
+      ),
+    );
+
+    await t.pumpWidget(host(api));
+    await settle(t);
+
+    expect(find.text('HOME'), findsOneWidget);
+  });
+
+  testWidgets('a server that cannot be reached fails open', (t) async {
+    final api = _ThrowingApi();
+
+    await t.pumpWidget(host(api));
+    await settle(t);
+
+    // A network blip must not lock a paying viewer out.
+    expect(find.text('HOME'), findsOneWidget);
+  });
+
+  testWidgets('an unentitled device is held at the paywall', (t) async {
+    final api = FakeSubscriptionApi(
+      plansResult: samplePlans(),
+      identityResult: const DeviceIdentity(
+        sessionId: 's1',
+        isNew: false,
+        trialUsed: true,
+        daysLeft: 0,
+        showPaywall: true,
+      ),
+    );
+    // The paywall builds its cubit from GetIt, so register the same fake.
+    sl.registerLazySingleton<SubscriptionApi>(() => api);
+
+    await t.pumpWidget(host(api));
+    await settle(t);
+
+    // Home is not reachable; the subscription card is on screen instead.
+    expect(find.text('HOME'), findsNothing);
+    expect(find.text(kPremiumPlanLabel), findsOneWidget);
+  });
+}
+
+/// An api whose [identify] always fails, standing in for an offline device.
+class _ThrowingApi extends FakeSubscriptionApi {
+  @override
+  Future<DeviceIdentity?> identify() async => throw Exception('offline');
+}

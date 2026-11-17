@@ -13,25 +13,47 @@ import 'subscription_cubit.dart';
 
 /// Opens the subscription card as a frosted modal. Resolves true when the user
 /// unlocked access (trial started, free promo, or a completed payment).
-Future<bool> showPaywall(BuildContext context, {String? reason}) async {
+///
+/// [dismissible] false makes the card modal: used by the launch gate, which
+/// must not be swiped away before the device is entitled. The in-app entry
+/// points leave it true so a browsing user can back out.
+Future<bool> showPaywall(
+  BuildContext context, {
+  String? reason,
+  VoidCallback? onUnlocked,
+  bool dismissible = true,
+}) async {
   final result = await showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
+    isDismissible: dismissible,
+    enableDrag: dismissible,
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: 0.55),
-    builder: (_) => BlocProvider(
-      create: (_) => SubscriptionCubit(sl())..load(),
-      child: PaywallSheet(reason: reason),
-    ),
+    builder: (_) {
+      final sheet = BlocProvider(
+        create: (_) => SubscriptionCubit(sl())..load(),
+        child: PaywallSheet(reason: reason, onUnlocked: onUnlocked),
+      );
+      if (dismissible) return sheet;
+      return PopScope(canPop: false, child: sheet);
+    },
   );
-  return result ?? false;
+  final unlocked = result ?? false;
+  if (unlocked) onUnlocked?.call();
+  return unlocked;
 }
 
-/// The subscription card: tier list, promo input, live total, trial CTA.
+/// The subscription card: the premium tier, promo input, live total, trial CTA.
 class PaywallSheet extends StatefulWidget {
-  const PaywallSheet({super.key, this.reason});
+  const PaywallSheet({super.key, this.reason, this.onUnlocked});
 
   final String? reason;
+
+  /// Called once the user unlocks access (trial, free promo or paid), in
+  /// addition to the modal resolving true. Lets a host that cannot await the
+  /// result — the launch gate — react to the unlock.
+  final VoidCallback? onUnlocked;
 
   @override
   State<PaywallSheet> createState() => _PaywallSheetState();
@@ -177,22 +199,24 @@ class _PaywallSheetState extends State<PaywallSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: AppColors.accentSoft,
-                borderRadius: BorderRadius.circular(8),
+        if (state.discountPct > 0) ...[
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.accentSoft,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Launch offer · ${state.discountPct}% off',
+                  style: AppText.caption.copyWith(color: AppColors.accent),
+                ),
               ),
-              child: Text(
-                'Launch offer · ${state.discountPct}% off',
-                style: AppText.caption.copyWith(color: AppColors.accent),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
+            ],
+          ),
+          const SizedBox(height: 12),
+        ],
         Text(
           widget.reason ?? 'Unlock everything on Zangetsu',
           style: AppText.title,
@@ -349,21 +373,25 @@ class _PaywallSheetState extends State<PaywallSheet> {
   }
 
   Widget _summary(SubscriptionState state) {
+    final plan = state.selected;
+    final hasOffer = state.discountPct > 0;
     final rows = <Widget>[
       _SummaryRow(
         label: 'Plan',
-        value: '${state.selected?.label ?? '—'} · monthly',
+        value: '${plan?.label ?? kPremiumPlanLabel} · '
+            '${periodWord(plan?.periodDays ?? 30)}',
       ),
-      _SummaryRow(
-        label: 'List price',
-        value: money(state.listCents),
-      ),
-      _SummaryRow(
-        label: 'Launch offer · ${state.discountPct}% off',
-        value: '−${money(state.listCents - state.offerCents)}',
-        accent: true,
-      ),
+      _SummaryRow(label: 'Price', value: money(state.listCents)),
     ];
+    if (hasOffer) {
+      rows.add(
+        _SummaryRow(
+          label: 'Launch offer · ${state.discountPct}% off',
+          value: '−${money(state.listCents - state.offerCents)}',
+          accent: true,
+        ),
+      );
+    }
     if (state.promo != null) {
       rows.add(
         _SummaryRow(
@@ -378,7 +406,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
     }
     rows.add(
       _SummaryRow(
-        label: 'Total / month',
+        label: 'Total',
         value: money(state.totalCents),
         total: true,
       ),
@@ -416,7 +444,8 @@ class _PaywallSheetState extends State<PaywallSheet> {
         ? 'Activate free access'
         : state.trialEligible
         ? 'Activate free trial'
-        : 'Continue to payment · ${money(state.totalCents)}/mo';
+        : 'Continue to payment · ${money(state.totalCents)}'
+              '${periodSuffix(state.selected?.periodDays ?? 30)}';
 
     return SizedBox(
       height: 52,
@@ -511,6 +540,7 @@ class _PlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final offer = (plan.priceCents * (100 - discountPct) / 100).round();
+    final onOffer = offer < plan.priceCents;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -577,7 +607,7 @@ class _PlanCard extends StatelessWidget {
                     style: AppText.headline.copyWith(color: Colors.white),
                     children: [
                       TextSpan(
-                        text: '/mo',
+                        text: periodSuffix(plan.periodDays),
                         style: AppText.caption.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -585,13 +615,14 @@ class _PlanCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Text(
-                  money(plan.priceCents),
-                  style: AppText.caption.copyWith(
-                    color: AppColors.textTertiary,
-                    decoration: TextDecoration.lineThrough,
+                if (onOffer)
+                  Text(
+                    money(plan.priceCents),
+                    style: AppText.caption.copyWith(
+                      color: AppColors.textTertiary,
+                      decoration: TextDecoration.lineThrough,
+                    ),
                   ),
-                ),
                 if (geoQuote != null) ...[
                   const SizedBox(height: 2),
                   Text(
