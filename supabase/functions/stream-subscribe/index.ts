@@ -13,7 +13,7 @@
 // succeeds.
 
 import { adminClient, platformFee } from "../_shared/supabase.ts";
-import { initializeCharge } from "../_shared/korapay.ts";
+import { initializeCharge, korapayMode } from "../_shared/korapay.ts";
 import { buildSubscriptionReference, loadPlan, sessionEmail } from "../_shared/subscriptions.ts";
 import { handleOptions, json } from "../_shared/cors.ts";
 
@@ -191,6 +191,6 @@ Deno.serve(async (req) => {
     platformFeeUsdCents: fee,
     checkoutUrl: charge.checkoutUrl ?? null,
     status: "pending",
-    mode: Deno.env.get("KORAPAY_MODE") === "live" ? "live" : "test",
+    mode: korapayMode(),
   });
 });

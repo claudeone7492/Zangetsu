@@ -1,4 +1,11 @@
-// Korapay client. Defaults to TEST keys; set KORAPAY_MODE=live to switch.
+// Korapay client. LIVE keys are the default; KORAPAY_MODE=test opts a
+// deployment back onto the sandbox keys.
+//
+// Production is the safe default: an unset (or misspelled) KORAPAY_MODE must
+// never silently drop a live deployment onto the test keys, where charges look
+// like they succeed but no money is ever captured. So only an explicit "test"
+// (or "sandbox") selects the test keys; anything else unrecognised throws
+// rather than quietly resolving to either.
 //
 // Only the secret key is used server-side. The public key is echoed to the
 // client so it can render the checkout, never the secret.
@@ -7,8 +14,16 @@ import { hmacSha256Hex, safeEqual } from "./cors.ts";
 
 const DEFAULT_BASE = "https://api.korapay.com/merchant/api/v1";
 
+/** Pure mode resolution, split out from the env read so it is testable. */
+export function resolveKorapayMode(raw: string | undefined): "test" | "live" {
+  const value = (raw ?? "").trim().toLowerCase();
+  if (value === "test" || value === "sandbox") return "test";
+  if (value === "" || value === "live") return "live";
+  throw new Error(`KORAPAY_MODE must be "live" or "test" (got "${raw}")`);
+}
+
 export function korapayMode(): "test" | "live" {
-  return Deno.env.get("KORAPAY_MODE") === "live" ? "live" : "test";
+  return resolveKorapayMode(Deno.env.get("KORAPAY_MODE"));
 }
 
 function secretKey(): string {
