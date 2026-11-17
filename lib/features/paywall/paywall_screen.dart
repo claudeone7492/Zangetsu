@@ -177,22 +177,24 @@ class _PaywallSheetState extends State<PaywallSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: AppColors.accentSoft,
-                borderRadius: BorderRadius.circular(8),
+        if (state.discountPct > 0) ...[
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.accentSoft,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Launch offer · ${state.discountPct}% off',
+                  style: AppText.caption.copyWith(color: AppColors.accent),
+                ),
               ),
-              child: Text(
-                'Launch offer · ${state.discountPct}% off',
-                style: AppText.caption.copyWith(color: AppColors.accent),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
+            ],
+          ),
+          const SizedBox(height: 12),
+        ],
         Text(
           widget.reason ?? 'Unlock everything on Zangetsu',
           style: AppText.title,
@@ -349,21 +351,28 @@ class _PaywallSheetState extends State<PaywallSheet> {
   }
 
   Widget _summary(SubscriptionState state) {
+    final plan = state.selected;
+    final hasOffer = state.discountPct > 0;
     final rows = <Widget>[
       _SummaryRow(
         label: 'Plan',
-        value: '${state.selected?.label ?? '—'} · monthly',
+        value:
+            '${plan?.label ?? '—'} · ${periodWord(plan?.periodDays ?? 30)}',
       ),
       _SummaryRow(
         label: 'List price',
         value: money(state.listCents),
       ),
-      _SummaryRow(
-        label: 'Launch offer · ${state.discountPct}% off',
-        value: '−${money(state.listCents - state.offerCents)}',
-        accent: true,
-      ),
     ];
+    if (hasOffer) {
+      rows.add(
+        _SummaryRow(
+          label: 'Launch offer · ${state.discountPct}% off',
+          value: '−${money(state.listCents - state.offerCents)}',
+          accent: true,
+        ),
+      );
+    }
     if (state.promo != null) {
       rows.add(
         _SummaryRow(
@@ -378,7 +387,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
     }
     rows.add(
       _SummaryRow(
-        label: 'Total / month',
+        label: 'Total',
         value: money(state.totalCents),
         total: true,
       ),
@@ -412,11 +421,12 @@ class _PaywallSheetState extends State<PaywallSheet> {
     SubscriptionCubit cubit, {
     required bool busy,
   }) {
+    final period = periodSuffix(state.selected?.periodDays ?? 30);
     final label = state.isFreeAccess
         ? 'Activate free access'
         : state.trialEligible
         ? 'Activate free trial'
-        : 'Continue to payment · ${money(state.totalCents)}/mo';
+        : 'Continue to payment · ${money(state.totalCents)}$period';
 
     return SizedBox(
       height: 52,
@@ -577,7 +587,7 @@ class _PlanCard extends StatelessWidget {
                     style: AppText.headline.copyWith(color: Colors.white),
                     children: [
                       TextSpan(
-                        text: '/mo',
+                        text: periodSuffix(plan.periodDays),
                         style: AppText.caption.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -585,13 +595,14 @@ class _PlanCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Text(
-                  money(plan.priceCents),
-                  style: AppText.caption.copyWith(
-                    color: AppColors.textTertiary,
-                    decoration: TextDecoration.lineThrough,
+                if (discountPct > 0)
+                  Text(
+                    money(plan.priceCents),
+                    style: AppText.caption.copyWith(
+                      color: AppColors.textTertiary,
+                      decoration: TextDecoration.lineThrough,
+                    ),
                   ),
-                ),
                 if (geoQuote != null) ...[
                   const SizedBox(height: 2),
                   Text(

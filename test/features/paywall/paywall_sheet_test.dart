@@ -88,7 +88,10 @@ void main() {
   testWidgets('rejects an unknown promo and then applies a real one', (
     t,
   ) async {
-    final api = FakeSubscriptionApi(plansResult: samplePlans());
+    final api = FakeSubscriptionApi(
+      plansResult: samplePlans(),
+      configResult: const SubscriptionConfig(launchDiscountPct: 15),
+    );
     final cubit = await loaded(api, t);
 
     await t.pumpWidget(host(cubit));
@@ -111,7 +114,7 @@ void main() {
     expect(find.textContaining('50% off applied'), findsOneWidget);
     expect(find.text('Promo · 50% off'), findsOneWidget);
     expect(find.text('You save'), findsOneWidget);
-    expect(find.text('Total / month'), findsOneWidget);
+    expect(find.text('Total'), findsOneWidget);
     // Standard: 349c list, 15% off -> 297c, then 50% off -> 149c.
     expect(find.text('\$1.49'), findsOneWidget);
     expect(find.text('\$2.00'), findsOneWidget); // 349 - 149
@@ -141,7 +144,10 @@ void main() {
   testWidgets('shows the approximate local price on the plan card', (
     t,
   ) async {
-    final api = FakeSubscriptionApi(plansResult: samplePlans());
+    final api = FakeSubscriptionApi(
+      plansResult: samplePlans(),
+      configResult: const SubscriptionConfig(launchDiscountPct: 15),
+    );
     final cubit = await loaded(api, t);
     cubit.emit(
       cubit.state.copyWith(

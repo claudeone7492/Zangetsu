@@ -14,7 +14,13 @@
 
 import { adminClient, platformFee } from "../_shared/supabase.ts";
 import { initializeCharge, korapayMode } from "../_shared/korapay.ts";
-import { buildSubscriptionReference, loadPlan, sessionEmail } from "../_shared/subscriptions.ts";
+import {
+  buildSubscriptionReference,
+  loadLaunchDiscountPct,
+  loadPlan,
+  priceStreamPlan,
+  sessionEmail,
+} from "../_shared/subscriptions.ts";
 import { handleOptions, json } from "../_shared/cors.ts";
 
 interface PromoRow {
@@ -82,11 +88,14 @@ Deno.serve(async (req) => {
     }
   }
 
-  const listCents = plan.price_usd_cents;
-  const amountCents = Math.max(
-    0,
-    Math.round((listCents * (100 - Math.min(100, percentOff))) / 100),
+  const launchDiscountPct = await loadLaunchDiscountPct(db);
+  const pricing = priceStreamPlan(
+    plan.price_usd_cents,
+    launchDiscountPct,
+    percentOff,
   );
+  const listCents = pricing.listCents;
+  const amountCents = pricing.amountCents;
   const reference = buildSubscriptionReference(plan.key, "sub");
 
   // A fully-discounted plan needs no charge: grant it outright and record the
@@ -115,7 +124,11 @@ Deno.serve(async (req) => {
       reference,
       planKey: plan.key,
       entitlement: plan.entitlement,
+      listUsdCents: listCents,
+      offerUsdCents: pricing.offerCents,
       amountUsdCents: 0,
+      launchDiscountPct: pricing.launchDiscountPct,
+      percentOff,
       checkoutUrl: null,
       status: "active",
     });
@@ -186,7 +199,9 @@ Deno.serve(async (req) => {
     planKey: plan.key,
     entitlement: plan.entitlement,
     listUsdCents: listCents,
+    offerUsdCents: pricing.offerCents,
     amountUsdCents: amountCents,
+    launchDiscountPct: pricing.launchDiscountPct,
     percentOff,
     platformFeeUsdCents: fee,
     checkoutUrl: charge.checkoutUrl ?? null,

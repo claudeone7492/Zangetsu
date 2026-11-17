@@ -25,7 +25,7 @@ class SubscriptionState extends Equatable {
     this.promo,
     this.message,
     this.promoRejected = false,
-    this.discountPct = 15,
+    this.discountPct = 0,
     this.geoQuote,
   });
 
@@ -39,7 +39,8 @@ class SubscriptionState extends Equatable {
   final String? message;
   final bool promoRejected;
 
-  /// Launch-offer percentage off list (from app_config; 15 by default).
+  /// Launch-offer percentage off list (from `subscription_config`; 0 when the
+  /// server could not be reached, so the card never over-promises).
   final int discountPct;
 
   /// Approximate local-currency price, when the device is on African rails.
@@ -137,10 +138,12 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       _repo.plans(),
       _repo.identify(),
       GeoPricing.quote(),
+      _repo.config(),
     ]);
     final plans = results[0] as List<SubscriptionPlan>;
     final identity = results[1] as DeviceIdentity?;
     final geoQuote = results[2] as GeoQuote?;
+    final config = results[3] as SubscriptionConfig;
 
     // Default to the most popular tier (middle of the list), else the first.
     final defaultKey = state.selectedKey ??
@@ -155,6 +158,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         identity: identity,
         selectedKey: defaultKey,
         geoQuote: geoQuote,
+        discountPct: config.launchDiscountPct,
         message: () => plans.isEmpty ? 'Could not load plans.' : null,
       ),
     );

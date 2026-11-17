@@ -32,6 +32,64 @@ export async function loadPlan(
 }
 
 /**
+ * The admin-managed launch discount, as a whole percentage. Defaults to 0 so a
+ * missing row (or a failed read) never invents a discount the charge won't
+ * honour — quoting a higher price than is charged is the safe direction.
+ */
+export async function loadLaunchDiscountPct(db: SupabaseClient): Promise<number> {
+  const { data } = await db
+    .from("app_config")
+    .select("stream_launch_discount_pct")
+    .limit(1)
+    .maybeSingle();
+  const raw = (data as { stream_launch_discount_pct?: number } | null)
+    ?.stream_launch_discount_pct;
+  if (typeof raw !== "number" || !Number.isFinite(raw)) return 0;
+  return clampPct(raw);
+}
+
+function clampPct(value: number): number {
+  return Math.min(100, Math.max(0, Math.round(value)));
+}
+
+export interface StreamPricing {
+  listCents: number;
+  /** List price after the launch discount, before any promo. */
+  offerCents: number;
+  /** What Korapay is asked to charge. */
+  amountCents: number;
+  launchDiscountPct: number;
+  promoPercentOff: number;
+}
+
+/**
+ * Prices a stream plan the way the paywall quotes it: the launch discount comes
+ * off the list price, then the promo comes off that. The rounding matches the
+ * client's (`offerCents`, then `totalCents`) so the number on the button is the
+ * number that gets charged.
+ */
+export function priceStreamPlan(
+  listCents: number,
+  launchDiscountPct: number,
+  promoPercentOff: number,
+): StreamPricing {
+  const launch = clampPct(launchDiscountPct);
+  const promo = clampPct(promoPercentOff);
+  const offerCents = Math.round((listCents * (100 - launch)) / 100);
+  const amountCents = Math.max(
+    0,
+    Math.round((offerCents * (100 - promo)) / 100),
+  );
+  return {
+    listCents,
+    offerCents,
+    amountCents,
+    launchDiscountPct: launch,
+    promoPercentOff: promo,
+  };
+}
+
+/**
  * Builds a Korapay reference for a subscription charge. Korapay rejects
  * references longer than 50 characters, so the UUID is truncated.
  */
