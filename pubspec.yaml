@@ -297,6 +297,10 @@ flutter:
     # every source is pre-wired with nothing for the user to configure; the
     # same files also stay published in provider-repo/ for community reuse.
     - assets/providers/
+    # Bundled universal-scraper pack: JSON site configs (no code, no runtime)
+    # installed on first launch so the config-driven engine has sources with
+    # nothing for the user to configure.
+    - assets/universal/
     # Cheerio + htmlparser2 bundle for LNReader-style novel source scripts.
     - assets/js/lnreader_cheerio.js
     # require()/fetch shims + plugin loader that runs LNReader plugins on top.

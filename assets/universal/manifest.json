@@ -1,0 +1,46 @@
+{
+  "name": "Zangetsu Universal Sources",
+  "description": "Config-driven sources for the universal scraper engine. Each entry describes a site in JSON — no code, no APK — and installs on first launch with nothing for the user to configure. Archive.org ships as the always-working public-domain catalogue; more entries can be added to any repo.",
+  "sources": [
+    {
+      "id": "archiveorg",
+      "name": "Archive.org (Public Domain)",
+      "type": "movie",
+      "lang": "en",
+      "baseUrl": "https://archive.org",
+      "logo": "https://archive.org/favicon.ico",
+      "api": {
+        "base": "https://archive.org",
+        "headers": {
+          "Accept": "application/json",
+          "Referer": "https://archive.org/"
+        },
+        "homePath": "/advancedsearch.php?q=collection%3Afeature_films+AND+mediatype%3Amovies+AND+format%3A%22h.264%22&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=year&rows=24&page={page}&output=json",
+        "catalogs": [
+          {
+            "id": "response.docs",
+            "name": "Public-Domain Films",
+            "path": "/"
+          }
+        ],
+        "searchPath": "/advancedsearch.php?q={query}+AND+mediatype%3Amovies&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=year&rows=24&page={page}&output=json",
+        "searchResults": "response.docs",
+        "searchQueryParam": "",
+        "searchPageParam": "",
+        "detailPath": "/metadata/{id}",
+        "detailData": "metadata",
+        "episodesPath": "/metadata/{id}",
+        "episodesItems": "__single__",
+        "streamsPath": "/metadata/{id}",
+        "streamsLangs": "",
+        "streamsUrlTemplate": "https://archive.org/download/{id}/<ext>",
+        "streamsExtensions": "mp4",
+        "streamsMetaPath": "/metadata/{id}",
+        "posterTemplate": "https://archive.org/services/img/{id}",
+        "idField": "identifier",
+        "titleField": "title",
+        "posterField": "image"
+      }
+    }
+  ]
+}
