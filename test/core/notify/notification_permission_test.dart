@@ -1,14 +1,13 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:watch_app/core/notify/push_service.dart';
+import 'package:watch_app/core/notify/notification_service.dart';
 
-/// Regression guard for the "push permission never prompts" bug.
+/// Regression guard for the "notification permission never prompts" bug.
 ///
-/// The Android POST_NOTIFICATIONS request used to sit *after* a
-/// `FirebaseMessaging.instance` call that throws on any build without
-/// google-services.json. So on those builds nothing ever asked, and every
-/// notification was silently dead. These tests pin the request to the
-/// permission channel and prove it fires independently of Firebase.
+/// The request used to sit behind a Firebase Messaging call that throws on any
+/// build without google-services.json, so on those builds nothing ever asked and
+/// every alert was silently dead. Notifications are drawn locally, so the
+/// request must reach the permission channel on its own. These tests pin that.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 

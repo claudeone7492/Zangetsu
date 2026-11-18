@@ -75,7 +75,6 @@ dependencies:
   wakelock_plus_tvos: ^0.0.1
   firebase_core_tvos: ^0.0.2
   firebase_analytics_tvos: ^0.0.1
-  firebase_messaging_tvos: ^0.0.1
   # Extract the .srt/.ssa from SubDL's zipped subtitle downloads.
   archive: ^4.0.9
 
@@ -176,11 +175,10 @@ dependencies:
   device_info_plus: ^13.2.0
   flutter_colorpicker: ^1.1.0
   firebase_core: ^4.12.1
-  # Crash reporting. Same Firebase project as Analytics/FCM, no new account.
+  # Crash reporting. Same Firebase project as Analytics, no new account.
   firebase_crashlytics: ^5.0.5
   firebase_analytics: ^12.4.5
   supabase_flutter: ^2.16.0
-  firebase_messaging: ^16.4.3
   fluttertoast: ^10.0.0
   dynamic_color: ^2.1.0
   local_auth: ^3.0.2

@@ -1,13 +1,35 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../app_config.dart';
 import 'daily_picks_prefs.dart';
 import 'notification_router.dart';
+
+/// Requests the runtime notification permission (Android POST_NOTIFICATIONS,
+/// API 33+; the system prompt on iOS).
+///
+/// This is the app's only notification-permission request, and it lives here
+/// with the local-notification owner rather than behind any push transport:
+/// alerts are drawn locally, so the prompt must not depend on a remote-push
+/// SDK being configured. [isSupported] is injectable so tests can drive the
+/// channel without a mobile host.
+Future<void> ensureNotificationPermission({
+  bool Function()? isSupported,
+}) async {
+  if (!(isSupported ?? _notificationsSupported)()) return;
+  try {
+    await Permission.notification.request();
+  } catch (_) {}
+}
+
+bool _notificationsSupported() =>
+    !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
 /// Thin wrapper over flutter_local_notifications.
 ///
@@ -17,8 +39,9 @@ import 'notification_router.dart';
 ///     itself to check what aired, and iOS background refresh is a suggestion
 ///     the system is free to ignore — an alert that fires whenever iOS feels
 ///     like it is worse than none.
-///   • Push broadcasts ([showMessage]) work on iOS too: APNs does the waking,
-///     so none of the above applies.
+///   • [showMessage] draws a general announcement. Android-only, like the
+///     other alerts: it exists for foreground events the app itself observes,
+///     so there is no iOS counterpart to keep in step.
 class NotificationService {
   NotificationService._();
   static final NotificationService instance = NotificationService._();
@@ -45,9 +68,11 @@ class NotificationService {
 
   Future<void> init() async {
     if (_inited || !(Platform.isAndroid || Platform.isIOS)) return;
+    // Ask for the runtime permission here, before the plugin is set up. This is
+    // the app's single notification prompt: alerts are drawn locally, so
+    // nothing else needs to own it.
+    await ensureNotificationPermission();
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
-    // PushService owns the runtime permission request, so local notifications
-    // do not request the same Android permission a second time.
     const darwin = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -152,9 +177,8 @@ class NotificationService {
     );
   }
 
-  /// Show a general announcement / push message. Used for FCM foreground
-  /// messages, which Android does not display on its own (backgrounded ones the
-  /// system draws itself, image included). [imageUrl], when set and reachable,
+  /// Show a general announcement. Used for in-app events the app observes
+  /// itself (e.g. extension updates). [imageUrl], when set and reachable,
   /// renders as a big-picture notification; [payload] is optional tap data.
   Future<void> showMessage({
     required int id,
@@ -163,9 +187,6 @@ class NotificationService {
     String? imageUrl,
     String? payload,
   }) async {
-    // iOS draws foreground pushes itself once
-    // setForegroundNotificationPresentationOptions is set (see PushService),
-    // so redrawing here would show every broadcast twice.
     if (!Platform.isAndroid) return;
     if (!_inited) await init();
     StyleInformation? style;

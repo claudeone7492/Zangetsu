@@ -112,7 +112,7 @@ Legend: ✅ done / shipped · 🟡 partial or gated · ❌ not done / missing
 | Local backup / restore | ✅ | `lib/features/backup/backup_screen.dart`, `BackupService` |
 | Cloud sync (Supabase / VPS) | ✅ | `CloudPostgrest` in `read_history.dart:158`, `viewer_profile.dart:97` |
 | Cross-device sync of lists/history | ✅ | README "Keep your lists… in sync" |
-| Push notifications | ✅ | `PushService.instance.init()` in `main.dart:609` |
+| Notifications (in-app + local) | ✅ | `NotificationService` (local alerts) + `announcements.json` feed → `AnnouncementStore`, badge on Home |
 | Subscriptions + airing countdown | ✅ | `subscriptions_screen.dart`, `airing_countdown.dart` |
 
 ## 10. Settings & UI

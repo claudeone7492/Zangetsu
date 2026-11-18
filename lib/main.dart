@@ -30,7 +30,7 @@ import 'core/platform/trusted_certificates.dart';
 import 'core/notify/cs_notify.dart';
 import 'core/notify/daily_picks_service.dart';
 import 'core/notify/notification_service.dart';
-import 'core/notify/push_service.dart';
+import 'core/announce/announcement_service.dart';
 import 'core/ui/home_rows_prefs.dart';
 import 'core/ui/route_observer.dart';
 import 'core/ui/poster_card.dart';
@@ -504,6 +504,12 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
       }
       _syncOnResume();
       unawaited(_checkSubscriptions());
+      // Pull the announcements feed on resume too, so a message published while
+      // the app was backgrounded reaches the in-app list + bell badge without
+      // needing a cold relaunch. check() is idempotent per announcement id.
+      if (sl.isRegistered<AnnouncementService>()) {
+        unawaited(sl<AnnouncementService>().check());
+      }
       // A resume is the cheapest chance to catch a slot that came due while the
       // app was backgrounded; the day-stamp makes a repeat call a no-op.
       unawaited(DailyPicksService.instance.sync());
@@ -624,10 +630,10 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
         unawaited(DailyPicksService.instance.sync());
       });
     }
-    // FCM broadcasts: subscribe every device to the `all` topic so we can push
-    // a custom notification to all users from the Firebase Console. Independent
-    // of onboarding + fire-and-forget so it never delays launch.
-    unawaited(PushService.instance.init());
+    // Local notifications own the runtime permission prompt, so init them at
+    // startup (independent of onboarding) and the POST_NOTIFICATIONS dialog
+    // appears on first launch. Fire-and-forget so it never delays launch.
+    unawaited(NotificationService.instance.init());
     // Register this device's fingerprint + subscription so the admin console
     // (and the paywall's trial gate) sees it. Fire-and-forget: identity is
     // cached locally, so a slow or dead network never delays launch.

@@ -363,8 +363,8 @@ dependencies {
 }
 
 // google-services.json is gitignored (see android/.gitignore). Dart already
-// no-ops Analytics/FCM when Firebase.initializeApp() fails, so a missing file
-// must not fail the Gradle build — same idea as falling back when
+// no-ops Analytics/Crashlytics when Firebase.initializeApp() fails, so a missing
+// file must not fail the Gradle build — same idea as falling back when
 // key.properties is absent. Drop the real file at android/app/google-services.json
 // (Firebase console → Project settings → Android app) to turn Firebase on.
 if (file("google-services.json").exists()) {
