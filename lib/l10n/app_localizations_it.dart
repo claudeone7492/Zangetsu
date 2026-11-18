@@ -6511,4 +6511,88 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get sendReport => 'Send report';
+
+  @override
+  String get appLock => 'App lock';
+
+  @override
+  String get appLockSubtitle => 'Require a PIN to open the app';
+
+  @override
+  String get appLockTitle => 'Locked';
+
+  @override
+  String get appLockEnterPin => 'Enter your PIN to continue';
+
+  @override
+  String get appLockWrongPin => 'Wrong PIN, try again';
+
+  @override
+  String get appLockUnlock => 'Unlock';
+
+  @override
+  String get appLockUseBiometric => 'Use biometrics';
+
+  @override
+  String get appLockBiometricReason => 'Unlock Zangetsu';
+
+  @override
+  String get appLockBiometric => 'Unlock with biometrics';
+
+  @override
+  String get appLockBiometricSubtitle =>
+      'Use your fingerprint or face instead of the PIN';
+
+  @override
+  String get appLockRelock => 'Lock after';
+
+  @override
+  String get appLockRelockImmediately => 'Immediately';
+
+  @override
+  String appLockRelockMinute(int minutes) {
+    return '$minutes minute';
+  }
+
+  @override
+  String appLockRelockMinutes(int minutes) {
+    return '$minutes minutes';
+  }
+
+  @override
+  String get appLockSet => 'Set app PIN';
+
+  @override
+  String get appLockChange => 'Change app PIN';
+
+  @override
+  String get appLockRemove => 'Turn off app lock';
+
+  @override
+  String get appLockRemoveBody => 'Enter your PIN to turn off the app lock.';
+
+  @override
+  String get appLockSetBody =>
+      'Choose a 4- or 6-digit PIN. You\'ll enter it every time the app opens.';
+
+  @override
+  String get appLockConfirmPin => 'Confirm PIN';
+
+  @override
+  String get appLockCurrentPin => 'Enter your current PIN';
+
+  @override
+  String get appLockNewPin => 'New PIN';
+
+  @override
+  String get appLockPinMismatch => 'PINs do not match';
+
+  @override
+  String get appLockInvalidPin => 'Use a 4- or 6-digit PIN';
+
+  @override
+  String get appLockEnabled => 'App lock is on';
+
+  @override
+  String get appLockDisabled => 'App lock is off';
 }

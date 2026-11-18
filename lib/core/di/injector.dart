@@ -42,6 +42,7 @@ import '../subscription/subscription_repository.dart';
 import '../../features/player/mpv_player_pool.dart';
 import '../schedule/airing_service.dart';
 import '../schedule/coming_soon_service.dart';
+import '../privacy/app_lock.dart';
 import '../privacy/incognito_mode.dart';
 import '../profiles/viewer_profile.dart';
 import '../profiles/profile_lock_store.dart';
@@ -346,6 +347,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
       },
     ),
   );
+  sl.registerSingleton<AppLock>(AppLock());
   sl.registerSingleton<ProfileLockStore>(
     SyncedProfileLockStore(
       remote: PostgrestProfileLockRemote(vpsClient, cloudAccessToken),

@@ -3567,5 +3567,45 @@
   },
   "logsCopy": "Copy all",
   "logsCopied": "Log copied",
-  "sendReport": "Send report"
+  "sendReport": "Send report",
+  "appLock": "App lock",
+  "appLockSubtitle": "Require a PIN to open the app",
+  "appLockTitle": "Locked",
+  "appLockEnterPin": "Enter your PIN to continue",
+  "appLockWrongPin": "Wrong PIN, try again",
+  "appLockUnlock": "Unlock",
+  "appLockUseBiometric": "Use biometrics",
+  "appLockBiometricReason": "Unlock Zangetsu",
+  "appLockBiometric": "Unlock with biometrics",
+  "appLockBiometricSubtitle": "Use your fingerprint or face instead of the PIN",
+  "appLockRelock": "Lock after",
+  "appLockRelockImmediately": "Immediately",
+  "appLockRelockMinute": "{minutes} minute",
+  "appLockRelockMinutes": "{minutes} minutes",
+  "appLockSet": "Set app PIN",
+  "appLockChange": "Change app PIN",
+  "appLockRemove": "Turn off app lock",
+  "appLockRemoveBody": "Enter your PIN to turn off the app lock.",
+  "appLockSetBody": "Choose a 4- or 6-digit PIN. You'll enter it every time the app opens.",
+  "appLockConfirmPin": "Confirm PIN",
+  "appLockCurrentPin": "Enter your current PIN",
+  "appLockNewPin": "New PIN",
+  "appLockPinMismatch": "PINs do not match",
+  "appLockInvalidPin": "Use a 4- or 6-digit PIN",
+  "appLockEnabled": "App lock is on",
+  "appLockDisabled": "App lock is off",
+  "@appLockRelockMinute": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@appLockRelockMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }

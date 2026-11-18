@@ -11294,6 +11294,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send report'**
   String get sendReport;
+
+  /// No description provided for @appLock.
+  ///
+  /// In en, this message translates to:
+  /// **'App lock'**
+  String get appLock;
+
+  /// No description provided for @appLockSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Require a PIN to open the app'**
+  String get appLockSubtitle;
+
+  /// No description provided for @appLockTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get appLockTitle;
+
+  /// No description provided for @appLockEnterPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your PIN to continue'**
+  String get appLockEnterPin;
+
+  /// No description provided for @appLockWrongPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong PIN, try again'**
+  String get appLockWrongPin;
+
+  /// No description provided for @appLockUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get appLockUnlock;
+
+  /// No description provided for @appLockUseBiometric.
+  ///
+  /// In en, this message translates to:
+  /// **'Use biometrics'**
+  String get appLockUseBiometric;
+
+  /// No description provided for @appLockBiometricReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Zangetsu'**
+  String get appLockBiometricReason;
+
+  /// No description provided for @appLockBiometric.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock with biometrics'**
+  String get appLockBiometric;
+
+  /// No description provided for @appLockBiometricSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your fingerprint or face instead of the PIN'**
+  String get appLockBiometricSubtitle;
+
+  /// No description provided for @appLockRelock.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock after'**
+  String get appLockRelock;
+
+  /// No description provided for @appLockRelockImmediately.
+  ///
+  /// In en, this message translates to:
+  /// **'Immediately'**
+  String get appLockRelockImmediately;
+
+  /// No description provided for @appLockRelockMinute.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} minute'**
+  String appLockRelockMinute(int minutes);
+
+  /// No description provided for @appLockRelockMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} minutes'**
+  String appLockRelockMinutes(int minutes);
+
+  /// No description provided for @appLockSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Set app PIN'**
+  String get appLockSet;
+
+  /// No description provided for @appLockChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change app PIN'**
+  String get appLockChange;
+
+  /// No description provided for @appLockRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off app lock'**
+  String get appLockRemove;
+
+  /// No description provided for @appLockRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your PIN to turn off the app lock.'**
+  String get appLockRemoveBody;
+
+  /// No description provided for @appLockSetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a 4- or 6-digit PIN. You\'ll enter it every time the app opens.'**
+  String get appLockSetBody;
+
+  /// No description provided for @appLockConfirmPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm PIN'**
+  String get appLockConfirmPin;
+
+  /// No description provided for @appLockCurrentPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current PIN'**
+  String get appLockCurrentPin;
+
+  /// No description provided for @appLockNewPin.
+  ///
+  /// In en, this message translates to:
+  /// **'New PIN'**
+  String get appLockNewPin;
+
+  /// No description provided for @appLockPinMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'PINs do not match'**
+  String get appLockPinMismatch;
+
+  /// No description provided for @appLockInvalidPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a 4- or 6-digit PIN'**
+  String get appLockInvalidPin;
+
+  /// No description provided for @appLockEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'App lock is on'**
+  String get appLockEnabled;
+
+  /// No description provided for @appLockDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'App lock is off'**
+  String get appLockDisabled;
 }
 
 class _AppLocalizationsDelegate

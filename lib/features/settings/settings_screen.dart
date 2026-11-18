@@ -45,6 +45,7 @@ import '../history/history_screen.dart';
 import '../stats/stats_screen.dart';
 import 'logs_screen.dart';
 import 'app_face_screen.dart';
+import '../privacy/app_lock_settings_screen.dart';
 import 'appearance_screen.dart';
 import 'poster_card_settings_screen.dart';
 import 'home_rows_screen.dart';
@@ -1297,6 +1298,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         onTap: _pickDns,
       ),
+    _SettingsEntry(
+      section: SettingsSection.advanced,
+      icon: Icons.lock_outline_rounded,
+      title: l10n.appLock,
+      subtitle: l10n.appLockSubtitle,
+      keywords:
+          'app lock pin password passcode biometric fingerprint face privacy '
+          'secure protect',
+      onTap: () => _push(const AppLockSettingsScreen()),
+    ),
     _SettingsEntry(
       section: SettingsSection.advanced,
       id: LeafParent.privacy,

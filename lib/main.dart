@@ -62,6 +62,7 @@ import 'features/live/live_tv_screen.dart';
 import 'features/onboarding/boot_error_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/paywall/subscription_gate.dart';
+import 'features/privacy/app_lock_gate.dart';
 import 'features/profiles/profile_launch_gate.dart';
 import 'features/shell/root_shell.dart';
 import 'features/watch_together/ui/party_bar.dart';
@@ -871,9 +872,12 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
                 )
               : (child ?? const SizedBox.shrink());
           final isTv = sl.isRegistered<AppMode>() && sl<AppMode>().isTv;
-          return PosterCardScope(
+          final framed = PosterCardScope(
             child: isTv ? TvViewport(child: content) : content,
           );
+          // Device-wide app lock sits inside the MaterialApp builder so it
+          // can read localizations; it is a pure overlay over the whole tree.
+          return shellFeatures ? AppLockGate(child: framed) : framed;
         },
       ),
       brightnessResolver: Theme.maybeBrightnessOf,
