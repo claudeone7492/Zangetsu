@@ -52,6 +52,41 @@ void main() {
       final state = withPlan(samplePlans()[1], discountPct: 0);
       expect(state.offerCents, 349);
     });
+
+    test('the card amount follows the promo, not just the launch offer', () {
+      // The plan card renders payableCents; the summary renders totalCents.
+      // They must be the same number, or a promo shows one price on the card
+      // and charges another at checkout.
+      final state = withPlan(samplePlans()[1], discountPct: 0).copyWith(
+        promo: () => const PromoResult(
+          code: 'HALF',
+          percentOff: 50,
+          kind: 'percent',
+        ),
+      );
+      expect(state.listCents, 349);
+      expect(state.payableCents, 175); // 349 * 0.5 = 174.5 -> 175
+      expect(state.payableCents, state.totalCents);
+      expect(state.hasDiscount, isTrue);
+    });
+
+    test('a free promo makes the card amount zero', () {
+      final state = withPlan(samplePlans()[1]).copyWith(
+        promo: () => const PromoResult(
+          code: 'FREEWATCH',
+          percentOff: 100,
+          kind: 'free',
+        ),
+      );
+      expect(state.payableCents, 0);
+      expect(state.hasDiscount, isTrue);
+    });
+
+    test('without a promo the card quotes the list price', () {
+      final state = withPlan(samplePlans()[1], discountPct: 0);
+      expect(state.payableCents, 349);
+      expect(state.hasDiscount, isFalse);
+    });
   });
 
   group('SubscriptionCubit', () {

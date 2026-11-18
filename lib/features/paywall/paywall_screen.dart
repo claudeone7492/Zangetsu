@@ -164,7 +164,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
               _PlanCard(
                 plan: plan,
                 selected: plan.key == state.selectedKey,
-                discountPct: state.discountPct,
+                payableCents: state.payableCents,
                 geoQuote: state.geoQuote,
                 onTap: () => cubit.selectPlan(plan.key),
               ),
@@ -538,21 +538,22 @@ class _PlanCard extends StatelessWidget {
   const _PlanCard({
     required this.plan,
     required this.selected,
-    required this.discountPct,
+    required this.payableCents,
+    required this.geoQuote,
     required this.onTap,
-    this.geoQuote,
   });
 
   final SubscriptionPlan plan;
   final bool selected;
-  final int discountPct;
+
+  /// Live promo-adjusted amount, the same figure the summary and CTA quote.
+  final int payableCents;
   final GeoQuote? geoQuote;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final offer = (plan.priceCents * (100 - discountPct) / 100).round();
-    final onOffer = offer < plan.priceCents;
+    final onOffer = payableCents < plan.priceCents;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -617,7 +618,7 @@ class _PlanCard extends StatelessWidget {
               children: [
                 RichText(
                   text: TextSpan(
-                    text: money(offer),
+                    text: money(payableCents),
                     style: AppText.headline.copyWith(color: Colors.white),
                     children: [
                       TextSpan(
@@ -640,7 +641,7 @@ class _PlanCard extends StatelessWidget {
                 if (geoQuote != null) ...[
                   const SizedBox(height: 2),
                   Text(
-                    '≈ ${geoQuote!.format(offer / 100)}',
+                    '≈ ${geoQuote!.format(payableCents / 100)}',
                     style: AppText.caption.copyWith(
                       color: AppColors.textTertiary,
                     ),

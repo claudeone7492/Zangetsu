@@ -77,11 +77,23 @@ class SubscriptionState extends Equatable {
     return (offerCents * (100 - off) / 100).round();
   }
 
+  /// What the user actually pays: the promo-adjusted [totalCents].
+  ///
+  /// This is the single figure the plan card, the summary and the CTA all
+  /// quote, so a promo can never show one price on the card and charge another
+  /// at checkout. The server re-derives it from the promo row and is the
+  /// authority; this only mirrors it for display.
+  int get payableCents => totalCents;
+
+  /// Whether anything is currently taken off the list price (launch offer
+  /// and/or promo), so the card knows to strike the list price through.
+  bool get hasDiscount => payableCents < listCents;
+
   bool get isFreeAccess => promo?.isFree == true || totalCents == 0;
 
   /// Approximate price in the device's local currency, shown under the offer
   /// price. Null when the device is not on African rails or no rate is known.
-  String? get geoApprox => geoQuote?.format(offerCents / 100);
+  String? get geoApprox => geoQuote?.format(payableCents / 100);
 
     SubscriptionState copyWith({
     PaywallStage? stage,

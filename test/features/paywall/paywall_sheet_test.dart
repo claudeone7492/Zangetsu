@@ -120,6 +120,42 @@ void main() {
     expect(find.text('\$1.74'), findsWidgets);
   });
 
+  testWidgets('the plan card price drops when a promo is applied', (t) async {
+    final api = FakeSubscriptionApi(
+      plansResult: samplePlans(),
+      promoResult: const PromoResult(
+        code: 'HALF',
+        percentOff: 50,
+        kind: 'percent',
+      ),
+    );
+    final cubit = await loaded(api, t);
+
+    // The card quotes the amount and its billing period in one RichText, e.g.
+    // "$1.75/mo". Matching that exact string pins the assertion to the card:
+    // the summary rows render bare amounts, and a bare-amount finder would also
+    // match the Total row and pass even with the card left stale.
+    Finder cardPrice(String amount) => find.byWidgetPredicate(
+      (w) => w is RichText && w.text.toPlainText() == '$amount/mo',
+      description: 'plan card price $amount',
+    );
+
+    await t.pumpWidget(host(cubit));
+    await t.pump();
+
+    // Before the promo the card quotes the full list price.
+    expect(cardPrice('\$3.49'), findsOneWidget);
+    expect(cardPrice('\$1.75'), findsNothing);
+
+    await t.runAsync(() => cubit.applyPromo('HALF'));
+    await t.pump();
+
+    // After it, the card headline is the discounted amount — the same figure
+    // the summary's Total row quotes.
+    expect(cardPrice('\$1.75'), findsOneWidget);
+    expect(cardPrice('\$3.49'), findsNothing);
+  });
+
   testWidgets('a free promo turns the CTA into free activation', (t) async {
     final api = FakeSubscriptionApi(
       plansResult: samplePlans(),
