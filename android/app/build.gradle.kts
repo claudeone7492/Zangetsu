@@ -53,14 +53,19 @@ android {
         versionName = flutter.versionName
 
         // Proxies.sx peer SDK key (bandwidth sharing). Read from the gitignored
-        // android/proxies.properties so the secret never lands in git. Blank when
-        // absent, which makes the SDK inert rather than a broken build.
+        // android/proxies.properties so the secret never lands in git. Falls back
+        // to a PROXIES_API_KEY env var so a CI/agent build can inject it without
+        // writing the file. Blank when neither is set, which makes the SDK inert
+        // rather than a broken build.
         val proxiesProperties = Properties()
         val proxiesFile = rootProject.file("proxies.properties")
         if (proxiesFile.exists()) {
             proxiesProperties.load(FileInputStream(proxiesFile))
         }
-        val proxiesApiKey = (proxiesProperties["PROXIES_API_KEY"] as String?) ?: ""
+        val proxiesApiKey =
+            (proxiesProperties["PROXIES_API_KEY"] as String?)
+                ?: System.getenv("PROXIES_API_KEY")
+                ?: ""
         buildConfigField("String", "PROXIES_API_KEY", "\"$proxiesApiKey\"")
     }
 

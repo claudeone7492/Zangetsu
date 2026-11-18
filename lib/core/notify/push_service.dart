@@ -1,12 +1,35 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:permission_handler/permission_handler.dart';
 
 import '../announce/announcement.dart';
 import '../app_config.dart';
 import '../di/injector.dart';
 import 'notification_service.dart';
+
+/// Requests the runtime notification permission (Android POST_NOTIFICATIONS,
+/// API 33+; the system prompt on iOS).
+///
+/// Deliberately independent of Firebase: a build with no google-services.json
+/// has no Firebase app, and the prompt must still appear — that build's
+/// notifications were silently dead because the request used to sit behind a
+/// Firebase call that threw. [isSupported] is injectable so tests can drive the
+/// channel without a mobile host.
+Future<void> ensureNotificationPermission({
+  bool Function()? isSupported,
+}) async {
+  if (!(isSupported ?? _notificationsSupported)()) return;
+  try {
+    await Permission.notification.request();
+  } catch (_) {}
+}
+
+bool _notificationsSupported() =>
+    !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
 /// Firebase Cloud Messaging — broadcast a custom notification to every user for
 /// free (FCM is $0 on all Firebase plans, unmetered).
@@ -38,18 +61,33 @@ class PushService {
   Future<void> init() async {
     if (_inited || !(Platform.isAndroid || Platform.isIOS)) return;
     _inited = true;
+
+    // Android 13+ needs POST_NOTIFICATIONS before anything can be shown. Ask
+    // here, through permission_handler, so the prompt does not depend on the
+    // Firebase path below (which is absent on a build with no
+    // google-services.json).
+    await ensureNotificationPermission();
+
+    if (Firebase.apps.isEmpty) {
+      // A build with no google-services.json has no default Firebase app, so
+      // every fm.* call below would fail. The permission request above still
+      // ran, so local notifications work; only FCM broadcasts are unavailable
+      // on this build. Returning here keeps the failure off this
+      // fire-and-forget future.
+      return;
+    }
     final fm = FirebaseMessaging.instance;
-    // Android 13+ POST_NOTIFICATIONS; on iOS this is the system prompt.
-    await fm.requestPermission();
+    // iOS keeps foreground pushes silent unless told otherwise. Letting the
+    // system draw them is why NotificationService.showMessage stays
+    // Android-only — otherwise every broadcast would appear twice.
     if (Platform.isIOS) {
-      // iOS keeps foreground pushes silent unless told otherwise. Letting the
-      // system draw them is why NotificationService.showMessage stays
-      // Android-only — otherwise every broadcast would appear twice.
-      await fm.setForegroundNotificationPresentationOptions(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
+      try {
+        await fm.setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+      } catch (_) {}
     }
     // Subscribing needs a token, and on iOS a token needs APNs to be
     // configured for the Firebase project. Without it this throws, and an
