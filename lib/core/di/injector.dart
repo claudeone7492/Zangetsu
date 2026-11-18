@@ -928,6 +928,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
         mihon: MihonExtensionService(),
         lnreader: lnrService,
         mangayomi: mangayomiManager,
+        universal: universalManager,
       ),
       LibraryBackup(),
       SettingsBackup(),

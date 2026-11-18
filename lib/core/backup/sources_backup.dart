@@ -11,6 +11,8 @@ import '../mihon/mihon_repo.dart';
 import '../provider/cloudstream_provider.dart';
 import '../provider/provider_registry.dart';
 import '../provider/provider_repo_registry.dart';
+import '../universal/universal_config.dart';
+import '../universal/universal_manager.dart';
 
 /// Codec that backs up and restores provider repos, installed providers, and
 /// per-source settings.
@@ -42,12 +44,14 @@ class SourcesBackup {
         fetchMihonIndex,
     LnReaderExtensionService? lnreader,
     MangayomiManager? mangayomi,
+    UniversalManager? universal,
   })  : _ani = aniyomi,
         _fetchAniyomiIndex = fetchAniyomiIndex ?? AniyomiRepo.fetchIndex,
         _mihon = mihon,
         _fetchMihonIndex = fetchMihonIndex ?? MihonRepo.fetchIndex,
         _lnr = lnreader,
-        _mangayomi = mangayomi;
+        _mangayomi = mangayomi,
+        _universal = universal;
 
   final ProviderReposRegistry _repos;
   final ProviderRegistry _registry;
@@ -71,6 +75,9 @@ class SourcesBackup {
   final LnReaderExtensionService? _lnr;
 
   final MangayomiManager? _mangayomi;
+
+  /// Null in tests that don't need universal-scraper restore.
+  final UniversalManager? _universal;
 
   static const String _psBoxName = 'provider_settings';
 
@@ -111,6 +118,9 @@ class SourcesBackup {
   /// - `lnreaderPkgs` — installed LNReader (novel) plugin ids.
   /// - `mangayomiRepoUrls` — tracked Mangayomi repository URLs.
   /// - `mangayomiSourceKeys` — installed Mangayomi source identities.
+  /// - `universalConfigs` — installed universal (config-driven) scrapers,
+  ///   serialised raw so a restore keeps them byte-for-byte.
+  /// - `universalRepoUrls` — tracked universal scraper repository URLs.
   /// - `settings`   — contents of the `provider_settings` Hive box, or `{}`.
   Map<String, dynamic> build() => {
         'jsRepoUrls': _repos.getAll().map((r) => r.url).toList(),
@@ -131,6 +141,11 @@ class SourcesBackup {
                 .map((item) => item.source.key)
                 .toList() ??
             const <String>[],
+        'universalConfigs': _universal?.all
+                .map((c) => c.toJsonForStore())
+                .toList() ??
+            const <dynamic>[],
+        'universalRepoUrls': _universal?.repositories ?? const <String>[],
         'settings': _readProviderSettings(),
       };
 
@@ -418,6 +433,31 @@ class SourcesBackup {
           await mg.install(source);
         } catch (_) {
           failures.add('Mangayomi source: ${source.name}');
+        }
+      }
+    }
+
+    // Universal scrapers (config-driven; restored from the backup body) --------
+    final um = _universal;
+    if (um != null) {
+      final rawConfigs = (data['universalConfigs'] as List?) ?? const [];
+      final configs = <UniversalConfig>[];
+      for (final raw in rawConfigs) {
+        if (raw is! Map) continue;
+        try {
+          configs.add(UniversalConfig.fromJson(Map<String, dynamic>.from(raw)));
+        } catch (_) {
+          failures.add('Universal scraper: ${raw['id'] ?? 'unknown'}');
+        }
+      }
+      final repoUrls =
+          (data['universalRepoUrls'] as List?)?.whereType<String>().toList() ??
+              const <String>[];
+      if (configs.isNotEmpty || repoUrls.isNotEmpty) {
+        try {
+          await um.restore(configs, repoUrls: repoUrls);
+        } catch (_) {
+          failures.add('Universal scrapers');
         }
       }
     }

@@ -19,6 +19,8 @@ import 'package:watch_app/core/provider/provider_manager.dart'
     show AniyomiManager;
 import 'package:watch_app/core/provider/provider_registry.dart';
 import 'package:watch_app/core/provider/provider_repo_registry.dart';
+import 'package:watch_app/core/universal/universal_config.dart';
+import 'package:watch_app/core/universal/universal_manager.dart';
 import 'package:zangetsu_source_bridge/zangetsu_source_bridge.dart';
 
 // ── Stubs ──────────────────────────────────────────────────────────────────────
@@ -238,6 +240,49 @@ void main() {
     original.dispose();
     restored.dispose();
     client.close();
+  });
+
+  test('universal scrapers round-trip through the backup body', () async {
+    final config = UniversalConfig.fromJson({
+      'id': 'usdemo',
+      'name': 'Demo',
+      'baseUrl': 'https://demo.example.com',
+      'type': 'movie',
+      'api': {'base': 'https://demo.example.com', 'searchPath': '/s?q={query}'},
+    });
+    final original = UniversalManager(dio: Dio());
+    await original.init();
+    await original.installAll(
+      [config],
+      repoUrl: 'https://demo.example.com/pack.json',
+    );
+
+    final snapshot = SourcesBackup(
+      _StubRepos([]),
+      _StubProviderRegistry([]),
+      null,
+      universal: original,
+    ).build();
+    expect(snapshot['universalConfigs'], hasLength(1));
+    expect(snapshot['universalRepoUrls'], ['https://demo.example.com/pack.json']);
+
+    // Simulate a fresh device: empty the shared box before the new manager
+    // reads it, so the restore is what puts the config back.
+    await Hive.box(UniversalManager.boxName).clear();
+    final restored = UniversalManager(dio: Dio());
+    await restored.init();
+    expect(restored.isEmpty, isTrue);
+
+    final failures = await SourcesBackup(
+      _StubRepos([]),
+      _StubProviderRegistry([]),
+      null,
+      universal: restored,
+    ).merge(snapshot);
+
+    expect(failures, isEmpty);
+    expect(restored.all.map((c) => c.id), ['usdemo']);
+    expect(restored.repositories, ['https://demo.example.com/pack.json']);
   });
 
   // ── (b) merge does NOT call fetchAndCache for already-present repos ─────────

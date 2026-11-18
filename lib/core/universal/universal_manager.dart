@@ -191,6 +191,36 @@ class UniversalManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Restore a backup's configs without re-fetching their repos (a backup
+  /// carries the config bodies themselves). Union-only: an already-installed
+  /// id is left as-is so a restore never clobbers a newer local edit.
+  Future<void> restore(
+    List<UniversalConfig> configs, {
+    List<String> repoUrls = const [],
+  }) async {
+    final box = Hive.isBoxOpen(boxName)
+        ? Hive.box(boxName)
+        : await openBoxSafely<dynamic>(boxName);
+    var changed = false;
+    for (final config in configs) {
+      if (_configs.containsKey(config.id)) continue;
+      _configs[config.id] = config;
+      _providers.remove(config.id);
+      await box.put(config.id, config.toJsonForStore());
+      changed = true;
+    }
+    for (final url in repoUrls) {
+      if (url.isEmpty || _repositories.contains(url)) continue;
+      _repositories.add(url);
+      changed = true;
+    }
+    if (changed) {
+      await box.put('__repos__', _repositories);
+      revision++;
+      notifyListeners();
+    }
+  }
+
   Future<void> removeRepository(String url) async {
     _repositories.remove(url);
     final box = Hive.isBoxOpen(boxName)
