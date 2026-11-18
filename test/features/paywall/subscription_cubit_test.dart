@@ -67,7 +67,6 @@ void main() {
       expect(state.listCents, 349);
       expect(state.payableCents, 175); // 349 * 0.5 = 174.5 -> 175
       expect(state.payableCents, state.totalCents);
-      expect(state.hasDiscount, isTrue);
     });
 
     test('a free promo makes the card amount zero', () {
@@ -79,13 +78,11 @@ void main() {
         ),
       );
       expect(state.payableCents, 0);
-      expect(state.hasDiscount, isTrue);
     });
 
     test('without a promo the card quotes the list price', () {
       final state = withPlan(samplePlans()[1], discountPct: 0);
       expect(state.payableCents, 349);
-      expect(state.hasDiscount, isFalse);
     });
   });
 

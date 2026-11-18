@@ -85,10 +85,6 @@ class SubscriptionState extends Equatable {
   /// authority; this only mirrors it for display.
   int get payableCents => totalCents;
 
-  /// Whether anything is currently taken off the list price (launch offer
-  /// and/or promo), so the card knows to strike the list price through.
-  bool get hasDiscount => payableCents < listCents;
-
   bool get isFreeAccess => promo?.isFree == true || totalCents == 0;
 
   /// Approximate price in the device's local currency, shown under the offer
