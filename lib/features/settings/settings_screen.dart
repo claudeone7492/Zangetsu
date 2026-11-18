@@ -3,10 +3,8 @@ import '../../core/theme/theme_controller.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/anilist/anilist_service.dart';
@@ -18,8 +16,6 @@ import '../../core/tracker/tracker_hub.dart';
 import '../../core/ui/streaming_prefs.dart';
 import '../../core/zmode/metadata_provider_prefs.dart';
 import '../../core/cache/media_cache.dart';
-import '../../core/logging/app_logger.dart';
-import '../../core/logging/log_report_service.dart';
 import '../../core/tracker/mal_service.dart';
 import '../../core/tracker/mangabaka_service.dart';
 import '../../core/tracker/simkl_service.dart';
@@ -46,6 +42,8 @@ import '../../core/provider/cs_dns.dart';
 import '../../core/provider/provider_manager.dart';
 import '../downloads/downloads_screen.dart';
 import '../history/history_screen.dart';
+import '../stats/stats_screen.dart';
+import 'logs_screen.dart';
 import 'app_face_screen.dart';
 import 'appearance_screen.dart';
 import 'poster_card_settings_screen.dart';
@@ -336,67 +334,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
     if (picked == null) return;
     await prefs.setTitleLanguage(picked);
-  }
-
-  /// Send the diagnostic log straight to us, falling back to the share sheet.
-  ///
-  /// Sharing put the work on the reporter — find the file, pick an app, send it
-  /// somewhere — so reports arrived as screen recordings with no log attached.
-  /// This sends it in one tap and hands back a short code to quote.
-  ///
-  /// The fallback matters: the upload needs the Worker deployed AND a network,
-  /// and where it can't reach (blocked networks, offline) the old behaviour is
-  /// still there rather than a dead button.
-  Future<void> _sendLogReport() async {
-    final reporter = sl<LogReportService>();
-    if (!reporter.configured) return _shareLogs();
-
-    final messenger = ScaffoldMessenger.of(context);
-    messenger
-      ..clearSnackBars()
-      ..showSnackBar(SnackBar(content: Text(context.l10n.sendingReport)));
-
-    final ref = await reporter.send();
-    if (!mounted) return;
-    messenger.clearSnackBars();
-    if (ref == null) return _shareLogs();
-
-    await AppDialog.show<void>(
-      context,
-      title: context.l10n.reportSent,
-      body: Text(context.l10n.reportSentBody(ref)),
-      actions: [
-        TvAlertAction(
-          label: context.l10n.copy,
-          onTap: () {
-            Clipboard.setData(ClipboardData(text: ref));
-            Navigator.of(context, rootNavigator: true).pop();
-          },
-        ),
-        TvAlertAction(
-          label: context.l10n.ok,
-          primary: true,
-          autofocus: true,
-          onTap: () => Navigator.of(context, rootNavigator: true).pop(),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _shareLogs() async {
-    final file = await AppLogger.instance.exportFile();
-    if (!mounted) return;
-    if (file == null) {
-      ScaffoldMessenger.of(context)
-        ..clearSnackBars()
-        ..showSnackBar(
-          SnackBar(content: Text(context.l10n.couldNotExportLogs)),
-        );
-      return;
-    }
-    await SharePlus.instance.share(
-      ShareParams(files: [XFile(file.path)], subject: 'Zangetsu logs'),
-    );
   }
 
   Future<void> _pickDns() async {
@@ -1106,6 +1043,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       },
     ),
     _SettingsEntry(
+      section: SettingsSection.history,
+      icon: Icons.insights_rounded,
+      title: l10n.stats,
+      subtitle: l10n.statsSubtitle,
+      keywords:
+          'stats statistics insights watch time reading time streak activity '
+          'most watched chapters episodes',
+      onTap: () => _push(const StatsScreen()),
+    ),
+    _SettingsEntry(
       section: SettingsSection.downloads,
       id: LeafParent.downloads,
       icon: Icons.download_outlined,
@@ -1365,10 +1312,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _SettingsEntry(
       section: SettingsSection.advanced,
       icon: Icons.bug_report_outlined,
-      title: l10n.shareLogs,
-      subtitle: l10n.shareLogsSubtitle,
-      keywords: 'logs share diagnostic debug bug report crash',
-      onTap: _sendLogReport,
+      title: l10n.logsAndDiagnostics,
+      subtitle: l10n.logsSubtitle,
+      keywords:
+          'logs share diagnostic debug bug report crash view clear save',
+      onTap: () => _push(const LogsScreen()),
     ),
     // About — a single destination holding the app info, contributors,
     // social links, updates, beta toggle and support (so the section opens

@@ -120,5 +120,24 @@ void main() {
       expect(onDisk, contains('before restart'));
       expect(onDisk, contains('after restart'));
     });
+
+    test('clear() empties the buffer AND truncates the file', () async {
+      // A user tapping "Clear logs" must not see the old lines come back on
+      // the next launch — the file is reloaded into the buffer on startup, so
+      // clearing the buffer alone would resurrect them.
+      AppLogger.instance.log('this should be gone');
+      await AppLogger.instance.flush();
+      expect(AppLogger.instance.contents, contains('this should be gone'));
+
+      await AppLogger.instance.clear();
+      expect(AppLogger.instance.contents, isEmpty);
+      expect(AppLogger.instance.lineCount, 0);
+      expect(await file.readAsString(), isEmpty);
+
+      // And it stays cleared across a restart.
+      AppLogger.instance.clearForTest();
+      await AppLogger.instance.initAt(file);
+      expect(AppLogger.instance.contents, isEmpty);
+    });
   });
 }

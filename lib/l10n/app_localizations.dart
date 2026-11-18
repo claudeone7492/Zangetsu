@@ -11096,6 +11096,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap to play'**
   String get tapToPlay;
+
+  /// No description provided for @stats.
+  ///
+  /// In en, this message translates to:
+  /// **'Stats'**
+  String get stats;
+
+  /// No description provided for @statsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your watch and read time'**
+  String get statsSubtitle;
+
+  /// No description provided for @statsWatchTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch time'**
+  String get statsWatchTime;
+
+  /// No description provided for @statsReadTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading time'**
+  String get statsReadTime;
+
+  /// No description provided for @statsTitlesWatched.
+  ///
+  /// In en, this message translates to:
+  /// **'Titles watched'**
+  String get statsTitlesWatched;
+
+  /// No description provided for @statsEpisodesWatched.
+  ///
+  /// In en, this message translates to:
+  /// **'Episodes watched'**
+  String get statsEpisodesWatched;
+
+  /// No description provided for @statsTitlesRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Titles read'**
+  String get statsTitlesRead;
+
+  /// No description provided for @statsChaptersRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapters read'**
+  String get statsChaptersRead;
+
+  /// No description provided for @statsDayStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Day streak'**
+  String get statsDayStreak;
+
+  /// No description provided for @statsActiveDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Active days'**
+  String get statsActiveDays;
+
+  /// No description provided for @statsLast7.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days'**
+  String get statsLast7;
+
+  /// No description provided for @statsLast30.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 days'**
+  String get statsLast30;
+
+  /// No description provided for @statsMostWatched.
+  ///
+  /// In en, this message translates to:
+  /// **'Most watched'**
+  String get statsMostWatched;
+
+  /// No description provided for @statsNothingYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No stats yet'**
+  String get statsNothingYet;
+
+  /// No description provided for @statsNothingYetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch or read something and your activity shows up here.'**
+  String get statsNothingYetBody;
+
+  /// No description provided for @statsDayStreakValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No streak} =1{1 day} other{{count} days}}'**
+  String statsDayStreakValue(int count);
+
+  /// No description provided for @statsActiveDaysValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{None yet} =1{1 day} other{{count} days}}'**
+  String statsActiveDaysValue(int count);
+
+  /// No description provided for @statsEpisodesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 episode} other{{count} episodes}}'**
+  String statsEpisodesCount(int count);
+
+  /// No description provided for @statsChaptersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 chapter} other{{count} chapters}}'**
+  String statsChaptersCount(int count);
+
+  /// No description provided for @logsAndDiagnostics.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs & diagnostics'**
+  String get logsAndDiagnostics;
+
+  /// No description provided for @logsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View, save, share or clear the app log'**
+  String get logsSubtitle;
+
+  /// No description provided for @logsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App log'**
+  String get logsTitle;
+
+  /// No description provided for @logsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'The log is empty'**
+  String get logsEmpty;
+
+  /// No description provided for @logsClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear logs'**
+  String get logsClear;
+
+  /// No description provided for @logsClearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the app log?'**
+  String get logsClearTitle;
+
+  /// No description provided for @logsClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes every line from the in-app log. It does not touch your history or downloads.'**
+  String get logsClearBody;
+
+  /// No description provided for @logsCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Log cleared'**
+  String get logsCleared;
+
+  /// No description provided for @logsSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to file'**
+  String get logsSave;
+
+  /// No description provided for @logsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Log saved to {path}'**
+  String logsSaved(String path);
+
+  /// No description provided for @logsLineCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No lines} =1{1 line} other{{count} lines}}'**
+  String logsLineCount(int count);
+
+  /// No description provided for @logsCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy all'**
+  String get logsCopy;
+
+  /// No description provided for @logsCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Log copied'**
+  String get logsCopied;
+
+  /// No description provided for @sendReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Send report'**
+  String get sendReport;
 }
 
 class _AppLocalizationsDelegate

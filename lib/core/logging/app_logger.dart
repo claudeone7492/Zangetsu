@@ -84,6 +84,26 @@ class AppLogger {
 
   String get contents => _buffer.join('\n');
 
+  /// Number of lines currently held in the rolling buffer.
+  int get lineCount => _buffer.length;
+
+  /// Drop the whole buffer and truncate the on-disk log, so a "Clear logs"
+  /// action in the diagnostics viewer actually frees the file rather than
+  /// leaving the old lines to reappear on the next launch (which reloads the
+  /// file into the buffer).
+  Future<void> clear() async {
+    _buffer.clear();
+    _appended = 0;
+    final f = _file;
+    if (f == null) return;
+    try {
+      await f.writeAsString('');
+    } catch (_) {
+      // Best-effort: the in-memory buffer is already empty, and the next
+      // [_persist] rewrites the file anyway.
+    }
+  }
+
   /// Write the current buffer to a shareable temp file; returns null on failure.
   Future<File?> exportFile() async {
     try {

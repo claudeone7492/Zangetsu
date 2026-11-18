@@ -6412,4 +6412,150 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get tapToPlay => 'Tap to play';
+
+  @override
+  String get stats => 'Stats';
+
+  @override
+  String get statsSubtitle => 'Your watch and read time';
+
+  @override
+  String get statsWatchTime => 'Watch time';
+
+  @override
+  String get statsReadTime => 'Reading time';
+
+  @override
+  String get statsTitlesWatched => 'Titles watched';
+
+  @override
+  String get statsEpisodesWatched => 'Episodes watched';
+
+  @override
+  String get statsTitlesRead => 'Titles read';
+
+  @override
+  String get statsChaptersRead => 'Chapters read';
+
+  @override
+  String get statsDayStreak => 'Day streak';
+
+  @override
+  String get statsActiveDays => 'Active days';
+
+  @override
+  String get statsLast7 => 'Last 7 days';
+
+  @override
+  String get statsLast30 => 'Last 30 days';
+
+  @override
+  String get statsMostWatched => 'Most watched';
+
+  @override
+  String get statsNothingYet => 'No stats yet';
+
+  @override
+  String get statsNothingYetBody =>
+      'Watch or read something and your activity shows up here.';
+
+  @override
+  String statsDayStreakValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+      zero: 'No streak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsActiveDaysValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+      zero: 'None yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsEpisodesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count episodes',
+      one: '1 episode',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsChaptersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count chapters',
+      one: '1 chapter',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get logsAndDiagnostics => 'Logs & diagnostics';
+
+  @override
+  String get logsSubtitle => 'View, save, share or clear the app log';
+
+  @override
+  String get logsTitle => 'App log';
+
+  @override
+  String get logsEmpty => 'The log is empty';
+
+  @override
+  String get logsClear => 'Clear logs';
+
+  @override
+  String get logsClearTitle => 'Clear the app log?';
+
+  @override
+  String get logsClearBody =>
+      'This removes every line from the in-app log. It does not touch your history or downloads.';
+
+  @override
+  String get logsCleared => 'Log cleared';
+
+  @override
+  String get logsSave => 'Save to file';
+
+  @override
+  String logsSaved(String path) {
+    return 'Log saved to $path';
+  }
+
+  @override
+  String logsLineCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lines',
+      one: '1 line',
+      zero: 'No lines',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get logsCopy => 'Copy all';
+
+  @override
+  String get logsCopied => 'Log copied';
+
+  @override
+  String get sendReport => 'Send report';
 }
