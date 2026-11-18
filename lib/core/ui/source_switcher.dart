@@ -19,6 +19,7 @@ import '../models/provider_info.dart';
 import '../playback/playback_prefs.dart';
 import '../provider/cloudstream_provider.dart';
 import '../provider/provider_manager.dart';
+import '../universal/universal_manager.dart';
 import '../provider/provider_registry.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
@@ -408,6 +409,13 @@ ProviderType sourceTypeOf(String id) {
       null => ProviderType.anime,
     };
   }
+  // Config-driven universal scrapers. The config declares its own type, so a
+  // `us:` source can be movie, anime, manga or novel — read it straight from
+  // the installed config rather than guessing from the prefix.
+  if (id.startsWith('us:')) {
+    final c = sl<UniversalManager>().get(id)?.providerType;
+    if (c != null) return c;
+  }
   // ponytail: hardcoded to anime — wrong by construction the day manga
   // reuses the Aniyomi extension machinery (a real, planned direction; see
   // watch-app-manga-novel-support). Fix then: read the loaded extension's
@@ -440,6 +448,10 @@ ProviderType _typeOfFromMap(String id, Map<String, String> typeMap) {
       MangayomiContentType.novel => ProviderType.novel,
       null => ProviderType.anime,
     };
+  }
+  if (id.startsWith('us:')) {
+    final c = sl<UniversalManager>().get(id)?.providerType;
+    if (c != null) return c;
   }
   if (id.startsWith('ani:')) return ProviderType.anime; // Aniyomi is video-only
   final t = typeMap[id];

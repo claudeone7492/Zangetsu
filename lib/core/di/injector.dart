@@ -19,6 +19,7 @@ import '../backup/backup_cloud.dart';
 import '../bandwidth/bandwidth_share.dart';
 import '../logging/log_report_service.dart';
 import '../mangayomi/mangayomi_manager.dart';
+import '../universal/universal_manager.dart';
 import '../announce/announcement_service.dart';
 import '../cache/app_image_cache.dart';
 import '../platform/apple_tv.dart';
@@ -879,6 +880,27 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   await mangayomiManager.init();
   sl.registerSingleton<MangayomiManager>(mangayomiManager);
 
+  // Config-driven universal scrapers (`us:`). Pure Dart — a JSON config per
+  // site, interpreted by UniversalProvider — so it needs no runtime and no
+  // native channel and resolves on every platform. Boot only reads the
+  // installed configs; the bundled default repo (see below) is installed on
+  // the same zero-input path as every other source.
+  final universalManager = UniversalManager(dio: dio);
+  await universalManager.init();
+  sl.registerSingleton<UniversalManager>(universalManager);
+
+  // Zero-input provisioning: the bundled universal pack ships in the APK, so a
+  // fresh install already has working universal sources. A pack failure must
+  // never block boot — the app runs with whatever else installed.
+  try {
+    final universalPack = await rootBundle.loadString(
+      'assets/universal/manifest.json',
+    );
+    await universalManager.installBundled(universalPack);
+  } catch (e) {
+    debugPrint('[boot] universal pack install failed: $e');
+  }
+
   // --- Provider registry data layer ---------------------------------
   await ProviderReposRegistry.init();
   await ProviderRegistry.init();
@@ -1169,6 +1191,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
         ...csManager.all.map((p) => p.sourceId),
         ...lnrManager.installedSources.map((s) => s.id),
         ...mangayomiManager.all.map((p) => p.sourceId),
+        ...universalManager.all.map((c) => 'us:${c.id}'),
       },
     ),
   );
@@ -1196,6 +1219,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
       mihonManager: mihonManager,
       lnrManager: lnrManager,
       mangayomiManager: mangayomiManager,
+      universalManager: universalManager,
       activeSource: sl<ActiveSourceCubit>(),
       prefs: sl<PlaybackPrefs>(),
       // The language sets the sources screens already filter their lists by.

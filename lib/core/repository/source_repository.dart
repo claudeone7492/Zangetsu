@@ -33,6 +33,8 @@ import '../i18n/source_languages.dart';
 import '../prefs/source_lang_prefs.dart';
 import '../provider/cf_solve_needed.dart';
 import '../provider/cloudstream_provider.dart';
+import '../universal/universal_manager.dart';
+import '../universal/universal_provider.dart';
 import '../provider/provider_manager.dart';
 import '../provider/provider_registry.dart';
 import '../provider/reading_provider.dart';
@@ -56,6 +58,7 @@ class SourceRepository implements CatalogueRepository {
     MihonManager? mihonManager,
     LnReaderManager? lnrManager,
     MangayomiManager? mangayomiManager,
+    UniversalManager? universalManager,
     // Optional so existing tests construct this unchanged; null simply means
     // "no language filtering", which is also the behaviour for a user who has
     // never picked a language set.
@@ -82,7 +85,8 @@ class SourceRepository implements CatalogueRepository {
        // `lnr:` ids simply never resolve. The injector always passes the
        // real one.
        _lnrManager = lnrManager,
-       _mangayomiManager = mangayomiManager;
+       _mangayomiManager = mangayomiManager,
+       _universalManager = universalManager;
 
   final ProviderManager _manager;
   final CloudStreamManager _csManager;
@@ -90,6 +94,10 @@ class SourceRepository implements CatalogueRepository {
   final MihonManager _mihonManager;
   final LnReaderManager? _lnrManager;
   final MangayomiManager? _mangayomiManager;
+
+  /// Config-driven universal scrapers (`us:<id>`). Null in tests that don't
+  /// wire it — `us:` ids then simply never resolve, same as any unknown id.
+  final UniversalManager? _universalManager;
   final ActiveSourceCubit _active;
   final PlaybackPrefs _prefs;
 
@@ -176,6 +184,10 @@ class SourceRepository implements CatalogueRepository {
   /// True for installed Mangayomi bridge sources (`mg:<stable-key>`).
   static bool _isMangayomi(String id) => id.startsWith('mg:');
 
+  /// True for config-driven universal scrapers (`us:<configId>`). Pure Dart —
+  /// no runtime, no native channel — so it resolves on every platform.
+  static bool _isUniversal(String id) => id.startsWith(UniversalProvider.idPrefix);
+
   /// The one aggregator provider that owns every enabled Stremio addon.
   static bool _isStremio(String id) => id == stremioSourceId;
 
@@ -232,6 +244,7 @@ class SourceRepository implements CatalogueRepository {
     Object.hashAll(_mihonManager.all.map((p) => p.sourceId)),
     Object.hashAll(_lnrManager?.installedSources.map((s) => s.id) ?? const []),
     _mangayomiManager?.revision ?? 0,
+    _universalManager?.revision ?? 0,
     sl.isRegistered<StremioManager>() ? sl<StremioManager>().revision : 0,
     // Both NSFW prefs filter the list, so a toggle has to invalidate it.
     _prefs.showNsfwAniyomi,
@@ -409,6 +422,12 @@ class SourceRepository implements CatalogueRepository {
             (p) =>
                 (id: p.sourceId, name: p.displayName, lang: p.source.language),
           ),
+    // Config-driven universal scrapers. NSFW entries reuse the general
+    // "show NSFW sources" toggle, same default (off).
+    if (_universalManager != null)
+      ..._universalManager.all
+          .where((c) => !c.nsfw || _prefs.nsfwSources)
+          .map((c) => (id: 'us:${c.id}', name: c.name, lang: c.lang)),
   ];
 
   /// Base site URL for a source. For Mihon/Aniyomi/LNReader this turns a
@@ -515,6 +534,7 @@ class SourceRepository implements CatalogueRepository {
     if (_isMihon(id)) return 'Mihon';
     if (_isLnReader(id)) return 'LNReader';
     if (_isMangayomi(id)) return 'Mangayomi';
+    if (_isUniversal(id)) return 'Universal';
     return null;
   }
 
@@ -535,6 +555,9 @@ class SourceRepository implements CatalogueRepository {
     }
     if (_isMangayomi(sourceId)) {
       return _mangayomiManager?.get(sourceId)?.displayName ?? sourceId;
+    }
+    if (_isUniversal(sourceId)) {
+      return _universalManager?.get(sourceId)?.displayName ?? sourceId;
     }
     if (_isStremio(sourceId)) return 'Stremio';
     return _manager.get(sourceId)?.displayName ?? sourceId;
@@ -567,6 +590,9 @@ class SourceRepository implements CatalogueRepository {
     if (_isMangayomi(sourceId)) {
       return _mangayomiManager?.get(sourceId) != null;
     }
+    if (_isUniversal(sourceId)) {
+      return _universalManager?.get(sourceId) != null;
+    }
     if (_isStremio(sourceId)) {
       return sl.isRegistered<StremioProvider>() &&
           sl.isRegistered<StremioManager>() &&
@@ -596,6 +622,7 @@ class SourceRepository implements CatalogueRepository {
         _isMihon(sourceId) ||
         _isLnReader(sourceId) ||
         _isMangayomi(sourceId) ||
+        _isUniversal(sourceId) ||
         _isStremio(sourceId)) {
       return true; // non-JS sources are always available
     }
@@ -632,6 +659,8 @@ class SourceRepository implements CatalogueRepository {
       p = _lnrManager?.get(resolved);
     } else if (_isMangayomi(resolved)) {
       p = _mangayomiManager?.get(resolved);
+    } else if (_isUniversal(resolved)) {
+      p = _universalManager?.get(resolved);
     } else if (_isStremio(resolved)) {
       p = sl.isRegistered<StremioProvider>() ? sl<StremioProvider>() : null;
     } else {
