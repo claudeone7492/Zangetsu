@@ -1181,6 +1181,35 @@ class JsProvider implements BaseProvider, ReadingProvider {
     }
   }
 
+  /// Whether this JS provider exposes a settings schema at all — i.e. whether
+  /// its gear should be shown. Mirrors [getSettingsSchema] but caches the
+  /// answer, since a source list can ask this for every row at once and each
+  /// uncached call is a round-trip into the JS runtime.
+  ///
+  /// A provider whose schema throws (rather than being absent) is reported as
+  /// "has settings": the failure is more likely a transient runtime problem
+  /// than a genuinely absent `getSettings`, and hiding the gear would strand a
+  /// setting the user can otherwise reach.
+  Future<bool> hasSettings() async {
+    final cached = _hasSettingsCache;
+    if (cached != null) return cached;
+    try {
+      final raw = await _call('getSettings', const []);
+      final result = jsonDecode(raw) is List;
+      _hasSettingsCache = result;
+      return result;
+    } catch (e) {
+      final msg = e is JsRuntimeException ? e.message : e.toString();
+      if (msg.contains('missing method: getSettings')) {
+        _hasSettingsCache = false;
+        return false;
+      }
+      return true;
+    }
+  }
+
+  bool? _hasSettingsCache;
+
   /// Optional live-sports feed (`getLive`). Returns null when the JS file
   /// doesn't define it, so callers can skip the feature rather than show an
   /// empty error. MovieBox is the only source that has it today.

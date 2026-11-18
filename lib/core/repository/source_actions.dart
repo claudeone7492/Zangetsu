@@ -7,6 +7,8 @@ import '../di/injector.dart';
 import '../mihon/mihon_extension_service.dart';
 import '../mangayomi/mangayomi_manager.dart';
 import '../provider/cloudstream_provider.dart';
+import '../provider/provider_manager.dart';
+import '../provider/provider_registry.dart';
 import '../zmode/zmode_ids.dart';
 import 'source_repository.dart';
 import '../../features/sources/source_settings_screen.dart';
@@ -19,7 +21,7 @@ import '../../features/sources/source_settings_screen.dart';
 /// Shared so a "source settings" control — the wrong-title sheet's per-row
 /// action, BrowseSourceScreen's overflow menu — gates on the same check
 /// rather than each re-deriving the id-prefix routing.
-Future<bool> hasSourceSettings(String id) {
+Future<bool> hasSourceSettings(String id) async {
   if (id.startsWith('ani:')) {
     final raw = int.tryParse(id.substring(4));
     return raw == null
@@ -39,6 +41,22 @@ Future<bool> hasSourceSettings(String id) {
         .then((prefs) => prefs.isNotEmpty)
         .timeout(const Duration(seconds: 3))
         .catchError((_) => false);
+  }
+  // Plain JS providers (`us:`, and any other runtime-backed id): the gear
+  // belongs to whichever of them actually defines `getSettings()`. The runtime
+  // must be loaded before the probe can answer, and a provider that isn't
+  // installed here simply has no gear.
+  if (sl.isRegistered<ProviderRegistry>() && sl.isRegistered<ProviderManager>()) {
+    try {
+      final loaded = await sl<ProviderRegistry>()
+          .ensureRuntimeLoaded(id)
+          .timeout(const Duration(seconds: 3));
+      if (!loaded) return false;
+      final provider = sl<ProviderManager>().get(id);
+      return provider?.hasSettings() ?? false;
+    } catch (_) {
+      return false;
+    }
   }
   return Future.value(false);
 }
@@ -83,6 +101,7 @@ Future<void> openSourceSettings(
             SourceSettingsScreen(sourceId: id, repoUrl: '', displayName: name),
       ),
     );
+    return;
   }
   if (id.startsWith('mg:') &&
       sl.isRegistered<MangayomiManager>() &&
@@ -97,6 +116,20 @@ Future<void> openSourceSettings(
           prefs: prefs,
           write: (key, value) => manager.setSourcePreference(id, key, value),
         ),
+      ),
+    );
+    return;
+  }
+  // Plain JS providers draw their own schema form. The composite
+  // (repoUrl, sourceId) key must match what the runtime and the settings
+  // repository use, so the repo URL comes from the loaded provider rather than
+  // being guessed from the id.
+  if (context.mounted && sl.isRegistered<ProviderManager>()) {
+    final repoUrl = sl<ProviderManager>().get(id)?.originRepoUrl ?? '';
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            SourceSettingsScreen(sourceId: id, repoUrl: repoUrl, displayName: name),
       ),
     );
   }
