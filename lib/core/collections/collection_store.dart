@@ -93,6 +93,11 @@ class Collection {
   /// The collection as a Home row. A collection with nothing in it is still a
   /// row (the UI shows it as empty rather than silently vanishing, so the user
   /// can see what they made).
+  ///
+  /// A section is keyed by its title, so renaming a collection re-keys its row:
+  /// it keeps its contents but loses its saved position in the Home-row
+  /// arrangement. Accepted because being an ordinary section is what lets the
+  /// existing editor reorder and hide collections with no new row type.
   HomeSection toSection() => HomeSection(
     title: name,
     items: [
@@ -234,6 +239,15 @@ class CollectionStore {
 
   /// The collections Home should draw: hidden ones excluded.
   List<Collection> visible() => [for (final c in all()) if (!c.hidden) c];
+
+  /// The visible, non-empty collections as Home rows, in display order. Both
+  /// Home surfaces (source catalogue and Z Mode) call this, so a collection
+  /// looks the same wherever it is drawn and an empty one never leaves a
+  /// bare heading behind.
+  List<HomeSection> sections() => [
+    for (final c in visible())
+      if (!c.isEmpty) c.toSection(),
+  ];
 
   Future<void> _write(List<Collection> collections) async {
     await _box.put(_key, [for (final c in collections) c.toMap()]);

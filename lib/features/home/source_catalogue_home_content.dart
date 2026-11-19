@@ -243,10 +243,7 @@ class SourceCatalogueHomeContentState
     } catch (_) {
       // A collection that cannot refresh keeps its last titles.
     }
-    final rows = [
-      for (final collection in store.visible())
-        if (!collection.isEmpty) collection.toSection(),
-    ];
+    final rows = store.sections();
     if (rows.isEmpty) return sections;
     return [...rows, ...sections];
   }

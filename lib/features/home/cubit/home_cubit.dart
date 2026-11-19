@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 
 import '../../../core/anilist/anilist_network_policy.dart';
 import '../../../core/app_mode.dart';
+import '../../../core/collections/collection_store.dart';
 import '../../../core/di/injector.dart';
 import '../../../core/error/exceptions.dart';
 import '../../../core/error/network_failure.dart';
@@ -401,7 +402,18 @@ class HomeCubit extends Cubit<HomeState> {
     Tracker? tracker,
   ) {
     final isTv = _sl.isRegistered<AppMode>() ? _sl<AppMode>().isTv : false;
-    final rowSections = providerRowSections(sections, isTv: isTv);
+    // Personal collections lead: they are the user's own catalogue, so they
+    // sit above whatever the provider returned, in both Home surfaces.
+    //
+    // Prepended AFTER providerRowSections, not before: that helper drops the
+    // provider's leading section on phones (it is the hero's copy), and a
+    // collection has no `more`, so going in first would make it the one
+    // dropped.
+    final rowSections = [
+      if (_sl.isRegistered<CollectionStore>())
+        ..._sl<CollectionStore>().sections(),
+      ...providerRowSections(sections, isTv: isTv),
+    ];
     final withTrackerRows = kind != null;
     final layoutKey = _layoutKey;
     final withRail = streamingRailForLayout(layoutKey);
