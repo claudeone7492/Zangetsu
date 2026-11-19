@@ -16,9 +16,12 @@ import 'package:watch_app/core/mihon/mihon_extension_service.dart';
 import 'package:watch_app/core/mihon/mihon_manager.dart';
 import 'package:watch_app/core/mihon/mihon_provider.dart';
 import 'package:watch_app/core/provider/provider_manager.dart'
-    show AniyomiManager;
+    show AniyomiManager, ProviderManager;
 import 'package:watch_app/core/provider/provider_registry.dart';
 import 'package:watch_app/core/provider/provider_repo_registry.dart';
+import 'package:watch_app/core/provider/js_pack_engine.dart';
+import 'package:watch_app/core/provider/js_pack_manager.dart';
+import 'package:watch_app/core/provider/js_pack_module.dart';
 import 'package:watch_app/core/universal/universal_config.dart';
 import 'package:watch_app/core/universal/universal_manager.dart';
 import 'package:zangetsu_source_bridge/zangetsu_source_bridge.dart';
@@ -283,6 +286,95 @@ void main() {
     expect(failures, isEmpty);
     expect(restored.all.map((c) => c.id), ['usdemo']);
     expect(restored.repositories, ['https://demo.example.com/pack.json']);
+  });
+
+  test('JS plugin packs round-trip through the backup body', () async {
+    final box = await Hive.openBox<dynamic>(JsPackEngine.nuvio.box);
+    await box.clear();
+
+    const module = JsPackModule(
+      engine: JsPackEngine.nuvio,
+      id: 'tmdb',
+      name: 'TMDB Pack',
+      type: 'movie',
+      code: 'module.exports = {};',
+      repoUrl: 'https://packs.example.com/index.json',
+    );
+    final original = JsPackManager(
+      engine: JsPackEngine.nuvio,
+      runtime: ProviderManager(dio: Dio()),
+    );
+    await original.init();
+    await original.restore(
+      [module],
+      repoUrls: ['https://packs.example.com/index.json'],
+    );
+
+    final snapshot = SourcesBackup(
+      _StubRepos([]),
+      _StubProviderRegistry([]),
+      null,
+      packs: [original],
+    ).build();
+    expect(snapshot['jsPacks'], hasLength(1));
+    expect(snapshot['jsPackRepoUrls'], {
+      'nuvio': ['https://packs.example.com/index.json'],
+    });
+
+    // Fresh device: empty the shared box so the restore is what puts it back.
+    await box.clear();
+    final restored = JsPackManager(
+      engine: JsPackEngine.nuvio,
+      runtime: ProviderManager(dio: Dio()),
+    );
+    await restored.init();
+    expect(restored.isEmpty, isTrue);
+
+    final failures = await SourcesBackup(
+      _StubRepos([]),
+      _StubProviderRegistry([]),
+      null,
+      packs: [restored],
+    ).merge(snapshot);
+
+    expect(failures, isEmpty);
+    expect(restored.moduleFor('nuvio:tmdb')?.name, 'TMDB Pack');
+    expect(restored.moduleFor('nuvio:tmdb')?.code, 'module.exports = {};');
+    expect(restored.repositories, ['https://packs.example.com/index.json']);
+  });
+
+  test('a pack family that is not wired on the restoring device is skipped',
+      () async {
+    final original = JsPackManager(
+      engine: JsPackEngine.hiki,
+      runtime: ProviderManager(dio: Dio()),
+    );
+    await original.init();
+    await original.restore([
+      const JsPackModule(
+        engine: JsPackEngine.hiki,
+        id: 'probe',
+        name: 'Probe',
+        code: 'module.exports = {};',
+      ),
+    ]);
+
+    final snapshot = SourcesBackup(
+      _StubRepos([]),
+      _StubProviderRegistry([]),
+      null,
+      packs: [original],
+    ).build();
+
+    // Restoring device has no hiki manager at all: the entry is ignored
+    // rather than counted as a failure.
+    final failures = await SourcesBackup(
+      _StubRepos([]),
+      _StubProviderRegistry([]),
+      null,
+    ).merge(snapshot);
+
+    expect(failures, isEmpty);
   });
 
   // ── (b) merge does NOT call fetchAndCache for already-present repos ─────────

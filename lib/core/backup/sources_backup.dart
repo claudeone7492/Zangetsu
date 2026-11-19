@@ -11,6 +11,9 @@ import '../mihon/mihon_repo.dart';
 import '../provider/cloudstream_provider.dart';
 import '../provider/provider_registry.dart';
 import '../provider/provider_repo_registry.dart';
+import '../provider/js_pack_engine.dart';
+import '../provider/js_pack_manager.dart';
+import '../provider/js_pack_module.dart';
 import '../universal/universal_config.dart';
 import '../universal/universal_manager.dart';
 
@@ -45,13 +48,15 @@ class SourcesBackup {
     LnReaderExtensionService? lnreader,
     MangayomiManager? mangayomi,
     UniversalManager? universal,
+    List<JsPackManager>? packs,
   })  : _ani = aniyomi,
         _fetchAniyomiIndex = fetchAniyomiIndex ?? AniyomiRepo.fetchIndex,
         _mihon = mihon,
         _fetchMihonIndex = fetchMihonIndex ?? MihonRepo.fetchIndex,
         _lnr = lnreader,
         _mangayomi = mangayomi,
-        _universal = universal;
+        _universal = universal,
+        _packs = packs ?? const <JsPackManager>[];
 
   final ProviderReposRegistry _repos;
   final ProviderRegistry _registry;
@@ -78,6 +83,17 @@ class SourcesBackup {
 
   /// Null in tests that don't need universal-scraper restore.
   final UniversalManager? _universal;
+
+  /// JS plugin-pack families. Empty when not wired.
+  final List<JsPackManager> _packs;
+
+  /// The manager for [engine], or null when that family isn't wired.
+  JsPackManager? _packFor(JsPackEngine engine) {
+    for (final m in _packs) {
+      if (m.engine == engine) return m;
+    }
+    return null;
+  }
 
   static const String _psBoxName = 'provider_settings';
 
@@ -146,6 +162,14 @@ class SourcesBackup {
                 .toList() ??
             const <dynamic>[],
         'universalRepoUrls': _universal?.repositories ?? const <String>[],
+        'jsPacks': [
+          for (final pack in _packs) for (final m in pack.all) m.toJson(),
+        ],
+        'jsPackRepoUrls': {
+          for (final pack in _packs)
+            if (pack.repositories.isNotEmpty)
+              pack.engine.name: pack.repositories,
+        },
         'settings': _readProviderSettings(),
       };
 
@@ -458,6 +482,37 @@ class SourcesBackup {
           await um.restore(configs, repoUrls: repoUrls);
         } catch (_) {
           failures.add('Universal scrapers');
+        }
+      }
+    }
+
+    // JS plugin packs (nuvio/vega/…). Restored union-only, per family.
+    final rawPacks = (data['jsPacks'] as List?) ?? const [];
+    if (_packs.isNotEmpty && rawPacks.isNotEmpty) {
+      final byEngine = <JsPackEngine, List<JsPackModule>>{};
+      for (final raw in rawPacks) {
+        if (raw is! Map) continue;
+        try {
+          final mod = JsPackModule.fromJson(Map<String, dynamic>.from(raw));
+          byEngine.putIfAbsent(mod.engine, () => []).add(mod);
+        } catch (_) {
+          failures.add('JS pack: ${raw['id'] ?? 'unknown'}');
+        }
+      }
+      final repoUrls = (data['jsPackRepoUrls'] as Map?) ?? const {};
+      for (final entry in byEngine.entries) {
+        final pack = _packFor(entry.key);
+        if (pack == null) continue;
+        try {
+          await pack.restore(
+            entry.value,
+            repoUrls: (repoUrls[entry.key.name] as List?)
+                    ?.whereType<String>()
+                    .toList() ??
+                const [],
+          );
+        } catch (_) {
+          failures.add('JS pack: ${entry.key.label}');
         }
       }
     }

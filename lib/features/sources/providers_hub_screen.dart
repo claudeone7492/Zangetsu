@@ -7,6 +7,8 @@ import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
 import '../../core/lnreader/lnreader_manager.dart';
 import '../../core/mangayomi/mangayomi_manager.dart';
+import '../../core/provider/js_pack_engine.dart';
+import '../../core/provider/js_pack_manager.dart';
 import '../../core/mihon/mihon_manager.dart';
 import '../../core/models/provider_info.dart';
 import '../../core/provider/cloudstream_provider.dart';
@@ -26,6 +28,7 @@ import 'bloc/sources_state.dart';
 import 'cloudstream_sources_screen.dart';
 import 'stremio_sources_screen.dart';
 import 'lnreader_sources_screen.dart';
+import 'js_pack_sources_screen.dart';
 import 'mangayomi_sources_screen.dart';
 import 'mihon_sources_screen.dart';
 import 'zangetsu_sources_screen.dart';
@@ -120,6 +123,17 @@ class _HubPhoneView extends StatelessWidget {
         : 0;
     final mangayomiCount = mangayomi?.installed.length ?? 0;
 
+    // JS plugin-pack families wired in this build, with their installed counts.
+    final packManagers = <JsPackEngine, JsPackManager>{
+      for (final engine in kAllJsPackEngines)
+        if (sl.isRegistered<JsPackManager>(instanceName: engine.name))
+          engine: sl<JsPackManager>(instanceName: engine.name),
+    };
+    final packCount = packManagers.values.fold<int>(
+      0,
+      (sum, m) => sum + m.all.length,
+    );
+
     // Read-only pending-update counts. Zangetsu reuses SourcesState's own
     // installed-vs-manifest comparison (same result the Zangetsu screen shows);
     // CS/Aniyomi/Mihon expose an aggregate updateCount. Nothing is fetched or
@@ -139,7 +153,8 @@ class _HubPhoneView extends StatelessWidget {
         (showAniyomi ? aniCount : 0) +
         (showMihon ? mihonCount : 0) +
         (showLnReader ? lnrCount : 0) +
-        mangayomiCount;
+        mangayomiCount +
+        packCount;
     final ecoCount =
         1 + (showCs ? 1 : 0) + (showAniyomi ? 1 : 0) + (showMihon ? 1 : 0);
 
@@ -152,12 +167,14 @@ class _HubPhoneView extends StatelessWidget {
     final activeIsMihon = activeId.startsWith('mihon:');
     final activeIsLnReader = activeId.startsWith('lnr:');
     final activeIsMangayomi = activeId.startsWith('mg:');
+    final activePack = JsPackEngine.forSourceId(activeId);
     final activeIsZangetsu =
         activeId.isNotEmpty &&
         !activeIsCs &&
         !activeIsAni &&
         !activeIsMihon &&
-        !activeIsMangayomi;
+        !activeIsMangayomi &&
+        activePack == null;
 
     // Manga/novel sources are also Zangetsu JS providers under the hood, but
     // get their own hub entry (Task E3) so reading sources read as visibly
@@ -232,6 +249,23 @@ class _HubPhoneView extends StatelessWidget {
               active: activeId == stremioSourceId,
               updateCount: 0,
               onTap: () => open(const StremioSourcesScreen()),
+            ),
+          ],
+          // JS plugin-pack families (Nuvio, Vega, Sora, SkyStream, Hikari,
+          // Kotatsu). One row per family so each reads as its own ecosystem,
+          // exactly like CS/Aniyomi/Mihon above.
+          for (final entry in packManagers.entries) ...[
+            const SizedBox(height: 12),
+            _EcoRow(
+              icon: Icons.hub_outlined,
+              title: entry.key.label,
+              desc: '${entry.key.label} plugin sources',
+              info:
+                  '${entry.value.all.length} sources · '
+                  '${entry.value.repositories.length} repos',
+              active: activePack == entry.key,
+              updateCount: 0,
+              onTap: () => open(JsPackSourcesScreen(engine: entry.key)),
             ),
           ],
           if (showCs) ...[

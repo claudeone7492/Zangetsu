@@ -37,6 +37,8 @@ import '../universal/universal_manager.dart';
 import '../universal/universal_provider.dart';
 import '../provider/provider_manager.dart';
 import '../provider/provider_registry.dart';
+import '../provider/js_pack_engine.dart';
+import '../provider/js_pack_manager.dart';
 import '../provider/reading_provider.dart';
 import '../state/active_source_cubit.dart';
 import '../stremio/stremio_manager.dart';
@@ -59,6 +61,7 @@ class SourceRepository implements CatalogueRepository {
     LnReaderManager? lnrManager,
     MangayomiManager? mangayomiManager,
     UniversalManager? universalManager,
+    List<JsPackManager>? packManagers,
     // Optional so existing tests construct this unchanged; null simply means
     // "no language filtering", which is also the behaviour for a user who has
     // never picked a language set.
@@ -86,7 +89,10 @@ class SourceRepository implements CatalogueRepository {
        // real one.
        _lnrManager = lnrManager,
        _mangayomiManager = mangayomiManager,
-       _universalManager = universalManager;
+       _universalManager = universalManager,
+       _packManagers = {
+         for (final m in packManagers ?? const <JsPackManager>[]) m.engine: m,
+       };
 
   final ProviderManager _manager;
   final CloudStreamManager _csManager;
@@ -98,6 +104,11 @@ class SourceRepository implements CatalogueRepository {
   /// Config-driven universal scrapers (`us:<id>`). Null in tests that don't
   /// wire it — `us:` ids then simply never resolve, same as any unknown id.
   final UniversalManager? _universalManager;
+
+  /// JS plugin-pack families (`nuvio:`/`vega:`/`sora:`/`sky:`/`hiki:`/`kot:`),
+  /// keyed by engine. Empty in tests that don't wire them — those ids then
+  /// simply never resolve, same as any unknown id.
+  final Map<JsPackEngine, JsPackManager> _packManagers;
   final ActiveSourceCubit _active;
   final PlaybackPrefs _prefs;
 
@@ -188,6 +199,9 @@ class SourceRepository implements CatalogueRepository {
   /// no runtime, no native channel — so it resolves on every platform.
   static bool _isUniversal(String id) => id.startsWith(UniversalProvider.idPrefix);
 
+  /// True for a JS plugin-pack source (`nuvio:`, `vega:`, …).
+  bool _isPack(String id) => JsPackEngine.forSourceId(id) != null;
+
   /// The one aggregator provider that owns every enabled Stremio addon.
   static bool _isStremio(String id) => id == stremioSourceId;
 
@@ -245,6 +259,7 @@ class SourceRepository implements CatalogueRepository {
     Object.hashAll(_lnrManager?.installedSources.map((s) => s.id) ?? const []),
     _mangayomiManager?.revision ?? 0,
     _universalManager?.revision ?? 0,
+    Object.hashAll(_packManagers.values.map((m) => m.revision)),
     sl.isRegistered<StremioManager>() ? sl<StremioManager>().revision : 0,
     // Both NSFW prefs filter the list, so a toggle has to invalidate it.
     _prefs.showNsfwAniyomi,
@@ -428,6 +443,12 @@ class SourceRepository implements CatalogueRepository {
       ..._universalManager.all
           .where((c) => !c.nsfw || _prefs.nsfwSources)
           .map((c) => (id: 'us:${c.id}', name: c.name, lang: c.lang)),
+    // JS plugin-pack sources (nuvio/vega/sora/sky/hiki/kotatsu). NSFW entries
+    // reuse the general "show NSFW sources" toggle, same default (off).
+    for (final pack in _packManagers.values)
+      ...pack.all
+          .where((m) => !m.nsfw || _prefs.nsfwSources)
+          .map((m) => (id: m.sourceId, name: m.name, lang: m.lang)),
   ];
 
   /// Base site URL for a source. For Mihon/Aniyomi/LNReader this turns a
@@ -535,6 +556,8 @@ class SourceRepository implements CatalogueRepository {
     if (_isLnReader(id)) return 'LNReader';
     if (_isMangayomi(id)) return 'Mangayomi';
     if (_isUniversal(id)) return 'Universal';
+    final pack = JsPackEngine.forSourceId(id);
+    if (pack != null) return pack.label;
     return null;
   }
 
@@ -558,6 +581,10 @@ class SourceRepository implements CatalogueRepository {
     }
     if (_isUniversal(sourceId)) {
       return _universalManager?.get(sourceId)?.displayName ?? sourceId;
+    }
+    final pack = JsPackEngine.forSourceId(sourceId);
+    if (pack != null) {
+      return _packManagers[pack]?.moduleFor(sourceId)?.name ?? sourceId;
     }
     if (_isStremio(sourceId)) return 'Stremio';
     return _manager.get(sourceId)?.displayName ?? sourceId;
@@ -593,6 +620,12 @@ class SourceRepository implements CatalogueRepository {
     if (_isUniversal(sourceId)) {
       return _universalManager?.get(sourceId) != null;
     }
+    if (_isPack(sourceId)) {
+      return _packManagers[JsPackEngine.forSourceId(sourceId)]?.moduleFor(
+            sourceId,
+          ) !=
+          null;
+    }
     if (_isStremio(sourceId)) {
       return sl.isRegistered<StremioProvider>() &&
           sl.isRegistered<StremioManager>() &&
@@ -625,6 +658,13 @@ class SourceRepository implements CatalogueRepository {
         _isUniversal(sourceId) ||
         _isStremio(sourceId)) {
       return true; // non-JS sources are always available
+    }
+    if (_isPack(sourceId)) {
+      // Pack modules live in the shared JS runtime but load on demand, so a
+      // fresh boot can resolve one before anything else has touched it.
+      final pack = _packManagers[JsPackEngine.forSourceId(sourceId)];
+      if (pack == null) return false;
+      return await pack.ensureLoaded(sourceId) != null;
     }
     if (_manager.get(sourceId) != null) return true; // already loaded
     if (!sl.isRegistered<ProviderRegistry>()) return false;
@@ -661,6 +701,13 @@ class SourceRepository implements CatalogueRepository {
       p = _mangayomiManager?.get(resolved);
     } else if (_isUniversal(resolved)) {
       p = _universalManager?.get(resolved);
+    } else if (_isPack(resolved)) {
+      final pack = _packManagers[JsPackEngine.forSourceId(resolved)];
+      final mod = pack?.moduleFor(resolved);
+      final delegate = pack?.providerFor(resolved);
+      p = (mod != null && delegate != null)
+          ? JsPackProvider(module: mod, delegate: delegate)
+          : null;
     } else if (_isStremio(resolved)) {
       p = sl.isRegistered<StremioProvider>() ? sl<StremioProvider>() : null;
     } else {

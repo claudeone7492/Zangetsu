@@ -117,6 +117,16 @@ void _driftGuard() {
       'aniyomi_installed': 'sources bundle',
       'lnreader_plugins': 'sources bundle',
       'universal_scrapers': 'sources bundle',
+      // The TV guide cache — refetched from its XMLTV feeds on any device.
+      'epg_guides': 'cache',
+      // JS plugin-pack families — carried by the Sources bundle (see
+      // `SourcesBackup`, which round-trips them as `jsPacks`).
+      'nuvio_packs': 'sources bundle',
+      'vega_packs': 'sources bundle',
+      'sora_packs': 'sources bundle',
+      'skystream_packs': 'sources bundle',
+      'hiki_packs': 'sources bundle',
+      'kotatsu_packs': 'sources bundle',
       // User data — carried by the library backup, not settings.
       'my_list': 'library backup',
       'watch_history': 'library backup',

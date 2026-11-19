@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../core/app_config.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
+import '../../core/live/epg_store.dart';
 import '../../core/live/live_match_enrichment.dart';
 import '../../core/live/live_match_format.dart';
 import '../../core/models/home_section.dart';
@@ -24,6 +25,7 @@ import '../../core/ui/row_skeleton.dart';
 import '../../core/ui/states.dart';
 import '../../l10n/l10n.dart';
 import '../detail/detail_screen.dart';
+import 'live_tv_guide_screen.dart';
 import '../home/home_screen_tv.dart';
 import '../home/provider_browse_route.dart' show openProviderExtensionItem;
 import '../search/browse_source_screen.dart' show canonicalTargetFor;
@@ -467,6 +469,34 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     }
   }
 
+  /// Opens the EPG grid over the channels currently listed, resolving each
+  /// channel to the guide's own channel id (a guide covers what it covers; an
+  /// uncovered channel still lists, without a schedule).
+  Future<void> _openGuide() async {
+    final store = sl<EpgStore>();
+    final rows = <EpgChannelRow>[];
+    // The IPTV catalogue carries no `tvg-id` in its item shape — a channel is
+    // `ch:<name>|<url>` — so the guide is matched on the display name, which
+    // is what `EpgStore.resolveChannelId` falls back to anyway.
+    for (final section in _sections) {
+      for (final item in section.items) {
+        rows.add(
+          EpgChannelRow(
+            name: item.title,
+            logo: item.cover ?? '',
+            channelId: store.resolveChannelId(displayName: item.title),
+          ),
+        );
+      }
+    }
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => LiveTvGuideScreen(channels: rows),
+      ),
+    );
+  }
+
   Future<void> _open(MediaItem item) async {
     // A live-sports match is a provider-extension handle (`live:` scheme), not
     // a title: it has no detail page, so it opens the player directly. IPTV
@@ -501,6 +531,12 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
           ],
         ),
         actions: [
+          if (sl.isRegistered<EpgStore>())
+            IconButton(
+              tooltip: 'TV guide',
+              onPressed: _openGuide,
+              icon: const Icon(Icons.calendar_month_rounded),
+            ),
           IconButton(
             tooltip: context.l10n.retry,
             onPressed: _loading ? null : _load,

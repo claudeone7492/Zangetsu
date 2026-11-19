@@ -19,6 +19,9 @@ import '../backup/backup_cloud.dart';
 import '../bandwidth/bandwidth_share.dart';
 import '../logging/log_report_service.dart';
 import '../mangayomi/mangayomi_manager.dart';
+import '../provider/js_pack_engine.dart';
+import '../provider/js_pack_manager.dart';
+import '../provider/js_pack_provisioner.dart';
 import '../universal/universal_manager.dart';
 import '../announce/announcement_service.dart';
 import '../cache/app_image_cache.dart';
@@ -145,6 +148,7 @@ import '../../features/home/cubit/home_cubit.dart';
 import '../../features/watch_together/watch_room_service.dart';
 import '../../features/watch_together/watch_together_controller.dart';
 import '../cast/cast_controller.dart';
+import '../live/epg_store.dart';
 import '../cast/cast_proxy.dart';
 import '../comments/episode_comments_service.dart';
 import '../supabase/supabase_service.dart';
@@ -903,6 +907,34 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
     debugPrint('[boot] universal pack install failed: $e');
   }
 
+  // JS plugin-pack families (nuvio/vega/sora/sky/hiki/kotatsu). One manager
+  // per family, all running on the shared QuickJS host (`manager`), each with
+  // its own Hive box and id prefix. Boot only reads installed modules; the
+  // module code itself loads on demand the first time a source is used.
+  final packManagers = <JsPackManager>[];
+  for (final engine in kAllJsPackEngines) {
+    final pack = JsPackManager(engine: engine, runtime: manager);
+    await pack.init();
+    packManagers.add(pack);
+    sl.registerSingleton<JsPackManager>(pack, instanceName: engine.name);
+  }
+
+  // EPG (TV guide). A cache over XMLTV feeds: boot reads whatever was last
+  // fetched so the guide renders instantly, then refreshes in the background.
+  // The default feeds are seeded once, so a fresh install has a populated
+  // guide with nothing for the user to configure.
+  final epgStore = EpgStore(dio: dio);
+  await epgStore.init();
+  sl.registerSingleton<EpgStore>(epgStore);
+  unawaited(() async {
+    try {
+      await epgStore.installDefaults();
+      await epgStore.refreshAll();
+    } catch (e) {
+      debugPrint('[boot] EPG refresh failed: $e');
+    }
+  }());
+
   // --- Provider registry data layer ---------------------------------
   await ProviderReposRegistry.init();
   await ProviderRegistry.init();
@@ -929,6 +961,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
         lnreader: lnrService,
         mangayomi: mangayomiManager,
         universal: universalManager,
+        packs: packManagers,
       ),
       LibraryBackup(),
       SettingsBackup(),
@@ -968,6 +1001,28 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
     // the user added themselves.
     debugPrint('[boot] bundled pack install failed: $e');
   }
+  // Zero-input provisioning for the JS plugin-pack families: seed each
+  // family's default repos in the background so a first launch ends with
+  // Nuvio/Vega/Sora/… sources installed, and a later boot picks up any repo
+  // that has since come online. Fire-and-forget: provisioning fetches and
+  // evaluates JS, which must never hold up the splash, and a family whose
+  // defaults are all unreachable simply ends up with no sources.
+  unawaited(() async {
+    for (final pack in packManagers) {
+      if (!pack.isEmpty) continue; // already has sources — leave it alone
+      try {
+        final result = await provisionPackDefaults(manager: pack);
+        debugPrint(
+          '[boot] ${pack.engine.prefix} provisioned '
+          '${result.installedIds.length} source(s) from '
+          '${result.repoCount} repo(s)',
+        );
+      } catch (e) {
+        debugPrint('[boot] ${pack.engine.prefix} provisioning failed: $e');
+      }
+    }
+  }());
+
   // Load repo-installed JS providers into the runtime. Bounded so a provider
   // whose JS HANGS (flutter_js can deadlock) can't trap the splash — the
   // reported "stuck on the splash for minutes":
@@ -1223,6 +1278,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
       lnrManager: lnrManager,
       mangayomiManager: mangayomiManager,
       universalManager: universalManager,
+      packManagers: packManagers,
       activeSource: sl<ActiveSourceCubit>(),
       prefs: sl<PlaybackPrefs>(),
       // The language sets the sources screens already filter their lists by.
