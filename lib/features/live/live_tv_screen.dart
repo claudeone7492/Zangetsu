@@ -7,6 +7,7 @@ import '../../core/app_config.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
 import '../../core/live/epg_store.dart';
+import '../../core/live/xtream_account_store.dart';
 import '../../core/live/live_match_enrichment.dart';
 import '../../core/live/live_match_format.dart';
 import '../../core/models/home_section.dart';
@@ -26,6 +27,7 @@ import '../../core/ui/states.dart';
 import '../../l10n/l10n.dart';
 import '../detail/detail_screen.dart';
 import 'live_tv_guide_screen.dart';
+import 'xtream_accounts_screen.dart';
 import '../home/home_screen_tv.dart';
 import '../home/provider_browse_route.dart' show openProviderExtensionItem;
 import '../search/browse_source_screen.dart' show canonicalTargetFor;
@@ -531,6 +533,16 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
           ],
         ),
         actions: [
+          if (sl.isRegistered<XtreamAccountStore>())
+            IconButton(
+              tooltip: 'Xtream accounts',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const XtreamAccountsScreen(),
+                ),
+              ),
+              icon: const Icon(Icons.account_circle_outlined),
+            ),
           if (sl.isRegistered<EpgStore>())
             IconButton(
               tooltip: 'TV guide',

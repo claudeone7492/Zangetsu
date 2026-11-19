@@ -149,6 +149,8 @@ import '../../features/watch_together/watch_room_service.dart';
 import '../../features/watch_together/watch_together_controller.dart';
 import '../cast/cast_controller.dart';
 import '../live/epg_store.dart';
+import '../live/xtream_account_store.dart';
+import '../live/xtream_api.dart';
 import '../cast/cast_proxy.dart';
 import '../comments/episode_comments_service.dart';
 import '../supabase/supabase_service.dart';
@@ -926,6 +928,10 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   final epgStore = EpgStore(dio: dio);
   await epgStore.init();
   sl.registerSingleton<EpgStore>(epgStore);
+  sl.registerSingleton<XtreamApi>(XtreamApi(dio: dio));
+  final xtreamStore = XtreamAccountStore();
+  await xtreamStore.ensureLoaded();
+  sl.registerSingleton<XtreamAccountStore>(xtreamStore);
   unawaited(() async {
     try {
       await epgStore.installDefaults();
