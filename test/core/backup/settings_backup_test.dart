@@ -119,6 +119,9 @@ void _driftGuard() {
       'universal_scrapers': 'sources bundle',
       // The TV guide cache — refetched from its XMLTV feeds on any device.
       'epg_guides': 'cache',
+      // The DVR schedule — device-local recordings; a restored booking on
+      // another device would point at a file that isn't there.
+      'dvr_entries': 'device-specific recordings',
       // JS plugin-pack families — carried by the Sources bundle (see
       // `SourcesBackup`, which round-trips them as `jsPacks`).
       'nuvio_packs': 'sources bundle',

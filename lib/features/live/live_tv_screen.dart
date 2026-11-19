@@ -6,6 +6,9 @@ import 'package:flutter/material.dart';
 import '../../core/app_config.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
+import '../../core/live/dvr_store.dart';
+import '../../core/live/live_parental.dart';
+import '../../core/live/sports_catalog.dart';
 import '../../core/live/epg_store.dart';
 import '../../core/live/xtream_account_store.dart';
 import '../../core/live/live_match_enrichment.dart';
@@ -27,6 +30,8 @@ import '../../core/ui/states.dart';
 import '../../l10n/l10n.dart';
 import '../detail/detail_screen.dart';
 import 'live_tv_guide_screen.dart';
+import 'live_parental_screen.dart';
+import 'recordings_screen.dart';
 import 'xtream_accounts_screen.dart';
 import '../home/home_screen_tv.dart';
 import '../home/provider_browse_route.dart' show openProviderExtensionItem;
@@ -142,9 +147,62 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   /// prepended to the rails as a synthetic "Live Sports" row when non-empty.
   List<MediaItem> _sports = const [];
 
+  /// Parental controls. When set, channels above the household ceiling and
+  /// explicitly hidden channels are dropped from every rail, and the sports
+  /// fixtures are regrouped by competition instead of one flat row.
+  LiveParental? _parental;
+
   /// Fills in the score / clock / half-time state on the sports cards, then
   /// pushes the enriched list (the scoreboard is a network hop, so the rail
   /// first paints with the sources' own badges). Reset on every load.
+  /// Regroup [_sports] by league so the rail reads as competitions rather than
+  /// one undifferentiated list.
+  ///
+  /// Only used when EVERY fixture names a league and there is more than one —
+  /// otherwise the flat rail is kept. Grouping a list where half the fixtures
+  /// don't map would silently drop those fixtures, and a sports rail that hides
+  /// a live match is worse than an ungrouped one.
+  List<HomeSection>? _sportsLeagues(List<MediaItem> sports) {
+    final groups = groupFixtures([
+      for (final item in sports)
+        (
+          title: item.title,
+          channelName: item.liveInfo ?? '',
+          channelId: item.url,
+          start: item.liveStartMs == null
+              ? null
+              : DateTime.fromMillisecondsSinceEpoch(item.liveStartMs!),
+          isLive: (item.liveBadge ?? '').toUpperCase() == 'LIVE',
+        ),
+    ]);
+    final grouped = groups.fold<int>(0, (n, g) => n + g.fixtures.length);
+    if (groups.length < 2 || grouped != sports.length) return null;
+    final byTitle = {for (final item in sports) item.title: item};
+    return [
+      for (final g in groups)
+        HomeSection(
+          title: '${g.league.emoji} ${g.league.name}'.trim(),
+          items: [
+            for (final f in g.fixtures)
+              if (byTitle[f.title] != null) byTitle[f.title]!,
+          ],
+        ),
+    ];
+  }
+
+  /// Apply the parental ceiling to a rail's items.
+  List<MediaItem> _parentalFilter(List<MediaItem> items) {
+    final parental = _parental;
+    if (parental == null || parental.isInactive) return items;
+    // A listing's only rating signal is the catalogue's adult flag; providers
+    // don't publish per-channel ratings in the channel list.
+    return parental.filter(
+      items,
+      ratingOf: (i) => i.isAdult ? ContentRating.adult : ContentRating.unrated,
+      channelIdOf: (i) => i.url,
+    );
+  }
+
   Future<void> _enrichSports(List<MediaItem> sports) async {
     if (sports.isEmpty) return;
     try {
@@ -200,6 +258,8 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   @override
   void initState() {
     super.initState();
+    _parental = sl.isRegistered<LiveParental>() ? sl<LiveParental>() : null;
+    _parental?.addListener(_onParentalChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
     _countdownTimer = Timer.periodic(
       const Duration(seconds: 30),
@@ -207,8 +267,13 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     );
   }
 
+  void _onParentalChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    _parental?.removeListener(_onParentalChanged);
     _debounce?.cancel();
     _countdownTimer?.cancel();
     _queryController.dispose();
@@ -378,15 +443,27 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   List<HomeSection> get _visibleSections {
     final selected = _selectedCategory;
     final out = <HomeSection>[];
-    if (selected == null && _sports.isNotEmpty) {
-      out.add(
-        HomeSection(title: context.l10n.liveSports, items: _sorted(_sports)),
-      );
+    final visibleSports = _parentalFilter(_sports);
+    if (selected == null && visibleSports.isNotEmpty) {
+      // Grouped by competition when the fixtures name one, else the flat rail.
+      final leagues = _sportsLeagues(visibleSports);
+      if (leagues != null) {
+        out.addAll(leagues);
+      } else {
+        out.add(
+          HomeSection(
+            title: context.l10n.liveSports,
+            items: _sorted(visibleSports),
+          ),
+        );
+      }
     }
     for (final s in _sections) {
       if (s.items.isEmpty) continue;
       if (selected != null && s.title != selected) continue;
-      out.add(HomeSection(title: s.title, items: _sorted(s.items)));
+      final items = _parentalFilter(s.items);
+      if (items.isEmpty) continue;
+      out.add(HomeSection(title: s.title, items: _sorted(items)));
     }
     return out;
   }
@@ -396,6 +473,10 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   /// category here is a title match, which is what a live channel name almost
   /// always carries anyway ("Sky Sports", "BBC News").
   List<MediaItem> get _visibleResults {
+    return _parentalFilter(_visibleResultsRaw);
+  }
+
+  List<MediaItem> get _visibleResultsRaw {
     final selected = _selectedCategory;
     final hits = selected == null
         ? _results
@@ -542,6 +623,30 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
                 ),
               ),
               icon: const Icon(Icons.account_circle_outlined),
+            ),
+          if (sl.isRegistered<LiveParental>())
+            IconButton(
+              tooltip: 'Parental controls',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const LiveParentalScreen(),
+                ),
+              ),
+              icon: Icon(
+                _parental?.isInactive == false
+                    ? Icons.lock_rounded
+                    : Icons.lock_open_rounded,
+              ),
+            ),
+          if (sl.isRegistered<DvrStore>())
+            IconButton(
+              tooltip: 'Recordings & reminders',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const RecordingsScreen(),
+                ),
+              ),
+              icon: const Icon(Icons.fiber_manual_record_outlined),
             ),
           if (sl.isRegistered<EpgStore>())
             IconButton(

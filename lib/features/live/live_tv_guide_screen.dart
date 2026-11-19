@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../core/di/injector.dart';
+import '../../core/live/dvr_store.dart';
 import '../../core/live/epg_store.dart';
 import '../../core/live/xmltv_parser.dart';
 import '../../core/theme/app_colors.dart';
@@ -49,6 +50,7 @@ class LiveTvGuideScreen extends StatefulWidget {
 
 class _LiveTvGuideScreenState extends State<LiveTvGuideScreen> {
   EpgStore? _store;
+  DvrStore? _dvr;
   Timer? _ticker;
   bool _refreshing = false;
 
@@ -56,7 +58,10 @@ class _LiveTvGuideScreenState extends State<LiveTvGuideScreen> {
   void initState() {
     super.initState();
     _store = sl.isRegistered<EpgStore>() ? sl<EpgStore>() : null;
+    _dvr = sl.isRegistered<DvrStore>() ? sl<DvrStore>() : null;
     _store?.addListener(_changed);
+    _dvr?.addListener(_changed);
+    _dvr?.ensureLoaded();
     _refresh();
     // Re-render every 30s so the "now" bar advances and a programme rolls over
     // to the next without the viewer having to leave and come back.
@@ -69,6 +74,7 @@ class _LiveTvGuideScreenState extends State<LiveTvGuideScreen> {
   void dispose() {
     _ticker?.cancel();
     _store?.removeListener(_changed);
+    _dvr?.removeListener(_changed);
     super.dispose();
   }
 
@@ -233,6 +239,26 @@ class _LiveTvGuideScreenState extends State<LiveTvGuideScreen> {
                     ),
                   ),
                 ],
+                if (_dvr != null) ...[
+                  IconButton(
+                    tooltip: 'Set reminder',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => _book(now, channel, DvrKind.reminder),
+                    icon: const Icon(
+                      Icons.notifications_none_rounded,
+                      size: 18,
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Record',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => _book(now, channel, DvrKind.recording),
+                    icon: const Icon(
+                      Icons.fiber_manual_record_outlined,
+                      size: 18,
+                    ),
+                  ),
+                ],
               ],
             ),
             if (later.isNotEmpty) ...[
@@ -267,6 +293,39 @@ class _LiveTvGuideScreenState extends State<LiveTvGuideScreen> {
             ],
           ],
         ],
+      ),
+    );
+  }
+
+  /// Book a reminder or a recording for [programme] on [channel].
+  ///
+  /// The booking is made from the guide, which knows the airing but not the
+  /// playable URL, so a recording starts without a stream and the schedule
+  /// flags it until the channel is opened. That is honest: the guide can book
+  /// the intent, only the provider can resolve the stream.
+  Future<void> _book(
+    EpgProgramme programme,
+    EpgChannelRow channel,
+    DvrKind kind,
+  ) async {
+    final dvr = _dvr;
+    if (dvr == null) return;
+    await dvr.book(
+      DvrEntry.fromProgramme(
+        programme,
+        channelName: channel.name,
+        kind: kind,
+        paddingMinutes: kind == DvrKind.recording ? 2 : 0,
+      ),
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          kind == DvrKind.recording
+              ? 'Recording booked: ${programme.title}'
+              : 'Reminder set: ${programme.title}',
+        ),
       ),
     );
   }

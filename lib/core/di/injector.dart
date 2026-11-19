@@ -148,7 +148,10 @@ import '../../features/home/cubit/home_cubit.dart';
 import '../../features/watch_together/watch_room_service.dart';
 import '../../features/watch_together/watch_together_controller.dart';
 import '../cast/cast_controller.dart';
+import '../live/dvr_capture_service.dart';
+import '../live/dvr_store.dart';
 import '../live/epg_store.dart';
+import '../live/live_parental.dart';
 import '../live/xtream_account_store.dart';
 import '../live/xtream_api.dart';
 import '../cast/cast_proxy.dart';
@@ -928,6 +931,24 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   final epgStore = EpgStore(dio: dio);
   await epgStore.init();
   sl.registerSingleton<EpgStore>(epgStore);
+  // Parental controls for live channels: its own PIN, separate from the app
+  // lock, so a household can gate adult channels without gating the app.
+  final parental = LiveParental();
+  await parental.ensureLoaded();
+  sl.registerSingleton<LiveParental>(parental);
+
+  // DVR: the booking schedule, plus the foreground capture loop over it.
+  final dvrStore = DvrStore();
+  await dvrStore.ensureLoaded();
+  sl.registerSingleton<DvrStore>(dvrStore);
+  sl.registerSingleton<DvrCaptureService>(
+    DvrCaptureService(
+      store: dvrStore,
+      dio: dio,
+      // Defaults to <documents>/recordings, beside the other saved media.
+    ),
+  );
+
   sl.registerSingleton<XtreamApi>(XtreamApi(dio: dio));
   final xtreamStore = XtreamAccountStore();
   await xtreamStore.ensureLoaded();

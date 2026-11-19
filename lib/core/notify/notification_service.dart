@@ -309,6 +309,45 @@ class NotificationService {
     );
   }
 
+  /// A one-off alert at [when] — a DVR reminder, which must fire exactly once
+  /// rather than repeat daily the way [scheduleDailyPick] does.
+  ///
+  /// Android-only, like every other scheduled alert here. A time already in the
+  /// past is dropped: the airing it referred to has started, and a notification
+  /// fired immediately would be a lie.
+  Future<void> scheduleOnce({
+    required int id,
+    required String title,
+    required String body,
+    required tz.TZDateTime when,
+    String? payload,
+  }) async {
+    if (!Platform.isAndroid) return;
+    if (!when.isAfter(tz.TZDateTime.now(tz.local))) return;
+    if (!_inited) await init();
+    await _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      when,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'dvr_reminders',
+          'Recordings & reminders',
+          channelDescription: 'Reminders for scheduled live programmes',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      payload: payload,
+    );
+  }
+
+  Future<void> cancelScheduled(int id) => _plugin.cancel(id);
+
   Future<StyleInformation?> _dailyPickStyle(
     DailyPickStyle style,
     String title,

@@ -580,6 +580,32 @@ void main() {
     expect(find.text('Serie A'), findsOneWidget);
   });
 
+  testWidgets('a rail whose fixtures all name a league groups by competition', (
+    tester,
+  ) async {
+    final repo = _FakeSourceRepository(
+      sections: const [],
+      liveMatches: [
+        _match('l1', 'Premier League: England vs Croatia', badge: 'LIVE'),
+        _match('l2', 'Premier League: Spurs vs Everton', badge: 'in 3h'),
+        _match('s1', 'Serie A: Italy vs France', badge: 'LIVE'),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    // Every fixture names a competition, so the flat "Live sports" row is
+    // replaced by one rail per league and nothing is lost.
+    // One rail per competition, each labelled with the league's own emoji,
+    // and the flat "Live sports" row is gone.
+    expect(find.text('🏴 Premier League'), findsOneWidget);
+    expect(find.text('🇮🇹 Serie A'), findsOneWidget);
+    expect(find.text('LIVE'), findsNWidgets(2));
+    expect(find.text('in 3h'), findsOneWidget);
+  });
+
   testWidgets('a missing sports source simply drops the rail', (tester) async {
     final repo = _FakeSourceRepository(
       sections: [

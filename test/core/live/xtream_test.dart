@@ -59,11 +59,11 @@ class _MemoryStorage implements FlutterSecureStorage {
 /// A panel that behaves like a real Xtream server: one `player_api.php` that
 /// switches on `action`, credentials checked the way panels check them.
 class _Panel {
-  _Panel(this._srv, {this.user = 'alice', this.pass = 'secret'});
+  _Panel(this._srv);
 
   final HttpServer _srv;
-  final String user;
-  final String pass;
+  static const String user = 'alice';
+  static const String pass = 'secret';
   int playerApiCalls = 0;
 
   static Future<_Panel> start() async {
