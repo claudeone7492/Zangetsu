@@ -7,6 +7,7 @@ import '../../core/mode/content_mode.dart';
 import '../../core/mode/content_mode_cubit.dart';
 import '../../core/models/home_section.dart';
 import '../../core/models/media_item.dart';
+import '../../core/collections/collection_store.dart';
 import '../../core/repository/source_repository.dart';
 import '../../core/state/active_source_cubit.dart';
 import '../../core/theme/app_colors.dart';
@@ -209,11 +210,13 @@ class SourceCatalogueHomeContentState
     try {
       final sections = await _repository.home(sourceId: sourceId);
       if (!mounted || generation != _generation) return;
+      final withCollections = await _withCollections(sections);
+      if (!mounted || generation != _generation) return;
       setState(() {
-        _sections = sections;
+        _sections = withCollections;
         _loading = false;
       });
-      _notifySections(sections);
+      _notifySections(withCollections);
     } catch (_) {
       if (!mounted || generation != _generation) return;
       setState(() {
@@ -223,6 +226,29 @@ class SourceCatalogueHomeContentState
       });
       _notifySections(const []);
     }
+  }
+
+  /// Personal collections sit ABOVE the source's own rows: they are the user's
+  /// own catalogue, so they belong at the top of the page they built.
+  ///
+  /// A live folder refills here (one Home load, one refresh) rather than on a
+  /// timer, so a collection can never change under a reader mid-scroll.
+  Future<List<HomeSection>> _withCollections(
+    List<HomeSection> sections,
+  ) async {
+    if (!sl.isRegistered<CollectionStore>()) return sections;
+    final store = sl<CollectionStore>();
+    try {
+      await store.refreshLive();
+    } catch (_) {
+      // A collection that cannot refresh keeps its last titles.
+    }
+    final rows = [
+      for (final collection in store.visible())
+        if (!collection.isEmpty) collection.toSection(),
+    ];
+    if (rows.isEmpty) return sections;
+    return [...rows, ...sections];
   }
 
   void _selectSource(String? sourceId) {

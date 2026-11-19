@@ -30,6 +30,7 @@ import '../platform/apple_tv.dart';
 import '../platform/app_paths.dart';
 import '../playback/category_store.dart';
 import '../playback/list_status_store.dart';
+import '../collections/collection_store.dart';
 import '../playback/my_list.dart';
 import '../playback/playback_prefs.dart';
 import '../playback/pinned_sources.dart';
@@ -476,6 +477,17 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
       currentUserId: currentUserId,
       currentProfileId: currentProfileId,
       backendNamespace: backendNamespace,
+    ),
+  );
+  // Personal catalogues. Its own box, and it searches through the repository
+  // so a live folder refills from whichever source is active.
+  await CollectionStore.init();
+  sl.registerSingleton<CollectionStore>(
+    CollectionStore(
+      search: (query) async {
+        if (!sl.isRegistered<SourceRepository>()) return const [];
+        return sl<SourceRepository>().search(query);
+      },
     ),
   );
   await MyListStore.init();

@@ -44,6 +44,7 @@ import '../downloads/downloads_screen.dart';
 import '../history/history_screen.dart';
 import '../stats/stats_screen.dart';
 import 'logs_screen.dart';
+import '../home/collections_screen.dart';
 import '../live/live_parental_screen.dart';
 import '../live/recordings_screen.dart';
 import '../live/xtream_accounts_screen.dart';
@@ -1332,6 +1333,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           'parental controls pin rating hide adult kids children restriction '
           'live tv channels lock',
       onTap: () => _push(const LiveParentalScreen()),
+    ),
+    _SettingsEntry(
+      section: SettingsSection.advanced,
+      icon: Icons.collections_bookmark_outlined,
+      title: 'Collections',
+      subtitle: 'Your own rows on Home',
+      keywords:
+          'collections catalogues catalog folders personal rows home custom '
+          'shelf curated',
+      onTap: () => _push(const CollectionsScreen()),
     ),
     _SettingsEntry(
       section: SettingsSection.advanced,
