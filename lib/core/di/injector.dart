@@ -18,6 +18,7 @@ import '../announce/announcement.dart';
 import '../backup/backup_cloud.dart';
 import '../bandwidth/bandwidth_share.dart';
 import '../logging/log_report_service.dart';
+import '../mangayomi/mangayomi_defaults.dart';
 import '../mangayomi/mangayomi_manager.dart';
 import '../provider/js_pack_engine.dart';
 import '../provider/js_pack_manager.dart';
@@ -890,6 +891,10 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   );
   await mangayomiManager.init();
   sl.registerSingleton<MangayomiManager>(mangayomiManager);
+  // Seed the Anymex/Mangayomi default catalogues in the background: a first
+  // launch should already list them, but fetching two indexes over the network
+  // must never hold up the splash.
+  unawaited(seedDefaultMangayomiRepos(mangayomiManager));
 
   // Config-driven universal scrapers (`us:`). Pure Dart — a JSON config per
   // site, interpreted by UniversalProvider — so it needs no runtime and no

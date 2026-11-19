@@ -185,26 +185,32 @@ class _LiveParentalScreenState extends State<LiveParentalScreen> {
                 const SizedBox(height: 28),
                 Text('Show up to', style: AppText.overline),
                 const SizedBox(height: 8),
-                for (final rating in ContentRating.values)
-                  RadioListTile<ContentRating>(
-                    value: rating,
-                    groupValue: parental.ceiling,
-                    onChanged: (v) {
-                      if (v != null) parental.setCeiling(v);
-                    },
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    activeColor: AppColors.accent,
-                    title: Text(rating.label, style: AppText.body),
-                    subtitle: rating == ContentRating.adult
-                        ? Text(
-                            'Everything — no rating filtering',
-                            style: AppText.caption.copyWith(
-                              color: AppColors.textTertiary,
-                            ),
-                          )
-                        : null,
+                RadioGroup<ContentRating>(
+                  groupValue: parental.ceiling,
+                  onChanged: (v) {
+                    if (v != null) parental.setCeiling(v);
+                  },
+                  child: Column(
+                    children: [
+                      for (final rating in ContentRating.values)
+                        RadioListTile<ContentRating>(
+                          value: rating,
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          activeColor: AppColors.accent,
+                          title: Text(rating.label, style: AppText.body),
+                          subtitle: rating == ContentRating.adult
+                              ? Text(
+                                  'Everything — no rating filtering',
+                                  style: AppText.caption.copyWith(
+                                    color: AppColors.textTertiary,
+                                  ),
+                                )
+                              : null,
+                        ),
+                    ],
                   ),
+                ),
                 const SizedBox(height: 20),
                 Text(
                   parental.isInactive
