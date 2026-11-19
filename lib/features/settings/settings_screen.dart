@@ -44,6 +44,9 @@ import '../downloads/downloads_screen.dart';
 import '../history/history_screen.dart';
 import '../stats/stats_screen.dart';
 import 'logs_screen.dart';
+import '../live/live_parental_screen.dart';
+import '../live/recordings_screen.dart';
+import '../live/xtream_accounts_screen.dart';
 import 'app_face_screen.dart';
 import '../privacy/app_lock_settings_screen.dart';
 import 'appearance_screen.dart';
@@ -1319,6 +1322,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await _push(const PrivacySettingsScreen());
         if (mounted) setState(() {});
       },
+    ),
+    _SettingsEntry(
+      section: SettingsSection.advanced,
+      icon: Icons.lock_person_outlined,
+      title: l10n.liveParental,
+      subtitle: l10n.liveParentalSubtitle,
+      keywords:
+          'parental controls pin rating hide adult kids children restriction '
+          'live tv channels lock',
+      onTap: () => _push(const LiveParentalScreen()),
+    ),
+    _SettingsEntry(
+      section: SettingsSection.advanced,
+      icon: Icons.dns_outlined,
+      title: l10n.xtreamAccounts,
+      subtitle: l10n.xtreamAccountsSubtitle,
+      keywords:
+          'iptv xtream codes panel m3u line subscription channels epg guide '
+          'login playlist',
+      onTap: () => _push(const XtreamAccountsScreen()),
+    ),
+    _SettingsEntry(
+      section: SettingsSection.advanced,
+      icon: Icons.fiber_manual_record_outlined,
+      title: l10n.recordingsAndReminders,
+      subtitle: l10n.recordingsAndRemindersSubtitle,
+      keywords:
+          'dvr recordings reminders schedule capture record later dvr '
+          'timeshift saved',
+      onTap: () => _push(const RecordingsScreen()),
     ),
     _SettingsEntry(
       section: SettingsSection.advanced,

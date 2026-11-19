@@ -11223,6 +11223,42 @@ abstract class AppLocalizations {
   /// **'View, save, share or clear the app log'**
   String get logsSubtitle;
 
+  /// No description provided for @liveParental.
+  ///
+  /// In en, this message translates to:
+  /// **'Parental controls'**
+  String get liveParental;
+
+  /// No description provided for @liveParentalSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide channels above a rating, with a PIN'**
+  String get liveParentalSubtitle;
+
+  /// No description provided for @xtreamAccounts.
+  ///
+  /// In en, this message translates to:
+  /// **'IPTV accounts'**
+  String get xtreamAccounts;
+
+  /// No description provided for @xtreamAccountsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Xtream Codes lines for channels and guides'**
+  String get xtreamAccountsSubtitle;
+
+  /// No description provided for @recordingsAndReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Recordings & reminders'**
+  String get recordingsAndReminders;
+
+  /// No description provided for @recordingsAndRemindersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled captures and upcoming airings'**
+  String get recordingsAndRemindersSubtitle;
+
   /// No description provided for @logsTitle.
   ///
   /// In en, this message translates to:

@@ -6332,6 +6332,26 @@ class AppLocalizationsJa extends AppLocalizations {
   String get logsSubtitle => 'View, save, share or clear the app log';
 
   @override
+  String get liveParental => 'Parental controls';
+
+  @override
+  String get liveParentalSubtitle => 'Hide channels above a rating, with a PIN';
+
+  @override
+  String get xtreamAccounts => 'IPTV accounts';
+
+  @override
+  String get xtreamAccountsSubtitle =>
+      'Add Xtream Codes lines for channels and guides';
+
+  @override
+  String get recordingsAndReminders => 'Recordings & reminders';
+
+  @override
+  String get recordingsAndRemindersSubtitle =>
+      'Scheduled captures and upcoming airings';
+
+  @override
   String get logsTitle => 'App log';
 
   @override
