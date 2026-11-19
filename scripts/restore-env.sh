@@ -64,3 +64,12 @@ echo
 echo "Environment ready. Export for build shells:"
 echo "  export JAVA_HOME=$ROOT/jdk ANDROID_HOME=$SDK ANDROID_SDK_ROOT=$SDK"
 echo "  export PATH=\"$ROOT/jdk/bin:$ROOT/flutter/bin:\$PATH\""
+
+# --- Persistent caches -----------------------------------------------------
+# Keep pub's cache and Gradle's home on the persistent volume too, so restarts
+# do not re-download dependencies. Point the shell at them with scripts/env.sh.
+mkdir -p "$ROOT/pub-cache" "$ROOT/gradle"
+echo
+echo "Persistent caches: PUB_CACHE=$ROOT/pub-cache GRADLE_USER_HOME=$ROOT/gradle"
+echo "For a fully prepared shell, use:  source scripts/env.sh"
+
