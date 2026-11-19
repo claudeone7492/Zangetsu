@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import '../../core/stremio/stremio_backup_cipher.dart';
+import 'pair_sync_screen.dart';
 import 'stremio_backup_password_dialog.dart';
 
 import 'package:flutter/material.dart';
@@ -468,6 +469,19 @@ class _BackupScreenState extends State<BackupScreen> {
                     title: context.l10n.restoreFromCloud,
                     subtitle: context.l10n.bringBackYourLatestCloudBackup,
                     onTap: _busy ? null : _restoreFromCloud,
+                  ),
+                  SettingsTile(
+                    icon: Icons.devices_other_rounded,
+                    title: 'Pair & sync over Wi-Fi',
+                    subtitle: 'Move a backup between two devices, no cloud',
+                    onTap: _busy
+                        ? null
+                        : () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const PairSyncScreen(),
+                            ),
+                          ),
                   ),
                 ],
               ),
