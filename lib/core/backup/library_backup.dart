@@ -14,6 +14,7 @@ class LibraryBackup {
   static const _readHistoryBox = 'read_history';
   static const _readPositionsBox = 'read_positions';
   static const _listStatusBox = 'list_status';
+  static const _collectionsBox = 'collections';
 
   Map<String, dynamic> build() => {
     'myList': _dump(_myListBox),
@@ -23,6 +24,7 @@ class LibraryBackup {
     'readHistory': _dumpKeyed(_readHistoryBox, asMap: true),
     'readPositions': _dumpKeyed(_readPositionsBox, asMap: true),
     'listStatus': _dumpKeyed(_listStatusBox, asMap: false),
+    'collections': _dumpCollections(),
   };
 
   List<Map<String, dynamic>> _dump(String box) {
@@ -101,6 +103,41 @@ class LibraryBackup {
     await _mergeKeyed(_readHistoryBox, data['readHistory'], asMap: true);
     await _mergeKeyed(_readPositionsBox, data['readPositions'], asMap: true);
     await _mergeKeyed(_listStatusBox, data['listStatus'], asMap: false);
+    await _mergeCollections(data['collections']);
+  }
+
+  /// Collections live as one list under a single key, so they need their own
+  /// dump/merge rather than the keyed helpers. Union by id: a collection the
+  /// restoring device already has is kept, since it may have been edited here.
+  List<Map<String, dynamic>> _dumpCollections() {
+    if (!Hive.isBoxOpen(_collectionsBox)) return const [];
+    final raw = Hive.box(_collectionsBox).get('collections');
+    if (raw is! List) return const [];
+    return [
+      for (final c in raw)
+        if (c is Map) Map<String, dynamic>.from(c),
+    ];
+  }
+
+  Future<void> _mergeCollections(Object? raw) async {
+    if (!Hive.isBoxOpen(_collectionsBox) || raw is! List) return;
+    final box = Hive.box(_collectionsBox);
+    final current = box.get('collections');
+    final merged = <String, Map<String, dynamic>>{
+      if (current is List)
+        for (final c in current)
+          if (c is Map && c['id'] is String)
+            c['id'] as String: Map<String, dynamic>.from(c),
+    };
+    var added = false;
+    for (final c in raw) {
+      if (c is! Map) continue;
+      final id = c['id'];
+      if (id is! String || merged.containsKey(id)) continue;
+      merged[id] = Map<String, dynamic>.from(c);
+      added = true;
+    }
+    if (added) await box.put('collections', merged.values.toList());
   }
 
   Future<void> _mergeProfileRows(

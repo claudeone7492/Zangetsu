@@ -138,6 +138,7 @@ void _driftGuard() {
       'read_positions': 'library backup',
       'list_status': 'library backup',
       'list_categories': 'library backup',
+      'collections': 'library backup',
       'tracker_bindings': 'library backup',
       'reader_overrides': 'per-title, library-shaped',
       'reader_highlights': 'per-chapter, library-shaped',

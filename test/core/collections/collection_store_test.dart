@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:watch_app/core/backup/library_backup.dart';
 import 'package:watch_app/core/collections/collection_store.dart';
 import 'package:watch_app/core/models/media_item.dart';
 import 'package:watch_app/core/models/provider_info.dart';
@@ -266,6 +267,45 @@ void main() {
     test('refreshLive without a search does nothing', () async {
       await store.refreshLive();
       expect(store.all(), isEmpty);
+    });
+  });
+
+  group('backup', () {
+    test('collections round-trip through the library backup', () async {
+      final c = await store.create('Trip');
+      final folder = await store.addFolder(c.id, 'Folder');
+      await store.addItem(c.id, folder.id, _item('x'));
+
+      final payload = LibraryBackup().build();
+      expect(payload['collections'], hasLength(1));
+
+      // Simulate a fresh device: nothing stored, then restore.
+      await Hive.box(CollectionStore.boxName).clear();
+      expect(store.all(), isEmpty);
+      await LibraryBackup().merge(payload);
+
+      final restored = store.all().single;
+      expect(restored.name, 'Trip');
+      expect(restored.folders.single.items.single.id, 'x');
+    });
+
+    test('restore unions by id and keeps what is already here', () async {
+      final mine = await store.create('Mine');
+      final payload = {
+        'collections': [
+          {'id': mine.id, 'name': 'Theirs', 'position': 0, 'folders': []},
+          {'id': 'other', 'name': 'Theirs only', 'position': 1, 'folders': []},
+        ],
+      };
+      await LibraryBackup().merge(payload);
+      expect(store.all().map((c) => c.name), ['Mine', 'Theirs only']);
+    });
+
+    test('a malformed collections payload is ignored, not fatal', () async {
+      await store.create('Kept');
+      await LibraryBackup().merge({'collections': 'not a list'});
+      await LibraryBackup().merge({'collections': [1, 'x', {'no': 'id'}]});
+      expect(store.all().map((c) => c.name), ['Kept']);
     });
   });
 
