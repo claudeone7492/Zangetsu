@@ -141,6 +141,22 @@ class _AudioSubsSheetState extends State<_AudioSubsSheet> {
                       widget.onInteract();
                     },
                   ),
+                  // Volume boost had only the volume-swipe gesture, which is
+                  // undiscoverable and needs 100%+ system volume to reach. This
+                  // exposes it as a real control: 100 = original loudness.
+                  const _SheetSectionHeader('Volume boost'),
+                  _SliderRow(
+                    value: sl<PlaybackPrefs>().volumeBoost.toDouble(),
+                    min: 100,
+                    max: 200,
+                    divisions: 20,
+                    label: '${sl<PlaybackPrefs>().volumeBoost}%',
+                    onChanged: (v) {
+                      c.setVolumeBoost(v.round());
+                      setState(() {});
+                      widget.onInteract();
+                    },
+                  ),
                   _SheetRow(
                     label: context.l10n.subtitleStyle,
                     icon: Icons.text_fields_rounded,
