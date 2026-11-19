@@ -4015,6 +4015,40 @@ class AppLocalizationsAr extends AppLocalizations {
   String get aiDubSubtitle => 'اقرأ الترجمة بصوت الجهاز';
 
   @override
+  String get transcribeSubtitles => 'نسخ الترجمات نصيًا';
+
+  @override
+  String get transcribeSubtitlesSubtitle =>
+      'أرسل صوت هذه الحلقة إلى خدمة النسخ النصي';
+
+  @override
+  String get transcribeAudio => 'نسخ الصوت نصيًا';
+
+  @override
+  String get transcribeAudioSubtitle =>
+      'حوّل الصوت قيد التشغيل إلى ترجمات عبر خدمة النسخ النصي';
+
+  @override
+  String get transcriptionEndpoint => 'نقطة نهاية النسخ النصي';
+
+  @override
+  String get transcriptionEndpointSubtitle =>
+      'الرابط الكامل لنقطة نهاية /audio/transcriptions المتوافقة مع OpenAI';
+
+  @override
+  String get transcriptionKey => 'مفتاح النسخ النصي';
+
+  @override
+  String get transcriptionKeySubtitle => 'مفتاح API الخاص بخدمة النسخ النصي';
+
+  @override
+  String get transcriptionModel => 'نموذج النسخ النصي';
+
+  @override
+  String get transcriptionModelSubtitle =>
+      'اسم النموذج الذي تتوقعه نقطة النهاية، مثل whisper-1';
+
+  @override
   String get subtitleStyleSubtitle =>
       'الخط واللون والمحدّد والشفافية والحجم والموضع — مع معاينة مباشرة';
 

@@ -44,6 +44,9 @@ import '../../core/playback/subtitle_download_service.dart';
 import '../../core/playback/subtitle_exporter.dart';
 import '../../core/playback/subtitle_text_codec.dart';
 import '../../core/playback/subtitle_translate_service.dart';
+import '../../core/dub/dub_prefs.dart';
+import '../../core/dub/transcription_audio_source.dart';
+import '../../core/dub/voice_transcriber.dart';
 import 'mpv_player_pool.dart';
 import '../../core/repository/catalogue_repository.dart';
 import '../../core/repository/source_repository.dart';
@@ -1925,6 +1928,78 @@ class PlayerCubit extends Cubit<PlayerState> {
     } catch (_) {
       _toast('Couldn\'t translate subtitles');
     }
+  }
+
+  /// Transcribes the audio of the source being played and loads the result as a
+  /// subtitle track.
+  ///
+  /// This is the only way to caption a source that ships no captions. It uploads
+  /// the media to the endpoint the viewer configured, so it is always an explicit
+  /// tap and never automatic — a source URL can be a signed link the viewer has
+  /// no idea is leaving the device.
+  Future<void> transcribeCurrentSource() async {
+    final source = state.active;
+    if (source == null || source.url.trim().isEmpty) {
+      _toast('Nothing is playing to transcribe');
+      return;
+    }
+    final prefs = sl<DubPrefs>();
+    if (!prefs.canTranscribe) {
+      _toast('Add a transcription key in Settings');
+      return;
+    }
+
+    _toast('Preparing audio for transcription…');
+    try {
+      final bytes = await TranscriptionAudioSource().resolve(
+        source.url,
+        headers: source.headers,
+      );
+      final transcriber = HttpVoiceTranscriber(
+        endpoint: prefs.transcriptionEndpoint,
+        apiKey: prefs.transcriptionKey,
+        model: prefs.transcriptionModel,
+      );
+      final cues = await transcriber.transcribe(
+        TranscriptionRequest(
+          audio: bytes,
+          fileName: TranscriptionAudioSource.fileNameFor(source.url),
+          prompt: showTitle,
+        ),
+        onProgress: (p) {
+          final pct = (p * 100).round();
+          if (pct != _lastTranscribePct) {
+            _lastTranscribePct = pct;
+            _toast('Transcribing… $pct%');
+          }
+        },
+      );
+      await _loadGeneratedSubtitle(cues, 'Transcribed');
+    } on TranscriptionException catch (e) {
+      _toast(e.message);
+    } catch (_) {
+      _toast('Couldn\'t transcribe the audio');
+    }
+  }
+
+  int _lastTranscribePct = -1;
+
+  /// Writes [cues] to a real file and selects it, exactly as the translation
+  /// path does: mpv reports a file sub's id as its path, so `_wantedSubId`
+  /// matches and the sub-preference watcher won't stomp it back.
+  Future<void> _loadGeneratedSubtitle(
+    List<SubtitleCue> cues,
+    String label,
+  ) async {
+    final dir = await getTemporaryDirectory();
+    final out = File('${dir.path}/generated_${state.currentIndex}.srt');
+    await out.writeAsString(SubtitleExporter.toSrt(cues), flush: true);
+    await player.setSubtitleTrack(
+      SubtitleTrack.uri(out.path, title: label),
+    );
+    _wantedSubId = out.path;
+    _subApplied = true;
+    _toast('Subtitle ready');
   }
 
   /// The title to name an exported caption after: the show title when known,

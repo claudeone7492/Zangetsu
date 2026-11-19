@@ -107,4 +107,61 @@ class DubPrefs extends ChangeNotifier {
     await _box.put('skipSoundEffects', value);
     notifyListeners();
   }
+
+  // ── Speech-to-subtitle (D4) ───────────────────────────────────────────────
+  //
+  // The transcription endpoint is user-supplied. A bundled key would be shared
+  // by every install and rate-limited for all of them, so the same rule as the
+  // OpenSubtitles key applies: the viewer brings their own.
+
+  /// Default endpoint. Prefilled because the request shape is the OpenAI one
+  /// and most compatible services use the same path, so the common case is
+  /// pasting a key and nothing else.
+  static const String defaultTranscriptionEndpoint =
+      'https://api.openai.com/v1/audio/transcriptions';
+
+  String get transcriptionEndpoint {
+    final value = _box.get('transcriptionEndpoint');
+    return value is String && value.trim().isNotEmpty
+        ? value.trim()
+        : defaultTranscriptionEndpoint;
+  }
+
+  Future<void> setTranscriptionEndpoint(String value) async {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      await _box.delete('transcriptionEndpoint');
+    } else {
+      await _box.put('transcriptionEndpoint', trimmed);
+    }
+    notifyListeners();
+  }
+
+  String get transcriptionKey =>
+      (_box.get('transcriptionKey', defaultValue: '') as String).trim();
+
+  Future<void> setTranscriptionKey(String value) async {
+    await _box.put('transcriptionKey', value.trim());
+    notifyListeners();
+  }
+
+  String get transcriptionModel {
+    final value = _box.get('transcriptionModel');
+    return value is String && value.trim().isNotEmpty
+        ? value.trim()
+        : 'whisper-1';
+  }
+
+  Future<void> setTranscriptionModel(String value) async {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      await _box.delete('transcriptionModel');
+    } else {
+      await _box.put('transcriptionModel', trimmed);
+    }
+    notifyListeners();
+  }
+
+  /// Whether a transcription can be attempted.
+  bool get canTranscribe => transcriptionKey.isNotEmpty;
 }

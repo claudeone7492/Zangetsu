@@ -3974,6 +3974,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiDubSubtitle => 'Read subtitles aloud with the device voice';
 
   @override
+  String get transcribeSubtitles => 'Transcribe subtitles';
+
+  @override
+  String get transcribeSubtitlesSubtitle =>
+      'Send this episode\'s audio to your transcription service';
+
+  @override
+  String get transcribeAudio => 'Transcribe audio';
+
+  @override
+  String get transcribeAudioSubtitle =>
+      'Turn the playing audio into captions with your transcription service';
+
+  @override
+  String get transcriptionEndpoint => 'Transcription endpoint';
+
+  @override
+  String get transcriptionEndpointSubtitle =>
+      'Full URL of the OpenAI-compatible /audio/transcriptions endpoint';
+
+  @override
+  String get transcriptionKey => 'Transcription key';
+
+  @override
+  String get transcriptionKeySubtitle =>
+      'API key for the transcription service';
+
+  @override
+  String get transcriptionModel => 'Transcription model';
+
+  @override
+  String get transcriptionModelSubtitle =>
+      'Model name the endpoint expects, e.g. whisper-1';
+
+  @override
   String get subtitleStyleSubtitle =>
       'Font, colour, outline, opacity, size, position — with live preview';
 

@@ -3993,6 +3993,40 @@ class AppLocalizationsId extends AppLocalizations {
   String get aiDubSubtitle => 'Bacakan subtitle dengan suara perangkat';
 
   @override
+  String get transcribeSubtitles => 'Transkripsikan subtitle';
+
+  @override
+  String get transcribeSubtitlesSubtitle =>
+      'Kirim audio episode ini ke layanan transkripsi Anda';
+
+  @override
+  String get transcribeAudio => 'Transkripsikan audio';
+
+  @override
+  String get transcribeAudioSubtitle =>
+      'Ubah audio yang diputar menjadi subtitle dengan layanan transkripsi Anda';
+
+  @override
+  String get transcriptionEndpoint => 'Endpoint transkripsi';
+
+  @override
+  String get transcriptionEndpointSubtitle =>
+      'URL lengkap endpoint /audio/transcriptions yang kompatibel dengan OpenAI';
+
+  @override
+  String get transcriptionKey => 'Kunci transkripsi';
+
+  @override
+  String get transcriptionKeySubtitle => 'Kunci API untuk layanan transkripsi';
+
+  @override
+  String get transcriptionModel => 'Model transkripsi';
+
+  @override
+  String get transcriptionModelSubtitle =>
+      'Nama model yang diharapkan endpoint, mis. whisper-1';
+
+  @override
   String get subtitleStyleSubtitle =>
       'Font, warna, garis luar, opasitas, ukuran, posisi — dengan pratinjau langsung';
 

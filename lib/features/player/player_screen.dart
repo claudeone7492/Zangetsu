@@ -3467,6 +3467,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 Navigator.pop(context);
                 _openTranslateSheet();
               },
+              onTranscribe:
+                  castMode || !sl<DubPrefs>().canTranscribe
+                  ? null
+                  : () {
+                      Navigator.pop(context);
+                      _c.transcribeCurrentSource();
+                      _bumpControls();
+                    },
               onDub: castMode
                   ? null
                   : () {

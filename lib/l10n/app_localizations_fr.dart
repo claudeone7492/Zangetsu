@@ -4010,6 +4010,40 @@ class AppLocalizationsFr extends AppLocalizations {
   String get aiDubSubtitle => 'Lire les sous-titres avec la voix de l’appareil';
 
   @override
+  String get transcribeSubtitles => 'Transcrire les sous-titres';
+
+  @override
+  String get transcribeSubtitlesSubtitle =>
+      'Envoyez l\'audio de cet épisode à votre service de transcription';
+
+  @override
+  String get transcribeAudio => 'Transcrire l\'audio';
+
+  @override
+  String get transcribeAudioSubtitle =>
+      'Transformez l\'audio en cours de lecture en sous-titres avec votre service de transcription';
+
+  @override
+  String get transcriptionEndpoint => 'Point de terminaison de transcription';
+
+  @override
+  String get transcriptionEndpointSubtitle =>
+      'URL complète du point de terminaison /audio/transcriptions compatible OpenAI';
+
+  @override
+  String get transcriptionKey => 'Clé de transcription';
+
+  @override
+  String get transcriptionKeySubtitle => 'Clé API du service de transcription';
+
+  @override
+  String get transcriptionModel => 'Modèle de transcription';
+
+  @override
+  String get transcriptionModelSubtitle =>
+      'Nom du modèle attendu par le point de terminaison, ex. whisper-1';
+
+  @override
   String get subtitleStyleSubtitle =>
       'Police, couleur, contour, opacité, taille, position — avec aperçu en direct';
 

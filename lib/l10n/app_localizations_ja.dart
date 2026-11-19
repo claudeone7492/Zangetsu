@@ -3903,6 +3903,37 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiDubSubtitle => '端末の音声で字幕を読み上げます';
 
   @override
+  String get transcribeSubtitles => '字幕を文字起こし';
+
+  @override
+  String get transcribeSubtitlesSubtitle => 'このエピソードの音声を文字起こしサービスに送信します';
+
+  @override
+  String get transcribeAudio => '音声を文字起こし';
+
+  @override
+  String get transcribeAudioSubtitle => '再生中の音声を文字起こしサービスで字幕にします';
+
+  @override
+  String get transcriptionEndpoint => '文字起こしエンドポイント';
+
+  @override
+  String get transcriptionEndpointSubtitle =>
+      'OpenAI 互換の /audio/transcriptions エンドポイントの完全な URL';
+
+  @override
+  String get transcriptionKey => '文字起こしキー';
+
+  @override
+  String get transcriptionKeySubtitle => '文字起こしサービスの API キー';
+
+  @override
+  String get transcriptionModel => '文字起こしモデル';
+
+  @override
+  String get transcriptionModelSubtitle => 'エンドポイントが要求するモデル名（例: whisper-1）';
+
+  @override
   String get subtitleStyleSubtitle => 'フォント、色、アウトライン、透明度、サイズ、位置 — ライブプレビュー付き';
 
   @override

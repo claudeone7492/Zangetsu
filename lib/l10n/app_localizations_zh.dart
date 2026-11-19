@@ -3878,6 +3878,37 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiDubSubtitle => '用设备语音朗读字幕';
 
   @override
+  String get transcribeSubtitles => '转录字幕';
+
+  @override
+  String get transcribeSubtitlesSubtitle => '将本集音频发送到你的转录服务';
+
+  @override
+  String get transcribeAudio => '转录音频';
+
+  @override
+  String get transcribeAudioSubtitle => '用你的转录服务把正在播放的音频变成字幕';
+
+  @override
+  String get transcriptionEndpoint => '转录端点';
+
+  @override
+  String get transcriptionEndpointSubtitle =>
+      'OpenAI 兼容的 /audio/transcriptions 端点完整 URL';
+
+  @override
+  String get transcriptionKey => '转录密钥';
+
+  @override
+  String get transcriptionKeySubtitle => '转录服务的 API 密钥';
+
+  @override
+  String get transcriptionModel => '转录模型';
+
+  @override
+  String get transcriptionModelSubtitle => '端点需要的模型名称，例如 whisper-1';
+
+  @override
   String get subtitleStyleSubtitle => '字体、颜色、轮廓、不透明度、大小、位置——实时预览';
 
   @override
@@ -9836,6 +9867,37 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get aiDubSubtitle => '用裝置語音朗讀字幕';
+
+  @override
+  String get transcribeSubtitles => '轉錄字幕';
+
+  @override
+  String get transcribeSubtitlesSubtitle => '將本集音訊傳送到你的轉錄服務';
+
+  @override
+  String get transcribeAudio => '轉錄音訊';
+
+  @override
+  String get transcribeAudioSubtitle => '用你的轉錄服務把正在播放的音訊變成字幕';
+
+  @override
+  String get transcriptionEndpoint => '轉錄端點';
+
+  @override
+  String get transcriptionEndpointSubtitle =>
+      'OpenAI 相容的 /audio/transcriptions 端點完整 URL';
+
+  @override
+  String get transcriptionKey => '轉錄金鑰';
+
+  @override
+  String get transcriptionKeySubtitle => '轉錄服務的 API 金鑰';
+
+  @override
+  String get transcriptionModel => '轉錄模型';
+
+  @override
+  String get transcriptionModelSubtitle => '端點需要的模型名稱，例如 whisper-1';
 
   @override
   String get subtitleStyleSubtitle => '字體、顏色、輪廓、不透明度、大小、位置——即時預覽';

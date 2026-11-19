@@ -38,6 +38,7 @@ class _AudioSubsSheet extends StatefulWidget {
     required this.onLoadFile,
     required this.onSearchOnline,
     required this.onTranslate,
+    this.onTranscribe,
     this.onDub,
     this.castMode = false,
     this.focus,
@@ -50,6 +51,10 @@ class _AudioSubsSheet extends StatefulWidget {
   final VoidCallback onLoadFile;
   final VoidCallback onSearchOnline;
   final VoidCallback onTranslate;
+
+  /// Turns the playing audio into captions (speech-to-subtitle). Null when no
+  /// transcription key is configured, so the row only appears when it can work.
+  final VoidCallback? onTranscribe;
 
   /// Opens AI Dub. Null on cast, where the local speech engine has no meaning.
   final VoidCallback? onDub;
@@ -378,6 +383,14 @@ class _AudioSubsSheetState extends State<_AudioSubsSheet> {
                     icon: Icons.translate_rounded,
                     active: false,
                     onTap: widget.onTranslate,
+                  ),
+                if (widget.onTranscribe != null)
+                  _SheetRow(
+                    label: context.l10n.transcribeSubtitles,
+                    subtitle: context.l10n.transcribeSubtitlesSubtitle,
+                    icon: Icons.graphic_eq_rounded,
+                    active: false,
+                    onTap: () => widget.onTranscribe!(),
                   ),
               ],
             ],

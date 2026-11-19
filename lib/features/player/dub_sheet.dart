@@ -7,6 +7,7 @@ import '../../core/dub/dub_engine.dart';
 import '../../core/dub/dub_narrator.dart';
 import '../../core/dub/dub_prefs.dart';
 import '../../core/playback/subtitle_language.dart';
+import '../../l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 
@@ -256,11 +257,108 @@ class _DubSheetState extends State<_DubSheet> {
                     ],
                   ),
               ],
+
+              // Speech-to-subtitle lives here rather than in the subtitle
+              // section because it is the mirror of dub: one reads a caption
+              // aloud, the other writes the caption from the audio.
+              const Divider(color: AppColors.hairline, height: 24),
+              Text(
+                context.l10n.transcribeAudio,
+                style: AppText.body,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                context.l10n.transcribeAudioSubtitle,
+                style: AppText.caption.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _textRow(
+                context.l10n.transcriptionEndpoint,
+                _prefs.transcriptionEndpoint,
+                (v) => _prefs.setTranscriptionEndpoint(v),
+                hint: context.l10n.transcriptionEndpointSubtitle,
+              ),
+              _textRow(
+                context.l10n.transcriptionModel,
+                _prefs.transcriptionModel,
+                (v) => _prefs.setTranscriptionModel(v),
+                hint: context.l10n.transcriptionModelSubtitle,
+              ),
+              _textRow(
+                context.l10n.transcriptionKey,
+                _prefs.transcriptionKey,
+                (v) => _prefs.setTranscriptionKey(v),
+                hint: context.l10n.transcriptionKeySubtitle,
+                obscure: true,
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  /// One editable line of transcription configuration. A dialog rather than an
+  /// inline field: the sheet is scrollable and a keyboard opening inside it
+  /// would resize the whole sheet.
+  Widget _textRow(
+    String label,
+    String value,
+    ValueChanged<String> onSaved, {
+    String? hint,
+    bool obscure = false,
+  }) => ListTile(
+    contentPadding: EdgeInsets.zero,
+    dense: true,
+    title: Text(label, style: AppText.body),
+    subtitle: Text(
+      obscure && value.isNotEmpty
+          ? '••••••••'
+          : (value.isEmpty ? (hint ?? '') : value),
+      style: AppText.caption.copyWith(color: AppColors.textSecondary),
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+    ),
+    trailing: const Icon(Icons.edit_outlined, size: 18),
+    onTap: () => _editText(label, value, onSaved, hint: hint, obscure: obscure),
+  );
+
+  Future<void> _editText(
+    String label,
+    String value,
+    ValueChanged<String> onSaved, {
+    String? hint,
+    bool obscure = false,
+  }) async {
+    final controller = TextEditingController(text: value);
+    final saved = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(label),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          obscureText: obscure,
+          decoration: InputDecoration(hintText: hint),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: Text(MaterialLocalizations.of(ctx).okButtonLabel),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (saved == null) return;
+    onSaved(saved);
+    if (mounted) setState(() {});
   }
 
   Widget _notice(String text) => Padding(

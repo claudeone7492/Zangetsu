@@ -7234,6 +7234,66 @@ abstract class AppLocalizations {
   /// **'Read subtitles aloud with the device voice'**
   String get aiDubSubtitle;
 
+  /// No description provided for @transcribeSubtitles.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribe subtitles'**
+  String get transcribeSubtitles;
+
+  /// No description provided for @transcribeSubtitlesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send this episode\'s audio to your transcription service'**
+  String get transcribeSubtitlesSubtitle;
+
+  /// No description provided for @transcribeAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribe audio'**
+  String get transcribeAudio;
+
+  /// No description provided for @transcribeAudioSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn the playing audio into captions with your transcription service'**
+  String get transcribeAudioSubtitle;
+
+  /// No description provided for @transcriptionEndpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcription endpoint'**
+  String get transcriptionEndpoint;
+
+  /// No description provided for @transcriptionEndpointSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Full URL of the OpenAI-compatible /audio/transcriptions endpoint'**
+  String get transcriptionEndpointSubtitle;
+
+  /// No description provided for @transcriptionKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcription key'**
+  String get transcriptionKey;
+
+  /// No description provided for @transcriptionKeySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'API key for the transcription service'**
+  String get transcriptionKeySubtitle;
+
+  /// No description provided for @transcriptionModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcription model'**
+  String get transcriptionModel;
+
+  /// No description provided for @transcriptionModelSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Model name the endpoint expects, e.g. whisper-1'**
+  String get transcriptionModelSubtitle;
+
   /// No description provided for @subtitleStyleSubtitle.
   ///
   /// In en, this message translates to:

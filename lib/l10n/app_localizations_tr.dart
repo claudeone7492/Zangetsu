@@ -3988,6 +3988,41 @@ class AppLocalizationsTr extends AppLocalizations {
   String get aiDubSubtitle => 'Altyazıları cihaz sesiyle oku';
 
   @override
+  String get transcribeSubtitles => 'Altyazıyı yazıya çevir';
+
+  @override
+  String get transcribeSubtitlesSubtitle =>
+      'Bu bölümün sesini transkripsiyon servisinize gönderin';
+
+  @override
+  String get transcribeAudio => 'Sesi yazıya çevir';
+
+  @override
+  String get transcribeAudioSubtitle =>
+      'Çalan sesi transkripsiyon servisinizle altyazıya dönüştürün';
+
+  @override
+  String get transcriptionEndpoint => 'Transkripsiyon adresi';
+
+  @override
+  String get transcriptionEndpointSubtitle =>
+      'OpenAI uyumlu /audio/transcriptions adresinin tam URL\'si';
+
+  @override
+  String get transcriptionKey => 'Transkripsiyon anahtarı';
+
+  @override
+  String get transcriptionKeySubtitle =>
+      'Transkripsiyon servisi için API anahtarı';
+
+  @override
+  String get transcriptionModel => 'Transkripsiyon modeli';
+
+  @override
+  String get transcriptionModelSubtitle =>
+      'Adresin beklediği model adı, ör. whisper-1';
+
+  @override
   String get subtitleStyleSubtitle =>
       'Yazı tipi, renk, kenar çizgisi, saydamlık, boyut, konum — canlı önizlemeyle';
 
