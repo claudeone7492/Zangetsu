@@ -3987,6 +3987,12 @@ class AppLocalizationsId extends AppLocalizations {
       'Gaya .ass asli — font, posisi, karaoke, tanda. Terbaik untuk anime. Berlaku mulai episode berikutnya.';
 
   @override
+  String get aiDub => 'Dub AI';
+
+  @override
+  String get aiDubSubtitle => 'Bacakan subtitle dengan suara perangkat';
+
+  @override
   String get subtitleStyleSubtitle =>
       'Font, warna, garis luar, opasitas, ukuran, posisi — dengan pratinjau langsung';
 

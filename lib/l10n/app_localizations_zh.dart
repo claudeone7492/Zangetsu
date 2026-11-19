@@ -3872,6 +3872,12 @@ class AppLocalizationsZh extends AppLocalizations {
       '真正的 .ass 风格化——字体、位置、卡拉OK、标志。最适合动漫。从下一集开始生效。';
 
   @override
+  String get aiDub => 'AI 配音';
+
+  @override
+  String get aiDubSubtitle => '用设备语音朗读字幕';
+
+  @override
   String get subtitleStyleSubtitle => '字体、颜色、轮廓、不透明度、大小、位置——实时预览';
 
   @override
@@ -9824,6 +9830,12 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   @override
   String get styledSubtitlesLibassSubtitlePlayback =>
       '真正的 .ass 風格化——字體、位置、卡拉OK、標誌。最適合動漫。從下一集開始生效。';
+
+  @override
+  String get aiDub => 'AI 配音';
+
+  @override
+  String get aiDubSubtitle => '用裝置語音朗讀字幕';
 
   @override
   String get subtitleStyleSubtitle => '字體、顏色、輪廓、不透明度、大小、位置——即時預覽';

@@ -50,6 +50,7 @@ class SettingsBackup {
     'viewer_profiles', // per-account profile names and Kids-mode preference
     'debrid_prefs', // debrid mode + active service (tokens are not here)
     'daily_picks_prefs', // the daily-picks digest switch
+    'dub_prefs', // AI Dub voice, rate, pitch, volume
   ];
 
   /// Returns a map of `{boxName: {key: value, ...}}` for every open box.

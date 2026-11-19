@@ -1657,6 +1657,7 @@
 	"noSubsResumeSuffix": "・履歴書/代替案なし",
 	"pickWhatShowsOverVideo": "動画の上に表示する内容を選択してください（コントロールと一緒に表示されます）。YouTubeの「オタク向け統計情報」のようなものです。",
 	"styledSubtitlesLibassSubtitlePlayback": "リアルな.assスタイル ― フォント、配置、カラオケ、記号。アニメに最適。次回のエピソードから適用されます。",
+	"aiDub": "AI吹き替え",	"aiDubSubtitle": "端末の音声で字幕を読み上げます",
 	"subtitleStyleSubtitle": "フォント、色、アウトライン、透明度、サイズ、位置 — ライブプレビュー付き",
 	"keySavedOnlineSearchEnabled": "キーが保存されました - オンライン検索が有効になりました",
 	"incognitoModeBlurb": "オンになっている間は、検索、視聴履歴、トラッカーのスクロブリング、Discordのプレゼンスが一時停止され、オフにするまで何も記録されません。",

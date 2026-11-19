@@ -3999,6 +3999,12 @@ class AppLocalizationsDe extends AppLocalizations {
       'Echter .ass-Stil – Schriftarten, Positionen, Karaoke, Schilder. Ideal für Anime. Gilt ab der nächsten Folge.';
 
   @override
+  String get aiDub => 'KI-Synchronisation';
+
+  @override
+  String get aiDubSubtitle => 'Untertitel mit der Gerätestimme vorlesen';
+
+  @override
   String get subtitleStyleSubtitle =>
       'Schriftart, Farbe, Kontur, Deckkraft, Größe, Position – mit Live-Vorschau';
 

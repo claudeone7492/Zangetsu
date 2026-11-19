@@ -1657,6 +1657,7 @@
 	"noSubsResumeSuffix": "· sin subtítulos/currículum",
 	"pickWhatShowsOverVideo": "Elige qué se muestra sobre el vídeo (aparece con los controles). Como las \"Estadísticas para nerds\" de YouTube.",
 	"styledSubtitlesLibassSubtitlePlayback": "Estilo auténtico: fuentes, posiciones, karaoke, letreros. Ideal para anime. Se aplica a partir del próximo episodio.",
+	"aiDub": "Doblaje con IA",	"aiDubSubtitle": "Lee los subtítulos con la voz del dispositivo",
 	"subtitleStyleSubtitle": "Fuente, color, contorno, opacidad, tamaño, posición — con vista previa en directo",
 	"keySavedOnlineSearchEnabled": "Clave guardada: búsqueda en línea habilitada",
 	"incognitoModeBlurb": "Mientras está activado, las búsquedas, el historial de visualización, el registro de actividad del rastreador y la presencia en Discord se pausan; no se registra nada hasta que lo desactives.",

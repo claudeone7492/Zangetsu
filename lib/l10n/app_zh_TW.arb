@@ -1657,6 +1657,7 @@
 	"noSubsResumeSuffix": "· 無字幕/履歷",
 	"pickWhatShowsOverVideo": "選擇影片上方顯示的內容（與控制鈕一起顯示）。類似於 YouTube 的「極客統計」。",
 	"styledSubtitlesLibassSubtitlePlayback": "真正的 .ass 風格化——字體、位置、卡拉OK、標誌。最適合動漫。從下一集開始生效。",
+	"aiDub": "AI 配音",	"aiDubSubtitle": "用裝置語音朗讀字幕",
 	"subtitleStyleSubtitle": "字體、顏色、輪廓、不透明度、大小、位置——即時預覽",
 	"keySavedOnlineSearchEnabled": "密鑰已儲存 — 已啟用線上搜索",
 	"incognitoModeBlurb": "開啟此功能後，搜尋記錄、觀看歷史記錄、追蹤器記錄和 Discord 線上狀態都會暫停——直到您將其關閉，才會記錄任何內容。",

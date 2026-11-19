@@ -3994,6 +3994,12 @@ class AppLocalizationsIt extends AppLocalizations {
       'Stile .ass autentico: font, posizioni, karaoke, cartelli. Ideale per gli anime. Valido dal prossimo episodio.';
 
   @override
+  String get aiDub => 'Doppiaggio IA';
+
+  @override
+  String get aiDubSubtitle => 'Leggi i sottotitoli con la voce del dispositivo';
+
+  @override
   String get subtitleStyleSubtitle =>
       'Carattere, colore, contorno, opacità, dimensione, posizione: con anteprima in tempo reale';
 

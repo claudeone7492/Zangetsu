@@ -3968,6 +3968,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Real .ass styling — fonts, positions, karaoke, signs. Best for anime. Applies from the next episode.';
 
   @override
+  String get aiDub => 'AI Dub';
+
+  @override
+  String get aiDubSubtitle => 'Read subtitles aloud with the device voice';
+
+  @override
   String get subtitleStyleSubtitle =>
       'Font, colour, outline, opacity, size, position — with live preview';
 

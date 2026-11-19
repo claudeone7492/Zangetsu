@@ -1730,6 +1730,7 @@
 	"noSubsResumeSuffix": " ·  sem legendas/retomar",
 	"pickWhatShowsOverVideo": "Escolha o que aparece sobre o vídeo (aparece junto com os controles). Como o \"Stats for nerds\" do YouTube.",
 	"styledSubtitlesLibassSubtitlePlayback": "Estilização .ass real — tipos de letra, posições, karaokê, cartelas. Melhor para anime. Vale a partir do próximo episódio.",
+	"aiDub": "Dublagem com IA",	"aiDubSubtitle": "Leia as legendas com a voz do dispositivo",
 	"subtitleStyleSubtitle": "Tipo de letra, cor, contorno, opacidade, tamanho, posição — com prévia ao vivo",
 	"keySavedOnlineSearchEnabled": "Chave salva — pesquisa online ativada",
 	"incognitoModeBlurb": "Enquanto estiver ligado, as pesquisas, o histórico de exibição, o registro nos rastreadores e o Rich Presence do Discord ficam pausados — nada é gravado até você desligar.",

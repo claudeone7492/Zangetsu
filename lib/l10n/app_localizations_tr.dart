@@ -3982,6 +3982,12 @@ class AppLocalizationsTr extends AppLocalizations {
       'Gerçek .ass biçimlendirme — yazı tipleri, konumlar, karaoke, işaretler. Anime için en iyisi. Sonraki bölümden itibaren geçerlidir.';
 
   @override
+  String get aiDub => 'Yapay Zekâ Dublaj';
+
+  @override
+  String get aiDubSubtitle => 'Altyazıları cihaz sesiyle oku';
+
+  @override
   String get subtitleStyleSubtitle =>
       'Yazı tipi, renk, kenar çizgisi, saydamlık, boyut, konum — canlı önizlemeyle';
 

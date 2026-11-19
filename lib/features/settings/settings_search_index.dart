@@ -281,6 +281,11 @@ final settingsLeaves = <SettingsLeaf>[
   ),
   SettingsLeaf(
     LeafParent.playback,
+    (l) => l.aiDub,
+    keywords: 'tts text to speech narration narrator read aloud voice dub',
+  ),
+  SettingsLeaf(
+    LeafParent.playback,
     (l) => l.opensubtitlesAPIKey,
     keywords: 'subs download account opensubtitles',
   ),

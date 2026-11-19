@@ -345,6 +345,12 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- AI Dub binds the system TextToSpeech engine. Android 11+ hides
+             packages an app has not declared, and an unbound engine reports
+             itself as missing rather than failing loudly. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
+        </intent>
         <!-- Any installed app that can open a video, so the external-player
              picker isn't limited to the handful we know by name below. Without
              this, Android 11+ hides them and the picker silently under-reports.

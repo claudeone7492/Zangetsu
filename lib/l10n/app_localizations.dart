@@ -7222,6 +7222,18 @@ abstract class AppLocalizations {
   /// **'Real .ass styling — fonts, positions, karaoke, signs. Best for anime. Applies from the next episode.'**
   String get styledSubtitlesLibassSubtitlePlayback;
 
+  /// No description provided for @aiDub.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Dub'**
+  String get aiDub;
+
+  /// No description provided for @aiDubSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read subtitles aloud with the device voice'**
+  String get aiDubSubtitle;
+
   /// No description provided for @subtitleStyleSubtitle.
   ///
   /// In en, this message translates to:

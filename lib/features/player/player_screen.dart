@@ -49,6 +49,11 @@ import '../../core/stremio/stremio_ref.dart';
 import '../../core/stremio/stremio_stream_mapping.dart';
 import '../detail/stremio_episode_links_sheet.dart';
 import '../../core/ui/app_toast.dart';
+import 'dub_sheet.dart';
+import '../../core/translation/plain_text_translation_service.dart';
+import '../../core/dub/dub_engine.dart';
+import '../../core/dub/dub_narrator.dart';
+import '../../core/dub/dub_prefs.dart';
 import '../../core/playback/skip_service.dart';
 import '../../core/playback/source_selection.dart';
 import '../../core/playback/online_subtitle_search.dart';
@@ -558,6 +563,15 @@ class _PlayerScreenState extends State<PlayerScreen> {
   final int _megaSkipSeconds = sl<PlaybackPrefs>().megaSkipSeconds;
   bool _megaFlash = false; // brief "+Ns" flash shown right after a MegaSkip tap
   Timer? _megaFlashTimer;
+
+  // ── AI Dub ────────────────────────────────────────────────────────────────
+  // The narrator follows playback and speaks the current cue. Built lazily on
+  // first use: most sessions never touch dub, and constructing it means
+  // subscribing to the position stream.
+  DubNarrator? _dub;
+  StreamSubscription<Duration>? _dubPosSub;
+  StreamSubscription<bool>? _dubPlaySub;
+  String? _dubTrackKey;
   bool _dragIsBrightness = false; // left half = brightness, right half = volume
   double _dragValue = 0; // running 0..1 value during a vertical drag
   int _lastHudPct = -1; // last HUD %, to haptic-tick when crossing a landmark
@@ -1819,6 +1833,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   void dispose() {
     _orientationTurns?.cancel();
+    _disposeDub();
     AppLogger.instance.log(
       '[player-route] dispose ready=$_ready '
       'loading=${_ready ? _c.state.loadingSources : 'uninitialized'} '
@@ -1910,6 +1925,94 @@ class _PlayerScreenState extends State<PlayerScreen> {
         setState(() => _controlsVisible = false);
       }
     });
+  }
+
+  // ── AI Dub ────────────────────────────────────────────────────────────────
+
+  /// Build the narrator and start following playback. Called when the dub sheet
+  /// opens, so a session that never touches dub pays nothing.
+  DubNarrator _ensureDub() {
+    final existing = _dub;
+    if (existing != null) return existing;
+    final narrator = DubNarrator(
+      prefs: sl<DubPrefs>(),
+      engine: sl<DubEngine>(),
+      // Speak in the chosen language even when the subtitles are not written
+      // in it: the same one-line translator the subtitle translator uses.
+      translate: (text, language) => PlainTextTranslationService().translate(
+        text,
+        sourceLanguage: 'auto',
+        targetLanguage: language,
+      ),
+    );
+    _dub = narrator;
+    // Sample the position once a second — the scheduler only needs cue
+    // boundaries, and the decoded-frame stream would wake us 60 times a second
+    // for nothing.
+    _dubPosSub = _c.player.stream.position
+        .map((p) => Duration(seconds: p.inSeconds))
+        .distinct()
+        .listen((p) {
+          // One tick a second is also the cheapest place to notice that the
+          // viewer picked a different subtitle track mid-episode.
+          if (_c.activeSubtitleId != _dubTrackKey) unawaited(_syncDubTrack());
+          unawaited(narrator.onPosition(p));
+        });
+    _dubPlaySub = _c.player.stream.playing.listen((playing) {
+      if (!playing) narrator.onPause();
+    });
+    unawaited(_syncDubTrack());
+    return narrator;
+  }
+
+  /// (Re)load the narrator's cues from the track the viewer has selected.
+  ///
+  /// Keyed on the active subtitle id, so switching tracks mid-episode reloads
+  /// and re-seeks instead of narrating the previous language.
+  Future<void> _syncDubTrack() async {
+    final narrator = _dub;
+    if (narrator == null) return;
+    final id = _c.activeSubtitleId;
+    if (id == null || id == 'no') {
+      _dubTrackKey = null;
+      narrator.clear();
+      return;
+    }
+    if (_dubTrackKey == id) return;
+    // Recorded before the read, not after: this runs on every position tick, so
+    // clearing it on a track with no text would re-decode the whole file once a
+    // second for as long as that track is selected.
+    _dubTrackKey = id;
+    final text = await _c.activeSubtitleText();
+    if (!mounted) return;
+    if (text == null || text.trim().isEmpty) {
+      narrator.clear();
+      return;
+    }
+    await narrator.load(id, text);
+    if (!mounted) return;
+    // Start from where the picture is, not from the first line.
+    narrator.onSeek(_c.player.state.position);
+  }
+
+  Future<void> _openDubSheet() async {
+    _bumpControls();
+    final narrator = _ensureDub();
+    unawaited(_syncDubTrack());
+    // Resolved before opening so the sheet does not flash an "unsupported"
+    // notice on a device that does have an engine.
+    final available = await sl<DubEngine>().isAvailable();
+    if (!mounted) return;
+    await showDubSheet(context, narrator: narrator, available: available);
+  }
+
+  void _disposeDub() {
+    _dubPosSub?.cancel();
+    _dubPosSub = null;
+    _dubPlaySub?.cancel();
+    _dubPlaySub = null;
+    _dub?.dispose();
+    _dub = null;
   }
 
   void _toggleControls() {
@@ -3364,6 +3467,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 Navigator.pop(context);
                 _openTranslateSheet();
               },
+              onDub: castMode
+                  ? null
+                  : () {
+                      Navigator.pop(context);
+                      _openDubSheet();
+                    },
             ),
           ),
         );

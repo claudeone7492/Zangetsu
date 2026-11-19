@@ -32,6 +32,8 @@ import '../playback/category_store.dart';
 import '../playback/list_status_store.dart';
 import '../collections/collection_store.dart';
 import '../playback/my_list.dart';
+import '../dub/dub_engine.dart';
+import '../dub/dub_prefs.dart';
 import '../playback/playback_prefs.dart';
 import '../playback/pinned_sources.dart';
 import '../playback/search_history.dart';
@@ -522,6 +524,9 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   await HomeCache.init();
   await PlaybackPrefs.init();
   sl.registerSingleton<PlaybackPrefs>(PlaybackPrefs());
+  final dubPrefs = await DubPrefs.open();
+  sl.registerSingleton<DubPrefs>(dubPrefs);
+  sl.registerSingleton<DubEngine>(PlatformDubEngine());
   sl.registerLazySingleton<MpvPlayerPool>(
     MpvPlayerPool.new,
     dispose: (pool) => pool.clear(),

@@ -38,6 +38,7 @@ class _AudioSubsSheet extends StatefulWidget {
     required this.onLoadFile,
     required this.onSearchOnline,
     required this.onTranslate,
+    this.onDub,
     this.castMode = false,
     this.focus,
     this.onAfterChange,
@@ -49,6 +50,9 @@ class _AudioSubsSheet extends StatefulWidget {
   final VoidCallback onLoadFile;
   final VoidCallback onSearchOnline;
   final VoidCallback onTranslate;
+
+  /// Opens AI Dub. Null on cast, where the local speech engine has no meaning.
+  final VoidCallback? onDub;
 
   /// Chromecast can't switch muxed in-stream tracks or apply local files.
   final bool castMode;
@@ -157,6 +161,17 @@ class _AudioSubsSheetState extends State<_AudioSubsSheet> {
                       widget.onInteract();
                     },
                   ),
+                  if (widget.onDub != null)
+                    _SheetRow(
+                      label: 'AI Dub',
+                      subtitle: 'Read the subtitle line aloud',
+                      icon: Icons.record_voice_over_rounded,
+                      active: false,
+                      onTap: () {
+                        widget.onInteract();
+                        widget.onDub!();
+                      },
+                    ),
                   _SheetRow(
                     label: context.l10n.subtitleStyle,
                     icon: Icons.text_fields_rounded,

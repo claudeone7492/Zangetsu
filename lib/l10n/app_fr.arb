@@ -1657,6 +1657,7 @@
 	"noSubsResumeSuffix": "· pas de sous-titres/CV",
 	"pickWhatShowsOverVideo": "Choisissez ce qui s'affiche par-dessus la vidéo (via les commandes). Un peu comme les « Statistiques pour geeks » de YouTube.",
 	"styledSubtitlesLibassSubtitlePlayback": "Style .ass authentique : polices, positions, karaoké, panneaux. Idéal pour les animés. Applicable dès le prochain épisode.",
+	"aiDub": "Doublage IA",	"aiDubSubtitle": "Lire les sous-titres avec la voix de l’appareil",
 	"subtitleStyleSubtitle": "Police, couleur, contour, opacité, taille, position — avec aperçu en direct",
 	"keySavedOnlineSearchEnabled": "Clé enregistrée — recherche en ligne activée",
 	"incognitoModeBlurb": "Lorsque cette fonction est activée, les recherches, l'historique des visionnages, le scrobbling des traqueurs et la présence sur Discord sont suspendus ; rien n'est enregistré tant que vous ne l'avez pas désactivée.",

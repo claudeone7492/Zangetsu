@@ -1134,6 +1134,12 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
                 }),
               ),
               SettingsTile(
+                icon: Icons.record_voice_over_rounded,
+                title: context.l10n.aiDub,
+                subtitle: context.l10n.aiDubSubtitle,
+                onTap: _openDubSettings,
+              ),
+              SettingsTile(
                 icon: Icons.vpn_key_outlined,
                 title: context.l10n.opensubtitlesAPIKey,
                 subtitle: _prefs.subtitleApiKey.trim().isEmpty
@@ -1186,6 +1192,13 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _openDubSettings() async {
+    final available = await sl<DubEngine>().isAvailable();
+    if (!mounted) return;
+    await showDubSheet(context, available: available);
+    if (mounted) setState(() {});
   }
 
   Future<void> _pickTranslateLanguage() async {

@@ -358,6 +358,7 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
     // recognised phrase (TV search fills the field + runs the query with it).
     private var pendingVoiceResult: MethodChannel.Result? = null
     private var phoneVoiceSearch: PhoneVoiceSearchBridge? = null
+    private var dubTts: DubTtsBridge? = null
 
     // Cached retriever so rapid scrubbing on one title doesn't re-open the
     // source for every frame (setDataSource is expensive, esp. over network).
@@ -753,6 +754,10 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
 
         phoneVoiceSearch?.dispose()
         phoneVoiceSearch = PhoneVoiceSearchBridge(this, flutterEngine.dartExecutor.binaryMessenger)
+
+        // AI Dub narration. Re-created with the engine like the bridge above.
+        dubTts?.dispose()
+        dubTts = DubTtsBridge(this, flutterEngine.dartExecutor.binaryMessenger)
 
         // Voice search (TV): open the system speech dialog and hand the
         // recognised phrase back to Dart. Uses ACTION_RECOGNIZE_SPEECH so no
@@ -2045,6 +2050,8 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
         playerOrientationObserver?.disable()
         playerOrientationObserver = null
         phoneVoiceSearch?.dispose()
+        dubTts?.dispose()
+        dubTts = null
         phoneVoiceSearch = null
         pip.unregister()
         releaseRetriever()

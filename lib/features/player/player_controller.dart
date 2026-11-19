@@ -1829,59 +1829,67 @@ class PlayerCubit extends Cubit<PlayerState> {
     return softSubs.any((s) => s.url == id) || File(id).existsSync();
   }
 
+  /// The id of the subtitle the viewer has selected (a URL or a file path), or
+  /// null when none is. `'no'` means subtitles are explicitly off.
+  String? get activeSubtitleId => _wantedSubId;
+
+  /// The text of the subtitle the viewer currently has selected, whether it is
+  /// a file on disk or a remote soft-sub.
+  ///
+  /// Returns null when there is nothing to read (no external track selected,
+  /// or the fetch failed). Shared by translation and AI Dub so both read a
+  /// caption the same way — a caption loaded from disk may be in a legacy
+  /// single-byte encoding, and a remote one declares its charset in the
+  /// response, so neither may be treated as UTF-8 blindly.
+  Future<String?> activeSubtitleText() async {
+    final id = _wantedSubId;
+    try {
+      if (id != null && File(id).existsSync()) {
+        final bytes = await File(id).readAsBytes();
+        return decodeSubtitleText(bytes);
+      }
+      // The active soft-sub, else the first available one.
+      Subtitle? target;
+      for (final s in softSubs) {
+        if (s.url == id) {
+          target = s;
+          break;
+        }
+      }
+      target ??= softSubs.isNotEmpty ? softSubs.first : null;
+      if (target == null) return null;
+      if (target.url != id) await setSoftSub(target); // select it first
+      final resp = await _dio.get<List<int>>(
+        target.url,
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: state.active?.headers,
+          validateStatus: (_) => true,
+        ),
+      );
+      return decodeSubtitleText(
+        resp.data ?? const [],
+        declaredCharset: SubtitleTextCodec.charsetFromContentType(
+          resp.headers.value('content-type'),
+        ),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Translate a subtitle to [targetIso] (ISO-639-1) and load the result as a
   /// new track. Uses the active external subtitle; if none is selected, falls
   /// back to the first source soft-sub (selecting it first). Best-effort; toasts
   /// progress + result, and never disturbs the original subtitle on failure.
   Future<void> translateCurrentSub(String targetIso) async {
-    final id = _wantedSubId;
-    String content;
-    try {
-      if (id != null && File(id).existsSync()) {
-        // Decode rather than readAsString: a caption the user picked from disk
-        // may be in a legacy single-byte encoding, which readAsString (UTF-8)
-        // would turn into mojibake before it is translated.
-        final bytes = await File(id).readAsBytes();
-        content = decodeSubtitleText(bytes) ?? '';
-      } else {
-        // The active soft-sub, else the first available one.
-        Subtitle? target;
-        for (final s in softSubs) {
-          if (s.url == id) {
-            target = s;
-            break;
-          }
-        }
-        target ??= softSubs.isNotEmpty ? softSubs.first : null;
-        if (target == null) {
-          _toast('No external subtitle to translate');
-          return;
-        }
-        if (target.url != id) await setSoftSub(target); // select it first
-        final resp = await _dio.get<List<int>>(
-          target.url,
-          options: Options(
-            responseType: ResponseType.bytes,
-            headers: state.active?.headers,
-            validateStatus: (_) => true,
-          ),
-        );
-        final contentType = resp.headers.value('content-type');
-        content =
-            decodeSubtitleText(
-              resp.data ?? const [],
-              declaredCharset: SubtitleTextCodec.charsetFromContentType(
-                contentType,
-              ),
-            ) ??
-            '';
-      }
-    } catch (_) {
-      _toast('Couldn\'t load the subtitle');
-      return;
-    }
+    final content = await activeSubtitleText() ?? '';
     if (content.trim().isEmpty) {
-      _toast('Subtitle is empty');
+      _toast(
+        _wantedSubId == null
+            ? 'No external subtitle to translate'
+            : 'Subtitle is empty',
+      );
       return;
     }
     _toast('Translating subtitles…');

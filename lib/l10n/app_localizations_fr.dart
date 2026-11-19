@@ -4004,6 +4004,12 @@ class AppLocalizationsFr extends AppLocalizations {
       'Style .ass authentique : polices, positions, karaoké, panneaux. Idéal pour les animés. Applicable dès le prochain épisode.';
 
   @override
+  String get aiDub => 'Doublage IA';
+
+  @override
+  String get aiDubSubtitle => 'Lire les sous-titres avec la voix de l’appareil';
+
+  @override
   String get subtitleStyleSubtitle =>
       'Police, couleur, contour, opacité, taille, position — avec aperçu en direct';
 

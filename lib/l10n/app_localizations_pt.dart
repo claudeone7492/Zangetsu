@@ -4006,6 +4006,12 @@ class AppLocalizationsPt extends AppLocalizations {
       'Estilização .ass real — tipos de letra, posições, karaokê, cartelas. Melhor para anime. Vale a partir do próximo episódio.';
 
   @override
+  String get aiDub => 'Dublagem com IA';
+
+  @override
+  String get aiDubSubtitle => 'Leia as legendas com a voz do dispositivo';
+
+  @override
   String get subtitleStyleSubtitle =>
       'Tipo de letra, cor, contorno, opacidade, tamanho, posição — com prévia ao vivo';
 

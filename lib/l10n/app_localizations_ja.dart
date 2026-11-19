@@ -3897,6 +3897,12 @@ class AppLocalizationsJa extends AppLocalizations {
       'リアルな.assスタイル ― フォント、配置、カラオケ、記号。アニメに最適。次回のエピソードから適用されます。';
 
   @override
+  String get aiDub => 'AI吹き替え';
+
+  @override
+  String get aiDubSubtitle => '端末の音声で字幕を読み上げます';
+
+  @override
   String get subtitleStyleSubtitle => 'フォント、色、アウトライン、透明度、サイズ、位置 — ライブプレビュー付き';
 
   @override

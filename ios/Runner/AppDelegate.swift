@@ -5,6 +5,7 @@ import UIKit
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private var mangayomiCloudflareBridge: MangayomiCloudflareBridge?
   private var phoneVoiceSearchBridge: PhoneVoiceSearchBridge?
+  private var dubTtsBridge: DubTtsBridge?
 
   override func application(
     _ application: UIApplication,
@@ -18,6 +19,22 @@ import UIKit
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "PhoneVoiceSearchBridge") {
       phoneVoiceSearchBridge?.dispose()
       phoneVoiceSearchBridge = PhoneVoiceSearchBridge(messenger: registrar.messenger())
+    }
+
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "DubTtsBridge") {
+      let channel = FlutterMethodChannel(
+        name: "zangetsu/dub_tts",
+        binaryMessenger: registrar.messenger()
+      )
+      let bridge = DubTtsBridge()
+      dubTtsBridge = bridge
+      channel.setMethodCallHandler { [weak bridge] call, result in
+        guard let bridge else {
+          result(FlutterMethodNotImplemented)
+          return
+        }
+        bridge.handle(call, result: result)
+      }
     }
 
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "MangayomiCloudflareBridge") {

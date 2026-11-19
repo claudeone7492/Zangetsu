@@ -4009,6 +4009,12 @@ class AppLocalizationsAr extends AppLocalizations {
       'تنسيق .ass أصلي — خطوط ومواضع وكار يونغ ولافتات. الأفضل للأنمي. ويُطبَّق من الحلقة التالية.';
 
   @override
+  String get aiDub => 'دبلجة بالذكاء الاصطناعي';
+
+  @override
+  String get aiDubSubtitle => 'اقرأ الترجمة بصوت الجهاز';
+
+  @override
   String get subtitleStyleSubtitle =>
       'الخط واللون والمحدّد والشفافية والحجم والموضع — مع معاينة مباشرة';
 

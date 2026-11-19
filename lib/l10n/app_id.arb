@@ -1730,6 +1730,7 @@
 	"noSubsResumeSuffix": " ·  tanpa subtitle/lanjutkan",
 	"pickWhatShowsOverVideo": "Pilih yang ditampilkan di atas video (muncul bersama kontrol). Seperti \"Stats for nerds\" di YouTube.",
 	"styledSubtitlesLibassSubtitlePlayback": "Gaya .ass asli — font, posisi, karaoke, tanda. Terbaik untuk anime. Berlaku mulai episode berikutnya.",
+	"aiDub": "Dub AI",	"aiDubSubtitle": "Bacakan subtitle dengan suara perangkat",
 	"subtitleStyleSubtitle": "Font, warna, garis luar, opasitas, ukuran, posisi — dengan pratinjau langsung",
 	"keySavedOnlineSearchEnabled": "Kunci disimpan — pencarian online aktif",
 	"incognitoModeBlurb": "Selama aktif, pencarian, riwayat tontonan, scrobbling pelacak, dan Rich Presence Discord dijeda — tidak ada yang terekam sampai kamu matikan.",

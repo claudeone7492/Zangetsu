@@ -1729,6 +1729,7 @@
 	"noSubsResumeSuffix": " ·  altyazı/kaldığı yer yok",
 	"pickWhatShowsOverVideo": "Videonun üzerinde ne gösterilsin (kontrollerle birlikte görünür). YouTube'daki \"Stats for nerds\" gibi.",
 	"styledSubtitlesLibassSubtitlePlayback": "Gerçek .ass biçimlendirme — yazı tipleri, konumlar, karaoke, işaretler. Anime için en iyisi. Sonraki bölümden itibaren geçerlidir.",
+	"aiDub": "Yapay Zekâ Dublaj",	"aiDubSubtitle": "Altyazıları cihaz sesiyle oku",
 	"subtitleStyleSubtitle": "Yazı tipi, renk, kenar çizgisi, saydamlık, boyut, konum — canlı önizlemeyle",
 	"keySavedOnlineSearchEnabled": "Anahtar kaydedildi — çevrimiçi arama açık",
 	"incognitoModeBlurb": "Açıkken aramalar, izleme geçmişi, izleyici kaydı ve Discord durumu duraklar — kapatana kadar hiçbir şey kaydedilmez.",

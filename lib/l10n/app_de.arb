@@ -1657,6 +1657,7 @@
 	"noSubsResumeSuffix": "• keine Unterzeichner/Lebenslauf",
 	"pickWhatShowsOverVideo": "Wählen Sie aus, was über dem Video angezeigt werden soll (erscheint zusammen mit den Steuerelementen). Ähnlich wie die „Statistiken für Nerds“ auf YouTube.",
 	"styledSubtitlesLibassSubtitlePlayback": "Echter .ass-Stil – Schriftarten, Positionen, Karaoke, Schilder. Ideal für Anime. Gilt ab der nächsten Folge.",
+	"aiDub": "KI-Synchronisation",	"aiDubSubtitle": "Untertitel mit der Gerätestimme vorlesen",
 	"subtitleStyleSubtitle": "Schriftart, Farbe, Kontur, Deckkraft, Größe, Position – mit Live-Vorschau",
 	"keySavedOnlineSearchEnabled": "Schlüssel gespeichert – Online-Suche aktiviert",
 	"incognitoModeBlurb": "Solange die Funktion aktiviert ist, werden Suchanfragen, Wiedergabeverlauf, Tracker-Scrobbling und Discord-Präsenz pausiert – es wird nichts aufgezeichnet, bis Sie sie deaktivieren.",
