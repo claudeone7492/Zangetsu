@@ -3878,6 +3878,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiDubSubtitle => '用设备语音朗读字幕';
 
   @override
+  String get voiceEngine => '语音引擎';
+
+  @override
+  String get voiceEngineSubtitle => '设备语音即时且可离线使用；神经语音听起来像真人但需要联网';
+
+  @override
+  String get voiceEngineDevice => '设备';
+
+  @override
+  String get voiceEngineDeviceSubtitle => '此设备上安装的语音。即时、离线。';
+
+  @override
+  String get voiceEngineNeural => '神经';
+
+  @override
+  String get voiceEngineNeuralSubtitle => '听起来像真人的托管语音。需要联网。';
+
+  @override
+  String get neuralVoiceLanguage => '朗读语言';
+
+  @override
+  String get neuralVoiceLanguageSubtitle => '托管语音所说的语言';
+
+  @override
+  String get followsNarrationLanguage => '跟随旁白语言';
+
+  @override
   String get transcribeSubtitles => '转录字幕';
 
   @override
@@ -9867,6 +9894,33 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get aiDubSubtitle => '用裝置語音朗讀字幕';
+
+  @override
+  String get voiceEngine => '語音引擎';
+
+  @override
+  String get voiceEngineSubtitle => '裝置語音即時且可離線使用；神經語音聽起來像真人但需要連線';
+
+  @override
+  String get voiceEngineDevice => '裝置';
+
+  @override
+  String get voiceEngineDeviceSubtitle => '此裝置上安裝的語音。即時、離線。';
+
+  @override
+  String get voiceEngineNeural => '神經';
+
+  @override
+  String get voiceEngineNeuralSubtitle => '聽起來像真人的託管語音。需要連線。';
+
+  @override
+  String get neuralVoiceLanguage => '朗讀語言';
+
+  @override
+  String get neuralVoiceLanguageSubtitle => '託管語音所說的語言';
+
+  @override
+  String get followsNarrationLanguage => '跟隨旁白語言';
 
   @override
   String get transcribeSubtitles => '轉錄字幕';

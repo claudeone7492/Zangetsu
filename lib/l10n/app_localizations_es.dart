@@ -4002,6 +4002,37 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aiDubSubtitle => 'Lee los subtítulos con la voz del dispositivo';
 
   @override
+  String get voiceEngine => 'Motor de voz';
+
+  @override
+  String get voiceEngineSubtitle =>
+      'Las voces del dispositivo son instantáneas y sin conexión; las neuronales suenan humanas pero necesitan conexión';
+
+  @override
+  String get voiceEngineDevice => 'Dispositivo';
+
+  @override
+  String get voiceEngineDeviceSubtitle =>
+      'La voz instalada en este dispositivo. Instantánea, sin conexión.';
+
+  @override
+  String get voiceEngineNeural => 'Neural';
+
+  @override
+  String get voiceEngineNeuralSubtitle =>
+      'Una voz alojada que suena humana. Necesita conexión.';
+
+  @override
+  String get neuralVoiceLanguage => 'Idioma hablado';
+
+  @override
+  String get neuralVoiceLanguageSubtitle =>
+      'Idioma en que habla la voz alojada';
+
+  @override
+  String get followsNarrationLanguage => 'Seguir el idioma de la narración';
+
+  @override
   String get transcribeSubtitles => 'Transcribir subtítulos';
 
   @override

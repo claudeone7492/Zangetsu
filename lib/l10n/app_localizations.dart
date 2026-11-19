@@ -7234,6 +7234,60 @@ abstract class AppLocalizations {
   /// **'Read subtitles aloud with the device voice'**
   String get aiDubSubtitle;
 
+  /// No description provided for @voiceEngine.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice engine'**
+  String get voiceEngine;
+
+  /// No description provided for @voiceEngineSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Device voices are instant and work offline; neural voices sound human but need a connection'**
+  String get voiceEngineSubtitle;
+
+  /// No description provided for @voiceEngineDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Device'**
+  String get voiceEngineDevice;
+
+  /// No description provided for @voiceEngineDeviceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The voice installed on this device. Instant, offline.'**
+  String get voiceEngineDeviceSubtitle;
+
+  /// No description provided for @voiceEngineNeural.
+  ///
+  /// In en, this message translates to:
+  /// **'Neural'**
+  String get voiceEngineNeural;
+
+  /// No description provided for @voiceEngineNeuralSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A hosted voice that sounds human. Needs a connection.'**
+  String get voiceEngineNeuralSubtitle;
+
+  /// No description provided for @neuralVoiceLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Spoken language'**
+  String get neuralVoiceLanguage;
+
+  /// No description provided for @neuralVoiceLanguageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language the hosted voice speaks'**
+  String get neuralVoiceLanguageSubtitle;
+
+  /// No description provided for @followsNarrationLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow narration language'**
+  String get followsNarrationLanguage;
+
   /// No description provided for @transcribeSubtitles.
   ///
   /// In en, this message translates to:

@@ -4012,6 +4012,37 @@ class AppLocalizationsPt extends AppLocalizations {
   String get aiDubSubtitle => 'Leia as legendas com a voz do dispositivo';
 
   @override
+  String get voiceEngine => 'Motor de voz';
+
+  @override
+  String get voiceEngineSubtitle =>
+      'As vozes do dispositivo são instantâneas e funcionam offline; as vozes neurais soam humanas mas precisam de conexão';
+
+  @override
+  String get voiceEngineDevice => 'Dispositivo';
+
+  @override
+  String get voiceEngineDeviceSubtitle =>
+      'A voz instalada neste dispositivo. Instantânea, offline.';
+
+  @override
+  String get voiceEngineNeural => 'Neural';
+
+  @override
+  String get voiceEngineNeuralSubtitle =>
+      'Uma voz hospedada que soa humana. Precisa de conexão.';
+
+  @override
+  String get neuralVoiceLanguage => 'Idioma falado';
+
+  @override
+  String get neuralVoiceLanguageSubtitle =>
+      'Idioma em que a voz hospedada fala';
+
+  @override
+  String get followsNarrationLanguage => 'Seguir o idioma da narração';
+
+  @override
   String get transcribeSubtitles => 'Transcrever legendas';
 
   @override

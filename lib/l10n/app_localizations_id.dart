@@ -3993,6 +3993,37 @@ class AppLocalizationsId extends AppLocalizations {
   String get aiDubSubtitle => 'Bacakan subtitle dengan suara perangkat';
 
   @override
+  String get voiceEngine => 'Mesin suara';
+
+  @override
+  String get voiceEngineSubtitle =>
+      'Suara perangkat instan dan offline; suara neural terdengar manusiawi tetapi butuh koneksi';
+
+  @override
+  String get voiceEngineDevice => 'Perangkat';
+
+  @override
+  String get voiceEngineDeviceSubtitle =>
+      'Suara yang terpasang di perangkat ini. Instan, offline.';
+
+  @override
+  String get voiceEngineNeural => 'Neural';
+
+  @override
+  String get voiceEngineNeuralSubtitle =>
+      'Suara terhosting yang terdengar manusiawi. Butuh koneksi.';
+
+  @override
+  String get neuralVoiceLanguage => 'Bahasa lisan';
+
+  @override
+  String get neuralVoiceLanguageSubtitle =>
+      'Bahasa yang diucapkan suara terhosting';
+
+  @override
+  String get followsNarrationLanguage => 'Ikuti bahasa narasi';
+
+  @override
   String get transcribeSubtitles => 'Transkripsikan subtitle';
 
   @override

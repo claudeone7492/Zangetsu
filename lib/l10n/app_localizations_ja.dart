@@ -3903,6 +3903,34 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiDubSubtitle => '端末の音声で字幕を読み上げます';
 
   @override
+  String get voiceEngine => '音声エンジン';
+
+  @override
+  String get voiceEngineSubtitle =>
+      '端末の音声は即時でオフラインでも動作します。ニューラル音声は人間らしいですが接続が必要です';
+
+  @override
+  String get voiceEngineDevice => '端末';
+
+  @override
+  String get voiceEngineDeviceSubtitle => 'この端末にインストールされた音声。即時、オフライン。';
+
+  @override
+  String get voiceEngineNeural => 'ニューラル';
+
+  @override
+  String get voiceEngineNeuralSubtitle => '人間らしく聞こえるホスト音声。接続が必要です。';
+
+  @override
+  String get neuralVoiceLanguage => '話す言語';
+
+  @override
+  String get neuralVoiceLanguageSubtitle => 'ホスト音声が話す言語';
+
+  @override
+  String get followsNarrationLanguage => 'ナレーションの言語に従う';
+
+  @override
   String get transcribeSubtitles => '字幕を文字起こし';
 
   @override

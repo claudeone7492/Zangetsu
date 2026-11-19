@@ -3988,6 +3988,36 @@ class AppLocalizationsTr extends AppLocalizations {
   String get aiDubSubtitle => 'Altyazıları cihaz sesiyle oku';
 
   @override
+  String get voiceEngine => 'Ses motoru';
+
+  @override
+  String get voiceEngineSubtitle =>
+      'Cihaz sesleri anında ve çevrimdışı çalışır; sinirsel sesler insan gibi duyulur ama bağlantı gerektirir';
+
+  @override
+  String get voiceEngineDevice => 'Cihaz';
+
+  @override
+  String get voiceEngineDeviceSubtitle =>
+      'Bu cihazda yüklü ses. Anında, çevrimdışı.';
+
+  @override
+  String get voiceEngineNeural => 'Sinirsel';
+
+  @override
+  String get voiceEngineNeuralSubtitle =>
+      'İnsan gibi duyulan barındırılan ses. Bağlantı gerektirir.';
+
+  @override
+  String get neuralVoiceLanguage => 'Konuşulan dil';
+
+  @override
+  String get neuralVoiceLanguageSubtitle => 'Barındırılan sesin konuştuğu dil';
+
+  @override
+  String get followsNarrationLanguage => 'Anlatım dilini izle';
+
+  @override
   String get transcribeSubtitles => 'Altyazıyı yazıya çevir';
 
   @override

@@ -164,4 +164,57 @@ class DubPrefs extends ChangeNotifier {
 
   /// Whether a transcription can be attempted.
   bool get canTranscribe => transcriptionKey.isNotEmpty;
+
+  // ── Voice engine (D2) ─────────────────────────────────────────────────────
+  //
+  // Two engines satisfy the same contract: the device's own TTS, which is
+  // offline and instant, and a hosted neural voice, which sounds human but
+  // costs a round-trip per line. Which one is right depends on the viewer's
+  // connection and patience, so it is a setting rather than a guess.
+
+  /// `device` or `neural`. Device stays the default: it works with no network
+  /// and no waiting, which is the right behaviour for a feature someone turns
+  /// on mid-episode.
+  String get voiceEngine {
+    final value = _box.get('voiceEngine');
+    return value == kDubEngineNeural ? kDubEngineNeural : kDubEngineDevice;
+  }
+
+  Future<void> setVoiceEngine(String value) async {
+    await _box.put(
+      'voiceEngine',
+      value == kDubEngineNeural ? kDubEngineNeural : kDubEngineDevice,
+    );
+    notifyListeners();
+  }
+
+  bool get usesNeuralVoice => voiceEngine == kDubEngineNeural;
+
+  /// Language the hosted voice speaks, ISO-639-1. Null follows the narration
+  /// language, then English — so a dub translated into Spanish is also spoken
+  /// in Spanish without a second setting to keep in step.
+  String? get neuralLanguage => _box.get('neuralLanguage') as String?;
+
+  Future<void> setNeuralLanguage(String? value) async {
+    if (value == null || value.isEmpty) {
+      await _box.delete('neuralLanguage');
+    } else {
+      await _box.put('neuralLanguage', value);
+    }
+    notifyListeners();
+  }
+
+  /// The language the hosted voice should actually use: the explicit choice,
+  /// else the narration language, else English.
+  String get effectiveNeuralLanguage {
+    final explicit = neuralLanguage;
+    if (explicit != null && explicit.trim().isNotEmpty) return explicit.trim();
+    final narration = language;
+    if (narration != null && narration.trim().isNotEmpty) return narration.trim();
+    return 'en';
+  }
 }
+
+/// Engine ids for [DubPrefs.voiceEngine].
+const String kDubEngineDevice = 'device';
+const String kDubEngineNeural = 'neural';

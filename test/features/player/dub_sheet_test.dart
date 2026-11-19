@@ -69,6 +69,12 @@ void main() {
   });
 
   setUp(() async {
+    // The box is opened once for the whole suite, so each test must start from
+    // a known engine choice or the previous test's selection leaks in.
+    await prefs.setVoiceEngine(kDubEngineDevice);
+    await prefs.setNeuralLanguage(null);
+    await prefs.setLanguage(null);
+    await prefs.setEnabled(false);
     engine = _FakeDubEngine();
     final sl = GetIt.instance;
     await sl.reset();
@@ -132,6 +138,55 @@ void main() {
 
     expect(find.textContaining('No speech engine'), findsOneWidget);
     expect(find.text('Narrate subtitles'), findsNothing);
+  });
+
+  testWidgets('a device with no engine can still reach the neural voice',
+      (tester) async {
+    await openSheet(tester, available: false);
+
+    // The engine choice must be reachable here: this is the device that needs
+    // the hosted voice most.
+    expect(find.text('Neural'), findsOneWidget);
+
+    await tapAndSettle(tester, find.text('Neural'));
+    expect(prefs.usesNeuralVoice, isTrue);
+  });
+
+  testWidgets('picking the neural engine offers languages, not device voices',
+      (tester) async {
+    await openSheet(tester);
+    await tapAndSettle(tester, find.text('Neural'));
+
+    // Hosted voices are chosen by language; the device's installed voice list
+    // would be a choice that does nothing.
+    expect(find.text('Test (en-GB)'), findsNothing);
+    expect(find.text('Follow narration language'), findsOneWidget);
+    // 'English' is also a narration language, so scope to the hosted catalogue.
+    expect(find.text('Chinese (Mandarin)'), findsOneWidget);
+  });
+
+  testWidgets('the spoken language is remembered', (tester) async {
+    await openSheet(tester);
+    await tapAndSettle(tester, find.text('Neural'));
+
+    // 'Chinese (Mandarin)' names only a hosted voice, so the tap is
+    // unambiguous — the narration list calls that language plain 'Chinese'.
+    await tapAndSettle(tester, find.text('Chinese (Mandarin)'));
+    expect(prefs.neuralLanguage, 'zh-CN');
+    expect(prefs.effectiveNeuralLanguage, 'zh-CN');
+  });
+
+  testWidgets('the engine choice survives reopening the sheet',
+      (tester) async {
+    await openSheet(tester);
+    await tapAndSettle(tester, find.text('Neural'));
+
+    // Close and reopen: the choice is in the prefs, so it must come back.
+    await tester.tapAt(const Offset(10, 10));
+    await settle(tester);
+    await openSheet(tester);
+
+    expect(find.text('Spoken language'), findsOneWidget);
   });
 
   testWidgets('the installed voices are offered as choices', (tester) async {

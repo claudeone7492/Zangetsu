@@ -4015,6 +4015,37 @@ class AppLocalizationsAr extends AppLocalizations {
   String get aiDubSubtitle => 'اقرأ الترجمة بصوت الجهاز';
 
   @override
+  String get voiceEngine => 'محرّك الصوت';
+
+  @override
+  String get voiceEngineSubtitle =>
+      'أصوات الجهاز فورية وتعمل دون اتصال؛ الأصوات العصبية تبدو بشرية لكنها تحتاج اتصالاً';
+
+  @override
+  String get voiceEngineDevice => 'الجهاز';
+
+  @override
+  String get voiceEngineDeviceSubtitle =>
+      'الصوت المثبّت على هذا الجهاز. فوري ودون اتصال.';
+
+  @override
+  String get voiceEngineNeural => 'عصبي';
+
+  @override
+  String get voiceEngineNeuralSubtitle =>
+      'صوت مستضاف يبدو بشرياً. يحتاج اتصالاً.';
+
+  @override
+  String get neuralVoiceLanguage => 'اللغة المنطوقة';
+
+  @override
+  String get neuralVoiceLanguageSubtitle =>
+      'اللغة التي يتحدث بها الصوت المستضاف';
+
+  @override
+  String get followsNarrationLanguage => 'يتبع لغة السرد';
+
+  @override
   String get transcribeSubtitles => 'نسخ الترجمات نصيًا';
 
   @override

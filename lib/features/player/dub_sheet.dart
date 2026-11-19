@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import '../../core/dub/dub_engine.dart';
 import '../../core/dub/dub_narrator.dart';
 import '../../core/dub/dub_prefs.dart';
+import '../../core/dub/http_tts_service.dart';
 import '../../core/playback/subtitle_language.dart';
 import '../../l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
@@ -79,6 +80,9 @@ class _DubSheetState extends State<_DubSheet> {
   @override
   Widget build(BuildContext context) {
     final voices = _voices;
+    // A device with no TTS is exactly where the hosted voice earns its keep, so
+    // the missing-engine notice must not gate the engine choice itself.
+    final available = widget.available || _prefs.usesNeuralVoice;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
@@ -110,9 +114,12 @@ class _DubSheetState extends State<_DubSheet> {
               if (!widget.available)
                 _notice(
                   'No speech engine on this device. Install a system '
-                  'text-to-speech voice to use AI Dub.',
-                )
-              else ...[
+                  'text-to-speech voice, or pick the neural voice below.',
+                ),
+              const Divider(color: AppColors.hairline, height: 24),
+              _engineSection(context),
+
+              if (available) ...[
                 SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
                   value: _prefs.enabled,
@@ -219,9 +226,19 @@ class _DubSheetState extends State<_DubSheet> {
                 ),
 
                 const Divider(color: AppColors.hairline, height: 24),
+                const Divider(color: AppColors.hairline, height: 24),
                 Text('Voice', style: AppText.body),
                 const SizedBox(height: 6),
-                if (voices == null)
+                if (_prefs.usesNeuralVoice)
+                  // The hosted voice is picked by language above; listing
+                  // device voices here would offer choices that do nothing.
+                  Text(
+                    context.l10n.voiceEngineNeuralSubtitle,
+                    style: AppText.caption.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  )
+                else if (voices == null)
                   const Padding(
                     padding: EdgeInsets.all(8),
                     child: Center(
@@ -401,6 +418,108 @@ class _DubSheetState extends State<_DubSheet> {
       ],
     ),
   );
+
+  /// A selectable engine row. A radio rather than a switch because there are
+  /// two named choices, not an on/off.
+  /// The engine choice, shown even when the device reports no TTS: a viewer
+  /// with no installed voice needs this control to reach the neural one, so it
+  /// cannot live behind the availability check.
+  Widget _engineSection(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+                Text(context.l10n.voiceEngine, style: AppText.body),
+                const SizedBox(height: 4),
+                Text(
+                  context.l10n.voiceEngineSubtitle,
+                  style: AppText.caption.copyWith(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 8),
+                _engineOption(
+                  title: context.l10n.voiceEngineDevice,
+                  subtitle: context.l10n.voiceEngineDeviceSubtitle,
+                  selected: !_prefs.usesNeuralVoice,
+                  onTap: () => _prefs.setVoiceEngine(kDubEngineDevice),
+                ),
+                _engineOption(
+                  title: context.l10n.voiceEngineNeural,
+                  subtitle: context.l10n.voiceEngineNeuralSubtitle,
+                  selected: _prefs.usesNeuralVoice,
+                  onTap: () => _prefs.setVoiceEngine(kDubEngineNeural),
+                ),
+                if (_prefs.usesNeuralVoice) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    context.l10n.neuralVoiceLanguage,
+                    style: AppText.body,
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _voiceChip(
+                        label: context.l10n.followsNarrationLanguage,
+                        selected: _prefs.neuralLanguage == null,
+                        onTap: () => _prefs.setNeuralLanguage(null),
+                      ),
+                      for (final v in HttpTtsService.voices)
+                        _voiceChip(
+                          label: v.label,
+                          selected: _prefs.neuralLanguage == v.iso,
+                          onTap: () => _prefs.setNeuralLanguage(v.iso),
+                        ),
+                    ],
+                  ),
+                ],
+
+      ],
+    );
+  }
+
+  Widget _engineOption({
+    required String title,
+    required String subtitle,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              selected
+                  ? Icons.radio_button_checked_rounded
+                  : Icons.radio_button_unchecked_rounded,
+              size: 20,
+              color: selected ? AppColors.accent : AppColors.textSecondary,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: AppText.body),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: AppText.caption.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _voiceChip({
     required String label,
