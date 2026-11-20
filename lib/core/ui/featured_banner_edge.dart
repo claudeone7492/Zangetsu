@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart'
     show ValueListenable, listEquals, visibleForTesting;
 import 'package:flutter/material.dart';
 
+import '../../l10n/l10n.dart';
 import '../models/media_item.dart';
 import '../theme/app_colors.dart';
 import 'banner_actions.dart';
@@ -335,7 +336,7 @@ class _FeaturedBannerEdgeState extends State<FeaturedBannerEdge>
                               borderRadius: BorderRadius.circular(24),
                               child: Center(
                                 child: Text(
-                                  'View Details',
+                                  context.l10n.commonViewDetails,
                                   style: TextStyle(
                                     color: AppColors.bg,
                                     fontSize: 15,

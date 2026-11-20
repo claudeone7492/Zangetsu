@@ -121,12 +121,47 @@ const _strings = <String, String>{
   'commonCloudflareProtected': 'This source is protected by Cloudflare',
   'commonBackupSaveFailed':
       'Could not save the backup. Your current data is unchanged.',
+  // final batch: admin, filters, source switcher, reader, profiles
+  'adminTitle': 'Admin',
+  'adminChangeExpiry': 'Change expiry',
+  'statusActive': 'ACTIVE',
+  'statusFinished': 'FINISHED',
+  'statusKids': 'KIDS',
+  'commonInclude': 'Include',
+  'commonExclude': 'Exclude',
+  'commonAscending': 'Ascending',
+  'commonViewDetails': 'View Details',
+  'sourceSwitcherAutoResolve': 'Auto Resolve',
+  'sourceSwitcherTryAll': 'Try every installed source until one matches',
+  'sourceSwitcherHoldSelectToPin': 'Hold Select to pin a source to the top',
+  'sourceSwitcherAppleTvUnavailable': 'Could not load that source on Apple TV',
+  'mangaUpNext': 'UP NEXT',
+  'mangaChapterCloudflare': 'This Mangayomi chapter is protected by Cloudflare.',
+  'mangayomiFilterUnsupported': 'This filter type is not supported yet',
+  'stremioNoLinks': 'No links',
+  'stremioNoPlayableLinks': 'No playable links found',
+  'stremioAddonsTitle': 'Stremio Addons',
+  'profilesAddProfile': 'Add profile',
+  'profilesChooseWhoIsWatching': 'Choose who is watching. Each profile keeps its own list and progress.',
+  'profileLockRecoveryCodeHint': 'Use the private recovery code saved when this profile’s PIN was set.',
+  'profileLockOtherDevicesUnaffected': 'Your PIN still works. Other devices keep their own setting.',
+  'homeTvSourcePrefix': 'Source ·',
+  'trackerChooseList': 'Choose list',
+  'authGifTooLarge': 'This GIF is too large to optimize safely. Try a smaller file.',
+  'authGifUnreadable': 'Could not read that GIF file.',
+  'profileMoreComingSoon': 'More features are on their way with Zoro… he just got lost again.',
 };
 
 /// Words that are genuinely spelled the same in the target language, so the
 /// "differs from English" check would flag a correct translation.
 const _legitCognates = <String, Set<String>>{
-  'fr': {'posterLayoutPortrait'}, // French "Portrait" is correct French
+  'de': {'adminTitle'}, // German UIs say "Admin", not "Administrator"
+  'fr': {
+    'posterLayoutPortrait', // French "Portrait" is correct French
+    'adminTitle', // French UIs say "Admin" too
+    'homeTvSourcePrefix', // French "Source" is the French word
+  },
+  'id': {'adminTitle'}, // Indonesian uses "Admin" natively
   'it': {'profileAccount'}, // Italian "Account" is correct Italian
 };
 
@@ -238,6 +273,35 @@ String _value(AppLocalizations l, String key) => switch (key) {
   'profileAvatarLabel' => l.profileAvatarLabel,
   'commonCloudflareProtected' => l.commonCloudflareProtected,
   'commonBackupSaveFailed' => l.commonBackupSaveFailed,
+  'adminTitle' => l.adminTitle,
+  'adminChangeExpiry' => l.adminChangeExpiry,
+  'statusActive' => l.statusActive,
+  'statusFinished' => l.statusFinished,
+  'statusKids' => l.statusKids,
+  'commonInclude' => l.commonInclude,
+  'commonExclude' => l.commonExclude,
+  'commonAscending' => l.commonAscending,
+  'commonViewDetails' => l.commonViewDetails,
+  'sourceSwitcherAutoResolve' => l.sourceSwitcherAutoResolve,
+  'sourceSwitcherTryAll' => l.sourceSwitcherTryAll,
+  'sourceSwitcherHoldSelectToPin' => l.sourceSwitcherHoldSelectToPin,
+  'sourceSwitcherAppleTvUnavailable' => l.sourceSwitcherAppleTvUnavailable,
+  'mangaUpNext' => l.mangaUpNext,
+  'mangaChapterCloudflare' => l.mangaChapterCloudflare,
+  'mangayomiFilterUnsupported' => l.mangayomiFilterUnsupported,
+  'stremioNoLinks' => l.stremioNoLinks,
+  'stremioNoPlayableLinks' => l.stremioNoPlayableLinks,
+  'stremioAddonsTitle' => l.stremioAddonsTitle,
+  'profilesAddProfile' => l.profilesAddProfile,
+  'profilesChooseWhoIsWatching' => l.profilesChooseWhoIsWatching,
+  'profileLockRecoveryCodeHint' => l.profileLockRecoveryCodeHint,
+  'profileLockOtherDevicesUnaffected' => l.profileLockOtherDevicesUnaffected,
+  'homeTvSourcePrefix' => l.homeTvSourcePrefix,
+  'trackerChooseList' => l.trackerChooseList,
+  'authGifTooLarge' => l.authGifTooLarge,
+  'authGifUnreadable' => l.authGifUnreadable,
+  'profileMoreComingSoon' => l.profileMoreComingSoon,
+
   _ => throw ArgumentError('key $key is registered but not mapped in _value'),
 };
 

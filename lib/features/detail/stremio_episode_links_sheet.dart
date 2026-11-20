@@ -246,7 +246,7 @@ class _StremioLinksSheetState extends State<_StremioLinksSheet> {
           if (hasLinks) return const SizedBox.shrink();
           return Column(
             children: [
-              Text('No playable links found', style: AppText.caption),
+              Text(context.l10n.stremioNoPlayableLinks, style: AppText.caption),
               TextButton(onPressed: _start, child: Text(context.l10n.retry)),
             ],
           );
@@ -319,7 +319,7 @@ class _StremioLinksSheetState extends State<_StremioLinksSheet> {
                 else if (group.state == StremioLinkGroupState.stale)
                   Text(group.error ?? 'Addon changed', style: AppText.caption)
                 else if (!hasChoices)
-                  Text('No links', style: AppText.caption),
+                  Text(context.l10n.stremioNoLinks, style: AppText.caption),
               ],
             ),
           ),

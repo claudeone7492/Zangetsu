@@ -7148,4 +7148,96 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get commonBackupSaveFailed =>
       'تعذّر حفظ النسخة الاحتياطية. بياناتك الحالية لم تتغير.';
+
+  @override
+  String get adminTitle => 'الإدارة';
+
+  @override
+  String get adminChangeExpiry => 'تغيير الانتهاء';
+
+  @override
+  String get statusActive => 'نشط';
+
+  @override
+  String get statusFinished => 'مكتمل';
+
+  @override
+  String get statusKids => 'أطفال';
+
+  @override
+  String get commonInclude => 'تضمين';
+
+  @override
+  String get commonExclude => 'استبعاد';
+
+  @override
+  String get commonAscending => 'تصاعدي';
+
+  @override
+  String get commonViewDetails => 'عرض التفاصيل';
+
+  @override
+  String get sourceSwitcherAutoResolve => 'حل تلقائي';
+
+  @override
+  String get sourceSwitcherTryAll => 'جرّب كل المصادر المثبتة حتى يتطابق أحدها';
+
+  @override
+  String get sourceSwitcherHoldSelectToPin =>
+      'اضغط مطولًا على تحديد لتثبيت مصدر في الأعلى';
+
+  @override
+  String get sourceSwitcherAppleTvUnavailable =>
+      'تعذّر تحميل هذا المصدر على Apple TV';
+
+  @override
+  String get mangaUpNext => 'التالي';
+
+  @override
+  String get mangaChapterCloudflare =>
+      'هذا الفصل من Mangayomi محمي بواسطة Cloudflare.';
+
+  @override
+  String get mangayomiFilterUnsupported => 'نوع المرشح هذا غير مدعوم بعد';
+
+  @override
+  String get stremioNoLinks => 'لا توجد روابط';
+
+  @override
+  String get stremioNoPlayableLinks => 'لم يتم العثور على روابط قابلة للتشغيل';
+
+  @override
+  String get profilesAddProfile => 'إضافة ملف شخصي';
+
+  @override
+  String get profilesChooseWhoIsWatching =>
+      'اختر من يشاهد. يحتفظ كل ملف شخصي بقائمته وتقدمه.';
+
+  @override
+  String get profileLockRecoveryCodeHint =>
+      'استخدم رمز الاسترداد الخاص المحفوظ عند تعيين رمز PIN لهذا الملف الشخصي.';
+
+  @override
+  String get profileLockOtherDevicesUnaffected =>
+      'رمز PIN الخاص بك لا يزال يعمل. تحتفظ الأجهزة الأخرى بإعدادها الخاص.';
+
+  @override
+  String get homeTvSourcePrefix => 'المصدر ·';
+
+  @override
+  String get trackerChooseList => 'اختر قائمة';
+
+  @override
+  String get authGifTooLarge =>
+      'ملف GIF هذا كبير جدًا لتحسينه بأمان. جرّب ملفًا أصغر.';
+
+  @override
+  String get authGifUnreadable => 'تعذّرت قراءة ملف GIF هذا.';
+
+  @override
+  String get profileMoreComingSoon =>
+      'المزيد من الميزات في الطريق مع زورو… لقد ضل الطريق مرة أخرى.';
+
+  @override
+  String get stremioAddonsTitle => 'إضافات Stremio';
 }

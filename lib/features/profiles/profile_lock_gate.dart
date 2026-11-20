@@ -659,8 +659,8 @@ class _PinSetupSheetState extends State<_PinSetupSheet> {
                   SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
                     title: Text(context.l10n.profileUseFingerprint),
-                    subtitle: const Text(
-                      'Your PIN still works. Other devices keep their own setting.',
+                    subtitle: Text(
+                      context.l10n.profileLockOtherDevicesUnaffected,
                     ),
                     value: _fingerprint,
                     onChanged: _busy ? null : _toggleFingerprint,
@@ -895,8 +895,8 @@ class _PinRecoverySheetState extends State<_PinRecoverySheet> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
-          'Use the private recovery code saved when this profile’s PIN was set.',
+        Text(
+          context.l10n.profileLockRecoveryCodeHint,
         ),
         const SizedBox(height: 12),
         _pinField(

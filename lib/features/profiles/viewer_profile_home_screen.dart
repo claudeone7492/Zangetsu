@@ -218,7 +218,7 @@ class ViewerProfileHomeScreen extends StatelessWidget {
                         const SizedBox(height: 30),
                         Divider(height: 1, color: AppColors.hairline),
                         const SizedBox(height: 22),
-                        _comingSoonCard(),
+                        _comingSoonCard(context),
                       ],
                     ),
                   ),
@@ -422,7 +422,7 @@ class ViewerProfileHomeScreen extends StatelessWidget {
     ],
   );
 
-  Widget _comingSoonCard() => Center(
+  Widget _comingSoonCard(BuildContext context) => Center(
     key: const ValueKey('zoro-coming-soon-section'),
     child: Column(
       mainAxisSize: MainAxisSize.min,
@@ -441,7 +441,7 @@ class ViewerProfileHomeScreen extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'More features are on their way with Zoro… he just got lost again.',
+          context.l10n.profileMoreComingSoon,
           textAlign: TextAlign.center,
           style: AppText.body.copyWith(color: AppColors.textSecondary),
         ),

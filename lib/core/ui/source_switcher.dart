@@ -1,34 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:zangetsu_source_bridge/zangetsu_source_bridge.dart';
 
+import '../../l10n/l10n.dart';
 import '../aniyomi/aniyomi_provider.dart';
 import '../app_mode.dart';
 import '../di/injector.dart';
+import '../hikari/hikari_manager.dart';
 import '../hive/source_icon_store.dart';
 import '../i18n/source_languages.dart';
-import 'source_icon_tile.dart';
 import '../lnreader/lnreader_manager.dart';
 import '../mangayomi/mangayomi_manager.dart';
 import '../mangayomi/mangayomi_source_id.dart';
 import '../mihon/mihon_manager.dart';
-import '../prefs/source_lang_prefs.dart';
 import '../mode/content_mode.dart';
 import '../mode/content_mode_cubit.dart';
-import '../playback/pinned_sources.dart';
 import '../models/provider_info.dart';
+import '../playback/pinned_sources.dart';
 import '../playback/playback_prefs.dart';
-import '../hikari/hikari_manager.dart';
+import '../prefs/source_lang_prefs.dart';
 import '../provider/cloudstream_provider.dart';
 import '../provider/provider_manager.dart';
-import '../universal/universal_manager.dart';
 import '../provider/provider_registry.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../tv/tv_focusable.dart';
 import '../tv/tv_list_focusable.dart';
+import '../universal/universal_manager.dart';
 import '../zmode/zmode_ids.dart';
 import '../zmode/zmode_module.dart';
 import '../zmode/zmode_prefs.dart';
+import 'source_icon_tile.dart';
 import 'states.dart';
 
 /// Installed-and-enabled sources bucketed by category, each as an `(id, label)`
@@ -1237,11 +1238,11 @@ class _SourcePickerSheetState extends State<_SourcePickerSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Auto Resolve', style: AppText.headline),
+                  Text(context.l10n.sourceSwitcherAutoResolve, style: AppText.headline),
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
                     child: Text(
-                      'Try every installed source until one matches',
+                      context.l10n.sourceSwitcherTryAll,
                       style: AppText.body.copyWith(
                         fontSize: 11.5,
                         height: 1.0,
@@ -1261,7 +1262,7 @@ class _SourcePickerSheetState extends State<_SourcePickerSheet> {
       return TvListFocusable(
         autofocus: widget.autoSelected,
         onTap: widget.onAutoResolve!,
-        semanticLabel: 'Auto Resolve',
+        semanticLabel: context.l10n.sourceSwitcherAutoResolve,
         child: ExcludeSemantics(child: body),
       );
     }
@@ -1335,7 +1336,7 @@ class _SourcePickerSheetState extends State<_SourcePickerSheet> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Hold Select to pin a source to the top',
+                        context.l10n.sourceSwitcherHoldSelectToPin,
                         style: AppText.caption,
                       ),
                     ],

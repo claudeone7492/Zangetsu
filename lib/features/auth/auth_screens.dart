@@ -395,9 +395,9 @@ class _ProfileAccountSectionState extends State<ProfileAccountSection> {
         if (await file.length() > ProfileAvatarUploader.maxGifSourceBytes) {
           if (context.mounted) {
             ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text(
-                  'This GIF is too large to optimize safely. Try a smaller file.',
+                  context.l10n.authGifTooLarge,
                 ),
               ),
             );
@@ -409,7 +409,7 @@ class _ProfileAccountSectionState extends State<ProfileAccountSection> {
       } catch (_) {
         if (context.mounted) {
           ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-            const SnackBar(content: Text('Could not read that GIF file.')),
+            SnackBar(content: Text(context.l10n.authGifUnreadable)),
           );
         }
         return;

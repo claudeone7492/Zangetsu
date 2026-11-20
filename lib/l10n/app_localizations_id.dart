@@ -7096,4 +7096,97 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get commonBackupSaveFailed =>
       'Tidak dapat menyimpan cadangan. Data Anda saat ini tidak berubah.';
+
+  @override
+  String get adminTitle => 'Admin';
+
+  @override
+  String get adminChangeExpiry => 'Ubah masa berlaku';
+
+  @override
+  String get statusActive => 'AKTIF';
+
+  @override
+  String get statusFinished => 'SELESAI';
+
+  @override
+  String get statusKids => 'ANAK';
+
+  @override
+  String get commonInclude => 'Sertakan';
+
+  @override
+  String get commonExclude => 'Kecualikan';
+
+  @override
+  String get commonAscending => 'Naik';
+
+  @override
+  String get commonViewDetails => 'Lihat detail';
+
+  @override
+  String get sourceSwitcherAutoResolve => 'Selesaikan otomatis';
+
+  @override
+  String get sourceSwitcherTryAll =>
+      'Coba semua sumber terpasang hingga ada yang cocok';
+
+  @override
+  String get sourceSwitcherHoldSelectToPin =>
+      'Tahan Pilih untuk menyematkan sumber di atas';
+
+  @override
+  String get sourceSwitcherAppleTvUnavailable =>
+      'Tidak dapat memuat sumber itu di Apple TV';
+
+  @override
+  String get mangaUpNext => 'BERIKUTNYA';
+
+  @override
+  String get mangaChapterCloudflare =>
+      'Bab Mangayomi ini dilindungi Cloudflare.';
+
+  @override
+  String get mangayomiFilterUnsupported => 'Jenis filter ini belum didukung';
+
+  @override
+  String get stremioNoLinks => 'Tidak ada tautan';
+
+  @override
+  String get stremioNoPlayableLinks => 'Tidak ada tautan yang dapat diputar';
+
+  @override
+  String get profilesAddProfile => 'Tambah profil';
+
+  @override
+  String get profilesChooseWhoIsWatching =>
+      'Pilih siapa yang menonton. Setiap profil menyimpan daftar dan progresnya sendiri.';
+
+  @override
+  String get profileLockRecoveryCodeHint =>
+      'Gunakan kode pemulihan pribadi yang disimpan saat PIN profil ini dibuat.';
+
+  @override
+  String get profileLockOtherDevicesUnaffected =>
+      'PIN Anda masih berfungsi. Perangkat lain menyimpan pengaturannya sendiri.';
+
+  @override
+  String get homeTvSourcePrefix => 'Sumber ·';
+
+  @override
+  String get trackerChooseList => 'Pilih daftar';
+
+  @override
+  String get authGifTooLarge =>
+      'GIF ini terlalu besar untuk dioptimalkan dengan aman. Coba berkas yang lebih kecil.';
+
+  @override
+  String get authGifUnreadable => 'Tidak dapat membaca berkas GIF itu.';
+
+  @override
+  String get profileMoreComingSoon =>
+      'Fitur lain sedang dalam perjalanan bersama Zoro… dia tersesat lagi.';
+
+  @override
+  String get stremioAddonsTitle => 'Addon Stremio';
 }

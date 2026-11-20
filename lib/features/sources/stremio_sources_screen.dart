@@ -172,7 +172,7 @@ class _StremioSourcesScreenState extends State<StremioSourcesScreen> {
       backgroundColor: AppColors.bg,
       appBar: AppBar(
         backgroundColor: AppColors.bg,
-        title: Text('Stremio Addons', style: AppText.barTitle),
+        title: Text(context.l10n.stremioAddonsTitle, style: AppText.barTitle),
       ),
       body: ListenableBuilder(
         listenable: _manager,

@@ -6900,6 +6900,90 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get commonBackupSaveFailed => '无法保存备份。你当前的数据未改变。';
+
+  @override
+  String get adminTitle => '管理';
+
+  @override
+  String get adminChangeExpiry => '更改到期时间';
+
+  @override
+  String get statusActive => '有效';
+
+  @override
+  String get statusFinished => '已完结';
+
+  @override
+  String get statusKids => '儿童';
+
+  @override
+  String get commonInclude => '包含';
+
+  @override
+  String get commonExclude => '排除';
+
+  @override
+  String get commonAscending => '升序';
+
+  @override
+  String get commonViewDetails => '查看详情';
+
+  @override
+  String get sourceSwitcherAutoResolve => '自动解析';
+
+  @override
+  String get sourceSwitcherTryAll => '逐一尝试所有已安装来源，直到有匹配项';
+
+  @override
+  String get sourceSwitcherHoldSelectToPin => '长按“选择”可将来源固定到顶部';
+
+  @override
+  String get sourceSwitcherAppleTvUnavailable => '无法在 Apple TV 上加载该来源';
+
+  @override
+  String get mangaUpNext => '接下来';
+
+  @override
+  String get mangaChapterCloudflare => '此 Mangayomi 章节受 Cloudflare 保护。';
+
+  @override
+  String get mangayomiFilterUnsupported => '尚不支持此筛选类型';
+
+  @override
+  String get stremioNoLinks => '无链接';
+
+  @override
+  String get stremioNoPlayableLinks => '未找到可播放的链接';
+
+  @override
+  String get profilesAddProfile => '添加个人资料';
+
+  @override
+  String get profilesChooseWhoIsWatching => '选择观看者。每个个人资料都保留自己的列表和进度。';
+
+  @override
+  String get profileLockRecoveryCodeHint => '使用设置此个人资料 PIN 时保存的私人恢复代码。';
+
+  @override
+  String get profileLockOtherDevicesUnaffected => '你的 PIN 仍然有效。其他设备保留自己的设置。';
+
+  @override
+  String get homeTvSourcePrefix => '来源 ·';
+
+  @override
+  String get trackerChooseList => '选择列表';
+
+  @override
+  String get authGifTooLarge => '此 GIF 过大，无法安全优化。请尝试较小的文件。';
+
+  @override
+  String get authGifUnreadable => '无法读取该 GIF 文件。';
+
+  @override
+  String get profileMoreComingSoon => '更多功能正随索隆赶来……他又迷路了。';
+
+  @override
+  String get stremioAddonsTitle => 'Stremio 插件';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -12154,4 +12238,88 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get commonBackupSaveFailed => '無法儲存備份。你目前的資料未變更。';
+
+  @override
+  String get adminTitle => '管理';
+
+  @override
+  String get adminChangeExpiry => '變更到期時間';
+
+  @override
+  String get statusActive => '有效';
+
+  @override
+  String get statusFinished => '已完結';
+
+  @override
+  String get statusKids => '兒童';
+
+  @override
+  String get commonInclude => '包含';
+
+  @override
+  String get commonExclude => '排除';
+
+  @override
+  String get commonAscending => '升冪';
+
+  @override
+  String get commonViewDetails => '查看詳細資料';
+
+  @override
+  String get sourceSwitcherAutoResolve => '自動解析';
+
+  @override
+  String get sourceSwitcherTryAll => '逐一嘗試所有已安裝來源，直到有符合項目';
+
+  @override
+  String get sourceSwitcherHoldSelectToPin => '長按「選取」可將來源釘選至頂端';
+
+  @override
+  String get sourceSwitcherAppleTvUnavailable => '無法在 Apple TV 上載入該來源';
+
+  @override
+  String get mangaUpNext => '接下來';
+
+  @override
+  String get mangaChapterCloudflare => '此 Mangayomi 章節受 Cloudflare 保護。';
+
+  @override
+  String get mangayomiFilterUnsupported => '尚不支援此篩選類型';
+
+  @override
+  String get stremioNoLinks => '無連結';
+
+  @override
+  String get stremioNoPlayableLinks => '找不到可播放的連結';
+
+  @override
+  String get profilesAddProfile => '新增個人資料';
+
+  @override
+  String get profilesChooseWhoIsWatching => '選擇觀看者。每個個人資料都保留自己的清單與進度。';
+
+  @override
+  String get profileLockRecoveryCodeHint => '使用設定此個人資料 PIN 時儲存的私人復原代碼。';
+
+  @override
+  String get profileLockOtherDevicesUnaffected => '你的 PIN 仍然有效。其他裝置保留自己的設定。';
+
+  @override
+  String get homeTvSourcePrefix => '來源 ·';
+
+  @override
+  String get trackerChooseList => '選擇清單';
+
+  @override
+  String get authGifTooLarge => '此 GIF 過大，無法安全最佳化。請嘗試較小的檔案。';
+
+  @override
+  String get authGifUnreadable => '無法讀取該 GIF 檔案。';
+
+  @override
+  String get profileMoreComingSoon => '更多功能正隨索隆趕來……他又迷路了。';
+
+  @override
+  String get stremioAddonsTitle => 'Stremio 附加元件';
 }

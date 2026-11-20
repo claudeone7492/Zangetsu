@@ -34,7 +34,7 @@ class _AdminView extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text('Admin', style: AppText.title),
+        title: Text(context.l10n.adminTitle, style: AppText.title),
       ),
       body: BlocBuilder<AdminCubit, AdminState>(
         builder: (context, state) {
@@ -243,7 +243,7 @@ class _Console extends StatelessWidget {
                     }
                   },
                   child: Text(
-                    'Change expiry',
+                    context.l10n.adminChangeExpiry,
                     style: AppText.caption.copyWith(color: AppColors.accent),
                   ),
                 ),

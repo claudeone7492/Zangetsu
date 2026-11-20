@@ -105,8 +105,8 @@ Widget _filterRow(
           value: state.clamp(0, 2),
           items: [
             DropdownMenuItem(value: 0, child: Text(context.l10n.any)),
-            const DropdownMenuItem(value: 1, child: Text('Include')),
-            const DropdownMenuItem(value: 2, child: Text('Exclude')),
+            DropdownMenuItem(value: 1, child: Text(context.l10n.commonInclude)),
+            DropdownMenuItem(value: 2, child: Text(context.l10n.commonExclude)),
           ],
           onChanged: (value) => update(() => filter['state'] = value),
         ),
@@ -163,7 +163,7 @@ Widget _filterRow(
             ),
           ),
           SwitchListTile(
-            title: const Text('Ascending'),
+            title: Text(context.l10n.commonAscending),
             value: state['ascending'] == true,
             onChanged: (value) => update(() => state['ascending'] = value),
           ),

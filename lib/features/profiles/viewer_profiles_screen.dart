@@ -390,7 +390,7 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Choose who is watching. Each profile keeps its own list and progress.',
+                      context.l10n.profilesChooseWhoIsWatching,
                       style: AppText.caption,
                     ),
                   ),
@@ -427,7 +427,7 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
               children: [
                 SettingsTile(
                   icon: Icons.person_add_alt_1_rounded,
-                  title: 'Add profile',
+                  title: context.l10n.profilesAddProfile,
                   subtitle:
                       _profiles.profiles.length >=
                           ViewerProfileStore.maxProfiles
@@ -954,7 +954,7 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
                       ),
                       if (profile.isKids)
                         Text(
-                          'KIDS',
+                          context.l10n.statusKids,
                           style: AppText.overline.copyWith(
                             color: focused ? AppColors.bg : AppColors.accent,
                           ),
@@ -979,7 +979,7 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
   Widget _tvAddProfileChoice() => Padding(
     padding: const EdgeInsets.only(bottom: 8),
     child: TvListFocusable(
-      semanticLabel: 'Add profile',
+      semanticLabel: context.l10n.profilesAddProfile,
       variant: TvFocusVariant.none,
       onTap: () =>
           _edit(null, defaultAvatarForNewProfile(_profiles.profiles.length)),
@@ -1007,7 +1007,7 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
               ),
               const SizedBox(width: 12),
               Text(
-                'Add profile',
+                context.l10n.profilesAddProfile,
                 style: AppText.headline.copyWith(
                   color: focused ? AppColors.bg : AppColors.textSecondary,
                   fontSize: 19,
@@ -1097,7 +1097,7 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
               scale: _avatarScale(profiles.length, count, gapScale),
               child: _profilePickerAction(
                 title: 'Add',
-                semanticLabel: 'Add profile',
+                semanticLabel: context.l10n.profilesAddProfile,
                 icon: Icons.add_rounded,
                 diameter: diameter,
                 isTv: isTv,
@@ -1172,7 +1172,7 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
                 if (profile.isKids) ...[
                   const SizedBox(height: 3),
                   Text(
-                    'KIDS',
+                    context.l10n.statusKids,
                     style: AppText.overline.copyWith(
                       color: AppColors.accent,
                       fontSize: 10,

@@ -12404,6 +12404,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not save the backup. Your current data is unchanged.'**
   String get commonBackupSaveFailed;
+
+  /// No description provided for @adminTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get adminTitle;
+
+  /// No description provided for @adminChangeExpiry.
+  ///
+  /// In en, this message translates to:
+  /// **'Change expiry'**
+  String get adminChangeExpiry;
+
+  /// No description provided for @statusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'ACTIVE'**
+  String get statusActive;
+
+  /// No description provided for @statusFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'FINISHED'**
+  String get statusFinished;
+
+  /// No description provided for @statusKids.
+  ///
+  /// In en, this message translates to:
+  /// **'KIDS'**
+  String get statusKids;
+
+  /// No description provided for @commonInclude.
+  ///
+  /// In en, this message translates to:
+  /// **'Include'**
+  String get commonInclude;
+
+  /// No description provided for @commonExclude.
+  ///
+  /// In en, this message translates to:
+  /// **'Exclude'**
+  String get commonExclude;
+
+  /// No description provided for @commonAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Ascending'**
+  String get commonAscending;
+
+  /// No description provided for @commonViewDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'View Details'**
+  String get commonViewDetails;
+
+  /// No description provided for @sourceSwitcherAutoResolve.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto Resolve'**
+  String get sourceSwitcherAutoResolve;
+
+  /// No description provided for @sourceSwitcherTryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Try every installed source until one matches'**
+  String get sourceSwitcherTryAll;
+
+  /// No description provided for @sourceSwitcherHoldSelectToPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold Select to pin a source to the top'**
+  String get sourceSwitcherHoldSelectToPin;
+
+  /// No description provided for @sourceSwitcherAppleTvUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load that source on Apple TV'**
+  String get sourceSwitcherAppleTvUnavailable;
+
+  /// No description provided for @mangaUpNext.
+  ///
+  /// In en, this message translates to:
+  /// **'UP NEXT'**
+  String get mangaUpNext;
+
+  /// No description provided for @mangaChapterCloudflare.
+  ///
+  /// In en, this message translates to:
+  /// **'This Mangayomi chapter is protected by Cloudflare.'**
+  String get mangaChapterCloudflare;
+
+  /// No description provided for @mangayomiFilterUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This filter type is not supported yet'**
+  String get mangayomiFilterUnsupported;
+
+  /// No description provided for @stremioNoLinks.
+  ///
+  /// In en, this message translates to:
+  /// **'No links'**
+  String get stremioNoLinks;
+
+  /// No description provided for @stremioNoPlayableLinks.
+  ///
+  /// In en, this message translates to:
+  /// **'No playable links found'**
+  String get stremioNoPlayableLinks;
+
+  /// No description provided for @profilesAddProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Add profile'**
+  String get profilesAddProfile;
+
+  /// No description provided for @profilesChooseWhoIsWatching.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose who is watching. Each profile keeps its own list and progress.'**
+  String get profilesChooseWhoIsWatching;
+
+  /// No description provided for @profileLockRecoveryCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the private recovery code saved when this profile’s PIN was set.'**
+  String get profileLockRecoveryCodeHint;
+
+  /// No description provided for @profileLockOtherDevicesUnaffected.
+  ///
+  /// In en, this message translates to:
+  /// **'Your PIN still works. Other devices keep their own setting.'**
+  String get profileLockOtherDevicesUnaffected;
+
+  /// No description provided for @homeTvSourcePrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Source ·'**
+  String get homeTvSourcePrefix;
+
+  /// No description provided for @trackerChooseList.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose list'**
+  String get trackerChooseList;
+
+  /// No description provided for @authGifTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'This GIF is too large to optimize safely. Try a smaller file.'**
+  String get authGifTooLarge;
+
+  /// No description provided for @authGifUnreadable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read that GIF file.'**
+  String get authGifUnreadable;
+
+  /// No description provided for @profileMoreComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'More features are on their way with Zoro… he just got lost again.'**
+  String get profileMoreComingSoon;
+
+  /// No description provided for @stremioAddonsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Stremio Addons'**
+  String get stremioAddonsTitle;
 }
 
 class _AppLocalizationsDelegate

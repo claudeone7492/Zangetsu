@@ -289,9 +289,9 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        'Source · ',
-                        style: TextStyle(color: AppColors.textSecondary),
+                      Text(
+                        context.l10n.homeTvSourcePrefix,
+                        style: const TextStyle(color: AppColors.textSecondary),
                       ),
                       SourceSwitcher(
                         currentId: sourceId,

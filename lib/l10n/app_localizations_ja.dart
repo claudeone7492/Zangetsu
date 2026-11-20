@@ -6944,4 +6944,91 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get commonBackupSaveFailed => 'バックアップを保存できませんでした。現在のデータは変更されていません。';
+
+  @override
+  String get adminTitle => '管理者';
+
+  @override
+  String get adminChangeExpiry => '有効期限を変更';
+
+  @override
+  String get statusActive => '有効';
+
+  @override
+  String get statusFinished => '完結';
+
+  @override
+  String get statusKids => 'キッズ';
+
+  @override
+  String get commonInclude => '含める';
+
+  @override
+  String get commonExclude => '除外';
+
+  @override
+  String get commonAscending => '昇順';
+
+  @override
+  String get commonViewDetails => '詳細を見る';
+
+  @override
+  String get sourceSwitcherAutoResolve => '自動解決';
+
+  @override
+  String get sourceSwitcherTryAll => '一致するまでインストール済みのソースをすべて試す';
+
+  @override
+  String get sourceSwitcherHoldSelectToPin => '選択を長押ししてソースを先頭に固定';
+
+  @override
+  String get sourceSwitcherAppleTvUnavailable => 'Apple TVでこのソースを読み込めませんでした';
+
+  @override
+  String get mangaUpNext => '次の作品';
+
+  @override
+  String get mangaChapterCloudflare => 'このMangayomiのチャプターはCloudflareで保護されています。';
+
+  @override
+  String get mangayomiFilterUnsupported => 'このフィルタータイプはまだ対応していません';
+
+  @override
+  String get stremioNoLinks => 'リンクなし';
+
+  @override
+  String get stremioNoPlayableLinks => '再生可能なリンクが見つかりません';
+
+  @override
+  String get profilesAddProfile => 'プロフィールを追加';
+
+  @override
+  String get profilesChooseWhoIsWatching =>
+      '誰が見ているかを選択してください。プロフィールごとにリストと進行状況が分かれます。';
+
+  @override
+  String get profileLockRecoveryCodeHint =>
+      'このプロフィールのPIN設定時に保存した専用リカバリーコードを使用してください。';
+
+  @override
+  String get profileLockOtherDevicesUnaffected =>
+      'PINは引き続き有効です。他の端末はそれぞれの設定を保持します。';
+
+  @override
+  String get homeTvSourcePrefix => 'ソース ·';
+
+  @override
+  String get trackerChooseList => 'リストを選択';
+
+  @override
+  String get authGifTooLarge => 'このGIFは安全に最適化するには大きすぎます。小さいファイルをお試しください。';
+
+  @override
+  String get authGifUnreadable => 'そのGIFファイルを読み込めませんでした。';
+
+  @override
+  String get profileMoreComingSoon => 'ゾロと一緒に新機能が続々登場…また道に迷ったようです。';
+
+  @override
+  String get stremioAddonsTitle => 'Stremioアドオン';
 }

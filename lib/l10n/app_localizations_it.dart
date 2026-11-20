@@ -7118,4 +7118,98 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get commonBackupSaveFailed =>
       'Impossibile salvare il backup. I tuoi dati attuali sono invariati.';
+
+  @override
+  String get adminTitle => 'Amministrazione';
+
+  @override
+  String get adminChangeExpiry => 'Cambia scadenza';
+
+  @override
+  String get statusActive => 'ATTIVO';
+
+  @override
+  String get statusFinished => 'COMPLETATO';
+
+  @override
+  String get statusKids => 'BAMBINI';
+
+  @override
+  String get commonInclude => 'Includi';
+
+  @override
+  String get commonExclude => 'Escludi';
+
+  @override
+  String get commonAscending => 'Crescente';
+
+  @override
+  String get commonViewDetails => 'Vedi dettagli';
+
+  @override
+  String get sourceSwitcherAutoResolve => 'Risoluzione automatica';
+
+  @override
+  String get sourceSwitcherTryAll =>
+      'Prova tutte le fonti installate finché una corrisponde';
+
+  @override
+  String get sourceSwitcherHoldSelectToPin =>
+      'Tieni premuto Seleziona per fissare una fonte in alto';
+
+  @override
+  String get sourceSwitcherAppleTvUnavailable =>
+      'Impossibile caricare quella fonte su Apple TV';
+
+  @override
+  String get mangaUpNext => 'PROSSIMO';
+
+  @override
+  String get mangaChapterCloudflare =>
+      'Questo capitolo Mangayomi è protetto da Cloudflare.';
+
+  @override
+  String get mangayomiFilterUnsupported =>
+      'Questo tipo di filtro non è ancora supportato';
+
+  @override
+  String get stremioNoLinks => 'Nessun link';
+
+  @override
+  String get stremioNoPlayableLinks => 'Nessun link riproducibile trovato';
+
+  @override
+  String get profilesAddProfile => 'Aggiungi profilo';
+
+  @override
+  String get profilesChooseWhoIsWatching =>
+      'Scegli chi sta guardando. Ogni profilo mantiene la propria lista e i progressi.';
+
+  @override
+  String get profileLockRecoveryCodeHint =>
+      'Usa il codice di recupero privato salvato quando è stato impostato il PIN di questo profilo.';
+
+  @override
+  String get profileLockOtherDevicesUnaffected =>
+      'Il tuo PIN funziona ancora. Gli altri dispositivi mantengono la propria impostazione.';
+
+  @override
+  String get homeTvSourcePrefix => 'Fonte ·';
+
+  @override
+  String get trackerChooseList => 'Scegli elenco';
+
+  @override
+  String get authGifTooLarge =>
+      'Questa GIF è troppo grande per essere ottimizzata in sicurezza. Prova un file più piccolo.';
+
+  @override
+  String get authGifUnreadable => 'Impossibile leggere quel file GIF.';
+
+  @override
+  String get profileMoreComingSoon =>
+      'Con Zoro stanno arrivando altre funzioni… si è perso di nuovo.';
+
+  @override
+  String get stremioAddonsTitle => 'Addon Stremio';
 }

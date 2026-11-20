@@ -548,7 +548,7 @@ class _EcoRow extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              'ACTIVE',
+                              context.l10n.statusActive,
                               style: AppText.overline.copyWith(
                                 color: AppColors.accent,
                                 fontWeight: FontWeight.w700,

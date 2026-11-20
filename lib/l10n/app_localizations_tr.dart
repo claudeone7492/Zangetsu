@@ -7087,4 +7087,98 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get commonBackupSaveFailed =>
       'Yedek kaydedilemedi. Mevcut verilerin değişmedi.';
+
+  @override
+  String get adminTitle => 'Yönetici';
+
+  @override
+  String get adminChangeExpiry => 'Süreyi değiştir';
+
+  @override
+  String get statusActive => 'ETKİN';
+
+  @override
+  String get statusFinished => 'TAMAMLANDI';
+
+  @override
+  String get statusKids => 'ÇOCUK';
+
+  @override
+  String get commonInclude => 'Dahil et';
+
+  @override
+  String get commonExclude => 'Hariç tut';
+
+  @override
+  String get commonAscending => 'Artan';
+
+  @override
+  String get commonViewDetails => 'Ayrıntıları gör';
+
+  @override
+  String get sourceSwitcherAutoResolve => 'Otomatik çözümle';
+
+  @override
+  String get sourceSwitcherTryAll =>
+      'Biri eşleşene kadar tüm yüklü kaynakları dene';
+
+  @override
+  String get sourceSwitcherHoldSelectToPin =>
+      'Bir kaynağı en üste sabitlemek için Seç\'i basılı tut';
+
+  @override
+  String get sourceSwitcherAppleTvUnavailable =>
+      'Bu kaynak Apple TV\'de yüklenemedi';
+
+  @override
+  String get mangaUpNext => 'SIRADAKİ';
+
+  @override
+  String get mangaChapterCloudflare =>
+      'Bu Mangayomi bölümü Cloudflare tarafından korunuyor.';
+
+  @override
+  String get mangayomiFilterUnsupported =>
+      'Bu filtre türü henüz desteklenmiyor';
+
+  @override
+  String get stremioNoLinks => 'Bağlantı yok';
+
+  @override
+  String get stremioNoPlayableLinks => 'Oynatılabilir bağlantı bulunamadı';
+
+  @override
+  String get profilesAddProfile => 'Profil ekle';
+
+  @override
+  String get profilesChooseWhoIsWatching =>
+      'Kimin izlediğini seç. Her profilin kendi listesi ve ilerlemesi vardır.';
+
+  @override
+  String get profileLockRecoveryCodeHint =>
+      'Bu profilin PIN\'i belirlenirken kaydedilen özel kurtarma kodunu kullan.';
+
+  @override
+  String get profileLockOtherDevicesUnaffected =>
+      'PIN\'in çalışmaya devam ediyor. Diğer cihazlar kendi ayarını korur.';
+
+  @override
+  String get homeTvSourcePrefix => 'Kaynak ·';
+
+  @override
+  String get trackerChooseList => 'Liste seç';
+
+  @override
+  String get authGifTooLarge =>
+      'Bu GIF güvenle optimize edilemeyecek kadar büyük. Daha küçük bir dosya dene.';
+
+  @override
+  String get authGifUnreadable => 'Bu GIF dosyası okunamadı.';
+
+  @override
+  String get profileMoreComingSoon =>
+      'Zoro ile daha fazla özellik yolda… yine kayboldu.';
+
+  @override
+  String get stremioAddonsTitle => 'Stremio Eklentileri';
 }

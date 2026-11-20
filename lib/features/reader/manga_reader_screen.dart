@@ -3219,7 +3219,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen>
           ),
           const SizedBox(height: 14),
           Text(
-            'UP NEXT',
+            context.l10n.mangaUpNext,
             style: AppText.caption.copyWith(
               color: AppColors.textSecondary.withValues(alpha: 0.55),
               fontSize: 10,
@@ -3324,7 +3324,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen>
               )
             else ...[
               Text(
-                'UP NEXT',
+                context.l10n.mangaUpNext,
                 style: AppText.caption.copyWith(
                   color: AppColors.textSecondary.withValues(alpha: 0.5),
                   fontSize: 10,
@@ -3402,7 +3402,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen>
             ),
             const SizedBox(height: 12),
             Text(
-              'This Mangayomi chapter is protected by Cloudflare.',
+              context.l10n.mangaChapterCloudflare,
               style: AppText.body.copyWith(color: Colors.white),
               textAlign: TextAlign.center,
             ),

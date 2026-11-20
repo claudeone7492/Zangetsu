@@ -84,7 +84,7 @@ class _TrackerSwitchDialog extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
           child: Text(
-            'Choose list',
+            context.l10n.trackerChooseList,
             style: AppText.body.copyWith(fontWeight: FontWeight.w700),
           ),
         ),

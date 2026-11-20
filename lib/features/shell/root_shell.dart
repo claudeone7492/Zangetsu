@@ -1670,7 +1670,7 @@ class _ProfileSwitcherSheet extends StatelessWidget {
                               color: AppColors.textSecondary,
                             ),
                           ),
-                          title: const Text('Add profile'),
+                          title: Text(context.l10n.profilesAddProfile),
                           trailing: const Icon(Icons.chevron_right_rounded),
                           onTap: onAddProfile,
                         ),

@@ -7067,4 +7067,98 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get commonBackupSaveFailed =>
       'Could not save the backup. Your current data is unchanged.';
+
+  @override
+  String get adminTitle => 'Admin';
+
+  @override
+  String get adminChangeExpiry => 'Change expiry';
+
+  @override
+  String get statusActive => 'ACTIVE';
+
+  @override
+  String get statusFinished => 'FINISHED';
+
+  @override
+  String get statusKids => 'KIDS';
+
+  @override
+  String get commonInclude => 'Include';
+
+  @override
+  String get commonExclude => 'Exclude';
+
+  @override
+  String get commonAscending => 'Ascending';
+
+  @override
+  String get commonViewDetails => 'View Details';
+
+  @override
+  String get sourceSwitcherAutoResolve => 'Auto Resolve';
+
+  @override
+  String get sourceSwitcherTryAll =>
+      'Try every installed source until one matches';
+
+  @override
+  String get sourceSwitcherHoldSelectToPin =>
+      'Hold Select to pin a source to the top';
+
+  @override
+  String get sourceSwitcherAppleTvUnavailable =>
+      'Could not load that source on Apple TV';
+
+  @override
+  String get mangaUpNext => 'UP NEXT';
+
+  @override
+  String get mangaChapterCloudflare =>
+      'This Mangayomi chapter is protected by Cloudflare.';
+
+  @override
+  String get mangayomiFilterUnsupported =>
+      'This filter type is not supported yet';
+
+  @override
+  String get stremioNoLinks => 'No links';
+
+  @override
+  String get stremioNoPlayableLinks => 'No playable links found';
+
+  @override
+  String get profilesAddProfile => 'Add profile';
+
+  @override
+  String get profilesChooseWhoIsWatching =>
+      'Choose who is watching. Each profile keeps its own list and progress.';
+
+  @override
+  String get profileLockRecoveryCodeHint =>
+      'Use the private recovery code saved when this profile’s PIN was set.';
+
+  @override
+  String get profileLockOtherDevicesUnaffected =>
+      'Your PIN still works. Other devices keep their own setting.';
+
+  @override
+  String get homeTvSourcePrefix => 'Source ·';
+
+  @override
+  String get trackerChooseList => 'Choose list';
+
+  @override
+  String get authGifTooLarge =>
+      'This GIF is too large to optimize safely. Try a smaller file.';
+
+  @override
+  String get authGifUnreadable => 'Could not read that GIF file.';
+
+  @override
+  String get profileMoreComingSoon =>
+      'More features are on their way with Zoro… he just got lost again.';
+
+  @override
+  String get stremioAddonsTitle => 'Stremio Addons';
 }
