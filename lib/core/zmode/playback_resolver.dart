@@ -236,6 +236,11 @@ class PlaybackResolver {
   /// 8s of patience would still be 8s of frozen frames.
   ///
   /// Everywhere else, see [relaxedPerSourceBudget].
+  /// Budgets in tests are sub-second, and `inSeconds` prints those as "0s" —
+  /// which reads as a bug in the log rather than as the short timeout it is.
+  static String _formatBudget(Duration d) =>
+      d.inSeconds > 0 ? '${d.inSeconds}s' : '${d.inMilliseconds}ms';
+
   static const Duration defaultPerSourceBudget = Duration(seconds: 8);
   final Duration _budget;
 
@@ -869,8 +874,9 @@ class PlaybackResolver {
         _overBudget[sourceId] = DateTime.now();
         note(sourceId, SweepReason.timedOut);
         debugPrint(
-          '[playback] _resolve · $sourceId → over ${budget.inSeconds}s '
-          'budget, skipping it for ${overBudgetCooldown.inMinutes}m',
+          '[playback] _resolve · $sourceId → over '
+          '${_formatBudget(budget)} budget, skipping it for '
+          '${overBudgetCooldown.inMinutes}m',
         );
       } catch (e) {
         note(sourceId, SweepReason.failed);

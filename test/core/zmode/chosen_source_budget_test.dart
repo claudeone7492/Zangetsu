@@ -16,6 +16,22 @@ import 'package:watch_app/core/zmode/zmode_ids.dart';
 import 'package:watch_app/core/zmode/zmode_source_prefs.dart';
 
 const _show = ZCanonical(ZKind.anime, 'mal:100');
+
+/// Scaled-down stand-ins for the real 8s / 20s / 25s budgets.
+///
+/// Only the ratios matter — a chosen source must outlast the tight budget by
+/// enough that a delay landing between them is unambiguous. The absolute values
+/// are still generous because these are wall-clock timeouts around fake work:
+/// on a loaded suite even a zero-delay source can take a few hundred
+/// milliseconds to be scheduled, and at the original 60ms the "pinned source
+/// answers" case failed for reasons that had nothing to do with the rule.
+const _tightBudget = Duration(milliseconds: 300);
+const _relaxedStandIn = Duration(milliseconds: 2000);
+const _chosenStandIn = Duration(seconds: 3);
+
+/// Answers inside [_chosenStandIn] but well past [_tightBudget], so whether it
+/// is accepted is purely a question of which budget it was given.
+const _slowButAnswering = Duration(milliseconds: 900);
 const _ep2 = 'zm://anime/mal:100/ep/2';
 
 /// src-a answers, but slowly. src-b answers at once but has no episode 2.
@@ -131,10 +147,9 @@ void main() {
       prefs: prefs,
       health: health,
       candidates: (_) => src.loadedSources,
-      // Scaled-down stand-ins for 8s, 20s and 25s.
-      perSourceBudget: const Duration(milliseconds: 60),
-      relaxedBudget: relaxedBudget ?? const Duration(milliseconds: 60),
-      chosenBudget: const Duration(milliseconds: 600),
+      perSourceBudget: _tightBudget,
+      relaxedBudget: relaxedBudget ?? _tightBudget,
+      chosenBudget: _chosenStandIn,
     );
     r.bindTitleLookup((_) async => (title: 'FMA', alt: null, malId: 100));
     return (r: r, m: matcher);
@@ -147,7 +162,7 @@ void main() {
         // The whole complaint: pick a source you know works, and playback still
         // says nothing is available because 8s elapsed.
         JsEngine.debugRunsOffUiIsolateOverride = true;
-        final src = _SlowSrc(aDelay: const Duration(milliseconds: 250));
+        final src = _SlowSrc(aDelay: _slowButAnswering);
         final b = build(src);
         await b.m.pinTitleToSource(_show, 'src-a', title: 'FMA');
 
@@ -162,7 +177,7 @@ void main() {
         // The tight budget has to keep applying to everything else, or one slow
         // source in a long list is back to holding up the whole sweep.
         JsEngine.debugRunsOffUiIsolateOverride = true;
-        final src = _SlowSrc(aDelay: const Duration(milliseconds: 250));
+        final src = _SlowSrc(aDelay: _slowButAnswering);
         final b = build(src);
 
         await expectLater(
@@ -178,7 +193,7 @@ void main() {
         // On Apple the engine is still in-process, so a 25s wait would be 25
         // frozen seconds. The budget must stay tight there.
         JsEngine.debugRunsOffUiIsolateOverride = false;
-        final src = _SlowSrc(aDelay: const Duration(milliseconds: 250));
+        final src = _SlowSrc(aDelay: _slowButAnswering);
         final b = build(src);
         await b.m.pinTitleToSource(_show, 'src-a', title: 'FMA');
 
@@ -223,7 +238,7 @@ void main() {
       // got 25s it read as a frozen app (anikoto, measured on device at 25.0s
       // between "trying" and "the viewer left").
       JsEngine.debugRunsOffUiIsolateOverride = true;
-      final src = _SlowSrc(aDelay: const Duration(milliseconds: 900));
+      final src = _SlowSrc(aDelay: const Duration(milliseconds: 2500));
       final b = build(src);
       await b.m.pinTitleToSource(_show, 'src-a', title: 'FMA');
 
@@ -246,7 +261,7 @@ void main() {
     test('a sweep nobody aborted still runs to its answer', () async {
       // The no-regression half: the race must not cut a sweep short on its own.
       JsEngine.debugRunsOffUiIsolateOverride = true;
-      final src = _SlowSrc(aDelay: const Duration(milliseconds: 250));
+      final src = _SlowSrc(aDelay: _slowButAnswering);
       final b = build(src);
       await b.m.pinTitleToSource(_show, 'src-a', title: 'FMA');
 
@@ -440,8 +455,8 @@ void main() {
       JsEngine.debugRunsOffUiIsolateOverride = true;
       // Answers well past the tight 60ms stand-in for 8s, comfortably inside the
       // 300ms stand-in for the relaxed budget.
-      final src = _SlowSrc(aDelay: const Duration(milliseconds: 150));
-      final b = build(src, relaxedBudget: const Duration(milliseconds: 300));
+      final src = _SlowSrc(aDelay: _slowButAnswering);
+      final b = build(src, relaxedBudget: _relaxedStandIn);
       // Nothing pinned, no kind default — this is a plain Auto Resolve sweep.
       final out = await b.r.sources('zm://anime/mal:100/ep/2');
       expect(
@@ -462,8 +477,8 @@ void main() {
     'where JS is on the UI isolate the tight budget still applies',
     () async {
       JsEngine.debugRunsOffUiIsolateOverride = false;
-      final src = _SlowSrc(aDelay: const Duration(milliseconds: 150));
-      final b = build(src, relaxedBudget: const Duration(milliseconds: 300));
+      final src = _SlowSrc(aDelay: const Duration(milliseconds: 350));
+      final b = build(src, relaxedBudget: _relaxedStandIn);
       // A sweep with nothing left to offer throws rather than returning an
       // empty list — that is how the failure sheet gets a reason to show.
       await expectLater(

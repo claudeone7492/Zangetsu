@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
@@ -19,6 +20,16 @@ void main() {
   late Directory temp;
 
   setUp(() async {
+    // The settings preview paints real poster/backdrop URLs, so the shared
+    // image cache reaches for a temporary directory the moment a card builds.
+    // Without a handler that throws MissingPluginException *inside whichever
+    // test happens to be running* — which is why this only failed when another
+    // file's async cache write was still in flight.
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (call) async => Directory.systemTemp.path,
+        );
     temp = await Directory.systemTemp.createTemp('poster_card_prefs');
     Hive.init(temp.path);
     await PlaybackPrefs.init();
@@ -26,6 +37,11 @@ void main() {
   });
 
   tearDown(() async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          null,
+        );
     await GetIt.I.reset();
     await Hive.close();
     await temp.delete(recursive: true);
