@@ -7240,4 +7240,114 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get stremioAddonsTitle => 'إضافات Stremio';
+
+  @override
+  String get settingsGroupLanguage => 'اللغة';
+
+  @override
+  String get settingsGroupLayout => 'التخطيط';
+
+  @override
+  String get settingsGroupLook => 'المظهر';
+
+  @override
+  String get settingsSearchStyleSubtitle => 'اختر كلاسيكي أو جديد للبحث';
+
+  @override
+  String get settingsThemeSubtitle => 'لون التمييز والوضع الداكن والخط';
+
+  @override
+  String get settingsBrandingSubtitle => 'كيف يبدو التطبيق قبل فتحه';
+
+  @override
+  String get settingsPosterCardsSubtitle => 'شكل وبطاقات العناوين وتسمياتها';
+
+  @override
+  String get settingsHomeRowsSubtitle => 'أي صفوف تظهر في الرئيسية وبأي ترتيب';
+
+  @override
+  String get settingsSearchLayoutSubtitle => 'كيف تصطف النتائج من مصادر مختلفة';
+
+  @override
+  String get settingsBatchDownloadSubtitle =>
+      'كيف تبدو الورقة عند اختيار عدة حلقات';
+
+  @override
+  String get settingsCollectionsSubtitle => 'صفوفك الخاصة في الرئيسية';
+
+  @override
+  String get settingsProfilesAccount => 'الملفات والحساب';
+
+  @override
+  String get settingsSubscriptionSubtitle => 'أدر خطتك وطبّق رمزًا ترويجيًا';
+
+  @override
+  String get settingsAdminSubtitle => 'الأجهزة والرموز الترويجية والاشتراكات';
+
+  @override
+  String get settingsDebridSubtitle => 'Real-Debrid وTorBox لملفات التورنت';
+
+  @override
+  String get appearanceAdaptiveColour => 'لون تكيفي';
+
+  @override
+  String get appearanceTintSubtitle =>
+      'يلوّن خلفية الرئيسية والتفاصيل بلون الملصق';
+
+  @override
+  String get appearanceTitleArtwork => 'صورة العنوان';
+
+  @override
+  String get appearanceTitleArtworkSubtitle =>
+      'إظهار شعار العنوان الرسمي بدل النص العادي في التفاصيل';
+
+  @override
+  String get appearanceEpisodeOrderSubtitle =>
+      'تُفتح كل شاشة تفاصيل بالأحدث أولًا؛ وزر القائمة يعكسها لتلك الزيارة';
+
+  @override
+  String get appearanceEverythingDrawn => 'كل شيء في التطبيق يُرسم بهذا';
+
+  @override
+  String get navBlurBackground => 'تمويه الخلفية';
+
+  @override
+  String get navBlurSubtitle => 'يلطّف الصورة خلف شريط التنقل السائل';
+
+  @override
+  String get navChangeContentMode => 'تغيير وضع المحتوى';
+
+  @override
+  String get searchStyle => 'نمط البحث';
+
+  @override
+  String get settingsSubscription => 'الاشتراك';
+
+  @override
+  String get adminConsole => 'لوحة الإدارة';
+
+  @override
+  String get sourcePriority => 'أولوية المصادر';
+
+  @override
+  String get settingsTheme => 'المظهر واللون';
+
+  @override
+  String get settingsBranding => 'الأيقونة وشاشة البداية واللافتة';
+
+  @override
+  String get settingsPosterCards => 'بطاقات الملصقات';
+
+  @override
+  String get collections => 'المجموعات';
+
+  @override
+  String get settingsDebrid => 'Debrid';
+
+  @override
+  String get settingsSourcePrioritySubtitle =>
+      'الترتيب الذي يحاول به الحل التلقائي المصادر';
+
+  @override
+  String get appearanceReverseEpisodeOrder => 'قائمة الحلقات معكوسة دائمًا';
 }

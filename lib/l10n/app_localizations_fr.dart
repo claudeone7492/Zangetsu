@@ -7221,4 +7221,126 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get stremioAddonsTitle => 'Extensions Stremio';
+
+  @override
+  String get settingsGroupLanguage => 'Langue';
+
+  @override
+  String get settingsGroupLayout => 'Disposition';
+
+  @override
+  String get settingsGroupLook => 'Apparence';
+
+  @override
+  String get settingsSearchStyleSubtitle =>
+      'Choisissez Classique ou Nouveau pour la recherche';
+
+  @override
+  String get settingsThemeSubtitle =>
+      'Couleur d\'accent, mode sombre et police';
+
+  @override
+  String get settingsBrandingSubtitle =>
+      'L\'apparence de l\'app avant de l\'ouvrir';
+
+  @override
+  String get settingsPosterCardsSubtitle =>
+      'Forme et libellés des vignettes de titres';
+
+  @override
+  String get settingsHomeRowsSubtitle =>
+      'Quelles rangées apparaissent sur l\'accueil, et dans quel ordre';
+
+  @override
+  String get settingsSearchLayoutSubtitle =>
+      'Comment s\'alignent les résultats de différentes sources';
+
+  @override
+  String get settingsBatchDownloadSubtitle =>
+      'L\'apparence de la feuille quand vous prenez plusieurs épisodes';
+
+  @override
+  String get settingsCollectionsSubtitle =>
+      'Vos propres rangées sur l\'accueil';
+
+  @override
+  String get settingsProfilesAccount => 'Profils et compte';
+
+  @override
+  String get settingsSubscriptionSubtitle =>
+      'Gérez votre offre, appliquez un code promo';
+
+  @override
+  String get settingsAdminSubtitle => 'Appareils, codes promo et abonnements';
+
+  @override
+  String get settingsDebridSubtitle =>
+      'Real-Debrid et TorBox pour les torrents';
+
+  @override
+  String get appearanceAdaptiveColour => 'Couleur adaptative';
+
+  @override
+  String get appearanceTintSubtitle =>
+      'Teinte le fond de l\'accueil et de la fiche avec la couleur de l\'affiche';
+
+  @override
+  String get appearanceTitleArtwork => 'Visuel du titre';
+
+  @override
+  String get appearanceTitleArtworkSubtitle =>
+      'Afficher le logo officiel au lieu du texte brut sur la fiche';
+
+  @override
+  String get appearanceEpisodeOrderSubtitle =>
+      'Chaque fiche s\'ouvre du plus récent au plus ancien ; le bouton de liste l\'inverse pour cette visite';
+
+  @override
+  String get appearanceEverythingDrawn =>
+      'Tout dans l\'app est dessiné avec ceci';
+
+  @override
+  String get navBlurBackground => 'Flou d\'arrière-plan';
+
+  @override
+  String get navBlurSubtitle =>
+      'Adoucit les visuels derrière la barre de navigation liquide';
+
+  @override
+  String get navChangeContentMode => 'Changer de mode de contenu';
+
+  @override
+  String get searchStyle => 'Style de recherche';
+
+  @override
+  String get settingsSubscription => 'Abonnement';
+
+  @override
+  String get adminConsole => 'Console d\'administration';
+
+  @override
+  String get sourcePriority => 'Priorité des sources';
+
+  @override
+  String get settingsTheme => 'Thème et couleur';
+
+  @override
+  String get settingsBranding => 'Icône, écran d\'accueil et bannière';
+
+  @override
+  String get settingsPosterCards => 'Vignettes d\'affiche';
+
+  @override
+  String get collections => 'Collections';
+
+  @override
+  String get settingsDebrid => 'Debrid';
+
+  @override
+  String get settingsSourcePrioritySubtitle =>
+      'Ordre dans lequel la résolution auto essaie les sources';
+
+  @override
+  String get appearanceReverseEpisodeOrder =>
+      'Liste des épisodes toujours inversée';
 }

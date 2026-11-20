@@ -121,6 +121,42 @@ const _strings = <String, String>{
   'commonCloudflareProtected': 'This source is protected by Cloudflare',
   'commonBackupSaveFailed':
       'Could not save the backup. Your current data is unchanged.',
+  // settings, appearance and nav tabs
+  'settingsGroupLanguage': 'Language',
+  'settingsGroupLayout': 'Layout',
+  'settingsGroupLook': 'Look',
+  'searchStyle': 'Search style',
+  'settingsSearchStyleSubtitle': 'Choose Classic or New for search',
+  'settingsTheme': 'Theme & colour',
+  'settingsThemeSubtitle': 'Accent colour, dark mode and font',
+  'settingsBranding': 'Icon, splash & banner',
+  'settingsBrandingSubtitle': 'How the app looks before you open it',
+  'settingsPosterCards': 'Poster cards',
+  'settingsPosterCardsSubtitle': 'Shape and labels for title cards',
+  'settingsHomeRowsSubtitle': 'Which rows show on Home, and their order',
+  'settingsSearchLayoutSubtitle': 'How results from different sources line up',
+  'settingsBatchDownloadSubtitle': 'How the sheet looks when you grab a batch of episodes',
+  'settingsCollectionsSubtitle': 'Your own rows on Home',
+  'collections': 'Collections',
+  'settingsProfilesAccount': 'Profiles & account',
+  'settingsSubscription': 'Subscription',
+  'settingsSubscriptionSubtitle': 'Manage your plan, apply a promo code',
+  'adminConsole': 'Admin console',
+  'settingsAdminSubtitle': 'Devices, promo codes and subscriptions',
+  'settingsDebrid': 'Debrid',
+  'settingsDebridSubtitle': 'Real-Debrid & TorBox for torrents',
+  'sourcePriority': 'Source Priority',
+  'settingsSourcePrioritySubtitle': 'Order Auto Resolve tries sources in',
+  'appearanceAdaptiveColour': 'Adaptive colour',
+  'appearanceTintSubtitle': 'Tints the background of Home and Detail from the poster colour',
+  'appearanceTitleArtwork': 'Title artwork',
+  'appearanceTitleArtworkSubtitle': 'Show the official title logo instead of plain text on Detail',
+  'appearanceEpisodeOrderSubtitle': 'Every detail screen opens newest-first; the list button still flips it for that visit',
+  'appearanceReverseEpisodeOrder': 'Reverse episode list always on',
+  'appearanceEverythingDrawn': 'Everything in the app is drawn in this',
+  'navBlurBackground': 'Blur background',
+  'navBlurSubtitle': 'Softens artwork behind the liquid navbar',
+  'navChangeContentMode': 'Change content mode',
   // final batch: admin, filters, source switcher, reader, profiles
   'adminTitle': 'Admin',
   'adminChangeExpiry': 'Change expiry',
@@ -155,14 +191,22 @@ const _strings = <String, String>{
 /// Words that are genuinely spelled the same in the target language, so the
 /// "differs from English" check would flag a correct translation.
 const _legitCognates = <String, Set<String>>{
-  'de': {'adminTitle'}, // German UIs say "Admin", not "Administrator"
+  'de': {
+    'adminTitle', // German UIs say "Admin", not "Administrator"
+    'settingsGroupLayout', // "Layout" is the standard German UI word
+  },
   'fr': {
     'posterLayoutPortrait', // French "Portrait" is correct French
     'adminTitle', // French UIs say "Admin" too
     'homeTvSourcePrefix', // French "Source" is the French word
+    'collections', // "Collections" is a French word
   },
   'id': {'adminTitle'}, // Indonesian uses "Admin" natively
-  'it': {'profileAccount'}, // Italian "Account" is correct Italian
+  'it': {
+    'profileAccount', // Italian "Account" is correct Italian
+    'settingsGroupLayout', // Italian borrows "Layout" for this
+  },
+  'pt': {'settingsGroupLayout'}, // Portuguese borrows "Layout" too
 };
 
 /// Keys that are acronyms or universal loanwords, so the same text in every
@@ -170,6 +214,7 @@ const _legitCognates = <String, Set<String>>{
 /// keeps the "differs from English" rule strict for real prose.
 const _universalTokens = <String>{
   'liveParentalPin', // PIN is the word in every one of these languages
+  'settingsDebrid', // "Debrid" is the Real-Debrid brand, kept as-is everywhere
 };
 
 /// Pulls one key's value out of a catalogue.
@@ -273,6 +318,41 @@ String _value(AppLocalizations l, String key) => switch (key) {
   'profileAvatarLabel' => l.profileAvatarLabel,
   'commonCloudflareProtected' => l.commonCloudflareProtected,
   'commonBackupSaveFailed' => l.commonBackupSaveFailed,
+  'settingsGroupLanguage' => l.settingsGroupLanguage,
+  'settingsGroupLayout' => l.settingsGroupLayout,
+  'settingsGroupLook' => l.settingsGroupLook,
+  'searchStyle' => l.searchStyle,
+  'settingsSearchStyleSubtitle' => l.settingsSearchStyleSubtitle,
+  'settingsTheme' => l.settingsTheme,
+  'settingsThemeSubtitle' => l.settingsThemeSubtitle,
+  'settingsBranding' => l.settingsBranding,
+  'settingsBrandingSubtitle' => l.settingsBrandingSubtitle,
+  'settingsPosterCards' => l.settingsPosterCards,
+  'settingsPosterCardsSubtitle' => l.settingsPosterCardsSubtitle,
+  'settingsHomeRowsSubtitle' => l.settingsHomeRowsSubtitle,
+  'settingsSearchLayoutSubtitle' => l.settingsSearchLayoutSubtitle,
+  'settingsBatchDownloadSubtitle' => l.settingsBatchDownloadSubtitle,
+  'settingsCollectionsSubtitle' => l.settingsCollectionsSubtitle,
+  'collections' => l.collections,
+  'settingsProfilesAccount' => l.settingsProfilesAccount,
+  'settingsSubscription' => l.settingsSubscription,
+  'settingsSubscriptionSubtitle' => l.settingsSubscriptionSubtitle,
+  'adminConsole' => l.adminConsole,
+  'settingsAdminSubtitle' => l.settingsAdminSubtitle,
+  'settingsDebrid' => l.settingsDebrid,
+  'settingsDebridSubtitle' => l.settingsDebridSubtitle,
+  'sourcePriority' => l.sourcePriority,
+  'settingsSourcePrioritySubtitle' => l.settingsSourcePrioritySubtitle,
+  'appearanceAdaptiveColour' => l.appearanceAdaptiveColour,
+  'appearanceTintSubtitle' => l.appearanceTintSubtitle,
+  'appearanceTitleArtwork' => l.appearanceTitleArtwork,
+  'appearanceTitleArtworkSubtitle' => l.appearanceTitleArtworkSubtitle,
+  'appearanceEpisodeOrderSubtitle' => l.appearanceEpisodeOrderSubtitle,
+  'appearanceReverseEpisodeOrder' => l.appearanceReverseEpisodeOrder,
+  'appearanceEverythingDrawn' => l.appearanceEverythingDrawn,
+  'navBlurBackground' => l.navBlurBackground,
+  'navBlurSubtitle' => l.navBlurSubtitle,
+  'navChangeContentMode' => l.navChangeContentMode,
   'adminTitle' => l.adminTitle,
   'adminChangeExpiry' => l.adminChangeExpiry,
   'statusActive' => l.statusActive,

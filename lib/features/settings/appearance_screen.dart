@@ -492,18 +492,18 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               ),
               _switchTile(
                 icon: Icons.auto_awesome_outlined,
-                title: 'Adaptive colour',
+                title: context.l10n.appearanceAdaptiveColour,
                 subtitle:
-                    'Tints the background of Home and Detail from the poster colour',
+                    context.l10n.appearanceTintSubtitle,
                 value: ThemeController.adaptiveColour,
                 onChanged: ThemeController.setAdaptiveColour,
                 subtitleMaxLines: null,
               ),
               _switchTile(
                 icon: Icons.title_rounded,
-                title: 'Title artwork',
+                title: context.l10n.appearanceTitleArtwork,
                 subtitle:
-                    'Show the official title logo instead of plain text on Detail',
+                    context.l10n.appearanceTitleArtworkSubtitle,
                 value: ThemeController.titleLogo,
                 onChanged: ThemeController.setTitleLogo,
                 subtitleMaxLines: null,
@@ -518,7 +518,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               SettingsTile(
                 icon: Icons.text_fields_rounded,
                 title: 'App font',
-                subtitle: 'Everything in the app is drawn in this',
+                subtitle: context.l10n.appearanceEverythingDrawn,
                 trailing: Text(AppFontPrefs.label, style: AppText.caption),
                 onTap: _pickFont,
               ),
@@ -556,9 +556,9 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
             children: [
               _switchTile(
                 icon: Icons.swap_vert_rounded,
-                title: 'Reverse episode list always on',
+                title: context.l10n.appearanceReverseEpisodeOrder,
                 subtitle:
-                    'Every detail screen opens newest-first; the list button still flips it for that visit',
+                    context.l10n.appearanceEpisodeOrderSubtitle,
                 value: DetailPrefs.reverseEpisodesDefault,
                 onChanged: DetailPrefs.setReverseEpisodesDefault,
                 subtitleMaxLines: null,

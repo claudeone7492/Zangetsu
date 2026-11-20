@@ -449,8 +449,18 @@ final settingsLeaves = <SettingsLeaf>[
   ),
   SettingsLeaf(
     LeafParent.appearance,
-    (_) => 'Adaptive colour',
+    (l) => l.appearanceAdaptiveColour,
     keywords: 'poster background tint color theme',
+  ),
+  SettingsLeaf(
+    LeafParent.appearance,
+    (l) => l.appearanceTitleArtwork,
+    keywords: 'logo artwork title detail',
+  ),
+  SettingsLeaf(
+    LeafParent.appearance,
+    (l) => l.appearanceReverseEpisodeOrder,
+    keywords: 'episode order reverse newest first sort',
   ),
   SettingsLeaf(
     LeafParent.appearance,

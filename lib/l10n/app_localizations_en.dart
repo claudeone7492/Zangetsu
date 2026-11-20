@@ -7161,4 +7161,118 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stremioAddonsTitle => 'Stremio Addons';
+
+  @override
+  String get settingsGroupLanguage => 'Language';
+
+  @override
+  String get settingsGroupLayout => 'Layout';
+
+  @override
+  String get settingsGroupLook => 'Look';
+
+  @override
+  String get settingsSearchStyleSubtitle => 'Choose Classic or New for search';
+
+  @override
+  String get settingsThemeSubtitle => 'Accent colour, dark mode and font';
+
+  @override
+  String get settingsBrandingSubtitle => 'How the app looks before you open it';
+
+  @override
+  String get settingsPosterCardsSubtitle => 'Shape and labels for title cards';
+
+  @override
+  String get settingsHomeRowsSubtitle =>
+      'Which rows show on Home, and their order';
+
+  @override
+  String get settingsSearchLayoutSubtitle =>
+      'How results from different sources line up';
+
+  @override
+  String get settingsBatchDownloadSubtitle =>
+      'How the sheet looks when you grab a batch of episodes';
+
+  @override
+  String get settingsCollectionsSubtitle => 'Your own rows on Home';
+
+  @override
+  String get settingsProfilesAccount => 'Profiles & account';
+
+  @override
+  String get settingsSubscriptionSubtitle =>
+      'Manage your plan, apply a promo code';
+
+  @override
+  String get settingsAdminSubtitle => 'Devices, promo codes and subscriptions';
+
+  @override
+  String get settingsDebridSubtitle => 'Real-Debrid & TorBox for torrents';
+
+  @override
+  String get appearanceAdaptiveColour => 'Adaptive colour';
+
+  @override
+  String get appearanceTintSubtitle =>
+      'Tints the background of Home and Detail from the poster colour';
+
+  @override
+  String get appearanceTitleArtwork => 'Title artwork';
+
+  @override
+  String get appearanceTitleArtworkSubtitle =>
+      'Show the official title logo instead of plain text on Detail';
+
+  @override
+  String get appearanceEpisodeOrderSubtitle =>
+      'Every detail screen opens newest-first; the list button still flips it for that visit';
+
+  @override
+  String get appearanceEverythingDrawn =>
+      'Everything in the app is drawn in this';
+
+  @override
+  String get navBlurBackground => 'Blur background';
+
+  @override
+  String get navBlurSubtitle => 'Softens artwork behind the liquid navbar';
+
+  @override
+  String get navChangeContentMode => 'Change content mode';
+
+  @override
+  String get searchStyle => 'Search style';
+
+  @override
+  String get settingsSubscription => 'Subscription';
+
+  @override
+  String get adminConsole => 'Admin console';
+
+  @override
+  String get sourcePriority => 'Source Priority';
+
+  @override
+  String get settingsTheme => 'Theme & colour';
+
+  @override
+  String get settingsBranding => 'Icon, splash & banner';
+
+  @override
+  String get settingsPosterCards => 'Poster cards';
+
+  @override
+  String get collections => 'Collections';
+
+  @override
+  String get settingsDebrid => 'Debrid';
+
+  @override
+  String get settingsSourcePrioritySubtitle =>
+      'Order Auto Resolve tries sources in';
+
+  @override
+  String get appearanceReverseEpisodeOrder => 'Reverse episode list always on';
 }

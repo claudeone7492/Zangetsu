@@ -7181,4 +7181,122 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get stremioAddonsTitle => 'Stremio Eklentileri';
+
+  @override
+  String get settingsGroupLanguage => 'Dil';
+
+  @override
+  String get settingsGroupLayout => 'Düzen';
+
+  @override
+  String get settingsGroupLook => 'Görünüm';
+
+  @override
+  String get settingsSearchStyleSubtitle => 'Arama için Klasik veya Yeni seçin';
+
+  @override
+  String get settingsThemeSubtitle => 'Vurgu rengi, karanlık mod ve yazı tipi';
+
+  @override
+  String get settingsBrandingSubtitle =>
+      'Uygulamanın açılmadan önceki görünümü';
+
+  @override
+  String get settingsPosterCardsSubtitle =>
+      'Başlık kartlarının şekli ve etiketleri';
+
+  @override
+  String get settingsHomeRowsSubtitle =>
+      'Ana sayfada hangi satırlar görünür ve sırası';
+
+  @override
+  String get settingsSearchLayoutSubtitle =>
+      'Farklı kaynaklardan gelen sonuçlar nasıl dizilir';
+
+  @override
+  String get settingsBatchDownloadSubtitle =>
+      'Bir grup bölüm seçtiğinizde sayfanın görünümü';
+
+  @override
+  String get settingsCollectionsSubtitle => 'Ana sayfadaki kendi satırlarınız';
+
+  @override
+  String get settingsProfilesAccount => 'Profiller ve hesap';
+
+  @override
+  String get settingsSubscriptionSubtitle =>
+      'Planınızı yönetin, promosyon kodu uygulayın';
+
+  @override
+  String get settingsAdminSubtitle =>
+      'Cihazlar, promosyon kodları ve abonelikler';
+
+  @override
+  String get settingsDebridSubtitle => 'Torrentler için Real-Debrid ve TorBox';
+
+  @override
+  String get appearanceAdaptiveColour => 'Uyarlanabilir renk';
+
+  @override
+  String get appearanceTintSubtitle =>
+      'Ana sayfa ve ayrıntı arka planını afiş rengiyle tonlar';
+
+  @override
+  String get appearanceTitleArtwork => 'Başlık görseli';
+
+  @override
+  String get appearanceTitleArtworkSubtitle =>
+      'Ayrıntıda düz metin yerine resmi başlık logosunu göster';
+
+  @override
+  String get appearanceEpisodeOrderSubtitle =>
+      'Her ayrıntı ekranı en yeniden açılır; liste düğmesi o ziyaret için tersine çevirir';
+
+  @override
+  String get appearanceEverythingDrawn =>
+      'Uygulamadaki her şey bununla çizilir';
+
+  @override
+  String get navBlurBackground => 'Arka planı bulanıklaştır';
+
+  @override
+  String get navBlurSubtitle =>
+      'Akışkan gezinme çubuğunun arkasındaki görseli yumuşatır';
+
+  @override
+  String get navChangeContentMode => 'İçerik modunu değiştir';
+
+  @override
+  String get searchStyle => 'Arama stili';
+
+  @override
+  String get settingsSubscription => 'Abonelik';
+
+  @override
+  String get adminConsole => 'Yönetici konsolu';
+
+  @override
+  String get sourcePriority => 'Kaynak önceliği';
+
+  @override
+  String get settingsTheme => 'Tema ve renk';
+
+  @override
+  String get settingsBranding => 'Simge, açılış ve banner';
+
+  @override
+  String get settingsPosterCards => 'Afiş kartları';
+
+  @override
+  String get collections => 'Koleksiyonlar';
+
+  @override
+  String get settingsDebrid => 'Debrid';
+
+  @override
+  String get settingsSourcePrioritySubtitle =>
+      'Otomatik çözümün kaynakları deneme sırası';
+
+  @override
+  String get appearanceReverseEpisodeOrder => 'Bölüm listesi her zaman ters';
 }

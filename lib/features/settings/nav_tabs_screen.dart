@@ -222,8 +222,8 @@ class _NavTabsScreenState extends State<NavTabsScreen> {
                   ),
                 SettingsTile(
                   icon: Icons.blur_on_rounded,
-                  title: 'Blur background',
-                  subtitle: 'Softens artwork behind the liquid navbar',
+                  title: context.l10n.navBlurBackground,
+                  subtitle: context.l10n.navBlurSubtitle,
                   onTap: () => _setGlassBlurEnabled(!_glassBlurEnabled),
                   trailing: Switch.adaptive(
                     key: const ValueKey('glass-blur-switch'),
@@ -454,7 +454,7 @@ class _NavTabsScreenState extends State<NavTabsScreen> {
           const SizedBox(width: 6),
           GlassButton(
             icon: const Icon(Icons.menu_rounded),
-            label: 'Change content mode',
+            label: context.l10n.navChangeContentMode,
             onTap: () {},
             width: 42,
             height: 42,

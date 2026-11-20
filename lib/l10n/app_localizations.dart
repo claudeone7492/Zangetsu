@@ -12572,6 +12572,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stremio Addons'**
   String get stremioAddonsTitle;
+
+  /// No description provided for @settingsGroupLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsGroupLanguage;
+
+  /// No description provided for @settingsGroupLayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Layout'**
+  String get settingsGroupLayout;
+
+  /// No description provided for @settingsGroupLook.
+  ///
+  /// In en, this message translates to:
+  /// **'Look'**
+  String get settingsGroupLook;
+
+  /// No description provided for @settingsSearchStyleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Classic or New for search'**
+  String get settingsSearchStyleSubtitle;
+
+  /// No description provided for @settingsThemeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent colour, dark mode and font'**
+  String get settingsThemeSubtitle;
+
+  /// No description provided for @settingsBrandingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How the app looks before you open it'**
+  String get settingsBrandingSubtitle;
+
+  /// No description provided for @settingsPosterCardsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shape and labels for title cards'**
+  String get settingsPosterCardsSubtitle;
+
+  /// No description provided for @settingsHomeRowsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Which rows show on Home, and their order'**
+  String get settingsHomeRowsSubtitle;
+
+  /// No description provided for @settingsSearchLayoutSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How results from different sources line up'**
+  String get settingsSearchLayoutSubtitle;
+
+  /// No description provided for @settingsBatchDownloadSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How the sheet looks when you grab a batch of episodes'**
+  String get settingsBatchDownloadSubtitle;
+
+  /// No description provided for @settingsCollectionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your own rows on Home'**
+  String get settingsCollectionsSubtitle;
+
+  /// No description provided for @settingsProfilesAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Profiles & account'**
+  String get settingsProfilesAccount;
+
+  /// No description provided for @settingsSubscriptionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your plan, apply a promo code'**
+  String get settingsSubscriptionSubtitle;
+
+  /// No description provided for @settingsAdminSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Devices, promo codes and subscriptions'**
+  String get settingsAdminSubtitle;
+
+  /// No description provided for @settingsDebridSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Real-Debrid & TorBox for torrents'**
+  String get settingsDebridSubtitle;
+
+  /// No description provided for @appearanceAdaptiveColour.
+  ///
+  /// In en, this message translates to:
+  /// **'Adaptive colour'**
+  String get appearanceAdaptiveColour;
+
+  /// No description provided for @appearanceTintSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tints the background of Home and Detail from the poster colour'**
+  String get appearanceTintSubtitle;
+
+  /// No description provided for @appearanceTitleArtwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Title artwork'**
+  String get appearanceTitleArtwork;
+
+  /// No description provided for @appearanceTitleArtworkSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the official title logo instead of plain text on Detail'**
+  String get appearanceTitleArtworkSubtitle;
+
+  /// No description provided for @appearanceEpisodeOrderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Every detail screen opens newest-first; the list button still flips it for that visit'**
+  String get appearanceEpisodeOrderSubtitle;
+
+  /// No description provided for @appearanceEverythingDrawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything in the app is drawn in this'**
+  String get appearanceEverythingDrawn;
+
+  /// No description provided for @navBlurBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Blur background'**
+  String get navBlurBackground;
+
+  /// No description provided for @navBlurSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Softens artwork behind the liquid navbar'**
+  String get navBlurSubtitle;
+
+  /// No description provided for @navChangeContentMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Change content mode'**
+  String get navChangeContentMode;
+
+  /// No description provided for @searchStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search style'**
+  String get searchStyle;
+
+  /// No description provided for @settingsSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription'**
+  String get settingsSubscription;
+
+  /// No description provided for @adminConsole.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin console'**
+  String get adminConsole;
+
+  /// No description provided for @sourcePriority.
+  ///
+  /// In en, this message translates to:
+  /// **'Source Priority'**
+  String get sourcePriority;
+
+  /// No description provided for @settingsTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme & colour'**
+  String get settingsTheme;
+
+  /// No description provided for @settingsBranding.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon, splash & banner'**
+  String get settingsBranding;
+
+  /// No description provided for @settingsPosterCards.
+  ///
+  /// In en, this message translates to:
+  /// **'Poster cards'**
+  String get settingsPosterCards;
+
+  /// No description provided for @collections.
+  ///
+  /// In en, this message translates to:
+  /// **'Collections'**
+  String get collections;
+
+  /// No description provided for @settingsDebrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Debrid'**
+  String get settingsDebrid;
+
+  /// No description provided for @settingsSourcePrioritySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Auto Resolve tries sources in'**
+  String get settingsSourcePrioritySubtitle;
+
+  /// No description provided for @appearanceReverseEpisodeOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Reverse episode list always on'**
+  String get appearanceReverseEpisodeOrder;
 }
 
 class _AppLocalizationsDelegate

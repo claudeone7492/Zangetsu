@@ -7189,4 +7189,119 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get stremioAddonsTitle => 'Addon Stremio';
+
+  @override
+  String get settingsGroupLanguage => 'Bahasa';
+
+  @override
+  String get settingsGroupLayout => 'Tata letak';
+
+  @override
+  String get settingsGroupLook => 'Tampilan';
+
+  @override
+  String get settingsSearchStyleSubtitle =>
+      'Pilih Klasik atau Baru untuk pencarian';
+
+  @override
+  String get settingsThemeSubtitle => 'Warna aksen, mode gelap, dan font';
+
+  @override
+  String get settingsBrandingSubtitle => 'Tampilan aplikasi sebelum dibuka';
+
+  @override
+  String get settingsPosterCardsSubtitle => 'Bentuk dan label kartu judul';
+
+  @override
+  String get settingsHomeRowsSubtitle =>
+      'Baris mana yang tampil di Beranda, dan urutannya';
+
+  @override
+  String get settingsSearchLayoutSubtitle =>
+      'Bagaimana hasil dari berbagai sumber ditata';
+
+  @override
+  String get settingsBatchDownloadSubtitle =>
+      'Tampilan lembar saat mengambil beberapa episode';
+
+  @override
+  String get settingsCollectionsSubtitle => 'Baris buatan Anda di Beranda';
+
+  @override
+  String get settingsProfilesAccount => 'Profil & akun';
+
+  @override
+  String get settingsSubscriptionSubtitle => 'Kelola paket, gunakan kode promo';
+
+  @override
+  String get settingsAdminSubtitle => 'Perangkat, kode promo, dan langganan';
+
+  @override
+  String get settingsDebridSubtitle => 'Real-Debrid & TorBox untuk torrent';
+
+  @override
+  String get appearanceAdaptiveColour => 'Warna adaptif';
+
+  @override
+  String get appearanceTintSubtitle =>
+      'Mewarnai latar Beranda dan Detail dari warna poster';
+
+  @override
+  String get appearanceTitleArtwork => 'Gambar judul';
+
+  @override
+  String get appearanceTitleArtworkSubtitle =>
+      'Tampilkan logo judul resmi alih-alih teks biasa di Detail';
+
+  @override
+  String get appearanceEpisodeOrderSubtitle =>
+      'Setiap layar detail dibuka dari yang terbaru; tombol daftar membaliknya untuk kunjungan itu';
+
+  @override
+  String get appearanceEverythingDrawn =>
+      'Semua di aplikasi digambar dengan ini';
+
+  @override
+  String get navBlurBackground => 'Buramkan latar';
+
+  @override
+  String get navBlurSubtitle =>
+      'Melembutkan gambar di belakang bilah navigasi cair';
+
+  @override
+  String get navChangeContentMode => 'Ubah mode konten';
+
+  @override
+  String get searchStyle => 'Gaya pencarian';
+
+  @override
+  String get settingsSubscription => 'Langganan';
+
+  @override
+  String get adminConsole => 'Konsol admin';
+
+  @override
+  String get sourcePriority => 'Prioritas sumber';
+
+  @override
+  String get settingsTheme => 'Tema & warna';
+
+  @override
+  String get settingsBranding => 'Ikon, splash & banner';
+
+  @override
+  String get settingsPosterCards => 'Kartu poster';
+
+  @override
+  String get collections => 'Koleksi';
+
+  @override
+  String get settingsDebrid => 'Debrid';
+
+  @override
+  String get settingsSourcePrioritySubtitle =>
+      'Urutan sumber dicoba oleh Auto Resolve';
+
+  @override
+  String get appearanceReverseEpisodeOrder => 'Daftar episode selalu terbalik';
 }

@@ -6984,6 +6984,111 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get stremioAddonsTitle => 'Stremio 插件';
+
+  @override
+  String get settingsGroupLanguage => '语言';
+
+  @override
+  String get settingsGroupLayout => '布局';
+
+  @override
+  String get settingsGroupLook => '外观';
+
+  @override
+  String get settingsSearchStyleSubtitle => '为搜索选择经典或新版';
+
+  @override
+  String get settingsThemeSubtitle => '强调色、深色模式和字体';
+
+  @override
+  String get settingsBrandingSubtitle => '打开应用前的外观';
+
+  @override
+  String get settingsPosterCardsSubtitle => '标题卡片的形状和标签';
+
+  @override
+  String get settingsHomeRowsSubtitle => '主页显示哪些行及其顺序';
+
+  @override
+  String get settingsSearchLayoutSubtitle => '不同来源的结果如何排列';
+
+  @override
+  String get settingsBatchDownloadSubtitle => '批量选择剧集时面板的外观';
+
+  @override
+  String get settingsCollectionsSubtitle => '你在主页的自定义行';
+
+  @override
+  String get settingsProfilesAccount => '个人资料与账户';
+
+  @override
+  String get settingsSubscriptionSubtitle => '管理套餐，使用优惠码';
+
+  @override
+  String get settingsAdminSubtitle => '设备、优惠码和订阅';
+
+  @override
+  String get settingsDebridSubtitle => '用于种子下载的 Real-Debrid 和 TorBox';
+
+  @override
+  String get appearanceAdaptiveColour => '自适应色彩';
+
+  @override
+  String get appearanceTintSubtitle => '用海报颜色为主页和详情页背景着色';
+
+  @override
+  String get appearanceTitleArtwork => '标题图';
+
+  @override
+  String get appearanceTitleArtworkSubtitle => '在详情页显示官方标题标志而非纯文本';
+
+  @override
+  String get appearanceEpisodeOrderSubtitle => '每个详情页都以最新在前打开；列表按钮可在本次浏览中反转';
+
+  @override
+  String get appearanceEverythingDrawn => '应用内的一切都用它绘制';
+
+  @override
+  String get navBlurBackground => '模糊背景';
+
+  @override
+  String get navBlurSubtitle => '柔化液态导航栏背后的图片';
+
+  @override
+  String get navChangeContentMode => '切换内容模式';
+
+  @override
+  String get searchStyle => '搜索样式';
+
+  @override
+  String get settingsSubscription => '订阅';
+
+  @override
+  String get adminConsole => '管理控制台';
+
+  @override
+  String get sourcePriority => '来源优先级';
+
+  @override
+  String get settingsTheme => '主题与色彩';
+
+  @override
+  String get settingsBranding => '图标、启动页和横幅';
+
+  @override
+  String get settingsPosterCards => '海报卡片';
+
+  @override
+  String get collections => '合集';
+
+  @override
+  String get settingsDebrid => 'Debrid';
+
+  @override
+  String get settingsSourcePrioritySubtitle => '自动解析尝试来源的顺序';
+
+  @override
+  String get appearanceReverseEpisodeOrder => '剧集列表始终倒序';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -12322,4 +12427,109 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get stremioAddonsTitle => 'Stremio 附加元件';
+
+  @override
+  String get settingsGroupLanguage => '語言';
+
+  @override
+  String get settingsGroupLayout => '版面配置';
+
+  @override
+  String get settingsGroupLook => '外觀';
+
+  @override
+  String get settingsSearchStyleSubtitle => '為搜尋選擇經典或新版';
+
+  @override
+  String get settingsThemeSubtitle => '強調色、深色模式和字型';
+
+  @override
+  String get settingsBrandingSubtitle => '開啟應用程式前的外觀';
+
+  @override
+  String get settingsPosterCardsSubtitle => '標題卡片的形狀和標籤';
+
+  @override
+  String get settingsHomeRowsSubtitle => '首頁顯示哪些列及其順序';
+
+  @override
+  String get settingsSearchLayoutSubtitle => '不同來源的結果如何排列';
+
+  @override
+  String get settingsBatchDownloadSubtitle => '批次選擇劇集時面板的外觀';
+
+  @override
+  String get settingsCollectionsSubtitle => '你在首頁的自訂列';
+
+  @override
+  String get settingsProfilesAccount => '個人資料與帳戶';
+
+  @override
+  String get settingsSubscriptionSubtitle => '管理方案，使用優惠碼';
+
+  @override
+  String get settingsAdminSubtitle => '裝置、優惠碼和訂閱';
+
+  @override
+  String get settingsDebridSubtitle => '用於種子下載的 Real-Debrid 和 TorBox';
+
+  @override
+  String get appearanceAdaptiveColour => '自適應色彩';
+
+  @override
+  String get appearanceTintSubtitle => '用海報顏色為主頁和詳情頁背景著色';
+
+  @override
+  String get appearanceTitleArtwork => '標題圖';
+
+  @override
+  String get appearanceTitleArtworkSubtitle => '在詳情頁顯示官方標題標誌而非純文字';
+
+  @override
+  String get appearanceEpisodeOrderSubtitle => '每個詳情頁都以最新在前開啟；列表按鈕可在本次瀏覽中反轉';
+
+  @override
+  String get appearanceEverythingDrawn => '應用程式內的一切都用它繪製';
+
+  @override
+  String get navBlurBackground => '模糊背景';
+
+  @override
+  String get navBlurSubtitle => '柔化液態導覽列背後的圖片';
+
+  @override
+  String get navChangeContentMode => '切換內容模式';
+
+  @override
+  String get searchStyle => '搜尋樣式';
+
+  @override
+  String get settingsSubscription => '訂閱';
+
+  @override
+  String get adminConsole => '管理主控台';
+
+  @override
+  String get sourcePriority => '來源優先順序';
+
+  @override
+  String get settingsTheme => '主題與色彩';
+
+  @override
+  String get settingsBranding => '圖示、啟動頁和橫幅';
+
+  @override
+  String get settingsPosterCards => '海報卡片';
+
+  @override
+  String get collections => '合集';
+
+  @override
+  String get settingsDebrid => 'Debrid';
+
+  @override
+  String get settingsSourcePrioritySubtitle => '自動解析嘗試來源的順序';
+
+  @override
+  String get appearanceReverseEpisodeOrder => '劇集列表始終倒序';
 }

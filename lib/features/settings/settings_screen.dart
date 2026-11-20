@@ -419,7 +419,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final selected = await showDialog<String>(
       context: context,
       builder: (ctx) => _TvOptionPicker<String>(
-        title: 'Search style',
+        title: context.l10n.searchStyle,
         options: const [('classic', 'Classic'), ('new', 'New')],
         current: prefs.tvSearchStyle,
       ),
@@ -685,6 +685,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context, auth) => ValueListenableBuilder<ViewerProfile?>(
         valueListenable: profiles.active,
         builder: (context, active, _) {
+          final l10n = context.l10n;
           final profile = active ?? profiles.activeProfile;
           final accountStatus = auth.isLoggedIn
               ? (auth.user?.email ?? auth.displayName)
@@ -696,7 +697,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _accountRow(
                   onTap: () => _push(const ViewerProfilesScreen()),
                   autofocus: _isTv,
-                  semanticLabel: 'Profiles & account',
+                  semanticLabel: l10n.settingsProfilesAccount,
                   avatar: CircleAvatar(
                     radius: 24,
                     backgroundColor: viewerProfileAvatarColor(profile.avatar),
@@ -710,7 +711,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       photoDiameter: 48,
                     ),
                   ),
-                  title: 'Profiles & account',
+                  title: l10n.settingsProfilesAccount,
                   subtitle: 'Watching as ${profile.name} · $accountStatus',
                   trailing: const Icon(
                     Icons.chevron_right_rounded,
@@ -891,8 +892,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _SettingsEntry(
         section: SettingsSection.account,
         icon: Icons.cloud_outlined,
-        title: 'Debrid',
-        subtitle: 'Real-Debrid & TorBox for torrents',
+        title: l10n.settingsDebrid,
+        subtitle: l10n.settingsDebridSubtitle,
         keywords:
             'debrid real-debrid realdebrid torbox magnet torrent cache rd',
         onTap: () async {
@@ -964,16 +965,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _SettingsEntry(
       section: SettingsSection.account,
       icon: Icons.workspace_premium_outlined,
-      title: 'Subscription',
-      subtitle: 'Manage your plan, apply a promo code',
+      title: l10n.settingsSubscription,
+      subtitle: l10n.settingsSubscriptionSubtitle,
       keywords: 'subscription plan premium pay promo upgrade billing',
       onTap: () => showPaywall(context),
     ),
     _SettingsEntry(
       section: SettingsSection.account,
       icon: Icons.admin_panel_settings_outlined,
-      title: 'Admin console',
-      subtitle: 'Devices, promo codes and subscriptions',
+      title: l10n.adminConsole,
+      subtitle: l10n.settingsAdminSubtitle,
       keywords: 'admin console dashboard devices promo manage',
       onTap: () => showAdminConsole(context),
     ),
@@ -1001,8 +1002,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _SettingsEntry(
       section: SettingsSection.sources,
       icon: Icons.low_priority_rounded,
-      title: 'Source Priority',
-      subtitle: 'Order Auto Resolve tries sources in',
+      title: l10n.sourcePriority,
+      subtitle: l10n.settingsSourcePrioritySubtitle,
       keywords: 'source priority order auto resolve sweep anime movies tv',
       onTap: () => _push(const SourcePriorityScreen()),
     ),
@@ -1137,10 +1138,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _SettingsEntry(
       section: SettingsSection.interface,
       id: LeafParent.appearance,
-      group: 'Look',
+      group: l10n.settingsGroupLook,
       icon: Icons.palette_outlined,
-      title: 'Theme & colour',
-      subtitle: 'Accent colour, dark mode and font',
+      title: l10n.settingsTheme,
+      subtitle: l10n.settingsThemeSubtitle,
       keywords:
           'appearance accent colour color theme highlight personalise '
           'dark amoled black font type animation motion',
@@ -1165,10 +1166,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (!_isTv)
       _SettingsEntry(
         section: SettingsSection.interface,
-        group: 'Look',
+        group: l10n.settingsGroupLook,
         icon: Icons.auto_awesome_outlined,
-        title: 'Icon, splash & banner',
-        subtitle: 'How the app looks before you open it',
+        title: l10n.settingsBranding,
+        subtitle: l10n.settingsBrandingSubtitle,
         keywords:
             'app icon launcher splash startup animation bankai wordmark '
             'home banner card panels face',
@@ -1176,10 +1177,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     _SettingsEntry(
       section: SettingsSection.interface,
-      group: 'Look',
+      group: l10n.settingsGroupLook,
       icon: Icons.view_carousel_outlined,
-      title: 'Poster cards',
-      subtitle: 'Shape and labels for title cards',
+      title: l10n.settingsPosterCards,
+      subtitle: l10n.settingsPosterCardsSubtitle,
       keywords:
           'poster landscape portrait wide badges quality sub dub '
           'score genre age 18 progress customize cards',
@@ -1188,17 +1189,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (!_isTv)
       _SettingsEntry(
         section: SettingsSection.interface,
-        group: 'Layout',
+        group: l10n.settingsGroupLayout,
         icon: Icons.view_agenda_outlined,
         title: l10n.homeRows,
-        subtitle: 'Which rows show on Home, and their order',
+        subtitle: l10n.settingsHomeRowsSubtitle,
         keywords: 'home rows order hide show continue watching trending',
         onTap: () => _push(const HomeRowsScreen()),
       ),
     if (!_isTv)
       _SettingsEntry(
         section: SettingsSection.interface,
-        group: 'Layout',
+        group: l10n.settingsGroupLayout,
         icon: Icons.dashboard_customize_outlined,
         title: l10n.navigationBar,
         subtitle: l10n.navigationBarSubtitle,
@@ -1210,10 +1211,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (_isTv)
       _SettingsEntry(
         section: SettingsSection.interface,
-        group: 'Layout',
+        group: l10n.settingsGroupLayout,
         icon: Icons.keyboard_alt_outlined,
-        title: 'Search style',
-        subtitle: 'Choose Classic or New for search',
+        title: l10n.searchStyle,
+        subtitle: l10n.settingsSearchStyleSubtitle,
         keywords: 'tv search style keyboard classic new alphabet letters input',
         trailing: _value(
           sl<SearchPrefs>().tvSearchStyle == 'new' ? 'New' : 'Classic',
@@ -1222,20 +1223,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     _SettingsEntry(
       section: SettingsSection.interface,
-      group: 'Layout',
+      group: l10n.settingsGroupLayout,
       icon: Icons.grid_view_rounded,
       title: l10n.searchLayout,
-      subtitle: 'How results from different sources line up',
+      subtitle: l10n.settingsSearchLayoutSubtitle,
       keywords: 'search layout grid list results view interface',
       trailing: _value(sl<SearchPrefs>().layout.localizedLabel(context)),
       onTap: _pickSearchLayout,
     ),
     _SettingsEntry(
       section: SettingsSection.interface,
-      group: 'Layout',
+      group: l10n.settingsGroupLayout,
       icon: Icons.download_rounded,
       title: l10n.batchDownloadStyle,
-      subtitle: 'How the sheet looks when you grab a batch of episodes',
+      subtitle: l10n.settingsBatchDownloadSubtitle,
       keywords:
           'batch download style sheet minimal classic wheel episodes multi',
       trailing: _value(
@@ -1247,7 +1248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ),
     _SettingsEntry(
       section: SettingsSection.interface,
-      group: 'Language',
+      group: l10n.settingsGroupLanguage,
       icon: Icons.translate_rounded,
       title: l10n.titleLanguage,
       subtitle: l10n.titleLanguageSubtitle,
@@ -1263,7 +1264,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // is what keeps the two entry points from drifting apart.
     _SettingsEntry(
       section: SettingsSection.interface,
-      group: 'Language',
+      group: l10n.settingsGroupLanguage,
       icon: Icons.hub_outlined,
       title: l10n.metadata,
       subtitle: _malNeedsLogin ? l10n.malLoginForLists : l10n.metadataSubtitle,
@@ -1300,7 +1301,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ),
     _SettingsEntry(
       section: SettingsSection.interface,
-      group: 'Language',
+      group: l10n.settingsGroupLanguage,
       icon: Icons.language_rounded,
       title: l10n.appLanguage,
       subtitle: l10n.appLanguageSubtitle,
@@ -1387,8 +1388,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _SettingsEntry(
       section: SettingsSection.advanced,
       icon: Icons.collections_bookmark_outlined,
-      title: 'Collections',
-      subtitle: 'Your own rows on Home',
+      title: l10n.collections,
+      subtitle: l10n.settingsCollectionsSubtitle,
       keywords:
           'collections catalogues catalog folders personal rows home custom '
           'shelf curated',

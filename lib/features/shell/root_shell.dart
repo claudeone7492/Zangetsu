@@ -826,10 +826,10 @@ class _LiquidNavDock extends StatelessWidget {
                     settings: menuGlass,
                     selectionColor: AppColors.accent.withValues(alpha: 0.14),
                     enableInteractionGlow: false,
-                    semanticLabel: 'Change content mode',
+                    semanticLabel: context.l10n.navChangeContentMode,
                     triggerBuilder: (context, toggleMenu) => GlassButton(
                       icon: const Icon(Icons.menu_rounded),
-                      label: 'Change content mode',
+                      label: context.l10n.navChangeContentMode,
                       onTap: toggleMenu,
                       width: 56,
                       height: 56,

@@ -7212,4 +7212,123 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get stremioAddonsTitle => 'Addon Stremio';
+
+  @override
+  String get settingsGroupLanguage => 'Lingua';
+
+  @override
+  String get settingsGroupLayout => 'Layout';
+
+  @override
+  String get settingsGroupLook => 'Aspetto';
+
+  @override
+  String get settingsSearchStyleSubtitle =>
+      'Scegli Classico o Nuovo per la ricerca';
+
+  @override
+  String get settingsThemeSubtitle =>
+      'Colore d\'accento, modalità scura e carattere';
+
+  @override
+  String get settingsBrandingSubtitle => 'Come appare l\'app prima di aprirla';
+
+  @override
+  String get settingsPosterCardsSubtitle =>
+      'Forma ed etichette delle schede dei titoli';
+
+  @override
+  String get settingsHomeRowsSubtitle =>
+      'Quali righe compaiono in Home e in che ordine';
+
+  @override
+  String get settingsSearchLayoutSubtitle =>
+      'Come si allineano i risultati di fonti diverse';
+
+  @override
+  String get settingsBatchDownloadSubtitle =>
+      'Come appare il pannello quando scegli più episodi';
+
+  @override
+  String get settingsCollectionsSubtitle => 'Le tue righe in Home';
+
+  @override
+  String get settingsProfilesAccount => 'Profili e account';
+
+  @override
+  String get settingsSubscriptionSubtitle =>
+      'Gestisci il piano, applica un codice promozionale';
+
+  @override
+  String get settingsAdminSubtitle =>
+      'Dispositivi, codici promozionali e abbonamenti';
+
+  @override
+  String get settingsDebridSubtitle => 'Real-Debrid e TorBox per i torrent';
+
+  @override
+  String get appearanceAdaptiveColour => 'Colore adattivo';
+
+  @override
+  String get appearanceTintSubtitle =>
+      'Colora lo sfondo di Home e Dettaglio con il colore della locandina';
+
+  @override
+  String get appearanceTitleArtwork => 'Grafica del titolo';
+
+  @override
+  String get appearanceTitleArtworkSubtitle =>
+      'Mostra il logo ufficiale invece del testo semplice in Dettaglio';
+
+  @override
+  String get appearanceEpisodeOrderSubtitle =>
+      'Ogni dettaglio si apre dal più recente; il pulsante elenco lo inverte per quella visita';
+
+  @override
+  String get appearanceEverythingDrawn =>
+      'Tutto nell\'app è disegnato con questo';
+
+  @override
+  String get navBlurBackground => 'Sfoca sfondo';
+
+  @override
+  String get navBlurSubtitle =>
+      'Ammorbidisce la grafica dietro la barra di navigazione liquida';
+
+  @override
+  String get navChangeContentMode => 'Cambia modalità contenuti';
+
+  @override
+  String get searchStyle => 'Stile di ricerca';
+
+  @override
+  String get settingsSubscription => 'Abbonamento';
+
+  @override
+  String get adminConsole => 'Console di amministrazione';
+
+  @override
+  String get sourcePriority => 'Priorità delle fonti';
+
+  @override
+  String get settingsTheme => 'Tema e colore';
+
+  @override
+  String get settingsBranding => 'Icona, avvio e banner';
+
+  @override
+  String get settingsPosterCards => 'Schede locandina';
+
+  @override
+  String get collections => 'Raccolte';
+
+  @override
+  String get settingsDebrid => 'Debrid';
+
+  @override
+  String get settingsSourcePrioritySubtitle =>
+      'Ordine in cui la risoluzione automatica prova le fonti';
+
+  @override
+  String get appearanceReverseEpisodeOrder => 'Elenco episodi sempre invertito';
 }

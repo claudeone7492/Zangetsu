@@ -7225,4 +7225,123 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get stremioAddonsTitle => 'Addons do Stremio';
+
+  @override
+  String get settingsGroupLanguage => 'Idioma';
+
+  @override
+  String get settingsGroupLayout => 'Layout';
+
+  @override
+  String get settingsGroupLook => 'Aparência';
+
+  @override
+  String get settingsSearchStyleSubtitle =>
+      'Escolha Clássico ou Novo para a busca';
+
+  @override
+  String get settingsThemeSubtitle => 'Cor de destaque, modo escuro e fonte';
+
+  @override
+  String get settingsBrandingSubtitle =>
+      'Como o app aparece antes de você abri-lo';
+
+  @override
+  String get settingsPosterCardsSubtitle =>
+      'Forma e rótulos dos cartões de títulos';
+
+  @override
+  String get settingsHomeRowsSubtitle =>
+      'Quais linhas aparecem em Início e em que ordem';
+
+  @override
+  String get settingsSearchLayoutSubtitle =>
+      'Como os resultados de fontes diferentes se alinham';
+
+  @override
+  String get settingsBatchDownloadSubtitle =>
+      'Como a folha aparece ao pegar vários episódios';
+
+  @override
+  String get settingsCollectionsSubtitle => 'Suas próprias linhas em Início';
+
+  @override
+  String get settingsProfilesAccount => 'Perfis e conta';
+
+  @override
+  String get settingsSubscriptionSubtitle =>
+      'Gerencie seu plano, aplique um código promocional';
+
+  @override
+  String get settingsAdminSubtitle =>
+      'Dispositivos, códigos promocionais e assinaturas';
+
+  @override
+  String get settingsDebridSubtitle => 'Real-Debrid e TorBox para torrents';
+
+  @override
+  String get appearanceAdaptiveColour => 'Cor adaptável';
+
+  @override
+  String get appearanceTintSubtitle =>
+      'Tinge o fundo de Início e Detalhes com a cor do pôster';
+
+  @override
+  String get appearanceTitleArtwork => 'Arte do título';
+
+  @override
+  String get appearanceTitleArtworkSubtitle =>
+      'Mostra o logotipo oficial em vez de texto simples em Detalhes';
+
+  @override
+  String get appearanceEpisodeOrderSubtitle =>
+      'Cada tela de detalhes abre do mais novo primeiro; o botão de lista inverte para essa visita';
+
+  @override
+  String get appearanceEverythingDrawn => 'Tudo no app é desenhado com isso';
+
+  @override
+  String get navBlurBackground => 'Desfocar fundo';
+
+  @override
+  String get navBlurSubtitle =>
+      'Suaviza a arte atrás da barra de navegação líquida';
+
+  @override
+  String get navChangeContentMode => 'Mudar modo de conteúdo';
+
+  @override
+  String get searchStyle => 'Estilo de busca';
+
+  @override
+  String get settingsSubscription => 'Assinatura';
+
+  @override
+  String get adminConsole => 'Console de administração';
+
+  @override
+  String get sourcePriority => 'Prioridade de fontes';
+
+  @override
+  String get settingsTheme => 'Tema e cor';
+
+  @override
+  String get settingsBranding => 'Ícone, abertura e banner';
+
+  @override
+  String get settingsPosterCards => 'Cartões de pôster';
+
+  @override
+  String get collections => 'Coleções';
+
+  @override
+  String get settingsDebrid => 'Debrid';
+
+  @override
+  String get settingsSourcePrioritySubtitle =>
+      'Ordem em que a resolução automática tenta as fontes';
+
+  @override
+  String get appearanceReverseEpisodeOrder =>
+      'Lista de episódios sempre invertida';
 }

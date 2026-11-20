@@ -7031,4 +7031,110 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get stremioAddonsTitle => 'Stremioアドオン';
+
+  @override
+  String get settingsGroupLanguage => '言語';
+
+  @override
+  String get settingsGroupLayout => 'レイアウト';
+
+  @override
+  String get settingsGroupLook => '外観';
+
+  @override
+  String get settingsSearchStyleSubtitle => '検索にクラシックか新デザインを選ぶ';
+
+  @override
+  String get settingsThemeSubtitle => 'アクセントカラー、ダークモード、フォント';
+
+  @override
+  String get settingsBrandingSubtitle => 'アプリを開く前の見た目';
+
+  @override
+  String get settingsPosterCardsSubtitle => 'タイトルカードの形とラベル';
+
+  @override
+  String get settingsHomeRowsSubtitle => 'ホームに表示する行とその順序';
+
+  @override
+  String get settingsSearchLayoutSubtitle => '複数ソースの検索結果の並び方';
+
+  @override
+  String get settingsBatchDownloadSubtitle => '複数エピソードを選ぶときのシート表示';
+
+  @override
+  String get settingsCollectionsSubtitle => 'ホームの自分だけの行';
+
+  @override
+  String get settingsProfilesAccount => 'プロフィールとアカウント';
+
+  @override
+  String get settingsSubscriptionSubtitle => 'プランの管理、プロモコードの適用';
+
+  @override
+  String get settingsAdminSubtitle => 'デバイス、プロモコード、サブスクリプション';
+
+  @override
+  String get settingsDebridSubtitle => 'トレント用の Real-Debrid と TorBox';
+
+  @override
+  String get appearanceAdaptiveColour => 'アダプティブカラー';
+
+  @override
+  String get appearanceTintSubtitle => 'ホームと詳細の背景をポスターの色で染める';
+
+  @override
+  String get appearanceTitleArtwork => 'タイトルアート';
+
+  @override
+  String get appearanceTitleArtworkSubtitle => '詳細でプレーンテキストの代わりに公式タイトルロゴを表示';
+
+  @override
+  String get appearanceEpisodeOrderSubtitle =>
+      '詳細画面は常に新しい順で開きます。リストボタンはその閲覧中だけ反転します';
+
+  @override
+  String get appearanceEverythingDrawn => 'アプリ内のすべてがこれで描画されます';
+
+  @override
+  String get navBlurBackground => '背景をぼかす';
+
+  @override
+  String get navBlurSubtitle => 'リキッドナビゲーションバー背後の画像をやわらげる';
+
+  @override
+  String get navChangeContentMode => 'コンテンツモードを変更';
+
+  @override
+  String get searchStyle => '検索スタイル';
+
+  @override
+  String get settingsSubscription => 'サブスクリプション';
+
+  @override
+  String get adminConsole => '管理コンソール';
+
+  @override
+  String get sourcePriority => 'ソースの優先順位';
+
+  @override
+  String get settingsTheme => 'テーマと色';
+
+  @override
+  String get settingsBranding => 'アイコン、スプラッシュ、バナー';
+
+  @override
+  String get settingsPosterCards => 'ポスターカード';
+
+  @override
+  String get collections => 'コレクション';
+
+  @override
+  String get settingsDebrid => 'Debrid';
+
+  @override
+  String get settingsSourcePrioritySubtitle => '自動解決がソースを試す順序';
+
+  @override
+  String get appearanceReverseEpisodeOrder => 'エピソード一覧を常に逆順にする';
 }
