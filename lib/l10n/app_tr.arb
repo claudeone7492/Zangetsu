@@ -3108,5 +3108,22 @@
 	"profileUseFingerprint": "Bu telefonda parmak izi kullan",
 	"profileEnterCurrentPin": "Devam etmek için bu profilin mevcut PIN'ini gir.",
 	"profileDonate": "Bağış yap",
-	"profileKidsProfile": "Çocuk profili"
+	"profileKidsProfile": "Çocuk profili",
+	"posterLayoutPortrait": "Dikey",
+	"posterLayoutLandscape": "Yatay",
+	"posterTitlePlacement": "Başlık konumu",
+	"posterTitleAutomatic": "Otomatik",
+	"posterTitleInsideImage": "Görselin içinde",
+	"posterTitleBelowImage": "Görselin altında",
+	"posterSizeSmall": "Küçük",
+	"posterSizeLarge": "Büyük",
+	"posterCardSizeDescription": "Kart boyutu uygulamadaki tüm poster satırları ve ızgaraları için geçerlidir.",
+	"settingsAppFont": "Uygulama yazı tipi",
+	"settingsNavbarVisibility": "Gezinme çubuğu görünürlüğü",
+	"settingsNavbarGlassDescription": "Simgelerin daha net görünmesi için tüm cam arka planı koyulaştırır.",
+	"settingsGlassTint": "Cam tonu",
+	"settingsTabBarDescription": "Sekme çubuğunu ve mod düğmesini birlikte ayarla.",
+	"settingsUnpinAll": "Tümünü sabitlemeyi kaldır",
+	"settingsSourceCatalogue": "Kaynak kataloğu",
+	"settingsShowSourceListsInHome": "Yüklü kaynak listelerini Ana sayfada göster"
 }

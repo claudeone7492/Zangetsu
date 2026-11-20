@@ -3109,5 +3109,22 @@
 	"profileUseFingerprint": "استخدام بصمة الإصبع على هذا الهاتف",
 	"profileEnterCurrentPin": "أدخل رمز PIN الحالي لهذا الملف الشخصي للمتابعة.",
 	"profileDonate": "تبرّع",
-	"profileKidsProfile": "ملف شخصي للأطفال"
+	"profileKidsProfile": "ملف شخصي للأطفال",
+	"posterLayoutPortrait": "عمودي",
+	"posterLayoutLandscape": "أفقي",
+	"posterTitlePlacement": "موضع العنوان",
+	"posterTitleAutomatic": "تلقائي",
+	"posterTitleInsideImage": "داخل الصورة",
+	"posterTitleBelowImage": "أسفل الصورة",
+	"posterSizeSmall": "صغير",
+	"posterSizeLarge": "كبير",
+	"posterCardSizeDescription": "ينطبق حجم البطاقة على صفوف وشبكات الملصقات في التطبيق بأكمله.",
+	"settingsAppFont": "خط التطبيق",
+	"settingsNavbarVisibility": "ظهور شريط التنقل",
+	"settingsNavbarGlassDescription": "يعتّم خلفية الزجاج بالكامل لتوضيح الرموز.",
+	"settingsGlassTint": "صبغة الزجاج",
+	"settingsTabBarDescription": "اضبط شريط التبويبات وزر الوضع معًا.",
+	"settingsUnpinAll": "إلغاء تثبيت الكل",
+	"settingsSourceCatalogue": "فهرس المصادر",
+	"settingsShowSourceListsInHome": "إظهار قوائم المصادر المثبتة في الرئيسية"
 }

@@ -13,6 +13,7 @@ import '../../core/zmode/source_order_prefs.dart';
 import '../../core/zmode/source_score_store.dart';
 import '../../core/zmode/zmode_ids.dart';
 import '../../core/zmode/zmode_module.dart' show sweepCandidates;
+import '../../l10n/l10n.dart';
 
 /// Why a source sits where it does, in one short line.
 ///
@@ -390,7 +391,7 @@ class _SourcePriorityScreenState extends State<SourcePriorityScreen> {
     }
     return TextButton(
       onPressed: () => _reset(kind),
-      child: const Text('Unpin all'),
+      child: Text(context.l10n.settingsUnpinAll),
     );
   }
 

@@ -2957,5 +2957,22 @@
 	"profileUseFingerprint": "Usar huella en este teléfono",
 	"profileEnterCurrentPin": "Introduce el PIN actual de este perfil para continuar.",
 	"profileDonate": "Donar",
-	"profileKidsProfile": "Perfil infantil"
+	"profileKidsProfile": "Perfil infantil",
+	"posterLayoutPortrait": "Vertical",
+	"posterLayoutLandscape": "Horizontal",
+	"posterTitlePlacement": "Ubicación del título",
+	"posterTitleAutomatic": "Automático",
+	"posterTitleInsideImage": "Dentro de la imagen",
+	"posterTitleBelowImage": "Debajo de la imagen",
+	"posterSizeSmall": "Pequeño",
+	"posterSizeLarge": "Grande",
+	"posterCardSizeDescription": "El tamaño de tarjeta se aplica a las filas y cuadrículas de pósteres de toda la app.",
+	"settingsAppFont": "Fuente de la app",
+	"settingsNavbarVisibility": "Visibilidad de la barra",
+	"settingsNavbarGlassDescription": "Oscurece todo el fondo de cristal para que los iconos se vean mejor.",
+	"settingsGlassTint": "Tinte de cristal",
+	"settingsTabBarDescription": "Ajusta juntos la barra de pestañas y el botón de modo.",
+	"settingsUnpinAll": "Desanclar todo",
+	"settingsSourceCatalogue": "Catálogo de fuentes",
+	"settingsShowSourceListsInHome": "Mostrar listas de fuentes instaladas en Inicio"
 }

@@ -3692,5 +3692,22 @@
   "profileUseFingerprint": "Use fingerprint on this phone",
   "profileEnterCurrentPin": "Enter this profile’s current PIN to continue.",
   "profileDonate": "Donate",
-  "profileKidsProfile": "Kids profile"
+  "profileKidsProfile": "Kids profile",
+  "posterLayoutPortrait": "Portrait",
+  "posterLayoutLandscape": "Landscape",
+  "posterTitlePlacement": "Title placement",
+  "posterTitleAutomatic": "Automatic",
+  "posterTitleInsideImage": "Inside image",
+  "posterTitleBelowImage": "Below image",
+  "posterSizeSmall": "Small",
+  "posterSizeLarge": "Large",
+  "posterCardSizeDescription": "Card size applies to poster rows and grids throughout the app.",
+  "settingsAppFont": "App font",
+  "settingsNavbarVisibility": "Navbar visibility",
+  "settingsNavbarGlassDescription": "Darkens the whole glass background for clearer icons.",
+  "settingsGlassTint": "Glass tint",
+  "settingsTabBarDescription": "Adjust the tab bar and mode button together.",
+  "settingsUnpinAll": "Unpin all",
+  "settingsSourceCatalogue": "Source Catalogue",
+  "settingsShowSourceListsInHome": "Show installed source lists in Home"
 }

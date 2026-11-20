@@ -169,16 +169,16 @@ class _PosterCardSettingsScreenState extends State<PosterCardSettingsScreen> {
                 child: SizedBox(
                   width: double.infinity,
                   child: SegmentedButton<PosterCardLayout>(
-                    segments: const [
+                    segments: [
                       ButtonSegment(
                         value: PosterCardLayout.portrait,
-                        label: Text('Portrait'),
-                        icon: Icon(Icons.crop_portrait_rounded),
+                        label: Text(context.l10n.posterLayoutPortrait),
+                        icon: const Icon(Icons.crop_portrait_rounded),
                       ),
                       ButtonSegment(
                         value: PosterCardLayout.wide,
-                        label: Text('Landscape'),
-                        icon: Icon(Icons.crop_landscape_rounded),
+                        label: Text(context.l10n.posterLayoutLandscape),
+                        icon: const Icon(Icons.crop_landscape_rounded),
                       ),
                     ],
                     selected: {prefs.posterCardLayout},
@@ -214,7 +214,7 @@ class _PosterCardSettingsScreenState extends State<PosterCardSettingsScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
             child: Text(
-              'Card size applies to poster rows and grids throughout the app.',
+              context.l10n.posterCardSizeDescription,
               style: AppText.caption,
             ),
           ),
@@ -226,25 +226,25 @@ class _PosterCardSettingsScreenState extends State<PosterCardSettingsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 10),
-                      child: Text('Title placement'),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Text(context.l10n.posterTitlePlacement),
                     ),
                     SizedBox(
                       width: double.infinity,
                       child: SegmentedButton<PosterTitlePlacement>(
-                        segments: const [
+                        segments: [
                           ButtonSegment(
                             value: PosterTitlePlacement.adaptive,
-                            label: Text('Automatic'),
+                            label: Text(context.l10n.posterTitleAutomatic),
                           ),
                           ButtonSegment(
                             value: PosterTitlePlacement.inside,
-                            label: Text('Inside image'),
+                            label: Text(context.l10n.posterTitleInsideImage),
                           ),
                           ButtonSegment(
                             value: PosterTitlePlacement.below,
-                            label: Text('Below image'),
+                            label: Text(context.l10n.posterTitleBelowImage),
                           ),
                         ],
                         selected: {prefs.posterTitlePlacement},
@@ -335,17 +335,17 @@ class _PosterCardSettingsScreenState extends State<PosterCardSettingsScreen> {
           width: double.infinity,
           child: SegmentedButton<PosterCardSize>(
             segments: [
-              const ButtonSegment(
+              ButtonSegment(
                 value: PosterCardSize.small,
-                label: Text('Small'),
+                label: Text(context.l10n.posterSizeSmall),
               ),
               ButtonSegment(
                 value: PosterCardSize.standard,
                 label: Text(context.l10n.defaultLabel),
               ),
-              const ButtonSegment(
+              ButtonSegment(
                 value: PosterCardSize.large,
-                label: Text('Large'),
+                label: Text(context.l10n.posterSizeLarge),
               ),
             ],
             selected: {size},

@@ -6877,4 +6877,59 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get profileKidsProfile => 'Profil enfant';
+
+  @override
+  String get posterLayoutPortrait => 'Portrait';
+
+  @override
+  String get posterLayoutLandscape => 'Paysage';
+
+  @override
+  String get posterTitlePlacement => 'Placement du titre';
+
+  @override
+  String get posterTitleAutomatic => 'Automatique';
+
+  @override
+  String get posterTitleInsideImage => 'Dans l\'image';
+
+  @override
+  String get posterTitleBelowImage => 'Sous l\'image';
+
+  @override
+  String get posterSizeSmall => 'Petit';
+
+  @override
+  String get posterSizeLarge => 'Grand';
+
+  @override
+  String get posterCardSizeDescription =>
+      'La taille des cartes s\'applique aux rangées et grilles d\'affiches dans toute l\'app.';
+
+  @override
+  String get settingsAppFont => 'Police de l\'app';
+
+  @override
+  String get settingsNavbarVisibility => 'Visibilité de la barre';
+
+  @override
+  String get settingsNavbarGlassDescription =>
+      'Assombrit tout le fond vitré pour des icônes plus nettes.';
+
+  @override
+  String get settingsGlassTint => 'Teinte du verre';
+
+  @override
+  String get settingsTabBarDescription =>
+      'Ajuste ensemble la barre d\'onglets et le bouton de mode.';
+
+  @override
+  String get settingsUnpinAll => 'Tout désépingler';
+
+  @override
+  String get settingsSourceCatalogue => 'Catalogue de sources';
+
+  @override
+  String get settingsShowSourceListsInHome =>
+      'Afficher les listes de sources installées dans Accueil';
 }

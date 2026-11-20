@@ -6846,4 +6846,59 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get profileKidsProfile => 'Çocuk profili';
+
+  @override
+  String get posterLayoutPortrait => 'Dikey';
+
+  @override
+  String get posterLayoutLandscape => 'Yatay';
+
+  @override
+  String get posterTitlePlacement => 'Başlık konumu';
+
+  @override
+  String get posterTitleAutomatic => 'Otomatik';
+
+  @override
+  String get posterTitleInsideImage => 'Görselin içinde';
+
+  @override
+  String get posterTitleBelowImage => 'Görselin altında';
+
+  @override
+  String get posterSizeSmall => 'Küçük';
+
+  @override
+  String get posterSizeLarge => 'Büyük';
+
+  @override
+  String get posterCardSizeDescription =>
+      'Kart boyutu uygulamadaki tüm poster satırları ve ızgaraları için geçerlidir.';
+
+  @override
+  String get settingsAppFont => 'Uygulama yazı tipi';
+
+  @override
+  String get settingsNavbarVisibility => 'Gezinme çubuğu görünürlüğü';
+
+  @override
+  String get settingsNavbarGlassDescription =>
+      'Simgelerin daha net görünmesi için tüm cam arka planı koyulaştırır.';
+
+  @override
+  String get settingsGlassTint => 'Cam tonu';
+
+  @override
+  String get settingsTabBarDescription =>
+      'Sekme çubuğunu ve mod düğmesini birlikte ayarla.';
+
+  @override
+  String get settingsUnpinAll => 'Tümünü sabitlemeyi kaldır';
+
+  @override
+  String get settingsSourceCatalogue => 'Kaynak kataloğu';
+
+  @override
+  String get settingsShowSourceListsInHome =>
+      'Yüklü kaynak listelerini Ana sayfada göster';
 }

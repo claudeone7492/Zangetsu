@@ -2957,5 +2957,22 @@
 	"profileUseFingerprint": "在此手机上使用指纹",
 	"profileEnterCurrentPin": "输入此个人资料的当前 PIN 以继续。",
 	"profileDonate": "捐赠",
-	"profileKidsProfile": "儿童个人资料"
+	"profileKidsProfile": "儿童个人资料",
+	"posterLayoutPortrait": "竖版",
+	"posterLayoutLandscape": "横版",
+	"posterTitlePlacement": "标题位置",
+	"posterTitleAutomatic": "自动",
+	"posterTitleInsideImage": "图片内",
+	"posterTitleBelowImage": "图片下方",
+	"posterSizeSmall": "小",
+	"posterSizeLarge": "大",
+	"posterCardSizeDescription": "卡片大小适用于应用中所有海报行和网格。",
+	"settingsAppFont": "应用字体",
+	"settingsNavbarVisibility": "导航栏可见性",
+	"settingsNavbarGlassDescription": "加深整个玻璃背景，让图标更清晰。",
+	"settingsGlassTint": "玻璃色调",
+	"settingsTabBarDescription": "同时调整标签栏和模式按钮。",
+	"settingsUnpinAll": "全部取消固定",
+	"settingsSourceCatalogue": "来源目录",
+	"settingsShowSourceListsInHome": "在主屏幕显示已安装来源列表"
 }

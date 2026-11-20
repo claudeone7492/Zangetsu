@@ -6911,4 +6911,58 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get profileKidsProfile => 'ملف شخصي للأطفال';
+
+  @override
+  String get posterLayoutPortrait => 'عمودي';
+
+  @override
+  String get posterLayoutLandscape => 'أفقي';
+
+  @override
+  String get posterTitlePlacement => 'موضع العنوان';
+
+  @override
+  String get posterTitleAutomatic => 'تلقائي';
+
+  @override
+  String get posterTitleInsideImage => 'داخل الصورة';
+
+  @override
+  String get posterTitleBelowImage => 'أسفل الصورة';
+
+  @override
+  String get posterSizeSmall => 'صغير';
+
+  @override
+  String get posterSizeLarge => 'كبير';
+
+  @override
+  String get posterCardSizeDescription =>
+      'ينطبق حجم البطاقة على صفوف وشبكات الملصقات في التطبيق بأكمله.';
+
+  @override
+  String get settingsAppFont => 'خط التطبيق';
+
+  @override
+  String get settingsNavbarVisibility => 'ظهور شريط التنقل';
+
+  @override
+  String get settingsNavbarGlassDescription =>
+      'يعتّم خلفية الزجاج بالكامل لتوضيح الرموز.';
+
+  @override
+  String get settingsGlassTint => 'صبغة الزجاج';
+
+  @override
+  String get settingsTabBarDescription => 'اضبط شريط التبويبات وزر الوضع معًا.';
+
+  @override
+  String get settingsUnpinAll => 'إلغاء تثبيت الكل';
+
+  @override
+  String get settingsSourceCatalogue => 'فهرس المصادر';
+
+  @override
+  String get settingsShowSourceListsInHome =>
+      'إظهار قوائم المصادر المثبتة في الرئيسية';
 }

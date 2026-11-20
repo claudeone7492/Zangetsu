@@ -6675,6 +6675,57 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get profileKidsProfile => '儿童个人资料';
+
+  @override
+  String get posterLayoutPortrait => '竖版';
+
+  @override
+  String get posterLayoutLandscape => '横版';
+
+  @override
+  String get posterTitlePlacement => '标题位置';
+
+  @override
+  String get posterTitleAutomatic => '自动';
+
+  @override
+  String get posterTitleInsideImage => '图片内';
+
+  @override
+  String get posterTitleBelowImage => '图片下方';
+
+  @override
+  String get posterSizeSmall => '小';
+
+  @override
+  String get posterSizeLarge => '大';
+
+  @override
+  String get posterCardSizeDescription => '卡片大小适用于应用中所有海报行和网格。';
+
+  @override
+  String get settingsAppFont => '应用字体';
+
+  @override
+  String get settingsNavbarVisibility => '导航栏可见性';
+
+  @override
+  String get settingsNavbarGlassDescription => '加深整个玻璃背景，让图标更清晰。';
+
+  @override
+  String get settingsGlassTint => '玻璃色调';
+
+  @override
+  String get settingsTabBarDescription => '同时调整标签栏和模式按钮。';
+
+  @override
+  String get settingsUnpinAll => '全部取消固定';
+
+  @override
+  String get settingsSourceCatalogue => '来源目录';
+
+  @override
+  String get settingsShowSourceListsInHome => '在主屏幕显示已安装来源列表';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -11704,4 +11755,55 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get profileKidsProfile => '兒童個人資料';
+
+  @override
+  String get posterLayoutPortrait => '直式';
+
+  @override
+  String get posterLayoutLandscape => '橫式';
+
+  @override
+  String get posterTitlePlacement => '標題位置';
+
+  @override
+  String get posterTitleAutomatic => '自動';
+
+  @override
+  String get posterTitleInsideImage => '圖片內';
+
+  @override
+  String get posterTitleBelowImage => '圖片下方';
+
+  @override
+  String get posterSizeSmall => '小';
+
+  @override
+  String get posterSizeLarge => '大';
+
+  @override
+  String get posterCardSizeDescription => '卡片大小適用於應用程式中的所有海報列與格狀檢視。';
+
+  @override
+  String get settingsAppFont => '應用程式字型';
+
+  @override
+  String get settingsNavbarVisibility => '導覽列可見度';
+
+  @override
+  String get settingsNavbarGlassDescription => '加深整個玻璃背景，讓圖示更清楚。';
+
+  @override
+  String get settingsGlassTint => '玻璃色調';
+
+  @override
+  String get settingsTabBarDescription => '同時調整標籤列與模式按鈕。';
+
+  @override
+  String get settingsUnpinAll => '全部取消釘選';
+
+  @override
+  String get settingsSourceCatalogue => '來源目錄';
+
+  @override
+  String get settingsShowSourceListsInHome => '在主畫面顯示已安裝來源清單';
 }

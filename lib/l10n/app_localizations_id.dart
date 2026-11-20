@@ -6851,4 +6851,59 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get profileKidsProfile => 'Profil anak';
+
+  @override
+  String get posterLayoutPortrait => 'Potret';
+
+  @override
+  String get posterLayoutLandscape => 'Lanskap';
+
+  @override
+  String get posterTitlePlacement => 'Penempatan judul';
+
+  @override
+  String get posterTitleAutomatic => 'Otomatis';
+
+  @override
+  String get posterTitleInsideImage => 'Di dalam gambar';
+
+  @override
+  String get posterTitleBelowImage => 'Di bawah gambar';
+
+  @override
+  String get posterSizeSmall => 'Kecil';
+
+  @override
+  String get posterSizeLarge => 'Besar';
+
+  @override
+  String get posterCardSizeDescription =>
+      'Ukuran kartu berlaku untuk baris dan kisi poster di seluruh aplikasi.';
+
+  @override
+  String get settingsAppFont => 'Font aplikasi';
+
+  @override
+  String get settingsNavbarVisibility => 'Visibilitas bilah navigasi';
+
+  @override
+  String get settingsNavbarGlassDescription =>
+      'Menggelapkan seluruh latar kaca agar ikon lebih jelas.';
+
+  @override
+  String get settingsGlassTint => 'Warna kaca';
+
+  @override
+  String get settingsTabBarDescription =>
+      'Atur bilah tab dan tombol mode secara bersamaan.';
+
+  @override
+  String get settingsUnpinAll => 'Lepas semua pin';
+
+  @override
+  String get settingsSourceCatalogue => 'Katalog sumber';
+
+  @override
+  String get settingsShowSourceListsInHome =>
+      'Tampilkan daftar sumber terpasang di Beranda';
 }

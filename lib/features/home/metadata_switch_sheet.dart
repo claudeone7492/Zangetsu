@@ -152,8 +152,8 @@ Future<HomeCatalogueSelection?> showMetadataSwitchSheet(
                       color: AppColors.accent,
                     ),
                   ),
-                  title: const Text('Source Catalogue'),
-                  subtitle: const Text('Show installed source lists in Home'),
+                  title: Text(context.l10n.settingsSourceCatalogue),
+                  subtitle: Text(context.l10n.settingsShowSourceListsInHome),
                   trailing: Switch(
                     value: sourceCatalogueActive,
                     activeThumbColor: AppColors.accent,

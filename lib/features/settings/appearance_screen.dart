@@ -612,7 +612,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                 child: Row(
-                  children: [Text('App font', style: AppText.headline)],
+                  children: [Text(context.l10n.settingsAppFont, style: AppText.headline)],
                 ),
               ),
               const Divider(color: AppColors.hairline, height: 1),

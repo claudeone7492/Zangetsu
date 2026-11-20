@@ -2957,5 +2957,22 @@
 	"profileUseFingerprint": "Usa l'impronta su questo telefono",
 	"profileEnterCurrentPin": "Inserisci il PIN attuale di questo profilo per continuare.",
 	"profileDonate": "Dona",
-	"profileKidsProfile": "Profilo per bambini"
+	"profileKidsProfile": "Profilo per bambini",
+	"posterLayoutPortrait": "Verticale",
+	"posterLayoutLandscape": "Orizzontale",
+	"posterTitlePlacement": "Posizione del titolo",
+	"posterTitleAutomatic": "Automatico",
+	"posterTitleInsideImage": "Dentro l'immagine",
+	"posterTitleBelowImage": "Sotto l'immagine",
+	"posterSizeSmall": "Piccolo",
+	"posterSizeLarge": "Grande",
+	"posterCardSizeDescription": "La dimensione delle schede vale per righe e griglie di poster in tutta l'app.",
+	"settingsAppFont": "Carattere dell'app",
+	"settingsNavbarVisibility": "Visibilità della barra",
+	"settingsNavbarGlassDescription": "Scurisce l'intero sfondo in vetro per icone più nitide.",
+	"settingsGlassTint": "Tinta del vetro",
+	"settingsTabBarDescription": "Regola insieme la barra delle schede e il pulsante modalità.",
+	"settingsUnpinAll": "Rimuovi tutti i pin",
+	"settingsSourceCatalogue": "Catalogo delle fonti",
+	"settingsShowSourceListsInHome": "Mostra gli elenchi delle fonti installate in Home"
 }

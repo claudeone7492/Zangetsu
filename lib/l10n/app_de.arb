@@ -2957,5 +2957,22 @@
 	"profileUseFingerprint": "Fingerabdruck auf diesem Telefon verwenden",
 	"profileEnterCurrentPin": "Gib die aktuelle PIN dieses Profils ein, um fortzufahren.",
 	"profileDonate": "Spenden",
-	"profileKidsProfile": "Kinderprofil"
+	"profileKidsProfile": "Kinderprofil",
+	"posterLayoutPortrait": "Hochformat",
+	"posterLayoutLandscape": "Querformat",
+	"posterTitlePlacement": "Titelplatzierung",
+	"posterTitleAutomatic": "Automatisch",
+	"posterTitleInsideImage": "Im Bild",
+	"posterTitleBelowImage": "Unter dem Bild",
+	"posterSizeSmall": "Klein",
+	"posterSizeLarge": "Groß",
+	"posterCardSizeDescription": "Die Kartengröße gilt für alle Poster-Reihen und Raster in der App.",
+	"settingsAppFont": "App-Schriftart",
+	"settingsNavbarVisibility": "Sichtbarkeit der Navigationsleiste",
+	"settingsNavbarGlassDescription": "Verdunkelt den gesamten Glas-Hintergrund für klarere Symbole.",
+	"settingsGlassTint": "Glas-Tönung",
+	"settingsTabBarDescription": "Passe Registerkartenleiste und Modus-Schaltfläche gemeinsam an.",
+	"settingsUnpinAll": "Alle lösen",
+	"settingsSourceCatalogue": "Quellenkatalog",
+	"settingsShowSourceListsInHome": "Installierte Quellenlisten in Home anzeigen"
 }

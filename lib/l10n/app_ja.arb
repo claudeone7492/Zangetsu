@@ -2957,5 +2957,22 @@
 	"profileUseFingerprint": "この端末で指紋を使用",
 	"profileEnterCurrentPin": "続行するにはこのプロフィールの現在のPINを入力してください。",
 	"profileDonate": "寄付",
-	"profileKidsProfile": "キッズプロフィール"
+	"profileKidsProfile": "キッズプロフィール",
+	"posterLayoutPortrait": "縦向き",
+	"posterLayoutLandscape": "横向き",
+	"posterTitlePlacement": "タイトルの配置",
+	"posterTitleAutomatic": "自動",
+	"posterTitleInsideImage": "画像内",
+	"posterTitleBelowImage": "画像の下",
+	"posterSizeSmall": "小",
+	"posterSizeLarge": "大",
+	"posterCardSizeDescription": "カードサイズはアプリ全体のポスター行とグリッドに適用されます。",
+	"settingsAppFont": "アプリのフォント",
+	"settingsNavbarVisibility": "ナビゲーションバーの表示",
+	"settingsNavbarGlassDescription": "ガラス背景全体を暗くしてアイコンを見やすくします。",
+	"settingsGlassTint": "ガラスの色合い",
+	"settingsTabBarDescription": "タブバーとモードボタンをまとめて調整します。",
+	"settingsUnpinAll": "すべてのピンを解除",
+	"settingsSourceCatalogue": "ソースカタログ",
+	"settingsShowSourceListsInHome": "インストール済みソースのリストをホームに表示"
 }

@@ -2958,5 +2958,22 @@
 	"profileUseFingerprint": "在此手機上使用指紋",
 	"profileEnterCurrentPin": "輸入此個人資料目前的 PIN 以繼續。",
 	"profileDonate": "捐贈",
-	"profileKidsProfile": "兒童個人資料"
+	"profileKidsProfile": "兒童個人資料",
+	"posterLayoutPortrait": "直式",
+	"posterLayoutLandscape": "橫式",
+	"posterTitlePlacement": "標題位置",
+	"posterTitleAutomatic": "自動",
+	"posterTitleInsideImage": "圖片內",
+	"posterTitleBelowImage": "圖片下方",
+	"posterSizeSmall": "小",
+	"posterSizeLarge": "大",
+	"posterCardSizeDescription": "卡片大小適用於應用程式中的所有海報列與格狀檢視。",
+	"settingsAppFont": "應用程式字型",
+	"settingsNavbarVisibility": "導覽列可見度",
+	"settingsNavbarGlassDescription": "加深整個玻璃背景，讓圖示更清楚。",
+	"settingsGlassTint": "玻璃色調",
+	"settingsTabBarDescription": "同時調整標籤列與模式按鈕。",
+	"settingsUnpinAll": "全部取消釘選",
+	"settingsSourceCatalogue": "來源目錄",
+	"settingsShowSourceListsInHome": "在主畫面顯示已安裝來源清單"
 }

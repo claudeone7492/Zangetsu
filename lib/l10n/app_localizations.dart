@@ -11954,6 +11954,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Kids profile'**
   String get profileKidsProfile;
+
+  /// No description provided for @posterLayoutPortrait.
+  ///
+  /// In en, this message translates to:
+  /// **'Portrait'**
+  String get posterLayoutPortrait;
+
+  /// No description provided for @posterLayoutLandscape.
+  ///
+  /// In en, this message translates to:
+  /// **'Landscape'**
+  String get posterLayoutLandscape;
+
+  /// No description provided for @posterTitlePlacement.
+  ///
+  /// In en, this message translates to:
+  /// **'Title placement'**
+  String get posterTitlePlacement;
+
+  /// No description provided for @posterTitleAutomatic.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get posterTitleAutomatic;
+
+  /// No description provided for @posterTitleInsideImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Inside image'**
+  String get posterTitleInsideImage;
+
+  /// No description provided for @posterTitleBelowImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Below image'**
+  String get posterTitleBelowImage;
+
+  /// No description provided for @posterSizeSmall.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get posterSizeSmall;
+
+  /// No description provided for @posterSizeLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get posterSizeLarge;
+
+  /// No description provided for @posterCardSizeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Card size applies to poster rows and grids throughout the app.'**
+  String get posterCardSizeDescription;
+
+  /// No description provided for @settingsAppFont.
+  ///
+  /// In en, this message translates to:
+  /// **'App font'**
+  String get settingsAppFont;
+
+  /// No description provided for @settingsNavbarVisibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Navbar visibility'**
+  String get settingsNavbarVisibility;
+
+  /// No description provided for @settingsNavbarGlassDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Darkens the whole glass background for clearer icons.'**
+  String get settingsNavbarGlassDescription;
+
+  /// No description provided for @settingsGlassTint.
+  ///
+  /// In en, this message translates to:
+  /// **'Glass tint'**
+  String get settingsGlassTint;
+
+  /// No description provided for @settingsTabBarDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust the tab bar and mode button together.'**
+  String get settingsTabBarDescription;
+
+  /// No description provided for @settingsUnpinAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpin all'**
+  String get settingsUnpinAll;
+
+  /// No description provided for @settingsSourceCatalogue.
+  ///
+  /// In en, this message translates to:
+  /// **'Source Catalogue'**
+  String get settingsSourceCatalogue;
+
+  /// No description provided for @settingsShowSourceListsInHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Show installed source lists in Home'**
+  String get settingsShowSourceListsInHome;
 }
 
 class _AppLocalizationsDelegate

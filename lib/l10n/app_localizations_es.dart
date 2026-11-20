@@ -6871,4 +6871,59 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get profileKidsProfile => 'Perfil infantil';
+
+  @override
+  String get posterLayoutPortrait => 'Vertical';
+
+  @override
+  String get posterLayoutLandscape => 'Horizontal';
+
+  @override
+  String get posterTitlePlacement => 'Ubicación del título';
+
+  @override
+  String get posterTitleAutomatic => 'Automático';
+
+  @override
+  String get posterTitleInsideImage => 'Dentro de la imagen';
+
+  @override
+  String get posterTitleBelowImage => 'Debajo de la imagen';
+
+  @override
+  String get posterSizeSmall => 'Pequeño';
+
+  @override
+  String get posterSizeLarge => 'Grande';
+
+  @override
+  String get posterCardSizeDescription =>
+      'El tamaño de tarjeta se aplica a las filas y cuadrículas de pósteres de toda la app.';
+
+  @override
+  String get settingsAppFont => 'Fuente de la app';
+
+  @override
+  String get settingsNavbarVisibility => 'Visibilidad de la barra';
+
+  @override
+  String get settingsNavbarGlassDescription =>
+      'Oscurece todo el fondo de cristal para que los iconos se vean mejor.';
+
+  @override
+  String get settingsGlassTint => 'Tinte de cristal';
+
+  @override
+  String get settingsTabBarDescription =>
+      'Ajusta juntos la barra de pestañas y el botón de modo.';
+
+  @override
+  String get settingsUnpinAll => 'Desanclar todo';
+
+  @override
+  String get settingsSourceCatalogue => 'Catálogo de fuentes';
+
+  @override
+  String get settingsShowSourceListsInHome =>
+      'Mostrar listas de fuentes instaladas en Inicio';
 }

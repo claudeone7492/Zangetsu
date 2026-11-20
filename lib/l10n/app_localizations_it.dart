@@ -6867,4 +6867,59 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get profileKidsProfile => 'Profilo per bambini';
+
+  @override
+  String get posterLayoutPortrait => 'Verticale';
+
+  @override
+  String get posterLayoutLandscape => 'Orizzontale';
+
+  @override
+  String get posterTitlePlacement => 'Posizione del titolo';
+
+  @override
+  String get posterTitleAutomatic => 'Automatico';
+
+  @override
+  String get posterTitleInsideImage => 'Dentro l\'immagine';
+
+  @override
+  String get posterTitleBelowImage => 'Sotto l\'immagine';
+
+  @override
+  String get posterSizeSmall => 'Piccolo';
+
+  @override
+  String get posterSizeLarge => 'Grande';
+
+  @override
+  String get posterCardSizeDescription =>
+      'La dimensione delle schede vale per righe e griglie di poster in tutta l\'app.';
+
+  @override
+  String get settingsAppFont => 'Carattere dell\'app';
+
+  @override
+  String get settingsNavbarVisibility => 'Visibilità della barra';
+
+  @override
+  String get settingsNavbarGlassDescription =>
+      'Scurisce l\'intero sfondo in vetro per icone più nitide.';
+
+  @override
+  String get settingsGlassTint => 'Tinta del vetro';
+
+  @override
+  String get settingsTabBarDescription =>
+      'Regola insieme la barra delle schede e il pulsante modalità.';
+
+  @override
+  String get settingsUnpinAll => 'Rimuovi tutti i pin';
+
+  @override
+  String get settingsSourceCatalogue => 'Catalogo delle fonti';
+
+  @override
+  String get settingsShowSourceListsInHome =>
+      'Mostra gli elenchi delle fonti installate in Home';
 }

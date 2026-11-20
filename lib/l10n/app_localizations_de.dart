@@ -6879,4 +6879,59 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get profileKidsProfile => 'Kinderprofil';
+
+  @override
+  String get posterLayoutPortrait => 'Hochformat';
+
+  @override
+  String get posterLayoutLandscape => 'Querformat';
+
+  @override
+  String get posterTitlePlacement => 'Titelplatzierung';
+
+  @override
+  String get posterTitleAutomatic => 'Automatisch';
+
+  @override
+  String get posterTitleInsideImage => 'Im Bild';
+
+  @override
+  String get posterTitleBelowImage => 'Unter dem Bild';
+
+  @override
+  String get posterSizeSmall => 'Klein';
+
+  @override
+  String get posterSizeLarge => 'Groß';
+
+  @override
+  String get posterCardSizeDescription =>
+      'Die Kartengröße gilt für alle Poster-Reihen und Raster in der App.';
+
+  @override
+  String get settingsAppFont => 'App-Schriftart';
+
+  @override
+  String get settingsNavbarVisibility => 'Sichtbarkeit der Navigationsleiste';
+
+  @override
+  String get settingsNavbarGlassDescription =>
+      'Verdunkelt den gesamten Glas-Hintergrund für klarere Symbole.';
+
+  @override
+  String get settingsGlassTint => 'Glas-Tönung';
+
+  @override
+  String get settingsTabBarDescription =>
+      'Passe Registerkartenleiste und Modus-Schaltfläche gemeinsam an.';
+
+  @override
+  String get settingsUnpinAll => 'Alle lösen';
+
+  @override
+  String get settingsSourceCatalogue => 'Quellenkatalog';
+
+  @override
+  String get settingsShowSourceListsInHome =>
+      'Installierte Quellenlisten in Home anzeigen';
 }

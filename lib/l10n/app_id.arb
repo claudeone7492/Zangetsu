@@ -3109,5 +3109,22 @@
 	"profileUseFingerprint": "Gunakan sidik jari di ponsel ini",
 	"profileEnterCurrentPin": "Masukkan PIN profil ini saat ini untuk melanjutkan.",
 	"profileDonate": "Donasi",
-	"profileKidsProfile": "Profil anak"
+	"profileKidsProfile": "Profil anak",
+	"posterLayoutPortrait": "Potret",
+	"posterLayoutLandscape": "Lanskap",
+	"posterTitlePlacement": "Penempatan judul",
+	"posterTitleAutomatic": "Otomatis",
+	"posterTitleInsideImage": "Di dalam gambar",
+	"posterTitleBelowImage": "Di bawah gambar",
+	"posterSizeSmall": "Kecil",
+	"posterSizeLarge": "Besar",
+	"posterCardSizeDescription": "Ukuran kartu berlaku untuk baris dan kisi poster di seluruh aplikasi.",
+	"settingsAppFont": "Font aplikasi",
+	"settingsNavbarVisibility": "Visibilitas bilah navigasi",
+	"settingsNavbarGlassDescription": "Menggelapkan seluruh latar kaca agar ikon lebih jelas.",
+	"settingsGlassTint": "Warna kaca",
+	"settingsTabBarDescription": "Atur bilah tab dan tombol mode secara bersamaan.",
+	"settingsUnpinAll": "Lepas semua pin",
+	"settingsSourceCatalogue": "Katalog sumber",
+	"settingsShowSourceListsInHome": "Tampilkan daftar sumber terpasang di Beranda"
 }

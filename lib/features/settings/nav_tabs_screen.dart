@@ -348,7 +348,7 @@ class _NavTabsScreenState extends State<NavTabsScreen> {
             children: [
               Expanded(
                 child: Text(
-                  'Navbar visibility',
+                  context.l10n.settingsNavbarVisibility,
                   style: AppText.body.copyWith(color: AppColors.textPrimary),
                 ),
               ),
@@ -362,7 +362,7 @@ class _NavTabsScreenState extends State<NavTabsScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Darkens the whole glass background for clearer icons.',
+            context.l10n.settingsNavbarGlassDescription,
             style: AppText.caption,
           ),
           Slider(
@@ -498,7 +498,7 @@ class _NavTabsScreenState extends State<NavTabsScreen> {
             children: [
               Expanded(
                 child: Text(
-                  'Glass tint',
+                  context.l10n.settingsGlassTint,
                   style: AppText.body.copyWith(
                     color: AppColors.textPrimary,
                     fontSize: 14.5,
@@ -521,7 +521,7 @@ class _NavTabsScreenState extends State<NavTabsScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Adjust the tab bar and mode button together.',
+            context.l10n.settingsTabBarDescription,
             style: AppText.caption.copyWith(color: AppColors.textTertiary),
           ),
           const SizedBox(height: 8),

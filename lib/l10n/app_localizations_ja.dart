@@ -6718,4 +6718,55 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get profileKidsProfile => 'キッズプロフィール';
+
+  @override
+  String get posterLayoutPortrait => '縦向き';
+
+  @override
+  String get posterLayoutLandscape => '横向き';
+
+  @override
+  String get posterTitlePlacement => 'タイトルの配置';
+
+  @override
+  String get posterTitleAutomatic => '自動';
+
+  @override
+  String get posterTitleInsideImage => '画像内';
+
+  @override
+  String get posterTitleBelowImage => '画像の下';
+
+  @override
+  String get posterSizeSmall => '小';
+
+  @override
+  String get posterSizeLarge => '大';
+
+  @override
+  String get posterCardSizeDescription => 'カードサイズはアプリ全体のポスター行とグリッドに適用されます。';
+
+  @override
+  String get settingsAppFont => 'アプリのフォント';
+
+  @override
+  String get settingsNavbarVisibility => 'ナビゲーションバーの表示';
+
+  @override
+  String get settingsNavbarGlassDescription => 'ガラス背景全体を暗くしてアイコンを見やすくします。';
+
+  @override
+  String get settingsGlassTint => 'ガラスの色合い';
+
+  @override
+  String get settingsTabBarDescription => 'タブバーとモードボタンをまとめて調整します。';
+
+  @override
+  String get settingsUnpinAll => 'すべてのピンを解除';
+
+  @override
+  String get settingsSourceCatalogue => 'ソースカタログ';
+
+  @override
+  String get settingsShowSourceListsInHome => 'インストール済みソースのリストをホームに表示';
 }

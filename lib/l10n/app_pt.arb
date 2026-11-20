@@ -3109,5 +3109,22 @@
 	"profileUseFingerprint": "Usar impressão digital neste telemóvel",
 	"profileEnterCurrentPin": "Introduz o PIN atual deste perfil para continuar.",
 	"profileDonate": "Doar",
-	"profileKidsProfile": "Perfil infantil"
+	"profileKidsProfile": "Perfil infantil",
+	"posterLayoutPortrait": "Vertical",
+	"posterLayoutLandscape": "Horizontal",
+	"posterTitlePlacement": "Posição do título",
+	"posterTitleAutomatic": "Automático",
+	"posterTitleInsideImage": "Dentro da imagem",
+	"posterTitleBelowImage": "Abaixo da imagem",
+	"posterSizeSmall": "Pequeno",
+	"posterSizeLarge": "Grande",
+	"posterCardSizeDescription": "O tamanho dos cartões aplica-se a linhas e grelhas de pósteres em toda a app.",
+	"settingsAppFont": "Tipo de letra da app",
+	"settingsNavbarVisibility": "Visibilidade da barra",
+	"settingsNavbarGlassDescription": "Escurece todo o fundo de vidro para ícones mais nítidos.",
+	"settingsGlassTint": "Tom do vidro",
+	"settingsTabBarDescription": "Ajusta em conjunto a barra de separadores e o botão de modo.",
+	"settingsUnpinAll": "Desafixar tudo",
+	"settingsSourceCatalogue": "Catálogo de fontes",
+	"settingsShowSourceListsInHome": "Mostrar listas de fontes instaladas em Início"
 }

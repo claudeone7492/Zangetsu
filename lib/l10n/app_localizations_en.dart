@@ -6826,4 +6826,59 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileKidsProfile => 'Kids profile';
+
+  @override
+  String get posterLayoutPortrait => 'Portrait';
+
+  @override
+  String get posterLayoutLandscape => 'Landscape';
+
+  @override
+  String get posterTitlePlacement => 'Title placement';
+
+  @override
+  String get posterTitleAutomatic => 'Automatic';
+
+  @override
+  String get posterTitleInsideImage => 'Inside image';
+
+  @override
+  String get posterTitleBelowImage => 'Below image';
+
+  @override
+  String get posterSizeSmall => 'Small';
+
+  @override
+  String get posterSizeLarge => 'Large';
+
+  @override
+  String get posterCardSizeDescription =>
+      'Card size applies to poster rows and grids throughout the app.';
+
+  @override
+  String get settingsAppFont => 'App font';
+
+  @override
+  String get settingsNavbarVisibility => 'Navbar visibility';
+
+  @override
+  String get settingsNavbarGlassDescription =>
+      'Darkens the whole glass background for clearer icons.';
+
+  @override
+  String get settingsGlassTint => 'Glass tint';
+
+  @override
+  String get settingsTabBarDescription =>
+      'Adjust the tab bar and mode button together.';
+
+  @override
+  String get settingsUnpinAll => 'Unpin all';
+
+  @override
+  String get settingsSourceCatalogue => 'Source Catalogue';
+
+  @override
+  String get settingsShowSourceListsInHome =>
+      'Show installed source lists in Home';
 }
