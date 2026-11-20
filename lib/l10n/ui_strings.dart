@@ -41,6 +41,7 @@ String contentModeLabel(AppLocalizations l10n, ContentMode mode) =>
       ContentMode.manga => l10n.modeManga,
       ContentMode.novel => l10n.modeNovel,
       ContentMode.shorts => l10n.shorts,
+      ContentMode.music => l10n.modeMusic,
     };
 
 String contentModeContentNoun(AppLocalizations l10n, ContentMode mode) =>
@@ -49,6 +50,7 @@ String contentModeContentNoun(AppLocalizations l10n, ContentMode mode) =>
       ContentMode.manga => l10n.contentManga,
       ContentMode.novel => l10n.contentNovels,
       ContentMode.shorts => l10n.shorts,
+      ContentMode.music => l10n.contentSongs,
     };
 
 String sourceOutcomeLabel(AppLocalizations l10n, SourceOutcome outcome) =>

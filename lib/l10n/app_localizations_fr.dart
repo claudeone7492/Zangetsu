@@ -6698,4 +6698,103 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get appLockDisabled => 'App lock is off';
+
+  @override
+  String get musicQuality => 'Qualité audio';
+
+  @override
+  String get musicQualitySubtitle => 'Débit des morceaux en streaming';
+
+  @override
+  String get musicQualityDataSaver => 'Économiseur de données';
+
+  @override
+  String get musicQualityBalanced => 'Équilibrée';
+
+  @override
+  String get musicQualityHigh => 'Élevée';
+
+  @override
+  String get modeMusic => 'Music';
+
+  @override
+  String get contentSongs => 'songs';
+
+  @override
+  String get musicSongsForYou => 'Morceaux pour vous';
+
+  @override
+  String get musicNowPlaying => 'Lecture en cours';
+
+  @override
+  String get musicUpNext => 'À suivre';
+
+  @override
+  String get musicQueue => 'File d\'attente';
+
+  @override
+  String get musicSearchHint => 'Rechercher des morceaux, artistes, albums';
+
+  @override
+  String get musicSearchSongs => 'Rechercher des morceaux';
+
+  @override
+  String get musicNoTracks => 'Pas encore de morceaux ici';
+
+  @override
+  String get musicNoTracksBody =>
+      'Le catalogue n\'a rien renvoyé pour cette rangée. Essayez une autre rangée ou une recherche.';
+
+  @override
+  String get musicCantPlay => 'Impossible de lire ce morceau';
+
+  @override
+  String get musicCantPlayBody =>
+      'Le catalogue n\'a pas renvoyé de lien lisible. Essayez un autre morceau.';
+
+  @override
+  String get musicRepeatOff => 'Répétition désactivée';
+
+  @override
+  String get musicRepeatAll => 'Tout répéter';
+
+  @override
+  String get musicRepeatOne => 'Répéter un titre';
+
+  @override
+  String get musicShuffleOn => 'Aléatoire activé';
+
+  @override
+  String get musicShuffleOff => 'Aléatoire désactivé';
+
+  @override
+  String get musicUnknownArtist => 'Artiste inconnu';
+
+  @override
+  String get musicUnavailable => 'Musique indisponible';
+
+  @override
+  String get musicUnavailableBody =>
+      'Aucun catalogue musical n\'est joignable pour l\'instant. Vérifiez votre connexion et réessayez.';
+
+  @override
+  String get musicSearchFailed => 'Échec de la recherche';
+
+  @override
+  String get musicPlayAll => 'Tout lire';
+
+  @override
+  String get musicPaused => 'En pause';
+
+  @override
+  String get musicPlaying => 'En lecture';
+
+  @override
+  String get musicRowTrending => 'Tendances';
+
+  @override
+  String get musicRowNewReleases => 'Nouveautés';
+
+  @override
+  String get musicRowLofi => 'Lo-fi';
 }

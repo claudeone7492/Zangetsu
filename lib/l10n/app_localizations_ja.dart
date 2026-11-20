@@ -6547,4 +6547,100 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get appLockDisabled => 'App lock is off';
+
+  @override
+  String get musicQuality => '音楽の音質';
+
+  @override
+  String get musicQualitySubtitle => 'ストリーミング曲のビットレート';
+
+  @override
+  String get musicQualityDataSaver => 'データ節約';
+
+  @override
+  String get musicQualityBalanced => 'バランス';
+
+  @override
+  String get musicQualityHigh => '高音質';
+
+  @override
+  String get modeMusic => 'Music';
+
+  @override
+  String get contentSongs => 'songs';
+
+  @override
+  String get musicSongsForYou => 'あなたへの曲';
+
+  @override
+  String get musicNowPlaying => '再生中';
+
+  @override
+  String get musicUpNext => '次に再生';
+
+  @override
+  String get musicQueue => 'キュー';
+
+  @override
+  String get musicSearchHint => '曲、アーティスト、アルバムを検索';
+
+  @override
+  String get musicSearchSongs => '曲を検索';
+
+  @override
+  String get musicNoTracks => 'ここにはまだ曲がありません';
+
+  @override
+  String get musicNoTracksBody => 'この行に対してカタログは何も返しませんでした。別の行か検索をお試しください。';
+
+  @override
+  String get musicCantPlay => 'この曲を再生できませんでした';
+
+  @override
+  String get musicCantPlayBody => 'カタログが再生可能なリンクを返しませんでした。別の曲をお試しください。';
+
+  @override
+  String get musicRepeatOff => 'リピートなし';
+
+  @override
+  String get musicRepeatAll => 'すべて繰り返す';
+
+  @override
+  String get musicRepeatOne => '1曲を繰り返す';
+
+  @override
+  String get musicShuffleOn => 'シャッフルあり';
+
+  @override
+  String get musicShuffleOff => 'シャッフルなし';
+
+  @override
+  String get musicUnknownArtist => '不明なアーティスト';
+
+  @override
+  String get musicUnavailable => '音楽を利用できません';
+
+  @override
+  String get musicUnavailableBody => '現在利用できる音楽カタログがありません。接続を確認して再試行してください。';
+
+  @override
+  String get musicSearchFailed => '検索に失敗しました';
+
+  @override
+  String get musicPlayAll => 'すべて再生';
+
+  @override
+  String get musicPaused => '一時停止中';
+
+  @override
+  String get musicPlaying => '再生しています';
+
+  @override
+  String get musicRowTrending => '急上昇';
+
+  @override
+  String get musicRowNewReleases => '新着';
+
+  @override
+  String get musicRowLofi => 'Lo-fi';
 }

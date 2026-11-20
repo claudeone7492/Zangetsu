@@ -6673,4 +6673,103 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get appLockDisabled => 'App lock is off';
+
+  @override
+  String get musicQuality => 'Kualitas musik';
+
+  @override
+  String get musicQualitySubtitle => 'Bitrate untuk lagu yang dialirkan';
+
+  @override
+  String get musicQualityDataSaver => 'Hemat data';
+
+  @override
+  String get musicQualityBalanced => 'Seimbang';
+
+  @override
+  String get musicQualityHigh => 'Tinggi';
+
+  @override
+  String get modeMusic => 'Music';
+
+  @override
+  String get contentSongs => 'songs';
+
+  @override
+  String get musicSongsForYou => 'Lagu untukmu';
+
+  @override
+  String get musicNowPlaying => 'Sedang diputar';
+
+  @override
+  String get musicUpNext => 'Berikutnya';
+
+  @override
+  String get musicQueue => 'Antrean';
+
+  @override
+  String get musicSearchHint => 'Cari lagu, artis, album';
+
+  @override
+  String get musicSearchSongs => 'Cari lagu';
+
+  @override
+  String get musicNoTracks => 'Belum ada lagu di sini';
+
+  @override
+  String get musicNoTracksBody =>
+      'Katalog tidak mengembalikan apa pun untuk baris ini. Coba baris lain atau pencarian.';
+
+  @override
+  String get musicCantPlay => 'Tidak dapat memutar lagu ini';
+
+  @override
+  String get musicCantPlayBody =>
+      'Katalog tidak mengembalikan tautan yang bisa diputar. Coba lagu lain.';
+
+  @override
+  String get musicRepeatOff => 'Ulangi mati';
+
+  @override
+  String get musicRepeatAll => 'Ulangi semua';
+
+  @override
+  String get musicRepeatOne => 'Ulangi satu';
+
+  @override
+  String get musicShuffleOn => 'Acak nyala';
+
+  @override
+  String get musicShuffleOff => 'Acak mati';
+
+  @override
+  String get musicUnknownArtist => 'Artis tidak dikenal';
+
+  @override
+  String get musicUnavailable => 'Musik tidak tersedia';
+
+  @override
+  String get musicUnavailableBody =>
+      'Tidak ada katalog musik yang bisa diakses sekarang. Periksa koneksi dan coba lagi.';
+
+  @override
+  String get musicSearchFailed => 'Pencarian gagal';
+
+  @override
+  String get musicPlayAll => 'Putar semua';
+
+  @override
+  String get musicPaused => 'Dijeda';
+
+  @override
+  String get musicPlaying => 'Memutar';
+
+  @override
+  String get musicRowTrending => 'Sedang tren';
+
+  @override
+  String get musicRowNewReleases => 'Rilis baru';
+
+  @override
+  String get musicRowLofi => 'Lo-fi';
 }

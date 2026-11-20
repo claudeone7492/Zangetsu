@@ -6690,4 +6690,104 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get appLockDisabled => 'App lock is off';
+
+  @override
+  String get musicQuality => 'Calidad de música';
+
+  @override
+  String get musicQualitySubtitle =>
+      'Tasa de bits de las canciones en streaming';
+
+  @override
+  String get musicQualityDataSaver => 'Ahorro de datos';
+
+  @override
+  String get musicQualityBalanced => 'Equilibrada';
+
+  @override
+  String get musicQualityHigh => 'Alta';
+
+  @override
+  String get modeMusic => 'Music';
+
+  @override
+  String get contentSongs => 'songs';
+
+  @override
+  String get musicSongsForYou => 'Canciones para ti';
+
+  @override
+  String get musicNowPlaying => 'Reproduciendo';
+
+  @override
+  String get musicUpNext => 'A continuación';
+
+  @override
+  String get musicQueue => 'Cola';
+
+  @override
+  String get musicSearchHint => 'Busca canciones, artistas, álbumes';
+
+  @override
+  String get musicSearchSongs => 'Buscar canciones';
+
+  @override
+  String get musicNoTracks => 'Aún no hay canciones aquí';
+
+  @override
+  String get musicNoTracksBody =>
+      'El catálogo no devolvió nada para esta fila. Prueba otra fila o una búsqueda.';
+
+  @override
+  String get musicCantPlay => 'No se pudo reproducir esta canción';
+
+  @override
+  String get musicCantPlayBody =>
+      'El catálogo no devolvió un enlace reproducible. Prueba con otra canción.';
+
+  @override
+  String get musicRepeatOff => 'Repetición desactivada';
+
+  @override
+  String get musicRepeatAll => 'Repetir todo';
+
+  @override
+  String get musicRepeatOne => 'Repetir una';
+
+  @override
+  String get musicShuffleOn => 'Aleatorio activado';
+
+  @override
+  String get musicShuffleOff => 'Aleatorio desactivado';
+
+  @override
+  String get musicUnknownArtist => 'Artista desconocido';
+
+  @override
+  String get musicUnavailable => 'Música no disponible';
+
+  @override
+  String get musicUnavailableBody =>
+      'Ningún catálogo de música está disponible ahora. Comprueba tu conexión e inténtalo de nuevo.';
+
+  @override
+  String get musicSearchFailed => 'La búsqueda falló';
+
+  @override
+  String get musicPlayAll => 'Reproducir todo';
+
+  @override
+  String get musicPaused => 'En pausa';
+
+  @override
+  String get musicPlaying => 'Sonando';
+
+  @override
+  String get musicRowTrending => 'Tendencias';
+
+  @override
+  String get musicRowNewReleases => 'Novedades';
+
+  @override
+  String get musicRowLofi => 'Lo-fi';
 }

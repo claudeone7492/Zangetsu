@@ -3633,5 +3633,39 @@
         "type": "int"
       }
     }
-  }
+  },
+
+  "musicQuality": "Music quality",
+  "musicQualitySubtitle": "Bitrate for streamed songs",
+  "musicQualityDataSaver": "Data saver",
+  "musicQualityBalanced": "Balanced",
+  "musicQualityHigh": "High",
+
+  "modeMusic": "Music",
+  "contentSongs": "songs",
+  "musicSongsForYou": "Songs for you",
+  "musicNowPlaying": "Now playing",
+  "musicUpNext": "Up next",
+  "musicQueue": "Queue",
+  "musicSearchHint": "Search songs, artists, albums",
+  "musicSearchSongs": "Search songs",
+  "musicNoTracks": "No songs here yet",
+  "musicNoTracksBody": "The catalogue returned nothing for this row. Try another row or a search.",
+  "musicCantPlay": "Couldn't play this song",
+  "musicCantPlayBody": "The catalogue didn't return a playable link. Try another song.",
+  "musicRepeatOff": "Repeat off",
+  "musicRepeatAll": "Repeat all",
+  "musicRepeatOne": "Repeat one",
+  "musicShuffleOn": "Shuffle on",
+  "musicShuffleOff": "Shuffle off",
+  "musicUnknownArtist": "Unknown artist",
+  "musicUnavailable": "Music unavailable",
+  "musicUnavailableBody": "No music catalogue is reachable right now. Check your connection and try again.",
+  "musicSearchFailed": "Search failed",
+  "musicPlayAll": "Play all",
+  "musicPaused": "Paused",
+  "musicPlaying": "Playing",
+  "musicRowTrending": "Trending",
+  "musicRowNewReleases": "New releases",
+  "musicRowLofi": "Lo-fi"
 }

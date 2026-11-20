@@ -6668,4 +6668,103 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get appLockDisabled => 'App lock is off';
+
+  @override
+  String get musicQuality => 'Müzik kalitesi';
+
+  @override
+  String get musicQualitySubtitle => 'Akış halindeki şarkılar için bit hızı';
+
+  @override
+  String get musicQualityDataSaver => 'Veri tasarrufu';
+
+  @override
+  String get musicQualityBalanced => 'Dengeli';
+
+  @override
+  String get musicQualityHigh => 'Yüksek';
+
+  @override
+  String get modeMusic => 'Music';
+
+  @override
+  String get contentSongs => 'songs';
+
+  @override
+  String get musicSongsForYou => 'Sana özel şarkılar';
+
+  @override
+  String get musicNowPlaying => 'Şimdi çalıyor';
+
+  @override
+  String get musicUpNext => 'Sıradaki';
+
+  @override
+  String get musicQueue => 'Sıra';
+
+  @override
+  String get musicSearchHint => 'Şarkı, sanatçı, albüm ara';
+
+  @override
+  String get musicSearchSongs => 'Şarkı ara';
+
+  @override
+  String get musicNoTracks => 'Burada henüz şarkı yok';
+
+  @override
+  String get musicNoTracksBody =>
+      'Katalog bu satır için bir şey döndürmedi. Başka bir satır veya arama deneyin.';
+
+  @override
+  String get musicCantPlay => 'Bu şarkı çalınamadı';
+
+  @override
+  String get musicCantPlayBody =>
+      'Katalog çalınabilir bir bağlantı döndürmedi. Başka bir şarkı deneyin.';
+
+  @override
+  String get musicRepeatOff => 'Tekrar kapalı';
+
+  @override
+  String get musicRepeatAll => 'Tümünü tekrarla';
+
+  @override
+  String get musicRepeatOne => 'Birini tekrarla';
+
+  @override
+  String get musicShuffleOn => 'Karıştırma açık';
+
+  @override
+  String get musicShuffleOff => 'Karıştırma kapalı';
+
+  @override
+  String get musicUnknownArtist => 'Bilinmeyen sanatçı';
+
+  @override
+  String get musicUnavailable => 'Müzik kullanılamıyor';
+
+  @override
+  String get musicUnavailableBody =>
+      'Şu anda erişilebilir bir müzik kataloğu yok. Bağlantınızı kontrol edip tekrar deneyin.';
+
+  @override
+  String get musicSearchFailed => 'Arama başarısız';
+
+  @override
+  String get musicPlayAll => 'Tümünü çal';
+
+  @override
+  String get musicPaused => 'Duraklatıldı';
+
+  @override
+  String get musicPlaying => 'Çalıyor';
+
+  @override
+  String get musicRowTrending => 'Trend olanlar';
+
+  @override
+  String get musicRowNewReleases => 'Yeni çıkanlar';
+
+  @override
+  String get musicRowLofi => 'Lo-fi';
 }

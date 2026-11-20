@@ -6733,4 +6733,103 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get appLockDisabled => 'App lock is off';
+
+  @override
+  String get musicQuality => 'جودة الموسيقى';
+
+  @override
+  String get musicQualitySubtitle => 'معدل البت للأغاني المتدفقة';
+
+  @override
+  String get musicQualityDataSaver => 'توفير البيانات';
+
+  @override
+  String get musicQualityBalanced => 'متوازنة';
+
+  @override
+  String get musicQualityHigh => 'عالية';
+
+  @override
+  String get modeMusic => 'Music';
+
+  @override
+  String get contentSongs => 'songs';
+
+  @override
+  String get musicSongsForYou => 'أغانٍ لك';
+
+  @override
+  String get musicNowPlaying => 'يُشغَّل الآن';
+
+  @override
+  String get musicUpNext => 'التالي';
+
+  @override
+  String get musicQueue => 'قائمة الانتظار';
+
+  @override
+  String get musicSearchHint => 'ابحث عن أغانٍ وفنانين وألبومات';
+
+  @override
+  String get musicSearchSongs => 'ابحث عن أغانٍ';
+
+  @override
+  String get musicNoTracks => 'لا توجد أغانٍ هنا بعد';
+
+  @override
+  String get musicNoTracksBody =>
+      'لم يُرجع الكتالوج شيئًا لهذا الصف. جرّب صفًا آخر أو ابحث.';
+
+  @override
+  String get musicCantPlay => 'تعذّر تشغيل هذه الأغنية';
+
+  @override
+  String get musicCantPlayBody =>
+      'لم يُرجع الكتالوج رابطًا قابلًا للتشغيل. جرّب أغنية أخرى.';
+
+  @override
+  String get musicRepeatOff => 'التكرار متوقف';
+
+  @override
+  String get musicRepeatAll => 'تكرار الكل';
+
+  @override
+  String get musicRepeatOne => 'تكرار واحدة';
+
+  @override
+  String get musicShuffleOn => 'الخلط مفعّل';
+
+  @override
+  String get musicShuffleOff => 'الخلط متوقف';
+
+  @override
+  String get musicUnknownArtist => 'فنان غير معروف';
+
+  @override
+  String get musicUnavailable => 'الموسيقى غير متاحة';
+
+  @override
+  String get musicUnavailableBody =>
+      'لا يوجد كتالوج موسيقى يمكن الوصول إليه الآن. تحقق من اتصالك وحاول مجددًا.';
+
+  @override
+  String get musicSearchFailed => 'فشل البحث';
+
+  @override
+  String get musicPlayAll => 'تشغيل الكل';
+
+  @override
+  String get musicPaused => 'متوقف مؤقتًا';
+
+  @override
+  String get musicPlaying => 'قيد التشغيل';
+
+  @override
+  String get musicRowTrending => 'الأكثر رواجًا';
+
+  @override
+  String get musicRowNewReleases => 'إصدارات جديدة';
+
+  @override
+  String get musicRowLofi => 'لو-فاي';
 }
