@@ -3126,5 +3126,20 @@
 	"settingsTabBarDescription": "Atur bilah tab dan tombol mode secara bersamaan.",
 	"settingsUnpinAll": "Lepas semua pin",
 	"settingsSourceCatalogue": "Katalog sumber",
-	"settingsShowSourceListsInHome": "Tampilkan daftar sumber terpasang di Beranda"
+	"settingsShowSourceListsInHome": "Tampilkan daftar sumber terpasang di Beranda",
+	"sourcesInstallDefaultRepos": "Pasang repo bawaan",
+	"sourcesMangayomiUpdatesAvailable": "Pembaruan ekstensi Mangayomi tersedia",
+	"sourcesPasteIndexLink": "Tempel tautan indeks yang cocok. Setiap kategori disimpan terpisah.",
+	"sourcesUninstallSourceTitle": "Copot sumber?",
+	"sourcesCouldNotLoadRepository": "Tidak dapat memuat repo",
+	"sourcesRemoveAddonTitle": "Hapus addon?",
+	"sourcesAddonNoSettingsPage": "Addon ini tidak memiliki halaman pengaturan",
+	"sourcesCouldNotOpenSettingsPage": "Tidak dapat membuka halaman pengaturan",
+	"sourcesAddonSyncPending": "Sinkronisasi addon tertunda",
+	"sourcesRetrySync": "Coba sinkronisasi lagi",
+	"sourcesNoAddonsYet": "Belum ada addon. Tambahkan addon untuk memulai.",
+	"sourcesHomeRows": "Baris Beranda",
+	"sourcesHideRowsKeepMetadata": "Sembunyikan baris sambil tetap menyediakan metadata",
+	"sourcesAddAccount": "Tambah akun",
+	"sourcesAddXtreamAccount": "Tambah akun Xtream"
 }

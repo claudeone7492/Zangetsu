@@ -6769,4 +6769,50 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsShowSourceListsInHome => 'インストール済みソースのリストをホームに表示';
+
+  @override
+  String get sourcesInstallDefaultRepos => '既定のリポジトリをインストール';
+
+  @override
+  String get sourcesMangayomiUpdatesAvailable => 'Mangayomi拡張機能の更新があります';
+
+  @override
+  String get sourcesPasteIndexLink =>
+      '対応するインデックスリンクを貼り付けてください。カテゴリごとに個別に保存されます。';
+
+  @override
+  String get sourcesUninstallSourceTitle => 'ソースをアンインストールしますか？';
+
+  @override
+  String get sourcesCouldNotLoadRepository => 'リポジトリを読み込めませんでした';
+
+  @override
+  String get sourcesRemoveAddonTitle => 'アドオンを削除しますか？';
+
+  @override
+  String get sourcesAddonNoSettingsPage => 'このアドオンには設定ページがありません';
+
+  @override
+  String get sourcesCouldNotOpenSettingsPage => '設定ページを開けませんでした';
+
+  @override
+  String get sourcesAddonSyncPending => 'アドオンの同期が保留中';
+
+  @override
+  String get sourcesRetrySync => '同期を再試行';
+
+  @override
+  String get sourcesNoAddonsYet => 'アドオンはまだありません。追加して始めましょう。';
+
+  @override
+  String get sourcesHomeRows => 'ホームの行';
+
+  @override
+  String get sourcesHideRowsKeepMetadata => '行を隠したままメタデータは利用可能に';
+
+  @override
+  String get sourcesAddAccount => 'アカウントを追加';
+
+  @override
+  String get sourcesAddXtreamAccount => 'Xtreamアカウントを追加';
 }

@@ -6965,4 +6965,53 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get settingsShowSourceListsInHome =>
       'إظهار قوائم المصادر المثبتة في الرئيسية';
+
+  @override
+  String get sourcesInstallDefaultRepos => 'تثبيت المستودعات الافتراضية';
+
+  @override
+  String get sourcesMangayomiUpdatesAvailable =>
+      'تحديثات إضافات Mangayomi متاحة';
+
+  @override
+  String get sourcesPasteIndexLink =>
+      'الصق رابط الفهرس المطابق. يُحفظ كل تصنيف على حدة.';
+
+  @override
+  String get sourcesUninstallSourceTitle => 'إلغاء تثبيت المصدر؟';
+
+  @override
+  String get sourcesCouldNotLoadRepository => 'تعذّر تحميل المستودع';
+
+  @override
+  String get sourcesRemoveAddonTitle => 'إزالة الإضافة؟';
+
+  @override
+  String get sourcesAddonNoSettingsPage =>
+      'لا تحتوي هذه الإضافة على صفحة إعدادات';
+
+  @override
+  String get sourcesCouldNotOpenSettingsPage => 'تعذّر فتح صفحة الإعدادات';
+
+  @override
+  String get sourcesAddonSyncPending => 'مزامنة الإضافة معلّقة';
+
+  @override
+  String get sourcesRetrySync => 'إعادة محاولة المزامنة';
+
+  @override
+  String get sourcesNoAddonsYet => 'لا توجد إضافات بعد. أضف إضافة للبدء.';
+
+  @override
+  String get sourcesHomeRows => 'صفوف الرئيسية';
+
+  @override
+  String get sourcesHideRowsKeepMetadata =>
+      'إخفاء الصفوف مع إبقاء البيانات الوصفية متاحة';
+
+  @override
+  String get sourcesAddAccount => 'إضافة حساب';
+
+  @override
+  String get sourcesAddXtreamAccount => 'إضافة حساب Xtream';
 }

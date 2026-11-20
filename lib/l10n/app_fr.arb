@@ -2974,5 +2974,20 @@
 	"settingsTabBarDescription": "Ajuste ensemble la barre d'onglets et le bouton de mode.",
 	"settingsUnpinAll": "Tout désépingler",
 	"settingsSourceCatalogue": "Catalogue de sources",
-	"settingsShowSourceListsInHome": "Afficher les listes de sources installées dans Accueil"
+	"settingsShowSourceListsInHome": "Afficher les listes de sources installées dans Accueil",
+	"sourcesInstallDefaultRepos": "Installer les dépôts par défaut",
+	"sourcesMangayomiUpdatesAvailable": "Mises à jour d'extensions Mangayomi disponibles",
+	"sourcesPasteIndexLink": "Colle le lien d'index correspondant. Chaque catégorie est enregistrée séparément.",
+	"sourcesUninstallSourceTitle": "Désinstaller la source ?",
+	"sourcesCouldNotLoadRepository": "Impossible de charger le dépôt",
+	"sourcesRemoveAddonTitle": "Supprimer l'extension ?",
+	"sourcesAddonNoSettingsPage": "Cette extension n'a pas de page de réglages",
+	"sourcesCouldNotOpenSettingsPage": "Impossible d'ouvrir la page de réglages",
+	"sourcesAddonSyncPending": "Synchronisation de l'extension en attente",
+	"sourcesRetrySync": "Réessayer la synchronisation",
+	"sourcesNoAddonsYet": "Pas encore d'extensions. Ajoutes-en une pour commencer.",
+	"sourcesHomeRows": "Rangées d'accueil",
+	"sourcesHideRowsKeepMetadata": "Masquer les rangées tout en gardant les métadonnées",
+	"sourcesAddAccount": "Ajouter un compte",
+	"sourcesAddXtreamAccount": "Ajouter un compte Xtream"
 }

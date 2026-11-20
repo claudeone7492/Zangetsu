@@ -130,7 +130,7 @@ class _MangayomiSourcesScreenState extends State<MangayomiSourcesScreen>
     if (count > 0 && count != _lastUpdateNotifyCount) {
       _lastUpdateNotifyCount = count;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mangayomi extension updates available')),
+        SnackBar(content: Text(context.l10n.sourcesMangayomiUpdatesAvailable)),
       );
     }
   }
@@ -174,7 +174,7 @@ class _MangayomiSourcesScreenState extends State<MangayomiSourcesScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Paste the matching index link. Each category is saved separately.',
+              context.l10n.sourcesPasteIndexLink,
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 12),
@@ -323,7 +323,7 @@ class _MangayomiSourcesScreenState extends State<MangayomiSourcesScreen>
     final remove = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Uninstall source?'),
+        title: Text(context.l10n.sourcesUninstallSourceTitle),
         content: const Text(
           'This removes its downloaded extension code. Saved list and history entries stay.',
         ),
@@ -776,7 +776,7 @@ class _MangayomiSourcesScreenState extends State<MangayomiSourcesScreen>
                     children: [
                       if (error != null)
                         ListTile(
-                          title: const Text('Could not load repository'),
+                          title: Text(context.l10n.sourcesCouldNotLoadRepository),
                           subtitle: Text(error.toString()),
                           trailing: IconButton(
                             tooltip: 'Retry',

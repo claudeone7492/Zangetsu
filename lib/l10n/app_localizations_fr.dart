@@ -6932,4 +6932,56 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get settingsShowSourceListsInHome =>
       'Afficher les listes de sources installées dans Accueil';
+
+  @override
+  String get sourcesInstallDefaultRepos => 'Installer les dépôts par défaut';
+
+  @override
+  String get sourcesMangayomiUpdatesAvailable =>
+      'Mises à jour d\'extensions Mangayomi disponibles';
+
+  @override
+  String get sourcesPasteIndexLink =>
+      'Colle le lien d\'index correspondant. Chaque catégorie est enregistrée séparément.';
+
+  @override
+  String get sourcesUninstallSourceTitle => 'Désinstaller la source ?';
+
+  @override
+  String get sourcesCouldNotLoadRepository => 'Impossible de charger le dépôt';
+
+  @override
+  String get sourcesRemoveAddonTitle => 'Supprimer l\'extension ?';
+
+  @override
+  String get sourcesAddonNoSettingsPage =>
+      'Cette extension n\'a pas de page de réglages';
+
+  @override
+  String get sourcesCouldNotOpenSettingsPage =>
+      'Impossible d\'ouvrir la page de réglages';
+
+  @override
+  String get sourcesAddonSyncPending =>
+      'Synchronisation de l\'extension en attente';
+
+  @override
+  String get sourcesRetrySync => 'Réessayer la synchronisation';
+
+  @override
+  String get sourcesNoAddonsYet =>
+      'Pas encore d\'extensions. Ajoutes-en une pour commencer.';
+
+  @override
+  String get sourcesHomeRows => 'Rangées d\'accueil';
+
+  @override
+  String get sourcesHideRowsKeepMetadata =>
+      'Masquer les rangées tout en gardant les métadonnées';
+
+  @override
+  String get sourcesAddAccount => 'Ajouter un compte';
+
+  @override
+  String get sourcesAddXtreamAccount => 'Ajouter un compte Xtream';
 }

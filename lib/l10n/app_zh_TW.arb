@@ -2975,5 +2975,20 @@
 	"settingsTabBarDescription": "同時調整標籤列與模式按鈕。",
 	"settingsUnpinAll": "全部取消釘選",
 	"settingsSourceCatalogue": "來源目錄",
-	"settingsShowSourceListsInHome": "在主畫面顯示已安裝來源清單"
+	"settingsShowSourceListsInHome": "在主畫面顯示已安裝來源清單",
+	"sourcesInstallDefaultRepos": "安裝預設儲存庫",
+	"sourcesMangayomiUpdatesAvailable": "Mangayomi 擴充功能有可用更新",
+	"sourcesPasteIndexLink": "貼上對應的索引連結。每個分類會分開儲存。",
+	"sourcesUninstallSourceTitle": "解除安裝來源？",
+	"sourcesCouldNotLoadRepository": "無法載入儲存庫",
+	"sourcesRemoveAddonTitle": "移除附加元件？",
+	"sourcesAddonNoSettingsPage": "此外掛沒有設定頁面",
+	"sourcesCouldNotOpenSettingsPage": "無法開啟設定頁面",
+	"sourcesAddonSyncPending": "附加元件同步待處理",
+	"sourcesRetrySync": "重試同步",
+	"sourcesNoAddonsYet": "尚無附加元件。新增一個即可開始。",
+	"sourcesHomeRows": "主畫面列",
+	"sourcesHideRowsKeepMetadata": "隱藏列但保留中繼資料可用",
+	"sourcesAddAccount": "新增帳戶",
+	"sourcesAddXtreamAccount": "新增 Xtream 帳戶"
 }

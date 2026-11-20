@@ -12056,6 +12056,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show installed source lists in Home'**
   String get settingsShowSourceListsInHome;
+
+  /// No description provided for @sourcesInstallDefaultRepos.
+  ///
+  /// In en, this message translates to:
+  /// **'Install default repos'**
+  String get sourcesInstallDefaultRepos;
+
+  /// No description provided for @sourcesMangayomiUpdatesAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Mangayomi extension updates available'**
+  String get sourcesMangayomiUpdatesAvailable;
+
+  /// No description provided for @sourcesPasteIndexLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the matching index link. Each category is saved separately.'**
+  String get sourcesPasteIndexLink;
+
+  /// No description provided for @sourcesUninstallSourceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstall source?'**
+  String get sourcesUninstallSourceTitle;
+
+  /// No description provided for @sourcesCouldNotLoadRepository.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load repository'**
+  String get sourcesCouldNotLoadRepository;
+
+  /// No description provided for @sourcesRemoveAddonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove addon?'**
+  String get sourcesRemoveAddonTitle;
+
+  /// No description provided for @sourcesAddonNoSettingsPage.
+  ///
+  /// In en, this message translates to:
+  /// **'This addon has no settings page'**
+  String get sourcesAddonNoSettingsPage;
+
+  /// No description provided for @sourcesCouldNotOpenSettingsPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the settings page'**
+  String get sourcesCouldNotOpenSettingsPage;
+
+  /// No description provided for @sourcesAddonSyncPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Addon sync pending'**
+  String get sourcesAddonSyncPending;
+
+  /// No description provided for @sourcesRetrySync.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry sync'**
+  String get sourcesRetrySync;
+
+  /// No description provided for @sourcesNoAddonsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No addons yet. Add an addon to get started.'**
+  String get sourcesNoAddonsYet;
+
+  /// No description provided for @sourcesHomeRows.
+  ///
+  /// In en, this message translates to:
+  /// **'Home rows'**
+  String get sourcesHomeRows;
+
+  /// No description provided for @sourcesHideRowsKeepMetadata.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide rows while keeping metadata available'**
+  String get sourcesHideRowsKeepMetadata;
+
+  /// No description provided for @sourcesAddAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Add account'**
+  String get sourcesAddAccount;
+
+  /// No description provided for @sourcesAddXtreamAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Xtream account'**
+  String get sourcesAddXtreamAccount;
 }
 
 class _AppLocalizationsDelegate

@@ -2974,5 +2974,20 @@
 	"settingsTabBarDescription": "Passe Registerkartenleiste und Modus-Schaltfläche gemeinsam an.",
 	"settingsUnpinAll": "Alle lösen",
 	"settingsSourceCatalogue": "Quellenkatalog",
-	"settingsShowSourceListsInHome": "Installierte Quellenlisten in Home anzeigen"
+	"settingsShowSourceListsInHome": "Installierte Quellenlisten in Home anzeigen",
+	"sourcesInstallDefaultRepos": "Standard-Repositories installieren",
+	"sourcesMangayomiUpdatesAvailable": "Updates für Mangayomi-Erweiterungen verfügbar",
+	"sourcesPasteIndexLink": "Füge den passenden Index-Link ein. Jede Kategorie wird einzeln gespeichert.",
+	"sourcesUninstallSourceTitle": "Quelle deinstallieren?",
+	"sourcesCouldNotLoadRepository": "Repository konnte nicht geladen werden",
+	"sourcesRemoveAddonTitle": "Addon entfernen?",
+	"sourcesAddonNoSettingsPage": "Dieses Addon hat keine Einstellungsseite",
+	"sourcesCouldNotOpenSettingsPage": "Einstellungsseite konnte nicht geöffnet werden",
+	"sourcesAddonSyncPending": "Addon-Synchronisierung ausstehend",
+	"sourcesRetrySync": "Synchronisierung wiederholen",
+	"sourcesNoAddonsYet": "Noch keine Addons. Füge eines hinzu, um zu starten.",
+	"sourcesHomeRows": "Home-Reihen",
+	"sourcesHideRowsKeepMetadata": "Reihen ausblenden, Metadaten bleiben verfügbar",
+	"sourcesAddAccount": "Konto hinzufügen",
+	"sourcesAddXtreamAccount": "Xtream-Konto hinzufügen"
 }

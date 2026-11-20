@@ -6906,4 +6906,55 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get settingsShowSourceListsInHome =>
       'Tampilkan daftar sumber terpasang di Beranda';
+
+  @override
+  String get sourcesInstallDefaultRepos => 'Pasang repo bawaan';
+
+  @override
+  String get sourcesMangayomiUpdatesAvailable =>
+      'Pembaruan ekstensi Mangayomi tersedia';
+
+  @override
+  String get sourcesPasteIndexLink =>
+      'Tempel tautan indeks yang cocok. Setiap kategori disimpan terpisah.';
+
+  @override
+  String get sourcesUninstallSourceTitle => 'Copot sumber?';
+
+  @override
+  String get sourcesCouldNotLoadRepository => 'Tidak dapat memuat repo';
+
+  @override
+  String get sourcesRemoveAddonTitle => 'Hapus addon?';
+
+  @override
+  String get sourcesAddonNoSettingsPage =>
+      'Addon ini tidak memiliki halaman pengaturan';
+
+  @override
+  String get sourcesCouldNotOpenSettingsPage =>
+      'Tidak dapat membuka halaman pengaturan';
+
+  @override
+  String get sourcesAddonSyncPending => 'Sinkronisasi addon tertunda';
+
+  @override
+  String get sourcesRetrySync => 'Coba sinkronisasi lagi';
+
+  @override
+  String get sourcesNoAddonsYet =>
+      'Belum ada addon. Tambahkan addon untuk memulai.';
+
+  @override
+  String get sourcesHomeRows => 'Baris Beranda';
+
+  @override
+  String get sourcesHideRowsKeepMetadata =>
+      'Sembunyikan baris sambil tetap menyediakan metadata';
+
+  @override
+  String get sourcesAddAccount => 'Tambah akun';
+
+  @override
+  String get sourcesAddXtreamAccount => 'Tambah akun Xtream';
 }

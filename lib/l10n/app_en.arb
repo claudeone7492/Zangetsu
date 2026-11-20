@@ -3709,5 +3709,20 @@
   "settingsTabBarDescription": "Adjust the tab bar and mode button together.",
   "settingsUnpinAll": "Unpin all",
   "settingsSourceCatalogue": "Source Catalogue",
-  "settingsShowSourceListsInHome": "Show installed source lists in Home"
+  "settingsShowSourceListsInHome": "Show installed source lists in Home",
+  "sourcesInstallDefaultRepos": "Install default repos",
+  "sourcesMangayomiUpdatesAvailable": "Mangayomi extension updates available",
+  "sourcesPasteIndexLink": "Paste the matching index link. Each category is saved separately.",
+  "sourcesUninstallSourceTitle": "Uninstall source?",
+  "sourcesCouldNotLoadRepository": "Could not load repository",
+  "sourcesRemoveAddonTitle": "Remove addon?",
+  "sourcesAddonNoSettingsPage": "This addon has no settings page",
+  "sourcesCouldNotOpenSettingsPage": "Could not open the settings page",
+  "sourcesAddonSyncPending": "Addon sync pending",
+  "sourcesRetrySync": "Retry sync",
+  "sourcesNoAddonsYet": "No addons yet. Add an addon to get started.",
+  "sourcesHomeRows": "Home rows",
+  "sourcesHideRowsKeepMetadata": "Hide rows while keeping metadata available",
+  "sourcesAddAccount": "Add account",
+  "sourcesAddXtreamAccount": "Add Xtream account"
 }

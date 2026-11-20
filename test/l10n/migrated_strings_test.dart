@@ -56,6 +56,23 @@ const _strings = <String, String>{
   'settingsUnpinAll': 'Unpin all',
   'settingsSourceCatalogue': 'Source Catalogue',
   'settingsShowSourceListsInHome': 'Show installed source lists in Home',
+  // source and addon screens
+  'sourcesInstallDefaultRepos': 'Install default repos',
+  'sourcesMangayomiUpdatesAvailable': 'Mangayomi extension updates available',
+  'sourcesPasteIndexLink':
+      'Paste the matching index link. Each category is saved separately.',
+  'sourcesUninstallSourceTitle': 'Uninstall source?',
+  'sourcesCouldNotLoadRepository': 'Could not load repository',
+  'sourcesRemoveAddonTitle': 'Remove addon?',
+  'sourcesAddonNoSettingsPage': 'This addon has no settings page',
+  'sourcesCouldNotOpenSettingsPage': 'Could not open the settings page',
+  'sourcesAddonSyncPending': 'Addon sync pending',
+  'sourcesRetrySync': 'Retry sync',
+  'sourcesNoAddonsYet': 'No addons yet. Add an addon to get started.',
+  'sourcesHomeRows': 'Home rows',
+  'sourcesHideRowsKeepMetadata': 'Hide rows while keeping metadata available',
+  'sourcesAddAccount': 'Add account',
+  'sourcesAddXtreamAccount': 'Add Xtream account',
 };
 
 /// Words that are genuinely spelled the same in the target language, so the
@@ -108,6 +125,21 @@ String _value(AppLocalizations l, String key) => switch (key) {
   'settingsUnpinAll' => l.settingsUnpinAll,
   'settingsSourceCatalogue' => l.settingsSourceCatalogue,
   'settingsShowSourceListsInHome' => l.settingsShowSourceListsInHome,
+  'sourcesInstallDefaultRepos' => l.sourcesInstallDefaultRepos,
+  'sourcesMangayomiUpdatesAvailable' => l.sourcesMangayomiUpdatesAvailable,
+  'sourcesPasteIndexLink' => l.sourcesPasteIndexLink,
+  'sourcesUninstallSourceTitle' => l.sourcesUninstallSourceTitle,
+  'sourcesCouldNotLoadRepository' => l.sourcesCouldNotLoadRepository,
+  'sourcesRemoveAddonTitle' => l.sourcesRemoveAddonTitle,
+  'sourcesAddonNoSettingsPage' => l.sourcesAddonNoSettingsPage,
+  'sourcesCouldNotOpenSettingsPage' => l.sourcesCouldNotOpenSettingsPage,
+  'sourcesAddonSyncPending' => l.sourcesAddonSyncPending,
+  'sourcesRetrySync' => l.sourcesRetrySync,
+  'sourcesNoAddonsYet' => l.sourcesNoAddonsYet,
+  'sourcesHomeRows' => l.sourcesHomeRows,
+  'sourcesHideRowsKeepMetadata' => l.sourcesHideRowsKeepMetadata,
+  'sourcesAddAccount' => l.sourcesAddAccount,
+  'sourcesAddXtreamAccount' => l.sourcesAddXtreamAccount,
   _ => throw ArgumentError('key $key is registered but not mapped in _value'),
 };
 

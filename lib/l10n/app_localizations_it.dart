@@ -6922,4 +6922,56 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get settingsShowSourceListsInHome =>
       'Mostra gli elenchi delle fonti installate in Home';
+
+  @override
+  String get sourcesInstallDefaultRepos => 'Installa i repository predefiniti';
+
+  @override
+  String get sourcesMangayomiUpdatesAvailable =>
+      'Aggiornamenti delle estensioni Mangayomi disponibili';
+
+  @override
+  String get sourcesPasteIndexLink =>
+      'Incolla il link dell\'indice corrispondente. Ogni categoria viene salvata separatamente.';
+
+  @override
+  String get sourcesUninstallSourceTitle => 'Disinstallare la fonte?';
+
+  @override
+  String get sourcesCouldNotLoadRepository =>
+      'Impossibile caricare il repository';
+
+  @override
+  String get sourcesRemoveAddonTitle => 'Rimuovere l\'addon?';
+
+  @override
+  String get sourcesAddonNoSettingsPage =>
+      'Questo addon non ha una pagina di impostazioni';
+
+  @override
+  String get sourcesCouldNotOpenSettingsPage =>
+      'Impossibile aprire la pagina delle impostazioni';
+
+  @override
+  String get sourcesAddonSyncPending => 'Sincronizzazione addon in sospeso';
+
+  @override
+  String get sourcesRetrySync => 'Riprova sincronizzazione';
+
+  @override
+  String get sourcesNoAddonsYet =>
+      'Ancora nessun addon. Aggiungine uno per iniziare.';
+
+  @override
+  String get sourcesHomeRows => 'Righe Home';
+
+  @override
+  String get sourcesHideRowsKeepMetadata =>
+      'Nascondi le righe mantenendo i metadati disponibili';
+
+  @override
+  String get sourcesAddAccount => 'Aggiungi account';
+
+  @override
+  String get sourcesAddXtreamAccount => 'Aggiungi account Xtream';
 }

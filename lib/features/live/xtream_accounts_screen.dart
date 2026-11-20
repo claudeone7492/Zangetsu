@@ -8,6 +8,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/ui/settings_widgets.dart';
 import '../../core/ui/states.dart';
+import '../../l10n/l10n.dart';
 
 /// Xtream Codes accounts — the panel protocol most IPTV subscriptions use.
 ///
@@ -134,7 +135,7 @@ class _XtreamAccountsScreenState extends State<XtreamAccountsScreen> {
         actions: [
           if (store != null)
             IconButton(
-              tooltip: 'Add account',
+              tooltip: context.l10n.sourcesAddAccount,
               onPressed: _add,
               icon: const Icon(Icons.add_rounded),
             ),
@@ -151,7 +152,7 @@ class _XtreamAccountsScreenState extends State<XtreamAccountsScreen> {
               message:
                   'No Xtream accounts.\nAdd your IPTV subscription to get its '
                   'live channels, films, series and TV guide.',
-              actionLabel: 'Add account',
+              actionLabel: context.l10n.sourcesAddAccount,
               onAction: _add,
             )
           : ListView(
@@ -285,7 +286,7 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Add Xtream account', style: AppText.barTitle),
+          Text(context.l10n.sourcesAddXtreamAccount, style: AppText.barTitle),
           const SizedBox(height: 16),
           TextField(
             controller: _host,
@@ -332,7 +333,7 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
             width: double.infinity,
             child: FilledButton(
               onPressed: canSubmit ? _submit : null,
-              child: const Text('Add account'),
+              child: Text(context.l10n.sourcesAddAccount),
             ),
           ),
         ],

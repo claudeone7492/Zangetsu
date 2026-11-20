@@ -6726,6 +6726,51 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsShowSourceListsInHome => '在主屏幕显示已安装来源列表';
+
+  @override
+  String get sourcesInstallDefaultRepos => '安装默认仓库';
+
+  @override
+  String get sourcesMangayomiUpdatesAvailable => 'Mangayomi 扩展有可用更新';
+
+  @override
+  String get sourcesPasteIndexLink => '粘贴对应的索引链接。每个分类会单独保存。';
+
+  @override
+  String get sourcesUninstallSourceTitle => '卸载来源？';
+
+  @override
+  String get sourcesCouldNotLoadRepository => '无法加载仓库';
+
+  @override
+  String get sourcesRemoveAddonTitle => '移除插件？';
+
+  @override
+  String get sourcesAddonNoSettingsPage => '此插件没有设置页面';
+
+  @override
+  String get sourcesCouldNotOpenSettingsPage => '无法打开设置页面';
+
+  @override
+  String get sourcesAddonSyncPending => '插件同步待处理';
+
+  @override
+  String get sourcesRetrySync => '重试同步';
+
+  @override
+  String get sourcesNoAddonsYet => '还没有插件。添加一个即可开始。';
+
+  @override
+  String get sourcesHomeRows => '主屏幕行';
+
+  @override
+  String get sourcesHideRowsKeepMetadata => '隐藏行但保留元数据可用';
+
+  @override
+  String get sourcesAddAccount => '添加账户';
+
+  @override
+  String get sourcesAddXtreamAccount => '添加 Xtream 账户';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -11806,4 +11851,49 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get settingsShowSourceListsInHome => '在主畫面顯示已安裝來源清單';
+
+  @override
+  String get sourcesInstallDefaultRepos => '安裝預設儲存庫';
+
+  @override
+  String get sourcesMangayomiUpdatesAvailable => 'Mangayomi 擴充功能有可用更新';
+
+  @override
+  String get sourcesPasteIndexLink => '貼上對應的索引連結。每個分類會分開儲存。';
+
+  @override
+  String get sourcesUninstallSourceTitle => '解除安裝來源？';
+
+  @override
+  String get sourcesCouldNotLoadRepository => '無法載入儲存庫';
+
+  @override
+  String get sourcesRemoveAddonTitle => '移除附加元件？';
+
+  @override
+  String get sourcesAddonNoSettingsPage => '此外掛沒有設定頁面';
+
+  @override
+  String get sourcesCouldNotOpenSettingsPage => '無法開啟設定頁面';
+
+  @override
+  String get sourcesAddonSyncPending => '附加元件同步待處理';
+
+  @override
+  String get sourcesRetrySync => '重試同步';
+
+  @override
+  String get sourcesNoAddonsYet => '尚無附加元件。新增一個即可開始。';
+
+  @override
+  String get sourcesHomeRows => '主畫面列';
+
+  @override
+  String get sourcesHideRowsKeepMetadata => '隱藏列但保留中繼資料可用';
+
+  @override
+  String get sourcesAddAccount => '新增帳戶';
+
+  @override
+  String get sourcesAddXtreamAccount => '新增 Xtream 帳戶';
 }

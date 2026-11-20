@@ -127,7 +127,7 @@ class _StremioSourcesScreenState extends State<StremioSourcesScreen> {
       builder: (dialog) => _isTv
           ? _stremioTvRemoveDialog(dialog, installation.name)
           : AlertDialog(
-              title: const Text('Remove addon?'),
+              title: Text(context.l10n.sourcesRemoveAddonTitle),
               content: Text(installation.name),
               actions: [
                 TextButton(
@@ -154,14 +154,14 @@ class _StremioSourcesScreenState extends State<StremioSourcesScreen> {
         : Uri.tryParse(raw);
     if (uri == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('This addon has no settings page')),
+        SnackBar(content: Text(context.l10n.sourcesAddonNoSettingsPage)),
       );
       return;
     }
     final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!opened && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open the settings page')),
+        SnackBar(content: Text(context.l10n.sourcesCouldNotOpenSettingsPage)),
       );
     }
   }
@@ -202,7 +202,7 @@ class _StremioSourcesScreenState extends State<StremioSourcesScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Addon sync pending',
+                                context.l10n.sourcesAddonSyncPending,
                                 style: AppText.headline,
                               ),
                               const SizedBox(height: 4),
@@ -215,7 +215,7 @@ class _StremioSourcesScreenState extends State<StremioSourcesScreen> {
                                   sl<StremioSync>().refresh();
                                 },
                                 icon: const Icon(Icons.sync),
-                                label: const Text('Retry sync'),
+                                label: Text(context.l10n.sourcesRetrySync),
                               ),
                             ],
                           ),
@@ -352,7 +352,7 @@ class _StremioSourcesScreenState extends State<StremioSourcesScreen> {
               const SizedBox(height: 12),
               if (installations.isEmpty)
                 Text(
-                  'No addons yet. Add an addon to get started.',
+                  context.l10n.sourcesNoAddonsYet,
                   style: AppText.caption,
                 ),
               for (final installation in installations)
@@ -499,9 +499,9 @@ class _StremioSourcesScreenState extends State<StremioSourcesScreen> {
                         ))
                           ExpansionTile(
                             tilePadding: EdgeInsets.zero,
-                            title: const Text('Home rows'),
-                            subtitle: const Text(
-                              'Hide rows while keeping metadata available',
+                            title: Text(context.l10n.sourcesHomeRows),
+                            subtitle: Text(
+                              context.l10n.sourcesHideRowsKeepMetadata,
                             ),
                             children: [
                               for (final catalog in installation.catalogs)

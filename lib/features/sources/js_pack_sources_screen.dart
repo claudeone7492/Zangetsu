@@ -174,7 +174,7 @@ class _JsPackSourcesScreenState extends State<JsPackSourcesScreen> {
                 FilledButton.icon(
                   onPressed: _busy ? null : _installDefaults,
                   icon: const Icon(Icons.download_rounded, size: 18),
-                  label: const Text('Install default repos'),
+                  label: Text(context.l10n.sourcesInstallDefaultRepos),
                 ),
               ],
             ),

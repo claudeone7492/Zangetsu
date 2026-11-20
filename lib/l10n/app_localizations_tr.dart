@@ -6901,4 +6901,53 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get settingsShowSourceListsInHome =>
       'Yüklü kaynak listelerini Ana sayfada göster';
+
+  @override
+  String get sourcesInstallDefaultRepos => 'Varsayılan depoları yükle';
+
+  @override
+  String get sourcesMangayomiUpdatesAvailable =>
+      'Mangayomi uzantı güncellemeleri mevcut';
+
+  @override
+  String get sourcesPasteIndexLink =>
+      'Eşleşen dizin bağlantısını yapıştır. Her kategori ayrı kaydedilir.';
+
+  @override
+  String get sourcesUninstallSourceTitle => 'Kaynak kaldırılsın mı?';
+
+  @override
+  String get sourcesCouldNotLoadRepository => 'Depo yüklenemedi';
+
+  @override
+  String get sourcesRemoveAddonTitle => 'Eklenti kaldırılsın mı?';
+
+  @override
+  String get sourcesAddonNoSettingsPage => 'Bu eklentinin ayar sayfası yok';
+
+  @override
+  String get sourcesCouldNotOpenSettingsPage => 'Ayar sayfası açılamadı';
+
+  @override
+  String get sourcesAddonSyncPending => 'Eklenti eşitlemesi beklemede';
+
+  @override
+  String get sourcesRetrySync => 'Eşitlemeyi yeniden dene';
+
+  @override
+  String get sourcesNoAddonsYet =>
+      'Henüz eklenti yok. Başlamak için bir eklenti ekle.';
+
+  @override
+  String get sourcesHomeRows => 'Ana sayfa satırları';
+
+  @override
+  String get sourcesHideRowsKeepMetadata =>
+      'Satırları gizle, üst veriler kullanılabilir kalsın';
+
+  @override
+  String get sourcesAddAccount => 'Hesap ekle';
+
+  @override
+  String get sourcesAddXtreamAccount => 'Xtream hesabı ekle';
 }

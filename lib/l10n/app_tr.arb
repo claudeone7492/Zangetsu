@@ -3125,5 +3125,20 @@
 	"settingsTabBarDescription": "Sekme çubuğunu ve mod düğmesini birlikte ayarla.",
 	"settingsUnpinAll": "Tümünü sabitlemeyi kaldır",
 	"settingsSourceCatalogue": "Kaynak kataloğu",
-	"settingsShowSourceListsInHome": "Yüklü kaynak listelerini Ana sayfada göster"
+	"settingsShowSourceListsInHome": "Yüklü kaynak listelerini Ana sayfada göster",
+	"sourcesInstallDefaultRepos": "Varsayılan depoları yükle",
+	"sourcesMangayomiUpdatesAvailable": "Mangayomi uzantı güncellemeleri mevcut",
+	"sourcesPasteIndexLink": "Eşleşen dizin bağlantısını yapıştır. Her kategori ayrı kaydedilir.",
+	"sourcesUninstallSourceTitle": "Kaynak kaldırılsın mı?",
+	"sourcesCouldNotLoadRepository": "Depo yüklenemedi",
+	"sourcesRemoveAddonTitle": "Eklenti kaldırılsın mı?",
+	"sourcesAddonNoSettingsPage": "Bu eklentinin ayar sayfası yok",
+	"sourcesCouldNotOpenSettingsPage": "Ayar sayfası açılamadı",
+	"sourcesAddonSyncPending": "Eklenti eşitlemesi beklemede",
+	"sourcesRetrySync": "Eşitlemeyi yeniden dene",
+	"sourcesNoAddonsYet": "Henüz eklenti yok. Başlamak için bir eklenti ekle.",
+	"sourcesHomeRows": "Ana sayfa satırları",
+	"sourcesHideRowsKeepMetadata": "Satırları gizle, üst veriler kullanılabilir kalsın",
+	"sourcesAddAccount": "Hesap ekle",
+	"sourcesAddXtreamAccount": "Xtream hesabı ekle"
 }

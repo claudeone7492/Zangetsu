@@ -2974,5 +2974,20 @@
 	"settingsTabBarDescription": "タブバーとモードボタンをまとめて調整します。",
 	"settingsUnpinAll": "すべてのピンを解除",
 	"settingsSourceCatalogue": "ソースカタログ",
-	"settingsShowSourceListsInHome": "インストール済みソースのリストをホームに表示"
+	"settingsShowSourceListsInHome": "インストール済みソースのリストをホームに表示",
+	"sourcesInstallDefaultRepos": "既定のリポジトリをインストール",
+	"sourcesMangayomiUpdatesAvailable": "Mangayomi拡張機能の更新があります",
+	"sourcesPasteIndexLink": "対応するインデックスリンクを貼り付けてください。カテゴリごとに個別に保存されます。",
+	"sourcesUninstallSourceTitle": "ソースをアンインストールしますか？",
+	"sourcesCouldNotLoadRepository": "リポジトリを読み込めませんでした",
+	"sourcesRemoveAddonTitle": "アドオンを削除しますか？",
+	"sourcesAddonNoSettingsPage": "このアドオンには設定ページがありません",
+	"sourcesCouldNotOpenSettingsPage": "設定ページを開けませんでした",
+	"sourcesAddonSyncPending": "アドオンの同期が保留中",
+	"sourcesRetrySync": "同期を再試行",
+	"sourcesNoAddonsYet": "アドオンはまだありません。追加して始めましょう。",
+	"sourcesHomeRows": "ホームの行",
+	"sourcesHideRowsKeepMetadata": "行を隠したままメタデータは利用可能に",
+	"sourcesAddAccount": "アカウントを追加",
+	"sourcesAddXtreamAccount": "Xtreamアカウントを追加"
 }

@@ -3126,5 +3126,20 @@
 	"settingsTabBarDescription": "اضبط شريط التبويبات وزر الوضع معًا.",
 	"settingsUnpinAll": "إلغاء تثبيت الكل",
 	"settingsSourceCatalogue": "فهرس المصادر",
-	"settingsShowSourceListsInHome": "إظهار قوائم المصادر المثبتة في الرئيسية"
+	"settingsShowSourceListsInHome": "إظهار قوائم المصادر المثبتة في الرئيسية",
+	"sourcesInstallDefaultRepos": "تثبيت المستودعات الافتراضية",
+	"sourcesMangayomiUpdatesAvailable": "تحديثات إضافات Mangayomi متاحة",
+	"sourcesPasteIndexLink": "الصق رابط الفهرس المطابق. يُحفظ كل تصنيف على حدة.",
+	"sourcesUninstallSourceTitle": "إلغاء تثبيت المصدر؟",
+	"sourcesCouldNotLoadRepository": "تعذّر تحميل المستودع",
+	"sourcesRemoveAddonTitle": "إزالة الإضافة؟",
+	"sourcesAddonNoSettingsPage": "لا تحتوي هذه الإضافة على صفحة إعدادات",
+	"sourcesCouldNotOpenSettingsPage": "تعذّر فتح صفحة الإعدادات",
+	"sourcesAddonSyncPending": "مزامنة الإضافة معلّقة",
+	"sourcesRetrySync": "إعادة محاولة المزامنة",
+	"sourcesNoAddonsYet": "لا توجد إضافات بعد. أضف إضافة للبدء.",
+	"sourcesHomeRows": "صفوف الرئيسية",
+	"sourcesHideRowsKeepMetadata": "إخفاء الصفوف مع إبقاء البيانات الوصفية متاحة",
+	"sourcesAddAccount": "إضافة حساب",
+	"sourcesAddXtreamAccount": "إضافة حساب Xtream"
 }

@@ -6881,4 +6881,54 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsShowSourceListsInHome =>
       'Show installed source lists in Home';
+
+  @override
+  String get sourcesInstallDefaultRepos => 'Install default repos';
+
+  @override
+  String get sourcesMangayomiUpdatesAvailable =>
+      'Mangayomi extension updates available';
+
+  @override
+  String get sourcesPasteIndexLink =>
+      'Paste the matching index link. Each category is saved separately.';
+
+  @override
+  String get sourcesUninstallSourceTitle => 'Uninstall source?';
+
+  @override
+  String get sourcesCouldNotLoadRepository => 'Could not load repository';
+
+  @override
+  String get sourcesRemoveAddonTitle => 'Remove addon?';
+
+  @override
+  String get sourcesAddonNoSettingsPage => 'This addon has no settings page';
+
+  @override
+  String get sourcesCouldNotOpenSettingsPage =>
+      'Could not open the settings page';
+
+  @override
+  String get sourcesAddonSyncPending => 'Addon sync pending';
+
+  @override
+  String get sourcesRetrySync => 'Retry sync';
+
+  @override
+  String get sourcesNoAddonsYet =>
+      'No addons yet. Add an addon to get started.';
+
+  @override
+  String get sourcesHomeRows => 'Home rows';
+
+  @override
+  String get sourcesHideRowsKeepMetadata =>
+      'Hide rows while keeping metadata available';
+
+  @override
+  String get sourcesAddAccount => 'Add account';
+
+  @override
+  String get sourcesAddXtreamAccount => 'Add Xtream account';
 }

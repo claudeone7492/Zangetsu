@@ -2974,5 +2974,20 @@
 	"settingsTabBarDescription": "Ajusta juntos la barra de pestañas y el botón de modo.",
 	"settingsUnpinAll": "Desanclar todo",
 	"settingsSourceCatalogue": "Catálogo de fuentes",
-	"settingsShowSourceListsInHome": "Mostrar listas de fuentes instaladas en Inicio"
+	"settingsShowSourceListsInHome": "Mostrar listas de fuentes instaladas en Inicio",
+	"sourcesInstallDefaultRepos": "Instalar repositorios predeterminados",
+	"sourcesMangayomiUpdatesAvailable": "Actualizaciones de extensiones de Mangayomi disponibles",
+	"sourcesPasteIndexLink": "Pega el enlace de índice correspondiente. Cada categoría se guarda por separado.",
+	"sourcesUninstallSourceTitle": "¿Desinstalar fuente?",
+	"sourcesCouldNotLoadRepository": "No se pudo cargar el repositorio",
+	"sourcesRemoveAddonTitle": "¿Quitar complemento?",
+	"sourcesAddonNoSettingsPage": "Este complemento no tiene página de ajustes",
+	"sourcesCouldNotOpenSettingsPage": "No se pudo abrir la página de ajustes",
+	"sourcesAddonSyncPending": "Sincronización de complementos pendiente",
+	"sourcesRetrySync": "Reintentar sincronización",
+	"sourcesNoAddonsYet": "Aún no hay complementos. Añade uno para empezar.",
+	"sourcesHomeRows": "Filas de Inicio",
+	"sourcesHideRowsKeepMetadata": "Ocultar filas manteniendo los metadatos disponibles",
+	"sourcesAddAccount": "Añadir cuenta",
+	"sourcesAddXtreamAccount": "Añadir cuenta Xtream"
 }

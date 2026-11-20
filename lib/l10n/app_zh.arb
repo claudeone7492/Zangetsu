@@ -2974,5 +2974,20 @@
 	"settingsTabBarDescription": "同时调整标签栏和模式按钮。",
 	"settingsUnpinAll": "全部取消固定",
 	"settingsSourceCatalogue": "来源目录",
-	"settingsShowSourceListsInHome": "在主屏幕显示已安装来源列表"
+	"settingsShowSourceListsInHome": "在主屏幕显示已安装来源列表",
+	"sourcesInstallDefaultRepos": "安装默认仓库",
+	"sourcesMangayomiUpdatesAvailable": "Mangayomi 扩展有可用更新",
+	"sourcesPasteIndexLink": "粘贴对应的索引链接。每个分类会单独保存。",
+	"sourcesUninstallSourceTitle": "卸载来源？",
+	"sourcesCouldNotLoadRepository": "无法加载仓库",
+	"sourcesRemoveAddonTitle": "移除插件？",
+	"sourcesAddonNoSettingsPage": "此插件没有设置页面",
+	"sourcesCouldNotOpenSettingsPage": "无法打开设置页面",
+	"sourcesAddonSyncPending": "插件同步待处理",
+	"sourcesRetrySync": "重试同步",
+	"sourcesNoAddonsYet": "还没有插件。添加一个即可开始。",
+	"sourcesHomeRows": "主屏幕行",
+	"sourcesHideRowsKeepMetadata": "隐藏行但保留元数据可用",
+	"sourcesAddAccount": "添加账户",
+	"sourcesAddXtreamAccount": "添加 Xtream 账户"
 }
