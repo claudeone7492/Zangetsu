@@ -131,8 +131,9 @@ class MusicQueue {
 
   /// The play-order list the UI should render, so the highlighted row matches
   /// what "next" will actually play.
-  List<MusicTrack> get orderedTracks =>
-      [for (final i in _shuffledOrder) _tracks[i]];
+  List<MusicTrack> get orderedTracks => [
+    for (final i in _shuffledOrder) _tracks[i],
+  ];
 
   /// Current position in play order.
   int get position => _index;
@@ -146,6 +147,9 @@ class MusicQueue {
   void setShuffle(bool value) {
     if (value == _shuffle) return;
     _shuffle = value;
+    // The mode can be toggled before anything is playing — the button is on the
+    // player, but the queue is created empty and filled later.
+    if (_tracks.isEmpty) return;
     final playing = current;
     if (value) {
       _applyShuffle(keepFirst: _shuffledOrder[_index]);
@@ -165,7 +169,9 @@ class MusicQueue {
       ..addAll(tracks);
     _shuffledOrder = List<int>.generate(_tracks.length, (i) => i);
     _index = _tracks.isEmpty ? 0 : startAt.clamp(0, _tracks.length - 1);
-    if (_shuffle) _applyShuffle(keepFirst: _tracks.isEmpty ? null : _shuffledOrder[_index]);
+    if (_shuffle) {
+      _applyShuffle(keepFirst: _tracks.isEmpty ? null : _shuffledOrder[_index]);
+    }
   }
 
   /// Rebuild the play order.
@@ -186,7 +192,10 @@ class MusicQueue {
         _tracks.length > 1) {
       _shuffledOrder.remove(avoidFirst);
       _shuffledOrder.shuffle(_random);
-      _shuffledOrder.insert(1 + _random.nextInt(_shuffledOrder.length), avoidFirst);
+      _shuffledOrder.insert(
+        1 + _random.nextInt(_shuffledOrder.length),
+        avoidFirst,
+      );
     } else {
       _shuffledOrder.shuffle(_random);
     }

@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
+import 'music_config.dart';
 import 'music_models.dart';
+import 'music_prefs.dart';
 import 'music_source.dart';
 
 /// JioSaavn catalogue via the public `saavn.dev` API.
@@ -16,51 +18,68 @@ import 'music_source.dart';
 /// `expiresAt`), which is why [streamFor] re-resolves by id instead of replaying
 /// a URL from a cached listing.
 class JioSaavnSource implements MusicSource {
-  JioSaavnSource({Dio? dio, String? baseUrl})
-    : _dio =
-          dio ??
-          Dio(
-            BaseOptions(
-              connectTimeout: const Duration(seconds: 15),
-              receiveTimeout: const Duration(seconds: 20),
-              headers: const {'Accept': 'application/json'},
-            ),
-          ),
-      _baseUrl = baseUrl ?? 'https://saavn.dev/api';
+  JioSaavnSource({
+    Dio? dio,
+    String? baseUrl,
+    MusicQuality Function()? quality,
+  }) : _dio =
+           dio ??
+           Dio(
+             BaseOptions(
+               connectTimeout: const Duration(seconds: 15),
+               receiveTimeout: const Duration(seconds: 20),
+               headers: const {'Accept': 'application/json'},
+             ),
+           ),
+       _baseUrl = baseUrl ?? kMusicApiBaseUrl,
+       // Read per track, not captured once: the user can change quality while
+       // a listing is already on screen, and the next track must honour it.
+       _quality = quality ?? (() => MusicPrefs.quality);
 
   final Dio _dio;
   final String _baseUrl;
+  final MusicQuality Function() _quality;
 
   @override
-  String get id => 'jiosaavn';
+  String get id => kMusicSourceId;
 
   @override
-  String get displayName => 'JioSaavn';
+  String get displayName => kMusicSourceName;
 
   @override
   bool get isConfigured => true;
 
   @override
   Future<List<MusicSection>> home() async {
+    // Rows come from the shared config, so the catalogue, the service and the
+    // UI never disagree about which rows exist or what they are called.
     final results = await Future.wait([
-      _section('Trending', () => _get('search/songs', {'query': 'trending', 'limit': 20})),
-      _section('New releases', () => _get('search/songs', {'query': 'new releases', 'limit': 20})),
-      _section('Lo-fi', () => _get('search/songs', {'query': 'lofi', 'limit': 20})),
+      for (final row in kMusicHomeRows)
+        _section(
+          row,
+          () => _get('search/songs', {
+            'query': row.query,
+            'limit': kMusicRowLimit,
+          }),
+        ),
     ]);
-    return results.where((s) => s != null && !s.isEmpty).cast<MusicSection>().toList();
+    return results
+        .where((s) => s != null && !s.isEmpty)
+        .cast<MusicSection>()
+        .toList();
   }
 
   Future<MusicSection?> _section(
-    String title,
+    MusicHomeRow row,
     Future<List<MusicTrack>> Function() fetch,
   ) async {
     try {
       final tracks = await fetch();
       if (tracks.isEmpty) return null;
-      return MusicSection(title: title, tracks: tracks);
+      return MusicSection(id: row.id, title: row.fallbackTitle, tracks: tracks);
     } catch (e) {
       // One dead row must not sink the page — same rule the video home uses.
-      debugPrint('[music] row "$title" failed: $e');
+      debugPrint('[music] row "${row.id}" failed: $e');
       return null;
     }
   }
@@ -69,7 +88,11 @@ class JioSaavnSource implements MusicSource {
   Future<List<MusicTrack>> search(String query, {int page = 1}) async {
     final trimmed = query.trim();
     if (trimmed.isEmpty) return const [];
-    return _get('search/songs', {'query': trimmed, 'page': page, 'limit': 30});
+    return _get('search/songs', {
+      'query': trimmed,
+      'page': page,
+      'limit': kMusicSearchLimit,
+    });
   }
 
   @override
@@ -91,7 +114,10 @@ class JioSaavnSource implements MusicSource {
   /// Tolerant by design: `search/songs` nests under `data.results`, the
   /// by-id endpoint returns a bare list under `data`, and a single-song
   /// response uses `data` as an object. All three are handled.
-  Future<List<MusicTrack>> _get(String path, Map<String, dynamic>? query) async {
+  Future<List<MusicTrack>> _get(
+    String path,
+    Map<String, dynamic>? query,
+  ) async {
     final Response<dynamic> response;
     try {
       response = await _dio.get<dynamic>(
@@ -99,21 +125,20 @@ class JioSaavnSource implements MusicSource {
         queryParameters: query,
       );
     } on DioException catch (e) {
-      throw MusicSourceException(
-        'Could not reach $displayName.',
-        cause: e,
-      );
+      throw MusicSourceException('Could not reach $displayName.', cause: e);
     }
     return _parseTracks(response.data);
   }
 
-  static List<MusicTrack> _parseTracks(dynamic payload) {
+  List<MusicTrack> _parseTracks(dynamic payload) {
     final data = payload is Map<String, dynamic> ? payload['data'] : payload;
     dynamic raw;
     if (data is Map<String, dynamic>) {
       raw = data['results'] ?? data['songs'] ?? data['data'];
       // A single song object rather than a list.
-      if (raw == null && (data['id'] != null || data['name'] != null)) raw = data;
+      if (raw == null && (data['id'] != null || data['name'] != null)) {
+        raw = data;
+      }
     } else {
       raw = data;
     }
@@ -127,7 +152,7 @@ class JioSaavnSource implements MusicSource {
     return out;
   }
 
-  static MusicTrack? _parseTrack(Map<String, dynamic> json) {
+  MusicTrack? _parseTrack(Map<String, dynamic> json) {
     final id = _asString(json['id']);
     final title = _asString(json['name'] ?? json['title']);
     if (id == null || title == null) return null;
@@ -135,14 +160,17 @@ class JioSaavnSource implements MusicSource {
     return MusicTrack(
       id: id,
       title: _decodeEntities(title),
-      sourceId: 'jiosaavn',
+      // This catalogue's own id — `this.id`, since the local `id` above is
+      // the track's. A second catalogue must stamp its own tracks, because the
+      // service routes playback back to a source by it.
+      sourceId: this.id,
       artist: _artistOf(json),
       album: _asString(json['album']?['name'] ?? json['album']),
       artwork: _artworkOf(json),
       duration: _durationOf(json),
       year: _asInt(json['year']),
       language: _asString(json['language']),
-      streamUrl: _streamOf(json),
+      streamUrl: _streamOf(json, _quality()),
       streamExpiresAt: _expiryOf(json),
     );
   }
@@ -208,46 +236,60 @@ class JioSaavnSource implements MusicSource {
   ///
   /// Saavn lists these LOWEST bitrate first (12kbps → 320kbps), so taking the
   /// first URL — the obvious reading — hands the player the worst copy of every
-  /// song. Pick the highest advertised bitrate instead, falling back to the last
-  /// entry when no quality parses.
-  static String? _streamOf(Map<String, dynamic> json) {
+  /// song. Pick the best encoding the user's [MusicQuality] allows instead.
+  ///
+  /// Two fallbacks keep every song playable: an entry whose quality does not
+  /// parse still counts (so a response with no labels behaves as before), and
+  /// when nothing is at or below the ceiling the lowest advertised encoding is
+  /// used rather than returning nothing.
+  static String? _streamOf(Map<String, dynamic> json, MusicQuality quality) {
     final urls = json['downloadUrl'] ?? json['download_url'];
+    final entries = <(int, String)>[];
     if (urls is List) {
-      String? best;
-      var bestBitrate = -1;
-      String? last;
       for (final entry in urls) {
         if (entry is! Map) continue;
         final url = entry['url'];
         if (url is! String || url.isEmpty) continue;
-        last = url;
-        final bitrate = _bitrateOf(entry['quality']);
-        if (bitrate > bestBitrate) {
-          bestBitrate = bitrate;
-          best = url;
-        }
+        entries.add((_bitrateOf(entry['quality']), url));
       }
-      return best ?? last;
-    }
-    if (urls is Map) {
-      String? best;
-      var bestBitrate = -1;
-      String? last;
+    } else if (urls is Map) {
       for (final entry in urls.entries) {
         final url = entry.value;
         if (url is! String || url.isEmpty) continue;
-        last = url;
-        final bitrate = _bitrateOf(entry.key);
-        if (bitrate > bestBitrate) {
-          bestBitrate = bitrate;
-          best = url;
-        }
+        entries.add((_bitrateOf(entry.key), url));
       }
-      return best ?? last;
+    } else if (urls is String && urls.isNotEmpty) {
+      return urls;
     }
-    if (urls is String && urls.isNotEmpty) return urls;
-    return null;
+    if (entries.isEmpty) return null;
+    return _pick(entries, quality.kbps);
   }
+
+  /// The best of [entries] at or below [ceiling] kbps, else the smallest.
+  ///
+  /// Split out from [_streamOf] so the selection rule is testable without a
+  /// response shape around it.
+  @visibleForTesting
+  static String? pickForQuality(List<(int, String)> entries, int ceiling) {
+    if (entries.isEmpty) return null;
+    (int, String)? best;
+    (int, String)? smallest;
+    for (final entry in entries) {
+      // An unlabelled entry (-1) is treated as "any quality" so a response
+      // that stopped advertising bitrates still plays.
+      final bitrate = entry.$1 < 0 ? ceiling : entry.$1;
+      if (bitrate <= ceiling && (best == null || bitrate > best.$1)) {
+        best = (bitrate, entry.$2);
+      }
+      if (smallest == null || bitrate < smallest.$1) {
+        smallest = (bitrate, entry.$2);
+      }
+    }
+    return (best ?? smallest)?.$2;
+  }
+
+  static String? _pick(List<(int, String)> entries, int ceiling) =>
+      pickForQuality(entries, ceiling);
 
   /// `"320kbps"` → 320. Returns -1 when the label carries no number, so a
   /// labelled entry always outranks an unlabelled one.

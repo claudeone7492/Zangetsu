@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-import 'jiosaavn_source.dart';
 import 'music_models.dart';
 import 'music_source.dart';
 
@@ -11,8 +10,7 @@ import 'music_source.dart';
 /// fresh stream URL at play time. Sources are injected so tests can drive the
 /// whole mode against a fake catalogue with no network.
 class MusicService {
-  MusicService({List<MusicSource>? sources})
-    : _sources = sources ?? <MusicSource>[JioSaavnSource()];
+  MusicService({required List<MusicSource> sources}) : _sources = sources;
 
   final List<MusicSource> _sources;
 
@@ -39,7 +37,13 @@ class MusicService {
           if (section.isEmpty) continue;
           final deduped = _dedupe(section.tracks);
           if (deduped.isNotEmpty) {
-            out.add(MusicSection(title: section.title, tracks: deduped));
+            out.add(
+              MusicSection(
+                id: section.id,
+                title: section.title,
+                tracks: deduped,
+              ),
+            );
           }
         }
       } catch (e) {

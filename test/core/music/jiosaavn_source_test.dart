@@ -4,7 +4,9 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watch_app/core/music/jiosaavn_source.dart';
+import 'package:watch_app/core/music/music_config.dart';
 import 'package:watch_app/core/music/music_models.dart';
+import 'package:watch_app/core/music/music_prefs.dart';
 import 'package:watch_app/core/music/music_source.dart';
 
 /// Serves canned JSON through the real Dio pipeline.
@@ -40,9 +42,12 @@ ResponseBody json(Object body, {int status = 200}) => ResponseBody.fromString(
   },
 );
 
-JioSaavnSource sourceWith(FakeAdapter adapter) {
+JioSaavnSource sourceWith(
+  FakeAdapter adapter, {
+  MusicQuality quality = MusicQuality.high,
+}) {
   final dio = Dio()..httpClientAdapter = adapter;
-  return JioSaavnSource(dio: dio);
+  return JioSaavnSource(dio: dio, quality: () => quality);
 }
 
 /// Tracks with a known expiry, for the stream-refresh cases.
@@ -79,7 +84,8 @@ Map<String, dynamic> song({
   'id': id,
   'name': name,
   'primaryArtists': primaryArtists,
-  'image': image ??
+  'image':
+      image ??
       [
         {'quality': '50x50', 'url': 'https://art/50.jpg'},
         {'quality': '500x500', 'url': 'https://art/500.jpg'},
@@ -116,7 +122,11 @@ void main() {
     expect(track.title, 'Tum Hi Ho');
     expect(track.artist, 'Arijit Singh');
     expect(track.album, 'Aashiqui 2');
-    expect(track.artwork, 'https://art/500.jpg', reason: 'highest quality wins');
+    expect(
+      track.artwork,
+      'https://art/500.jpg',
+      reason: 'highest quality wins',
+    );
     expect(track.streamUrl, 'https://stream/320.mp3');
     expect(track.duration, const Duration(seconds: 262));
     expect(track.year, 2013, reason: 'year arrives as a string');
@@ -125,17 +135,29 @@ void main() {
   });
 
   test('search sends the query and page to the right endpoint', () async {
-    final adapter = FakeAdapter((_) => json({'data': {'results': []}}));
+    final adapter = FakeAdapter(
+      (_) => json({
+        'data': {'results': []},
+      }),
+    );
     await sourceWith(adapter).search('  lofi  ', page: 2);
 
     final request = adapter.requests.single;
     expect(request.uri.path, endsWith('/api/search/songs'));
-    expect(request.queryParameters['query'], 'lofi', reason: 'query is trimmed');
+    expect(
+      request.queryParameters['query'],
+      'lofi',
+      reason: 'query is trimmed',
+    );
     expect(request.queryParameters['page'], 2);
   });
 
   test('a blank query is not sent to the network at all', () async {
-    final adapter = FakeAdapter((_) => json({'data': {'results': []}}));
+    final adapter = FakeAdapter(
+      (_) => json({
+        'data': {'results': []},
+      }),
+    );
     expect(await sourceWith(adapter).search('   '), isEmpty);
     expect(adapter.requests, isEmpty);
   });
@@ -145,7 +167,10 @@ void main() {
       (_) => json({
         'data': {
           'results': [
-            song(name: 'Kabhi &amp; Kabhi', primaryArtists: 'Rock &#39;n&#39; Roll'),
+            song(
+              name: 'Kabhi &amp; Kabhi',
+              primaryArtists: 'Rock &#39;n&#39; Roll',
+            ),
           ],
         },
       }),
@@ -180,12 +205,20 @@ void main() {
       (_) => json({
         'data': {
           'results': [
-            song(image: {'50x50': 'https://art/50.jpg', '500x500': 'https://art/500.jpg'}),
+            song(
+              image: {
+                '50x50': 'https://art/50.jpg',
+                '500x500': 'https://art/500.jpg',
+              },
+            ),
           ],
         },
       }),
     );
-    expect((await sourceWith(adapter).search('q')).single.artwork, 'https://art/500.jpg');
+    expect(
+      (await sourceWith(adapter).search('q')).single.artwork,
+      'https://art/500.jpg',
+    );
   });
 
   test('a legacy downloadUrl map is understood', () async {
@@ -198,7 +231,10 @@ void main() {
         },
       }),
     );
-    expect((await sourceWith(adapter).search('q')).single.streamUrl, 'https://stream/320.mp3');
+    expect(
+      (await sourceWith(adapter).search('q')).single.streamUrl,
+      'https://stream/320.mp3',
+    );
   });
 
   test('entries without an id or title are skipped, not fatal', () async {
@@ -232,7 +268,9 @@ void main() {
   });
 
   test('expiresAt becomes an absolute time', () async {
-    final epoch = DateTime.now().add(const Duration(hours: 2)).millisecondsSinceEpoch ~/ 1000;
+    final epoch =
+        DateTime.now().add(const Duration(hours: 2)).millisecondsSinceEpoch ~/
+        1000;
     final adapter = FakeAdapter(
       (_) => json({
         'data': {
@@ -261,11 +299,15 @@ void main() {
     });
 
     final sections = await sourceWith(adapter).home();
-    expect(sections, hasLength(2), reason: 'one failed row must not sink the page');
+    expect(
+      sections,
+      hasLength(2),
+      reason: 'one failed row must not sink the page',
+    );
     expect(sections.every((s) => s.tracks.isNotEmpty), isTrue);
   });
 
-  test('home rows carry the expected titles', () async {
+  test('home rows come from the shared config, ids included', () async {
     final adapter = FakeAdapter(
       (_) => json({
         'data': {
@@ -274,12 +316,49 @@ void main() {
       }),
     );
     final sections = await sourceWith(adapter).home();
-    expect(sections.map((s) => s.title), ['Trending', 'New releases', 'Lo-fi']);
+
+    // Driven by kMusicHomeRows, so adding a row is one config edit — this
+    // asserts the source follows it rather than carrying its own list.
+    expect(sections.map((s) => s.id), kMusicHomeRows.map((r) => r.id));
+    expect(
+      sections.map((s) => s.title),
+      kMusicHomeRows.map((r) => r.fallbackTitle),
+    );
+  });
+
+  test('home asks the catalogue one query per configured row', () async {
+    final queries = <String>[];
+    final adapter = FakeAdapter((options) {
+      queries.add(options.queryParameters['query'] as String);
+      return json({
+        'data': {
+          'results': [song()],
+        },
+      });
+    });
+    await sourceWith(adapter).home();
+
+    expect(queries, kMusicHomeRows.map((r) => r.query));
+  });
+
+  test('the catalogue stamps its own id on every track', () async {
+    final adapter = FakeAdapter(
+      (_) => json({
+        'data': {
+          'results': [song()],
+        },
+      }),
+    );
+    final source = sourceWith(adapter);
+    final tracks = await source.search('q');
+    expect(tracks.single.sourceId, source.id);
+    expect(source.id, kMusicSourceId);
   });
 
   test('a transport failure surfaces as a MusicSourceException', () async {
     final adapter = FakeAdapter(
-      (options) => throw DioException(requestOptions: options, message: 'no route'),
+      (options) =>
+          throw DioException(requestOptions: options, message: 'no route'),
     );
     await expectLater(
       sourceWith(adapter).search('q'),
@@ -304,7 +383,14 @@ void main() {
   test('streamFor refreshes a stale URL by id', () async {
     final adapter = FakeAdapter(
       (_) => json({
-        'data': [song(id: 'abc123', downloadUrl: [{'quality': '320kbps', 'url': 'https://stream/new.mp3'}])],
+        'data': [
+          song(
+            id: 'abc123',
+            downloadUrl: [
+              {'quality': '320kbps', 'url': 'https://stream/new.mp3'},
+            ],
+          ),
+        ],
       }),
     );
     final source = sourceWith(adapter);
@@ -315,9 +401,112 @@ void main() {
 
   test('streamFor keeps the old URL when the refresh fails', () async {
     final adapter = FakeAdapter(
-      (options) => throw DioException(requestOptions: options, message: 'offline'),
+      (options) =>
+          throw DioException(requestOptions: options, message: 'offline'),
     );
     final stale = MusicTrackStub.stale();
     expect(await sourceWith(adapter).streamFor(stale), stale.streamUrl);
+  });
+
+  group('quality ceiling', () {
+    // The catalogue publishes a ladder of encodings; which one is right depends
+    // on whether the user is on wifi or paying per megabyte.
+    final ladder = [
+      (96, 'https://stream/96.mp3'),
+      (160, 'https://stream/160.mp3'),
+      (320, 'https://stream/320.mp3'),
+    ];
+
+    test('high takes the top encoding', () {
+      expect(JioSaavnSource.pickForQuality(ladder, 320), ladder.last.$2);
+    });
+
+    test('data saver takes the lowest at or below its ceiling', () {
+      expect(JioSaavnSource.pickForQuality(ladder, 96), 'https://stream/96.mp3');
+    });
+
+    test('balanced picks 160, not the next one up', () {
+      expect(
+        JioSaavnSource.pickForQuality(ladder, 160),
+        'https://stream/160.mp3',
+      );
+    });
+
+    test('a ceiling below every encoding still plays the smallest', () {
+      expect(
+        JioSaavnSource.pickForQuality(ladder, 48),
+        'https://stream/96.mp3',
+        reason: 'silence would be worse than a bigger file',
+      );
+    });
+
+    test('an unlabelled encoding is treated as acceptable', () {
+      expect(
+        JioSaavnSource.pickForQuality([(-1, 'https://stream/x.mp3')], 96),
+        'https://stream/x.mp3',
+      );
+    });
+
+    test('no encodings at all is null, not a crash', () {
+      expect(JioSaavnSource.pickForQuality(const [], 320), isNull);
+    });
+
+    test('a parsed track honours the ceiling end to end', () async {
+      final adapter = FakeAdapter(
+        (_) => json({
+          'status': 'SUCCESS',
+          'data': {'results': [song()]},
+        }),
+      );
+      final tracks = await sourceWith(
+        adapter,
+        quality: MusicQuality.dataSaver,
+      ).search('tum hi ho');
+
+      expect(tracks.single.streamUrl, 'https://stream/96.mp3');
+    });
+
+    test('a map-shaped downloadUrl honours the ceiling too', () async {
+      final adapter = FakeAdapter(
+        (_) => json({
+          'status': 'SUCCESS',
+          'data': {
+            'results': [
+              song(
+                downloadUrl: {
+                  '320kbps': 'https://stream/320.mp3',
+                  '160kbps': 'https://stream/160.mp3',
+                },
+              ),
+            ],
+          },
+        }),
+      );
+      final tracks = await sourceWith(
+        adapter,
+        quality: MusicQuality.balanced,
+      ).search('tum hi ho');
+
+      expect(tracks.single.streamUrl, 'https://stream/160.mp3');
+    });
+
+    test('the quality getter is read per track, not captured once', () async {
+      // Changing the setting while a listing is open must affect the next
+      // parse; capturing the value at construction would freeze it for the
+      // life of the app.
+      var current = MusicQuality.dataSaver;
+      final dio = Dio()
+        ..httpClientAdapter = FakeAdapter(
+          (_) => json({
+            'status': 'SUCCESS',
+            'data': {'results': [song()]},
+          }),
+        );
+      final source = JioSaavnSource(dio: dio, quality: () => current);
+
+      expect((await source.search('x')).single.streamUrl, contains('/96'));
+      current = MusicQuality.high;
+      expect((await source.search('x')).single.streamUrl, contains('/320'));
+    });
   });
 }

@@ -4,7 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:watch_app/core/music/music_models.dart';
 import 'package:watch_app/core/music/music_queue.dart';
 
-MusicTrack track(String id) => MusicTrack(id: id, title: 'Track $id', sourceId: 'test');
+MusicTrack track(String id) =>
+    MusicTrack(id: id, title: 'Track $id', sourceId: 'test');
 
 List<MusicTrack> tracks(int n) => [for (var i = 0; i < n; i++) track('$i')];
 
@@ -91,7 +92,11 @@ void main() {
       final playing = queue.current;
       queue.setShuffle(true);
       expect(queue.isShuffled, isTrue);
-      expect(queue.current, playing, reason: 'the playing track must not change');
+      expect(
+        queue.current,
+        playing,
+        reason: 'the playing track must not change',
+      );
       expect(
         queue.orderedTracks.map((t) => t.id).toSet(),
         tracks(8).map((t) => t.id).toSet(),
@@ -185,7 +190,11 @@ void main() {
     });
 
     test('replace while shuffled keeps the requested track current', () {
-      final queue = MusicQueue(tracks: tracks(6), shuffle: true, random: Random(2));
+      final queue = MusicQueue(
+        tracks: tracks(6),
+        shuffle: true,
+        random: Random(2),
+      );
       queue.replace([track('a'), track('b'), track('c')], startAt: 2);
       expect(queue.current?.id, 'c');
       expect(queue.orderedTracks.length, 3);
@@ -203,5 +212,16 @@ void main() {
   test('tracks is a read-only view', () {
     final queue = MusicQueue(tracks: tracks(2));
     expect(() => queue.tracks.add(track('z')), throwsUnsupportedError);
+  });
+
+  test('shuffle can be toggled on an empty queue', () {
+    final q = MusicQueue();
+    // Reachable from the player UI: the shuffle button exists before any list
+    // has been tapped.
+    expect(() => q.setShuffle(true), returnsNormally);
+    expect(q.isShuffled, isTrue);
+    expect(() => q.setShuffle(false), returnsNormally);
+    expect(q.isShuffled, isFalse);
+    expect(q.current, isNull);
   });
 }

@@ -163,6 +163,11 @@ import '../live/xtream_account_store.dart';
 import '../live/xtream_api.dart';
 import '../cast/cast_proxy.dart';
 import '../comments/episode_comments_service.dart';
+import '../music/audio_output.dart';
+import '../music/music_player_controller.dart';
+import '../music/music_prefs.dart';
+import '../music/jiosaavn_source.dart';
+import '../music/music_service.dart';
 import '../supabase/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show OtpType;
 
@@ -1362,6 +1367,21 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   // wraps it.
   sl.registerSingleton<ContentModeCubit>(
     await ContentModeCubit.create(sl<ActiveSourceCubit>()),
+  );
+
+  // Music mode's catalogue. Registered eagerly (no network on construct) so the
+  // music screen and the player can both reach one instance: the screen builds
+  // rows from it, and the player resolves stream URLs through it. A second
+  // instance would mean two Dio clients and two sets of timeouts.
+  await MusicPrefs.init();
+  sl.registerLazySingleton<MusicService>(
+    () => MusicService(sources: [JioSaavnSource()]),
+  );
+  sl.registerLazySingleton<MusicPlayerController>(
+    () => MusicPlayerController(
+      service: sl<MusicService>(),
+      output: MediaKitAudioOutput(),
+    ),
   );
 
   // Addon settings are local; configured URLs stay in secure storage.

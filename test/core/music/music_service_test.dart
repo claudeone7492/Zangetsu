@@ -51,12 +51,14 @@ class FakeSource implements MusicSource {
   }
 }
 
-MusicTrack t(String id, {String source = 'a', String? url}) => MusicTrack(
-  id: id,
-  title: 'Track $id',
-  sourceId: source,
-  streamUrl: url,
-);
+MusicTrack t(String id, {String source = 'a', String? url, String? artist}) =>
+    MusicTrack(
+      id: id,
+      title: 'Track $id',
+      sourceId: source,
+      streamUrl: url,
+      artist: artist,
+    );
 
 void main() {
   test('availableSources hides unconfigured catalogues', () {
@@ -69,7 +71,9 @@ void main() {
     expect(service.availableSources.map((s) => s.id), ['a']);
     expect(service.isAvailable, isTrue);
 
-    final none = MusicService(sources: [FakeSource(id: 'b', configured: false)]);
+    final none = MusicService(
+      sources: [FakeSource(id: 'b', configured: false)],
+    );
     expect(none.isAvailable, isFalse);
   });
 
@@ -85,7 +89,12 @@ void main() {
         ),
         FakeSource(
           id: 'b',
-          homeSections: [MusicSection(title: 'Trending', tracks: [t('9', source: 'b')])],
+          homeSections: [
+            MusicSection(
+              title: 'Trending',
+              tracks: [t('9', source: 'b')],
+            ),
+          ],
         ),
       ],
     );
@@ -101,7 +110,9 @@ void main() {
         FakeSource(id: 'dead', searchError: MusicSourceException('down')),
         FakeSource(
           id: 'live',
-          homeSections: [MusicSection(title: 'Trending', tracks: [t('1')])],
+          homeSections: [
+            MusicSection(title: 'Trending', tracks: [t('1')]),
+          ],
         ),
       ],
     );
@@ -109,6 +120,32 @@ void main() {
     // so the assertion is really about ordering and not throwing.
     final sections = await service.home();
     expect(sections.length, 1);
+  });
+
+  test('home keeps each row id so the UI can localise the heading', () async {
+    final service = MusicService(
+      sources: [
+        FakeSource(
+          id: 'a',
+          homeSections: [
+            MusicSection(
+              id: 'trending',
+              title: 'Hot right now',
+              tracks: [t('1')],
+            ),
+            MusicSection(
+              title: 'A row only this catalogue has',
+              tracks: [t('2')],
+            ),
+          ],
+        ),
+      ],
+    );
+    final sections = await service.home();
+    // The id survives the service's rebuild — dropping it would silently
+    // downgrade every standard heading to the catalogue's English.
+    expect(sections.first.id, 'trending');
+    expect(sections.last.id, isNull);
   });
 
   test('home de-duplicates repeated tracks within a row', () async {
@@ -129,12 +166,29 @@ void main() {
   test('search merges catalogues and de-duplicates across them', () async {
     final service = MusicService(
       sources: [
-        FakeSource(id: 'a', searchResults: [t('1', source: 'a'), t('2', source: 'a')]),
-        FakeSource(id: 'b', searchResults: [t('1', source: 'b'), t('3', source: 'b')]),
+        FakeSource(
+          id: 'a',
+          searchResults: [
+            t('1', source: 'a'),
+            t('2', source: 'a'),
+          ],
+        ),
+        FakeSource(
+          id: 'b',
+          searchResults: [
+            t('1', source: 'b'),
+            t('3', source: 'b'),
+          ],
+        ),
       ],
     );
     final results = await service.search('query');
-    expect(results.map((x) => '${x.sourceId}:${x.id}'), ['a:1', 'a:2', 'b:1', 'b:3']);
+    expect(results.map((x) => '${x.sourceId}:${x.id}'), [
+      'a:1',
+      'a:2',
+      'b:1',
+      'b:3',
+    ]);
   });
 
   test('search throws only when every catalogue fails', () async {
@@ -152,25 +206,36 @@ void main() {
     final oneLive = MusicService(
       sources: [
         FakeSource(id: 'a', searchError: MusicSourceException('a down')),
-        FakeSource(id: 'b', searchResults: [t('7', source: 'b')]),
+        FakeSource(
+          id: 'b',
+          searchResults: [t('7', source: 'b')],
+        ),
       ],
     );
     expect((await oneLive.search('q')).single.id, '7');
   });
 
-  test('search with no available catalogues returns empty, not an error', () async {
-    final service = MusicService(sources: [FakeSource(id: 'a', configured: false)]);
-    expect(await service.search('q'), isEmpty);
-  });
+  test(
+    'search with no available catalogues returns empty, not an error',
+    () async {
+      final service = MusicService(
+        sources: [FakeSource(id: 'a', configured: false)],
+      );
+      expect(await service.search('q'), isEmpty);
+    },
+  );
 
-  test('search short-circuits a blank query without hitting the network', () async {
-    final source = FakeSource(id: 'a', searchResults: [t('1')]);
-    final service = MusicService(sources: [source]);
-    // The service itself does not trim, but the real source does; the fake
-    // records the call so this pins the contract that a blank query is cheap.
-    await service.search('   ');
-    expect(source.searchCalls, 1);
-  });
+  test(
+    'search short-circuits a blank query without hitting the network',
+    () async {
+      final source = FakeSource(id: 'a', searchResults: [t('1')]);
+      final service = MusicService(sources: [source]);
+      // The service itself does not trim, but the real source does; the fake
+      // records the call so this pins the contract that a blank query is cheap.
+      await service.search('   ');
+      expect(source.searchCalls, 1);
+    },
+  );
 
   test('streamFor routes to the owning catalogue', () async {
     final a = FakeSource(id: 'a', streamUrl: 'https://a/1.mp3');
@@ -182,11 +247,14 @@ void main() {
     expect(a.streamedIds, isEmpty);
   });
 
-  test('streamFor falls back to the track URL for an unknown catalogue', () async {
-    final service = MusicService(sources: [FakeSource(id: 'a')]);
-    final orphan = t('1', source: 'ghost', url: 'https://orphan/1.mp3');
-    expect(await service.streamFor(orphan), 'https://orphan/1.mp3');
-  });
+  test(
+    'streamFor falls back to the track URL for an unknown catalogue',
+    () async {
+      final service = MusicService(sources: [FakeSource(id: 'a')]);
+      final orphan = t('1', source: 'ghost', url: 'https://orphan/1.mp3');
+      expect(await service.streamFor(orphan), 'https://orphan/1.mp3');
+    },
+  );
 
   test('streamFor returns null when the catalogue resolves nothing', () async {
     final service = MusicService(sources: [FakeSource(id: 'a')]);
@@ -247,9 +315,15 @@ void main() {
     expect(t('1').hashCode, t('1').hashCode);
   });
 
-  test('displayArtist falls back for a missing artist', () {
-    expect(t('1').displayArtist, 'Unknown artist');
-    const withArtist = MusicTrack(id: '1', title: 'x', sourceId: 'a', artist: 'Me');
-    expect(withArtist.displayArtist, 'Me');
+  test('hasArtist reports whether the catalogue gave one', () {
+    expect(t('1').hasArtist, isFalse);
+    expect(t('1', artist: '').hasArtist, isFalse);
+    const withArtist = MusicTrack(
+      id: '1',
+      title: 'x',
+      sourceId: 'a',
+      artist: 'Me',
+    );
+    expect(withArtist.hasArtist, isTrue);
   });
 }
