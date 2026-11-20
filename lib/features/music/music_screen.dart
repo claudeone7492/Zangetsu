@@ -2,12 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
 import '../../core/music/music_models.dart';
 import '../../core/music/music_player_controller.dart';
 import '../../core/music/music_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import '../../core/tv/tv_action_chip.dart';
+import '../../core/tv/tv_focusable.dart';
+import '../../core/tv/tv_text_field.dart';
 import '../../l10n/l10n.dart';
 import 'music_player_sheet.dart';
 
@@ -40,6 +44,11 @@ class _MusicScreenState extends State<MusicScreen> {
   late final MusicPlayerController _player = sl<MusicPlayerController>();
   final _searchController = TextEditingController();
   final _searchFocus = FocusNode();
+
+  /// Leanback builds this screen too, but every control below is a phone
+  /// widget: GestureDetector cannot take D-pad focus at all, so the screen
+  /// rendered on a TV with nothing reachable from a remote.
+  late final bool _tv = sl.isRegistered<AppMode>() && sl<AppMode>().isTv;
 
   List<MusicSection>? _sections;
   bool _loading = false;
@@ -177,11 +186,13 @@ class _MusicScreenState extends State<MusicScreen> {
               focusNode: _searchFocus,
               onSubmitted: _runSearch,
               onClear: _clearSearch,
+              tv: _tv,
             ),
             Expanded(child: _body()),
             _MiniPlayer(
               player: _player,
               onOpen: () => showMusicPlayerSheet(context, _player),
+              tv: _tv,
             ),
           ],
         ),
@@ -198,6 +209,7 @@ class _MusicScreenState extends State<MusicScreen> {
         icon: Icons.cloud_off_rounded,
         title: context.l10n.musicUnavailable,
         body: context.l10n.musicUnavailableBody,
+        tv: _tv,
       );
     }
     if (_query.isNotEmpty) return _searchBody();
@@ -213,6 +225,7 @@ class _MusicScreenState extends State<MusicScreen> {
         body: error,
         action: context.l10n.retry,
         onAction: _loadHome,
+        tv: _tv,
       );
     }
     final sections = _sections;
@@ -224,6 +237,7 @@ class _MusicScreenState extends State<MusicScreen> {
         body: context.l10n.musicNoTracksBody,
         action: context.l10n.retry,
         onAction: _loadHome,
+        tv: _tv,
       );
     }
     return RefreshIndicator(
@@ -238,6 +252,7 @@ class _MusicScreenState extends State<MusicScreen> {
           return _Section(
             section: section,
             onTap: (track) => _playTrack(section.tracks, track),
+            tv: _tv,
           );
         },
       ),
@@ -253,6 +268,7 @@ class _MusicScreenState extends State<MusicScreen> {
         title: error,
         action: context.l10n.retry,
         onAction: () => _runSearch(_query),
+        tv: _tv,
       );
     }
     final results = _results;
@@ -272,6 +288,7 @@ class _MusicScreenState extends State<MusicScreen> {
     return _TrackList(
       tracks: results,
       onTap: (track) => _playTrack(results, track),
+      tv: _tv,
     );
   }
 }
@@ -283,6 +300,7 @@ class _Header extends StatelessWidget {
     required this.focusNode,
     required this.onSubmitted,
     required this.onClear,
+    this.tv = false,
   });
 
   final String title;
@@ -290,6 +308,7 @@ class _Header extends StatelessWidget {
   final FocusNode focusNode;
   final ValueChanged<String> onSubmitted;
   final VoidCallback onClear;
+  final bool tv;
 
   @override
   Widget build(BuildContext context) {
@@ -306,46 +325,59 @@ class _Header extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          TextField(
-            controller: controller,
-            focusNode: focusNode,
-            style: AppText.body,
-            textInputAction: TextInputAction.search,
-            onSubmitted: onSubmitted,
-            decoration: InputDecoration(
-              hintText: context.l10n.musicSearchHint,
-              hintStyle: AppText.body.copyWith(color: AppColors.textTertiary),
-              prefixIcon: const Icon(
-                Icons.search_rounded,
-                color: AppColors.textTertiary,
-              ),
-              suffixIcon: controller.text.isEmpty
-                  ? null
-                  : IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 18),
-                      color: AppColors.textTertiary,
-                      onPressed: onClear,
-                    ),
-              filled: true,
-              fillColor: AppColors.surface,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide.none,
-              ),
+          // Leanback needs TvTextField: a plain TextField raises the IME as
+          // soon as D-pad focus lands, and the keyboard then swallows every
+          // further direction press.
+          if (tv)
+            TvTextField(
+              controller: controller,
+              focusNode: focusNode,
+              style: AppText.body,
+              textInputAction: TextInputAction.search,
+              onSubmitted: onSubmitted,
+              decoration: _decoration(context),
+            )
+          else
+            TextField(
+              controller: controller,
+              focusNode: focusNode,
+              style: AppText.body,
+              textInputAction: TextInputAction.search,
+              onSubmitted: onSubmitted,
+              decoration: _decoration(context),
             ),
-          ),
         ],
       ),
     );
   }
+
+  InputDecoration _decoration(BuildContext context) => InputDecoration(
+    hintText: context.l10n.musicSearchHint,
+    hintStyle: AppText.body.copyWith(color: AppColors.textTertiary),
+    prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textTertiary),
+    suffixIcon: controller.text.isEmpty
+        ? null
+        : IconButton(
+            icon: const Icon(Icons.close_rounded, size: 18),
+            color: AppColors.textTertiary,
+            onPressed: onClear,
+          ),
+    filled: true,
+    fillColor: AppColors.surface,
+    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide.none,
+    ),
+  );
 }
 
 class _Section extends StatelessWidget {
-  const _Section({required this.section, required this.onTap});
+  const _Section({required this.section, required this.onTap, this.tv = false});
 
   final MusicSection section;
   final ValueChanged<MusicTrack> onTap;
+  final bool tv;
 
   @override
   Widget build(BuildContext context) {
@@ -365,7 +397,11 @@ class _Section extends StatelessWidget {
             separatorBuilder: (_, _) => const SizedBox(width: 12),
             itemBuilder: (context, i) {
               final track = section.tracks[i];
-              return _TrackCard(track: track, onTap: () => onTap(track));
+              return _TrackCard(
+                track: track,
+                onTap: () => onTap(track),
+                tv: tv,
+              );
             },
           ),
         ),
@@ -375,38 +411,50 @@ class _Section extends StatelessWidget {
 }
 
 class _TrackCard extends StatelessWidget {
-  const _TrackCard({required this.track, required this.onTap});
+  const _TrackCard({required this.track, required this.onTap, this.tv = false});
 
   final MusicTrack track;
   final VoidCallback onTap;
+  final bool tv;
 
   @override
   Widget build(BuildContext context) {
+    final art = SizedBox(
+      width: 124,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          MusicArtwork(url: track.artwork, size: 124),
+          const SizedBox(height: 8),
+          Text(
+            track.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppText.body.copyWith(fontWeight: FontWeight.w600),
+          ),
+          Text(
+            track.artistLabel(context),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppText.caption.copyWith(color: AppColors.textTertiary),
+          ),
+        ],
+      ),
+    );
+    if (tv) {
+      return TvFocusable(
+        onTap: onTap,
+        variant: TvFocusVariant.float,
+        scale: 1.08,
+        borderRadius: 12,
+        semanticLabel: '${track.title}, ${track.artistLabel(context)}',
+        child: art,
+      );
+    }
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 124,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            MusicArtwork(url: track.artwork, size: 124),
-            const SizedBox(height: 8),
-            Text(
-              track.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppText.body.copyWith(fontWeight: FontWeight.w600),
-            ),
-            Text(
-              track.artistLabel(context),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppText.caption.copyWith(color: AppColors.textTertiary),
-            ),
-          ],
-        ),
-      ),
+      child: art,
     );
   }
 }
@@ -455,10 +503,15 @@ class _ArtworkFallback extends StatelessWidget {
 }
 
 class _TrackList extends StatelessWidget {
-  const _TrackList({required this.tracks, required this.onTap});
+  const _TrackList({
+    required this.tracks,
+    required this.onTap,
+    this.tv = false,
+  });
 
   final List<MusicTrack> tracks;
   final ValueChanged<MusicTrack> onTap;
+  final bool tv;
 
   @override
   Widget build(BuildContext context) {
@@ -468,8 +521,8 @@ class _TrackList extends StatelessWidget {
       separatorBuilder: (_, _) => const SizedBox(height: 2),
       itemBuilder: (context, i) {
         final track = tracks[i];
-        return ListTile(
-          onTap: () => onTap(track),
+        final tile = ListTile(
+          onTap: tv ? null : () => onTap(track),
           contentPadding: const EdgeInsets.symmetric(horizontal: 8),
           leading: MusicArtwork(url: track.artwork, size: 48),
           title: Text(
@@ -485,6 +538,18 @@ class _TrackList extends StatelessWidget {
             style: AppText.caption.copyWith(color: AppColors.textTertiary),
           ),
         );
+        // ListTile's own onTap needs a touch; on leanback the row is wrapped
+        // instead, and onTap is cleared above so OK cannot fire twice.
+        return tv
+            ? TvFocusable(
+                onTap: () => onTap(track),
+                variant: TvFocusVariant.row,
+                scale: 1.0,
+                borderRadius: 12,
+                semanticLabel: '${track.title}, ${track.artistLabel(context)}',
+                child: tile,
+              )
+            : tile;
       },
     );
   }
@@ -497,6 +562,7 @@ class _Message extends StatelessWidget {
     this.body,
     this.action,
     this.onAction,
+    this.tv = false,
   });
 
   final IconData icon;
@@ -504,6 +570,7 @@ class _Message extends StatelessWidget {
   final String? body;
   final String? action;
   final VoidCallback? onAction;
+  final bool tv;
 
   @override
   Widget build(BuildContext context) {
@@ -529,14 +596,17 @@ class _Message extends StatelessWidget {
             ],
             if (label != null && tap != null) ...[
               const SizedBox(height: 16),
-              FilledButton(
-                onPressed: tap,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: Colors.white,
+              if (tv)
+                TvActionChip(label: label, onTap: tap)
+              else
+                FilledButton(
+                  onPressed: tap,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text(label),
                 ),
-                child: Text(label),
-              ),
             ],
           ],
         ),
@@ -547,10 +617,15 @@ class _Message extends StatelessWidget {
 
 /// The bar above the dock while a song is loaded.
 class _MiniPlayer extends StatelessWidget {
-  const _MiniPlayer({required this.player, required this.onOpen});
+  const _MiniPlayer({
+    required this.player,
+    required this.onOpen,
+    this.tv = false,
+  });
 
   final MusicPlayerController player;
   final VoidCallback onOpen;
+  final bool tv;
 
   @override
   Widget build(BuildContext context) {
@@ -559,44 +634,69 @@ class _MiniPlayer extends StatelessWidget {
       builder: (context, _) {
         final track = player.current;
         if (track == null) return const SizedBox.shrink();
-        return GestureDetector(
-          onTap: onOpen,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              children: [
-                MusicArtwork(url: track.artwork, size: 42),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        track.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppText.body.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+        final bar = Container(
+          margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            children: [
+              MusicArtwork(url: track.artwork, size: 42),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      track.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppText.body.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    Text(
+                      track.artistLabel(context),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppText.caption.copyWith(
+                        color: AppColors.textTertiary,
                       ),
-                      Text(
-                        track.artistLabel(context),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppText.caption.copyWith(
-                          color: AppColors.textTertiary,
-                        ),
-                      ),
-                    ],
+                    ),
+                  ],
+                ),
+              ),
+              if (tv) ...[
+                // The whole bar is not focusable on leanback: OK on the bar
+                // would open the player sheet with no way to reach
+                // play/pause. Give each control its own focus target.
+                TvFocusable(
+                  onTap: player.togglePlayPause,
+                  variant: TvFocusVariant.pill,
+                  borderRadius: 20,
+                  semanticLabel: player.playing ? 'Pause' : 'Play',
+                  builder: (_) => Icon(
+                    player.buffering
+                        ? Icons.hourglass_top_rounded
+                        : player.playing
+                        ? Icons.pause_rounded
+                        : Icons.play_arrow_rounded,
+                    color: AppColors.textPrimary,
                   ),
                 ),
+                const SizedBox(width: 12),
+                TvFocusable(
+                  onTap: player.next,
+                  variant: TvFocusVariant.pill,
+                  borderRadius: 20,
+                  semanticLabel: 'Next',
+                  builder: (_) => const Icon(
+                    Icons.skip_next_rounded,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ] else ...[
                 IconButton(
                   onPressed: player.togglePlayPause,
                   icon: Icon(
@@ -616,8 +716,25 @@ class _MiniPlayer extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
+            ],
           ),
+        );
+        if (!tv) {
+          return GestureDetector(
+            onTap: onOpen,
+            behavior: HitTestBehavior.opaque,
+            child: bar,
+          );
+        }
+        // Opening the sheet moves focus, so wait for the remote's KeyUp —
+        // otherwise the same press that opened it lands on the sheet.
+        return TvFocusable(
+          onTap: onOpen,
+          waitForKeyUp: true,
+          variant: TvFocusVariant.box,
+          borderRadius: 14,
+          semanticLabel: 'Open player',
+          child: bar,
         );
       },
     );
