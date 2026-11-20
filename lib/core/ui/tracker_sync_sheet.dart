@@ -16,6 +16,7 @@ import '../tracker/tracker_binding_store.dart';
 import '../tracker/tracker_hub.dart';
 import '../tv/tv_focusable.dart';
 import 'global_messenger.dart';
+import '../../l10n/l10n.dart';
 
 /// Tracker sync sheet. Reads the user's current entry for one title from the
 /// connected trackers, lets them edit status / score / episode progress in one
@@ -317,7 +318,7 @@ class _TrackerSyncSheetState extends State<TrackerSyncSheet> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text('Tracking', style: AppText.headline),
+              Text(context.l10n.tracking, style: AppText.headline),
               const SizedBox(height: 2),
               _connectedLine(),
               const SizedBox(height: 18),
@@ -650,7 +651,7 @@ class _TrackerSyncSheetState extends State<TrackerSyncSheet> {
                 valueColor: AlwaysStoppedAnimation(Colors.white),
               ),
             )
-          : Text('Apply', style: AppText.button.copyWith(color: Colors.white)),
+          : Text(context.l10n.apply, style: AppText.button.copyWith(color: Colors.white)),
     );
     return _focusable(
       onTap: _saving ? () {} : _apply,
@@ -878,7 +879,7 @@ class _TrackerMatchPickerState extends State<_TrackerMatchPicker> {
     if (_results.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 40),
-        child: Center(child: Text('No matches found', style: AppText.body)),
+        child: Center(child: Text(context.l10n.noMatchesFound, style: AppText.body)),
       );
     }
     return ListView.builder(

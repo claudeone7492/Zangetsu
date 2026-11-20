@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../playback/subtitle_language.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
+import '../../l10n/l10n.dart';
 
 /// Bottom sheet to pick the global subtitle preference. Returns '' (Auto),
 /// 'off', a language iso1, or null when dismissed. Used by Settings and the
@@ -45,7 +46,7 @@ Future<String?> showSubtitleLanguagePicker(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
             child: Align(
               alignment: AlignmentDirectional.centerStart,
-              child: Text('Subtitle language', style: AppText.headline),
+              child: Text(context.l10n.subtitleLanguage, style: AppText.headline),
             ),
           ),
           const Divider(color: AppColors.hairline, height: 1),

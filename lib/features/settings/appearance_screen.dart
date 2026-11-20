@@ -222,7 +222,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Background colour', style: AppText.headline),
+                    Text(context.l10n.mangaTranslationBackgroundColour, style: AppText.headline),
                     const SizedBox(height: 16),
                     // A Stack, not `color` + `gradient` in one BoxDecoration:
                     // when a gradient is present Flutter ignores the colour, so

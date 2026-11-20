@@ -102,7 +102,7 @@ class _DubSheetState extends State<_DubSheet> {
                   ),
                 ),
               ),
-              Text('AI Dub', style: AppText.headline),
+              Text(context.l10n.aiDub, style: AppText.headline),
               const SizedBox(height: 4),
               Text(
                 'Reads the current subtitle line aloud. Needs a subtitle track '

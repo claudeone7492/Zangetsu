@@ -27,7 +27,7 @@ Future<List<String>?> _promptNewList(
     context: context,
     builder: (ctx) => AlertDialog(
       backgroundColor: AppColors.surface,
-      title: Text('New AniList list', style: AppText.title),
+      title: Text(context.l10n.newAniListList, style: AppText.title),
       content: TextField(
         controller: controller,
         autofocus: true,
@@ -107,7 +107,7 @@ Future<void> showAniListCustomListsSheet(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 2),
               child: Align(
                 alignment: AlignmentDirectional.centerStart,
-                child: Text('AniList custom lists', style: AppText.title),
+                child: Text(context.l10n.anilistCustomLists, style: AppText.title),
               ),
             ),
             Padding(
@@ -151,7 +151,7 @@ Future<void> showAniListCustomListsSheet(
                 'New list',
                 style: AppText.body.copyWith(color: AppColors.accent),
               ),
-              subtitle: Text('Creates it on AniList', style: AppText.caption),
+              subtitle: Text(context.l10n.createsItOnAniList, style: AppText.caption),
               onTap: () async {
                 final made = await _promptNewList(ctx, service, kind);
                 if (made == null) return;

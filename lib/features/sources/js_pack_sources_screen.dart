@@ -186,7 +186,7 @@ class _JsPackSourcesScreenState extends State<JsPackSourcesScreen> {
         ],
         if (repos.isNotEmpty) ...[
           const SizedBox(height: 28),
-          Text('Repositories', style: AppText.overline),
+          Text(context.l10n.repositories, style: AppText.overline),
           const SizedBox(height: 8),
           for (final url in repos) _repoRow(manager, url),
         ],

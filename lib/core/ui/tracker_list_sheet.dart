@@ -325,7 +325,7 @@ class _TrackerListSheetState extends State<TrackerListSheet> {
               ),
             ),
             const SizedBox(height: 14),
-            Text('Tracking', style: AppText.title),
+            Text(context.l10n.tracking, style: AppText.title),
             const SizedBox(height: 2),
             Text(
               widget.title,

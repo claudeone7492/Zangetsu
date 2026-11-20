@@ -769,7 +769,7 @@ class _MetaFilterSheetState extends State<_MetaFilterSheet> {
             ),
             const SizedBox(height: 6),
             ListTile(
-              title: Text('Any', style: AppText.body),
+              title: Text(context.l10n.any, style: AppText.body),
               trailing: _f.runtimeMin == null && _f.runtimeMax == null
                   ? Icon(Icons.check_rounded, color: AppColors.accent)
                   : null,
@@ -842,7 +842,7 @@ class _MetaFilterSheetState extends State<_MetaFilterSheet> {
             ),
             const SizedBox(height: 6),
             ListTile(
-              title: Text('Any', style: AppText.body),
+              title: Text(context.l10n.any, style: AppText.body),
               trailing: _f.originCountry == null
                   ? Icon(Icons.check_rounded, color: AppColors.accent)
                   : null,
@@ -920,7 +920,7 @@ class _MetaFilterSheetState extends State<_MetaFilterSheet> {
             ),
             const SizedBox(height: 6),
             ListTile(
-              title: Text('Any', style: AppText.body),
+              title: Text(context.l10n.any, style: AppText.body),
               trailing: _f.originalLanguage == null
                   ? Icon(Icons.check_rounded, color: AppColors.accent)
                   : null,

@@ -10,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import 'korapay_checkout.dart';
 import 'subscription_cubit.dart';
+import '../../l10n/l10n.dart';
 
 /// Opens the subscription card as a frosted modal. Resolves true when the user
 /// unlocked access (trial started, free promo, or a completed payment).
@@ -368,7 +369,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 18),
                 ),
-                child: Text('Apply', style: AppText.button),
+                child: Text(context.l10n.apply, style: AppText.button),
               ),
             ),
           ],
