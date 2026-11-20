@@ -123,7 +123,7 @@ class _DubSheetState extends State<_DubSheet> {
                 SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
                   value: _prefs.enabled,
-                  title: Text('Narrate subtitles', style: AppText.body),
+                  title: Text(context.l10n.dubNarrateSubtitles, style: AppText.body),
                   onChanged: (v) => _prefs.setEnabled(v),
                 ),
 
@@ -196,7 +196,7 @@ class _DubSheetState extends State<_DubSheet> {
                 SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
                   value: _prefs.skipSoundEffects,
-                  title: Text('Skip sound effects', style: AppText.body),
+                  title: Text(context.l10n.dubSkipSoundEffects, style: AppText.body),
                   subtitle: Text(
                     'Do not narrate lines like [CROWD CHEERING].',
                     style: AppText.caption.copyWith(color: AppColors.textSecondary),
@@ -205,7 +205,7 @@ class _DubSheetState extends State<_DubSheet> {
                 ),
 
                 const Divider(color: AppColors.hairline, height: 24),
-                Text('Narrate in', style: AppText.body),
+                Text(context.l10n.dubNarrateIn, style: AppText.body),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 8,
@@ -227,7 +227,7 @@ class _DubSheetState extends State<_DubSheet> {
 
                 const Divider(color: AppColors.hairline, height: 24),
                 const Divider(color: AppColors.hairline, height: 24),
-                Text('Voice', style: AppText.body),
+                Text(context.l10n.dubVoice, style: AppText.body),
                 const SizedBox(height: 6),
                 if (_prefs.usesNeuralVoice)
                   // The hosted voice is picked by language above; listing

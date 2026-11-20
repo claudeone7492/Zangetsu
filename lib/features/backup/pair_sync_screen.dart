@@ -11,6 +11,7 @@ import '../../core/pair/pair_protocol.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/ui/settings_widgets.dart';
+import '../../l10n/l10n.dart';
 
 /// Send or receive a backup over the local Wi-Fi, with no cloud account.
 ///
@@ -267,7 +268,7 @@ class _PairSyncScreenState extends State<PairSyncScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Type this code on the other device.',
+                    context.l10n.pairTypeCodeOnOtherDevice,
                     style: AppText.caption,
                   ),
                 ],
@@ -295,7 +296,7 @@ class _PairSyncScreenState extends State<PairSyncScreen> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  'Looking for a device that is sending…',
+                  context.l10n.pairLookingForDevice,
                   style: AppText.caption,
                 ),
               )
@@ -332,7 +333,7 @@ class _PairSyncScreenState extends State<PairSyncScreen> {
                     const SizedBox(height: 12),
                     FilledButton(
                       onPressed: _busy || _chosen == null ? null : _receive,
-                      child: const Text('Restore from this device'),
+                      child: Text(context.l10n.pairRestoreFromThisDevice),
                     ),
                   ],
                 ),

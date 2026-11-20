@@ -313,7 +313,7 @@ class _DetailCloudflareBlockedState extends State<_DetailCloudflareBlocked> {
             ),
             const SizedBox(height: 20),
             Text(
-              'This source is protected by Cloudflare',
+              context.l10n.commonCloudflareProtected,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.textPrimary,

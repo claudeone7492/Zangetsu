@@ -9,6 +9,7 @@ import '../../core/di/injector.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/tv/tv_list_focusable.dart';
+import '../../l10n/l10n.dart';
 
 const _telegramUrl = 'https://t.me/ZangetsuStream';
 const _discordUrl = kDiscordInviteUrl;
@@ -100,7 +101,7 @@ class _CommunitySheet extends StatelessWidget {
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
-                    'Join the Zangetsu community',
+                    context.l10n.communityJoinTitle,
                     style: AppText.headline.copyWith(
                       color: AppColors.textPrimary,
                       fontWeight: FontWeight.w700,
@@ -111,7 +112,7 @@ class _CommunitySheet extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Updates, requests, and help — come say hi.',
+              context.l10n.communityJoinBody,
               style: AppText.body.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.4,
@@ -179,7 +180,7 @@ class _CommunitySheet extends StatelessWidget {
     void dismiss() => Navigator.of(context).pop();
     final button = TextButton(
       onPressed: dismiss,
-      child: Text('Maybe later',
+      child: Text(context.l10n.communityMaybeLater,
           style: AppText.body.copyWith(color: AppColors.textTertiary)),
     );
     if (!isTv) return button;

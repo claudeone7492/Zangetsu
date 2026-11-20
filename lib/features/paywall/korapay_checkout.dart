@@ -3,6 +3,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import '../../l10n/l10n.dart';
 
 /// Embedded KoraPay checkout.
 ///
@@ -69,7 +70,7 @@ class _KoraPayCheckoutState extends State<KoraPayCheckout> {
         icon: const Icon(Icons.close),
         onPressed: () => Navigator.of(context).pop(false),
       ),
-      title: Text('Checkout', style: AppText.title),
+      title: Text(context.l10n.paywallCheckout, style: AppText.title),
     ),
     body: Stack(
       children: [

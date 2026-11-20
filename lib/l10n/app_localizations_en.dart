@@ -6975,4 +6975,96 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get liveParentalEverything => 'Everything — no rating filtering';
+
+  @override
+  String get dubVoice => 'Voice';
+
+  @override
+  String get dubNarrateIn => 'Narrate in';
+
+  @override
+  String get dubNarrateSubtitles => 'Narrate subtitles';
+
+  @override
+  String get dubSkipSoundEffects => 'Skip sound effects';
+
+  @override
+  String get dubDoNotNarrateCues =>
+      'Do not narrate lines like [CROWD CHEERING].';
+
+  @override
+  String get gifChooseGif => 'Choose a GIF';
+
+  @override
+  String get gifCouldNotLoad => 'Could not load GIFs. Check your connection.';
+
+  @override
+  String get gifSearchUnavailable => 'GIF search is unavailable right now.';
+
+  @override
+  String get gifSignInToSearch => 'Sign in to search for GIFs.';
+
+  @override
+  String get gifPoweredByKlipy => 'Powered by KLIPY';
+
+  @override
+  String get stremioBrowse => 'Browse';
+
+  @override
+  String get stremioBrowseCatalogues => 'Browse catalogues';
+
+  @override
+  String get stremioChooseCatalogueHint =>
+      'Choose an addon catalogue to browse. Search filters are separate.';
+
+  @override
+  String get stremioNoBrowseableCatalogues =>
+      'No browseable addon catalogues are available.';
+
+  @override
+  String get stremioSearchResultFilters => 'Search result filters';
+
+  @override
+  String get paywallCheckout => 'Checkout';
+
+  @override
+  String get paywallCheckoutUnavailable => 'Checkout is unavailable right now.';
+
+  @override
+  String get paywallPayWithKorapay => 'Pay with KoraPay · card, transfer, USSD';
+
+  @override
+  String get paywallSecuredInApp => 'Secured in-app · no redirect';
+
+  @override
+  String get communityJoinTitle => 'Join the Zangetsu community';
+
+  @override
+  String get communityJoinBody => 'Updates, requests, and help — come say hi.';
+
+  @override
+  String get communityMaybeLater => 'Maybe later';
+
+  @override
+  String get pairTypeCodeOnOtherDevice => 'Type this code on the other device.';
+
+  @override
+  String get pairLookingForDevice => 'Looking for a device that is sending…';
+
+  @override
+  String get pairRestoreFromThisDevice => 'Restore from this device';
+
+  @override
+  String get profileOptionalImage => 'Optional image for your profile';
+
+  @override
+  String get profileAvatarLabel => 'Profile avatar';
+
+  @override
+  String get commonCloudflareProtected =>
+      'This source is protected by Cloudflare';
+
+  @override
+  String get commonBackupSaveFailed =>
+      'Could not save the backup. Your current data is unchanged.';
 }

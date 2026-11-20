@@ -7058,4 +7058,94 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get liveParentalEverything => 'الكل — دون تصفية حسب التصنيف';
+
+  @override
+  String get dubVoice => 'الصوت';
+
+  @override
+  String get dubNarrateIn => 'السرد بـ';
+
+  @override
+  String get dubNarrateSubtitles => 'سرد الترجمة';
+
+  @override
+  String get dubSkipSoundEffects => 'تخطي المؤثرات الصوتية';
+
+  @override
+  String get dubDoNotNarrateCues => 'لا تسرد أسطرًا مثل [الجمهور يهتف].';
+
+  @override
+  String get gifChooseGif => 'اختر صورة GIF';
+
+  @override
+  String get gifCouldNotLoad => 'تعذّر تحميل صور GIF. تحقق من اتصالك.';
+
+  @override
+  String get gifSearchUnavailable => 'البحث عن صور GIF غير متاح الآن.';
+
+  @override
+  String get gifSignInToSearch => 'سجّل الدخول للبحث عن صور GIF.';
+
+  @override
+  String get gifPoweredByKlipy => 'مدعوم من KLIPY';
+
+  @override
+  String get stremioBrowse => 'تصفح';
+
+  @override
+  String get stremioBrowseCatalogues => 'تصفح الفهارس';
+
+  @override
+  String get stremioChooseCatalogueHint =>
+      'اختر فهرس إضافة للتصفح. مرشحات البحث منفصلة.';
+
+  @override
+  String get stremioNoBrowseableCatalogues =>
+      'لا تتوفر فهارس إضافات قابلة للتصفح.';
+
+  @override
+  String get stremioSearchResultFilters => 'مرشحات نتائج البحث';
+
+  @override
+  String get paywallCheckout => 'إتمام الشراء';
+
+  @override
+  String get paywallCheckoutUnavailable => 'إتمام الشراء غير متاح الآن.';
+
+  @override
+  String get paywallPayWithKorapay => 'ادفع عبر KoraPay · بطاقة، تحويل، USSD';
+
+  @override
+  String get paywallSecuredInApp => 'محمي داخل التطبيق · بلا إعادة توجيه';
+
+  @override
+  String get communityJoinTitle => 'انضم إلى مجتمع Zangetsu';
+
+  @override
+  String get communityJoinBody => 'تحديثات وطلبات ومساعدة — مرّ وألقِ التحية.';
+
+  @override
+  String get communityMaybeLater => 'ربما لاحقًا';
+
+  @override
+  String get pairTypeCodeOnOtherDevice => 'أدخل هذا الرمز على الجهاز الآخر.';
+
+  @override
+  String get pairLookingForDevice => 'جارٍ البحث عن جهاز يرسل…';
+
+  @override
+  String get pairRestoreFromThisDevice => 'استعادة من هذا الجهاز';
+
+  @override
+  String get profileOptionalImage => 'صورة اختيارية لملفك الشخصي';
+
+  @override
+  String get profileAvatarLabel => 'الصورة الرمزية للملف';
+
+  @override
+  String get commonCloudflareProtected => 'هذا المصدر محمي بواسطة Cloudflare';
+
+  @override
+  String get commonBackupSaveFailed =>
+      'تعذّر حفظ النسخة الاحتياطية. بياناتك الحالية لم تتغير.';
 }

@@ -5,6 +5,7 @@ import '../../core/stremio/stremio_manager.dart';
 import '../../core/stremio/stremio_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import '../../l10n/l10n.dart';
 
 class StremioDiscoverSelection {
   const StremioDiscoverSelection({
@@ -160,7 +161,7 @@ class _StremioDiscoverSheetState extends State<StremioDiscoverSheet> {
               ),
             ),
             const SizedBox(height: 12),
-            Text('Browse catalogues', style: AppText.headline),
+            Text(context.l10n.stremioBrowseCatalogues, style: AppText.headline),
             const SizedBox(height: 4),
             Text(
               'Choose an addon catalogue to browse. Search filters are separate.',
@@ -285,7 +286,7 @@ class _StremioDiscoverSheetState extends State<StremioDiscoverSheet> {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                child: const Text('Browse'),
+                child: Text(context.l10n.stremioBrowse),
               ),
             ],
             TextButton(
@@ -293,7 +294,7 @@ class _StremioDiscoverSheetState extends State<StremioDiscoverSheet> {
                 selection: null,
                 searchFilters: true,
               )),
-              child: const Text('Search result filters'),
+              child: Text(context.l10n.stremioSearchResultFilters),
             ),
           ],
         ),

@@ -593,7 +593,7 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Profile avatar',
+                                context.l10n.profileAvatarLabel,
                                 style: AppText.caption.copyWith(
                                   color: AppColors.textSecondary,
                                 ),
@@ -712,7 +712,7 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
                               Text(context.l10n.profileCover, style: AppText.headline),
                               const SizedBox(height: 2),
                               Text(
-                                'Optional image for your profile',
+                                context.l10n.profileOptionalImage,
                                 style: AppText.caption.copyWith(
                                   color: AppColors.textSecondary,
                                 ),

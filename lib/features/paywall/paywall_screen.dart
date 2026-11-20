@@ -180,14 +180,14 @@ class _PaywallSheetState extends State<PaywallSheet> {
             const SizedBox(height: 12),
             Center(
               child: Text(
-                'Pay with KoraPay · card, transfer, USSD',
+                context.l10n.paywallPayWithKorapay,
                 style: AppText.caption.copyWith(color: AppColors.textTertiary),
               ),
             ),
             const SizedBox(height: 4),
             Center(
               child: Text(
-                'Secured in-app · no redirect',
+                context.l10n.paywallSecuredInApp,
                 style: AppText.caption.copyWith(color: AppColors.textTertiary),
               ),
             ),
@@ -511,9 +511,9 @@ class _PaywallSheetState extends State<PaywallSheet> {
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
         ..showSnackBar(
-          const SnackBar(
+          SnackBar(
             behavior: SnackBarBehavior.floating,
-            content: Text('Checkout is unavailable right now.'),
+            content: Text(context.l10n.paywallCheckoutUnavailable),
           ),
         );
       return;

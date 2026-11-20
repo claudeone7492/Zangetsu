@@ -12230,6 +12230,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Everything — no rating filtering'**
   String get liveParentalEverything;
+
+  /// No description provided for @dubVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice'**
+  String get dubVoice;
+
+  /// No description provided for @dubNarrateIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Narrate in'**
+  String get dubNarrateIn;
+
+  /// No description provided for @dubNarrateSubtitles.
+  ///
+  /// In en, this message translates to:
+  /// **'Narrate subtitles'**
+  String get dubNarrateSubtitles;
+
+  /// No description provided for @dubSkipSoundEffects.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip sound effects'**
+  String get dubSkipSoundEffects;
+
+  /// No description provided for @dubDoNotNarrateCues.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not narrate lines like [CROWD CHEERING].'**
+  String get dubDoNotNarrateCues;
+
+  /// No description provided for @gifChooseGif.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a GIF'**
+  String get gifChooseGif;
+
+  /// No description provided for @gifCouldNotLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load GIFs. Check your connection.'**
+  String get gifCouldNotLoad;
+
+  /// No description provided for @gifSearchUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'GIF search is unavailable right now.'**
+  String get gifSearchUnavailable;
+
+  /// No description provided for @gifSignInToSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to search for GIFs.'**
+  String get gifSignInToSearch;
+
+  /// No description provided for @gifPoweredByKlipy.
+  ///
+  /// In en, this message translates to:
+  /// **'Powered by KLIPY'**
+  String get gifPoweredByKlipy;
+
+  /// No description provided for @stremioBrowse.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse'**
+  String get stremioBrowse;
+
+  /// No description provided for @stremioBrowseCatalogues.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse catalogues'**
+  String get stremioBrowseCatalogues;
+
+  /// No description provided for @stremioChooseCatalogueHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an addon catalogue to browse. Search filters are separate.'**
+  String get stremioChooseCatalogueHint;
+
+  /// No description provided for @stremioNoBrowseableCatalogues.
+  ///
+  /// In en, this message translates to:
+  /// **'No browseable addon catalogues are available.'**
+  String get stremioNoBrowseableCatalogues;
+
+  /// No description provided for @stremioSearchResultFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Search result filters'**
+  String get stremioSearchResultFilters;
+
+  /// No description provided for @paywallCheckout.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get paywallCheckout;
+
+  /// No description provided for @paywallCheckoutUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout is unavailable right now.'**
+  String get paywallCheckoutUnavailable;
+
+  /// No description provided for @paywallPayWithKorapay.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay with KoraPay · card, transfer, USSD'**
+  String get paywallPayWithKorapay;
+
+  /// No description provided for @paywallSecuredInApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Secured in-app · no redirect'**
+  String get paywallSecuredInApp;
+
+  /// No description provided for @communityJoinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join the Zangetsu community'**
+  String get communityJoinTitle;
+
+  /// No description provided for @communityJoinBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates, requests, and help — come say hi.'**
+  String get communityJoinBody;
+
+  /// No description provided for @communityMaybeLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe later'**
+  String get communityMaybeLater;
+
+  /// No description provided for @pairTypeCodeOnOtherDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Type this code on the other device.'**
+  String get pairTypeCodeOnOtherDevice;
+
+  /// No description provided for @pairLookingForDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for a device that is sending…'**
+  String get pairLookingForDevice;
+
+  /// No description provided for @pairRestoreFromThisDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from this device'**
+  String get pairRestoreFromThisDevice;
+
+  /// No description provided for @profileOptionalImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional image for your profile'**
+  String get profileOptionalImage;
+
+  /// No description provided for @profileAvatarLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile avatar'**
+  String get profileAvatarLabel;
+
+  /// No description provided for @commonCloudflareProtected.
+  ///
+  /// In en, this message translates to:
+  /// **'This source is protected by Cloudflare'**
+  String get commonCloudflareProtected;
+
+  /// No description provided for @commonBackupSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the backup. Your current data is unchanged.'**
+  String get commonBackupSaveFailed;
 }
 
 class _AppLocalizationsDelegate

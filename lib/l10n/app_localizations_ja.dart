@@ -6857,4 +6857,91 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get liveParentalEverything => 'すべて — レーティングによる絞り込みなし';
+
+  @override
+  String get dubVoice => '音声';
+
+  @override
+  String get dubNarrateIn => 'ナレーション言語';
+
+  @override
+  String get dubNarrateSubtitles => '字幕を読み上げ';
+
+  @override
+  String get dubSkipSoundEffects => '効果音をスキップ';
+
+  @override
+  String get dubDoNotNarrateCues => '[観客の歓声]のような行は読み上げない。';
+
+  @override
+  String get gifChooseGif => 'GIFを選択';
+
+  @override
+  String get gifCouldNotLoad => 'GIFを読み込めませんでした。接続を確認してください。';
+
+  @override
+  String get gifSearchUnavailable => '現在GIF検索を利用できません。';
+
+  @override
+  String get gifSignInToSearch => 'GIFを検索するにはサインインしてください。';
+
+  @override
+  String get gifPoweredByKlipy => 'KLIPY提供';
+
+  @override
+  String get stremioBrowse => '見る';
+
+  @override
+  String get stremioBrowseCatalogues => 'カタログを見る';
+
+  @override
+  String get stremioChooseCatalogueHint => '閲覧するアドオンカタログを選択してください。検索フィルターは別です。';
+
+  @override
+  String get stremioNoBrowseableCatalogues => '閲覧できるアドオンカタログがありません。';
+
+  @override
+  String get stremioSearchResultFilters => '検索結果のフィルター';
+
+  @override
+  String get paywallCheckout => 'お支払い';
+
+  @override
+  String get paywallCheckoutUnavailable => '現在お支払いを利用できません。';
+
+  @override
+  String get paywallPayWithKorapay => 'KoraPayで支払う · カード、振込、USSD';
+
+  @override
+  String get paywallSecuredInApp => 'アプリ内で安全 · リダイレクトなし';
+
+  @override
+  String get communityJoinTitle => 'Zangetsuコミュニティに参加';
+
+  @override
+  String get communityJoinBody => '更新、要望、サポート — 気軽に声をかけてください。';
+
+  @override
+  String get communityMaybeLater => 'また今度';
+
+  @override
+  String get pairTypeCodeOnOtherDevice => 'もう一方の端末でこのコードを入力してください。';
+
+  @override
+  String get pairLookingForDevice => '送信中の端末を探しています…';
+
+  @override
+  String get pairRestoreFromThisDevice => 'この端末から復元';
+
+  @override
+  String get profileOptionalImage => 'プロフィール用の任意画像';
+
+  @override
+  String get profileAvatarLabel => 'プロフィールアバター';
+
+  @override
+  String get commonCloudflareProtected => 'このソースはCloudflareで保護されています';
+
+  @override
+  String get commonBackupSaveFailed => 'バックアップを保存できませんでした。現在のデータは変更されていません。';
 }

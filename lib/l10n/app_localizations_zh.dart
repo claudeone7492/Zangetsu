@@ -6813,6 +6813,93 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get liveParentalEverything => '全部——不按分级过滤';
+
+  @override
+  String get dubVoice => '语音';
+
+  @override
+  String get dubNarrateIn => '旁白语言';
+
+  @override
+  String get dubNarrateSubtitles => '朗读字幕';
+
+  @override
+  String get dubSkipSoundEffects => '跳过音效';
+
+  @override
+  String get dubDoNotNarrateCues => '不要朗读 [人群欢呼] 这类内容。';
+
+  @override
+  String get gifChooseGif => '选择 GIF';
+
+  @override
+  String get gifCouldNotLoad => '无法加载 GIF。请检查网络连接。';
+
+  @override
+  String get gifSearchUnavailable => 'GIF 搜索当前不可用。';
+
+  @override
+  String get gifSignInToSearch => '登录后即可搜索 GIF。';
+
+  @override
+  String get gifPoweredByKlipy => '由 KLIPY 提供';
+
+  @override
+  String get stremioBrowse => '浏览';
+
+  @override
+  String get stremioBrowseCatalogues => '浏览目录';
+
+  @override
+  String get stremioChooseCatalogueHint => '选择一个插件目录进行浏览。搜索筛选器是独立的。';
+
+  @override
+  String get stremioNoBrowseableCatalogues => '没有可浏览的插件目录。';
+
+  @override
+  String get stremioSearchResultFilters => '搜索结果筛选器';
+
+  @override
+  String get paywallCheckout => '结账';
+
+  @override
+  String get paywallCheckoutUnavailable => '结账当前不可用。';
+
+  @override
+  String get paywallPayWithKorapay => '使用 KoraPay 支付 · 银行卡、转账、USSD';
+
+  @override
+  String get paywallSecuredInApp => '应用内安全支付 · 无跳转';
+
+  @override
+  String get communityJoinTitle => '加入 Zangetsu 社区';
+
+  @override
+  String get communityJoinBody => '更新、需求与帮助——欢迎来打个招呼。';
+
+  @override
+  String get communityMaybeLater => '以后再说';
+
+  @override
+  String get pairTypeCodeOnOtherDevice => '在另一台设备上输入此代码。';
+
+  @override
+  String get pairLookingForDevice => '正在查找正在发送的设备…';
+
+  @override
+  String get pairRestoreFromThisDevice => '从此设备恢复';
+
+  @override
+  String get profileOptionalImage => '个人资料的可选图片';
+
+  @override
+  String get profileAvatarLabel => '个人资料头像';
+
+  @override
+  String get commonCloudflareProtected => '此来源受 Cloudflare 保护';
+
+  @override
+  String get commonBackupSaveFailed => '无法保存备份。你当前的数据未改变。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -11980,4 +12067,91 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get liveParentalEverything => '全部——不依分級篩選';
+
+  @override
+  String get dubVoice => '語音';
+
+  @override
+  String get dubNarrateIn => '旁白語言';
+
+  @override
+  String get dubNarrateSubtitles => '朗讀字幕';
+
+  @override
+  String get dubSkipSoundEffects => '略過音效';
+
+  @override
+  String get dubDoNotNarrateCues => '不要朗讀 [群眾歡呼] 這類內容。';
+
+  @override
+  String get gifChooseGif => '選擇 GIF';
+
+  @override
+  String get gifCouldNotLoad => '無法載入 GIF。請檢查網路連線。';
+
+  @override
+  String get gifSearchUnavailable => 'GIF 搜尋目前無法使用。';
+
+  @override
+  String get gifSignInToSearch => '登入後即可搜尋 GIF。';
+
+  @override
+  String get gifPoweredByKlipy => '由 KLIPY 提供';
+
+  @override
+  String get stremioBrowse => '瀏覽';
+
+  @override
+  String get stremioBrowseCatalogues => '瀏覽目錄';
+
+  @override
+  String get stremioChooseCatalogueHint => '選擇一個附加元件目錄進行瀏覽。搜尋篩選器是獨立的。';
+
+  @override
+  String get stremioNoBrowseableCatalogues => '沒有可瀏覽的附加元件目錄。';
+
+  @override
+  String get stremioSearchResultFilters => '搜尋結果篩選器';
+
+  @override
+  String get paywallCheckout => '結帳';
+
+  @override
+  String get paywallCheckoutUnavailable => '結帳目前無法使用。';
+
+  @override
+  String get paywallPayWithKorapay => '使用 KoraPay 付款 · 信用卡、轉帳、USSD';
+
+  @override
+  String get paywallSecuredInApp => '應用程式內安全付款 · 無跳轉';
+
+  @override
+  String get communityJoinTitle => '加入 Zangetsu 社群';
+
+  @override
+  String get communityJoinBody => '更新、需求與協助——歡迎來打聲招呼。';
+
+  @override
+  String get communityMaybeLater => '之後再說';
+
+  @override
+  String get pairTypeCodeOnOtherDevice => '在另一台裝置上輸入此代碼。';
+
+  @override
+  String get pairLookingForDevice => '正在尋找正在傳送的裝置…';
+
+  @override
+  String get pairRestoreFromThisDevice => '從此裝置還原';
+
+  @override
+  String get profileOptionalImage => '個人資料的選用圖片';
+
+  @override
+  String get profileAvatarLabel => '個人資料頭像';
+
+  @override
+  String get commonCloudflareProtected => '此來源受 Cloudflare 保護';
+
+  @override
+  String get commonBackupSaveFailed => '無法儲存備份。你目前的資料未變更。';
 }

@@ -137,9 +137,9 @@ class _BackupScreenState extends State<BackupScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'Could not save the backup. Your current data is unchanged.',
+              context.l10n.commonBackupSaveFailed,
             ),
           ),
         );

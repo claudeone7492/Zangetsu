@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/profiles/klipy_gif_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/l10n.dart';
 
 Future<KlipyGif?> showProfileKlipyGifPicker(
   BuildContext context,
@@ -106,7 +107,7 @@ class _KlipyGifPickerState extends State<_KlipyGifPicker> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Choose a GIF',
+                        context.l10n.gifChooseGif,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ),
@@ -140,25 +141,25 @@ class _KlipyGifPickerState extends State<_KlipyGifPicker> {
                 const SizedBox(height: 12),
                 Expanded(
                   child: !widget.service.isConfigured
-                      ? const Center(
+                      ? Center(
                           child: Text(
-                            'GIF search is unavailable right now.',
+                            context.l10n.gifSearchUnavailable,
                             textAlign: TextAlign.center,
                           ),
                         )
                       : !widget.service.isSignedIn
-                      ? const Center(
+                      ? Center(
                           child: Text(
-                            'Sign in to search for GIFs.',
+                            context.l10n.gifSignInToSearch,
                             textAlign: TextAlign.center,
                           ),
                         )
                       : _loading
                       ? const Center(child: CircularProgressIndicator())
                       : _failed
-                      ? const Center(
+                      ? Center(
                           child: Text(
-                            'Could not load GIFs. Check your connection.',
+                            context.l10n.gifCouldNotLoad,
                           ),
                         )
                       : _results.isEmpty
@@ -212,7 +213,7 @@ class _KlipyGifPickerState extends State<_KlipyGifPicker> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Powered by KLIPY',
+                  context.l10n.gifPoweredByKlipy,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: AppColors.textSecondary,
                   ),

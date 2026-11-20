@@ -7032,4 +7032,102 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get liveParentalEverything => 'Tudo — sem filtragem por classificação';
+
+  @override
+  String get dubVoice => 'Voz';
+
+  @override
+  String get dubNarrateIn => 'Narrar em';
+
+  @override
+  String get dubNarrateSubtitles => 'Narrar legendas';
+
+  @override
+  String get dubSkipSoundEffects => 'Ignorar efeitos sonoros';
+
+  @override
+  String get dubDoNotNarrateCues =>
+      'Não narrar linhas como [PÚBLICO A APLAUDIR].';
+
+  @override
+  String get gifChooseGif => 'Escolher um GIF';
+
+  @override
+  String get gifCouldNotLoad =>
+      'Não foi possível carregar os GIFs. Verifica a ligação.';
+
+  @override
+  String get gifSearchUnavailable =>
+      'A pesquisa de GIFs não está disponível de momento.';
+
+  @override
+  String get gifSignInToSearch => 'Inicia sessão para pesquisar GIFs.';
+
+  @override
+  String get gifPoweredByKlipy => 'Com tecnologia KLIPY';
+
+  @override
+  String get stremioBrowse => 'Explorar';
+
+  @override
+  String get stremioBrowseCatalogues => 'Explorar catálogos';
+
+  @override
+  String get stremioChooseCatalogueHint =>
+      'Escolhe um catálogo de addon para explorar. Os filtros de pesquisa são à parte.';
+
+  @override
+  String get stremioNoBrowseableCatalogues =>
+      'Não há catálogos de addon exploráveis disponíveis.';
+
+  @override
+  String get stremioSearchResultFilters => 'Filtros de resultados de pesquisa';
+
+  @override
+  String get paywallCheckout => 'Finalizar compra';
+
+  @override
+  String get paywallCheckoutUnavailable =>
+      'O pagamento não está disponível de momento.';
+
+  @override
+  String get paywallPayWithKorapay =>
+      'Pagar com KoraPay · cartão, transferência, USSD';
+
+  @override
+  String get paywallSecuredInApp => 'Protegido na app · sem redirecionamento';
+
+  @override
+  String get communityJoinTitle => 'Junta-te à comunidade Zangetsu';
+
+  @override
+  String get communityJoinBody =>
+      'Novidades, pedidos e ajuda — passa a dizer olá.';
+
+  @override
+  String get communityMaybeLater => 'Talvez mais tarde';
+
+  @override
+  String get pairTypeCodeOnOtherDevice =>
+      'Introduz este código no outro dispositivo.';
+
+  @override
+  String get pairLookingForDevice => 'À procura de um dispositivo a enviar…';
+
+  @override
+  String get pairRestoreFromThisDevice => 'Restaurar deste dispositivo';
+
+  @override
+  String get profileOptionalImage => 'Imagem opcional para o teu perfil';
+
+  @override
+  String get profileAvatarLabel => 'Avatar do perfil';
+
+  @override
+  String get commonCloudflareProtected =>
+      'Esta fonte está protegida pela Cloudflare';
+
+  @override
+  String get commonBackupSaveFailed =>
+      'Não foi possível guardar a cópia. Os teus dados atuais estão inalterados.';
 }

@@ -7001,4 +7001,99 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get liveParentalEverything => 'Semua — tanpa penyaringan rating';
+
+  @override
+  String get dubVoice => 'Suara';
+
+  @override
+  String get dubNarrateIn => 'Narasikan dalam';
+
+  @override
+  String get dubNarrateSubtitles => 'Narasikan subtitle';
+
+  @override
+  String get dubSkipSoundEffects => 'Lewati efek suara';
+
+  @override
+  String get dubDoNotNarrateCues =>
+      'Jangan narasikan baris seperti [PENONTON BERSORAK].';
+
+  @override
+  String get gifChooseGif => 'Pilih GIF';
+
+  @override
+  String get gifCouldNotLoad => 'Tidak dapat memuat GIF. Periksa koneksi Anda.';
+
+  @override
+  String get gifSearchUnavailable => 'Pencarian GIF tidak tersedia saat ini.';
+
+  @override
+  String get gifSignInToSearch => 'Masuk untuk mencari GIF.';
+
+  @override
+  String get gifPoweredByKlipy => 'Didukung KLIPY';
+
+  @override
+  String get stremioBrowse => 'Jelajahi';
+
+  @override
+  String get stremioBrowseCatalogues => 'Jelajahi katalog';
+
+  @override
+  String get stremioChooseCatalogueHint =>
+      'Pilih katalog addon untuk dijelajahi. Filter pencarian terpisah.';
+
+  @override
+  String get stremioNoBrowseableCatalogues =>
+      'Tidak ada katalog addon yang dapat dijelajahi.';
+
+  @override
+  String get stremioSearchResultFilters => 'Filter hasil pencarian';
+
+  @override
+  String get paywallCheckout => 'Pembayaran';
+
+  @override
+  String get paywallCheckoutUnavailable =>
+      'Pembayaran tidak tersedia saat ini.';
+
+  @override
+  String get paywallPayWithKorapay =>
+      'Bayar dengan KoraPay · kartu, transfer, USSD';
+
+  @override
+  String get paywallSecuredInApp => 'Aman di dalam aplikasi · tanpa pengalihan';
+
+  @override
+  String get communityJoinTitle => 'Bergabung dengan komunitas Zangetsu';
+
+  @override
+  String get communityJoinBody =>
+      'Pembaruan, permintaan, dan bantuan — mampir dan sapa kami.';
+
+  @override
+  String get communityMaybeLater => 'Mungkin nanti';
+
+  @override
+  String get pairTypeCodeOnOtherDevice =>
+      'Masukkan kode ini di perangkat lain.';
+
+  @override
+  String get pairLookingForDevice => 'Mencari perangkat yang mengirim…';
+
+  @override
+  String get pairRestoreFromThisDevice => 'Pulihkan dari perangkat ini';
+
+  @override
+  String get profileOptionalImage => 'Gambar opsional untuk profil Anda';
+
+  @override
+  String get profileAvatarLabel => 'Avatar profil';
+
+  @override
+  String get commonCloudflareProtected => 'Sumber ini dilindungi Cloudflare';
+
+  @override
+  String get commonBackupSaveFailed =>
+      'Tidak dapat menyimpan cadangan. Data Anda saat ini tidak berubah.';
 }

@@ -7019,4 +7019,103 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get liveParentalEverything =>
       'Tutto — nessun filtro per classificazione';
+
+  @override
+  String get dubVoice => 'Voce';
+
+  @override
+  String get dubNarrateIn => 'Narra in';
+
+  @override
+  String get dubNarrateSubtitles => 'Narra i sottotitoli';
+
+  @override
+  String get dubSkipSoundEffects => 'Salta gli effetti sonori';
+
+  @override
+  String get dubDoNotNarrateCues =>
+      'Non narrare righe come [PUBBLICO CHE ESCLANA].';
+
+  @override
+  String get gifChooseGif => 'Scegli una GIF';
+
+  @override
+  String get gifCouldNotLoad =>
+      'Impossibile caricare le GIF. Controlla la connessione.';
+
+  @override
+  String get gifSearchUnavailable =>
+      'La ricerca GIF non è disponibile al momento.';
+
+  @override
+  String get gifSignInToSearch => 'Accedi per cercare GIF.';
+
+  @override
+  String get gifPoweredByKlipy => 'Con tecnologia KLIPY';
+
+  @override
+  String get stremioBrowse => 'Sfoglia';
+
+  @override
+  String get stremioBrowseCatalogues => 'Sfoglia i cataloghi';
+
+  @override
+  String get stremioChooseCatalogueHint =>
+      'Scegli un catalogo di addon da sfogliare. I filtri di ricerca sono separati.';
+
+  @override
+  String get stremioNoBrowseableCatalogues =>
+      'Nessun catalogo di addon sfogliabile disponibile.';
+
+  @override
+  String get stremioSearchResultFilters => 'Filtri dei risultati di ricerca';
+
+  @override
+  String get paywallCheckout => 'Pagamento';
+
+  @override
+  String get paywallCheckoutUnavailable =>
+      'Il pagamento non è disponibile al momento.';
+
+  @override
+  String get paywallPayWithKorapay =>
+      'Paga con KoraPay · carta, bonifico, USSD';
+
+  @override
+  String get paywallSecuredInApp =>
+      'Protetto nell\'app · nessun reindirizzamento';
+
+  @override
+  String get communityJoinTitle => 'Unisciti alla community Zangetsu';
+
+  @override
+  String get communityJoinBody =>
+      'Novità, richieste e aiuto: passa a salutare.';
+
+  @override
+  String get communityMaybeLater => 'Forse più tardi';
+
+  @override
+  String get pairTypeCodeOnOtherDevice =>
+      'Digita questo codice sull\'altro dispositivo.';
+
+  @override
+  String get pairLookingForDevice => 'Ricerca di un dispositivo che invia…';
+
+  @override
+  String get pairRestoreFromThisDevice => 'Ripristina da questo dispositivo';
+
+  @override
+  String get profileOptionalImage => 'Immagine facoltativa per il profilo';
+
+  @override
+  String get profileAvatarLabel => 'Avatar del profilo';
+
+  @override
+  String get commonCloudflareProtected =>
+      'Questa fonte è protetta da Cloudflare';
+
+  @override
+  String get commonBackupSaveFailed =>
+      'Impossibile salvare il backup. I tuoi dati attuali sono invariati.';
 }

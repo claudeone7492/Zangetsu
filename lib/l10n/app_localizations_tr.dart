@@ -6994,4 +6994,97 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get liveParentalEverything => 'Her şey — derecelendirme filtresi yok';
+
+  @override
+  String get dubVoice => 'Ses';
+
+  @override
+  String get dubNarrateIn => 'Şu dilde anlat';
+
+  @override
+  String get dubNarrateSubtitles => 'Altyazıları seslendir';
+
+  @override
+  String get dubSkipSoundEffects => 'Ses efektlerini atla';
+
+  @override
+  String get dubDoNotNarrateCues =>
+      '[SEYİRCİ ALKIŞLIYOR] gibi satırları seslendirme.';
+
+  @override
+  String get gifChooseGif => 'GIF seç';
+
+  @override
+  String get gifCouldNotLoad => 'GIF\'ler yüklenemedi. Bağlantını kontrol et.';
+
+  @override
+  String get gifSearchUnavailable => 'GIF arama şu anda kullanılamıyor.';
+
+  @override
+  String get gifSignInToSearch => 'GIF aramak için giriş yap.';
+
+  @override
+  String get gifPoweredByKlipy => 'KLIPY ile desteklenmektedir';
+
+  @override
+  String get stremioBrowse => 'Gözat';
+
+  @override
+  String get stremioBrowseCatalogues => 'Kataloglara göz at';
+
+  @override
+  String get stremioChooseCatalogueHint =>
+      'Göz atmak için bir eklenti kataloğu seç. Arama filtreleri ayrıdır.';
+
+  @override
+  String get stremioNoBrowseableCatalogues =>
+      'Gözatılabilir eklenti kataloğu yok.';
+
+  @override
+  String get stremioSearchResultFilters => 'Arama sonucu filtreleri';
+
+  @override
+  String get paywallCheckout => 'Ödeme';
+
+  @override
+  String get paywallCheckoutUnavailable => 'Ödeme şu anda kullanılamıyor.';
+
+  @override
+  String get paywallPayWithKorapay => 'KoraPay ile öde · kart, havale, USSD';
+
+  @override
+  String get paywallSecuredInApp => 'Uygulama içinde güvenli · yönlendirme yok';
+
+  @override
+  String get communityJoinTitle => 'Zangetsu topluluğuna katıl';
+
+  @override
+  String get communityJoinBody =>
+      'Güncellemeler, istekler ve yardım — uğra ve selam ver.';
+
+  @override
+  String get communityMaybeLater => 'Belki sonra';
+
+  @override
+  String get pairTypeCodeOnOtherDevice => 'Bu kodu diğer cihaza gir.';
+
+  @override
+  String get pairLookingForDevice => 'Gönderen bir cihaz aranıyor…';
+
+  @override
+  String get pairRestoreFromThisDevice => 'Bu cihazdan geri yükle';
+
+  @override
+  String get profileOptionalImage => 'Profilin için isteğe bağlı görsel';
+
+  @override
+  String get profileAvatarLabel => 'Profil avatarı';
+
+  @override
+  String get commonCloudflareProtected =>
+      'Bu kaynak Cloudflare tarafından korunuyor';
+
+  @override
+  String get commonBackupSaveFailed =>
+      'Yedek kaydedilemedi. Mevcut verilerin değişmedi.';
 }
