@@ -6643,4 +6643,79 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get musicRowLofi => 'Lo-fi';
+
+  @override
+  String get profileCouldNotUpdateAccountName => 'アカウント名を更新できませんでした';
+
+  @override
+  String get profileSavedOnDeviceCloudRetry => 'この端末に保存しました。クラウド同期は再試行されます。';
+
+  @override
+  String get profileChooseAvatar => 'アバターを選択';
+
+  @override
+  String get profilePhotoFromGallery => 'ギャラリーから写真';
+
+  @override
+  String get profileChooseImageOnDevice => 'この端末から画像を選択';
+
+  @override
+  String get profileAnimatedGifFile => 'アニメーションGIFファイル';
+
+  @override
+  String get profileChooseGifOnDevice => 'この端末からGIFを選択';
+
+  @override
+  String get profileSearchGifs => 'GIFを検索';
+
+  @override
+  String get profileFindAnimatedAvatarOnline => 'オンラインでアニメーションアバターを探す';
+
+  @override
+  String get profileCover => 'プロフィールカバー';
+
+  @override
+  String get profileRemoveCover => 'カバーを削除';
+
+  @override
+  String get profileDeleteTitle => 'プロフィールを削除しますか？';
+
+  @override
+  String get profileRestoreToCloud => 'クラウドに復元';
+
+  @override
+  String get profileCouldNotRestore => 'プロフィールを復元できませんでした。後でもう一度お試しください。';
+
+  @override
+  String get profileAccount => 'アカウント';
+
+  @override
+  String get profileManageProfiles => 'プロフィールを管理';
+
+  @override
+  String get profileSaveRecoveryCode => 'リカバリーコードを保存';
+
+  @override
+  String get profileISavedIt => '保存しました';
+
+  @override
+  String get profileSetNumericPin => '数字のPINを設定';
+
+  @override
+  String get profileForgotPin => 'PINをお忘れですか？';
+
+  @override
+  String get profileChooseNewPin => '新しい4桁または6桁のPINを選択';
+
+  @override
+  String get profileUseFingerprint => 'この端末で指紋を使用';
+
+  @override
+  String get profileEnterCurrentPin => '続行するにはこのプロフィールの現在のPINを入力してください。';
+
+  @override
+  String get profileDonate => '寄付';
+
+  @override
+  String get profileKidsProfile => 'キッズプロフィール';
 }

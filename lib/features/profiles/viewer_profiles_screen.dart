@@ -275,7 +275,7 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete profile?'),
+        title: Text(context.l10n.profileDeleteTitle),
         content: Text(
           'Delete ${profile.name} and its saved lists and progress from this account?',
         ),
@@ -318,7 +318,7 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Restore to cloud'),
+            child: Text(context.l10n.profileRestoreToCloud),
           ),
         ],
       ),
@@ -326,8 +326,8 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
     if (!mounted || restore != true) return;
     if (!await _profiles.restoreRecoverable(profile.id) && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not restore profile. Try again later.'),
+        SnackBar(
+          content: Text(context.l10n.profileCouldNotRestore),
         ),
       );
     }
@@ -374,7 +374,7 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
             if (sl.isRegistered<AuthCubit>()) ...[
               Padding(
                 padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
-                child: Text('Account', style: AppText.headline),
+                child: Text(context.l10n.profileAccount, style: AppText.headline),
               ),
               BlocProvider.value(
                 value: sl<AuthCubit>(),
@@ -1048,7 +1048,7 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
     return TextButton.icon(
       onPressed: _openProfileManager,
       icon: const Icon(Icons.edit_rounded, size: 18),
-      label: const Text('Manage profiles'),
+      label: Text(context.l10n.profileManageProfiles),
       style: TextButton.styleFrom(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),

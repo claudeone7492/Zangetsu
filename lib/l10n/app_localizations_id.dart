@@ -6772,4 +6772,83 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get musicRowLofi => 'Lo-fi';
+
+  @override
+  String get profileCouldNotUpdateAccountName =>
+      'Tidak dapat memperbarui nama akun';
+
+  @override
+  String get profileSavedOnDeviceCloudRetry =>
+      'Disimpan di perangkat ini; sinkronisasi cloud akan dicoba lagi.';
+
+  @override
+  String get profileChooseAvatar => 'Pilih avatar';
+
+  @override
+  String get profilePhotoFromGallery => 'Foto dari galeri';
+
+  @override
+  String get profileChooseImageOnDevice => 'Pilih gambar di perangkat ini';
+
+  @override
+  String get profileAnimatedGifFile => 'Berkas GIF animasi';
+
+  @override
+  String get profileChooseGifOnDevice => 'Pilih GIF di perangkat ini';
+
+  @override
+  String get profileSearchGifs => 'Cari GIF';
+
+  @override
+  String get profileFindAnimatedAvatarOnline => 'Temukan avatar animasi online';
+
+  @override
+  String get profileCover => 'Sampul profil';
+
+  @override
+  String get profileRemoveCover => 'Hapus sampul';
+
+  @override
+  String get profileDeleteTitle => 'Hapus profil?';
+
+  @override
+  String get profileRestoreToCloud => 'Pulihkan ke cloud';
+
+  @override
+  String get profileCouldNotRestore =>
+      'Tidak dapat memulihkan profil. Coba lagi nanti.';
+
+  @override
+  String get profileAccount => 'Akun';
+
+  @override
+  String get profileManageProfiles => 'Kelola profil';
+
+  @override
+  String get profileSaveRecoveryCode => 'Simpan kode pemulihan Anda';
+
+  @override
+  String get profileISavedIt => 'Sudah saya simpan';
+
+  @override
+  String get profileSetNumericPin => 'Tetapkan PIN numerik';
+
+  @override
+  String get profileForgotPin => 'Lupa PIN?';
+
+  @override
+  String get profileChooseNewPin => 'Pilih PIN baru 4 atau 6 digit';
+
+  @override
+  String get profileUseFingerprint => 'Gunakan sidik jari di ponsel ini';
+
+  @override
+  String get profileEnterCurrentPin =>
+      'Masukkan PIN profil ini saat ini untuk melanjutkan.';
+
+  @override
+  String get profileDonate => 'Donasi';
+
+  @override
+  String get profileKidsProfile => 'Profil anak';
 }

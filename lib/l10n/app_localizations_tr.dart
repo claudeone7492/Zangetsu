@@ -6767,4 +6767,83 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get musicRowLofi => 'Lo-fi';
+
+  @override
+  String get profileCouldNotUpdateAccountName => 'Hesap adı güncellenemedi';
+
+  @override
+  String get profileSavedOnDeviceCloudRetry =>
+      'Bu cihazda kaydedildi; bulut eşitlemesi yeniden denenecek.';
+
+  @override
+  String get profileChooseAvatar => 'Avatar seç';
+
+  @override
+  String get profilePhotoFromGallery => 'Galeriden fotoğraf';
+
+  @override
+  String get profileChooseImageOnDevice => 'Bu cihazdan bir görsel seç';
+
+  @override
+  String get profileAnimatedGifFile => 'Hareketli GIF dosyası';
+
+  @override
+  String get profileChooseGifOnDevice => 'Bu cihazdan bir GIF seç';
+
+  @override
+  String get profileSearchGifs => 'GIF ara';
+
+  @override
+  String get profileFindAnimatedAvatarOnline =>
+      'Çevrimiçi hareketli avatar bul';
+
+  @override
+  String get profileCover => 'Profil kapağı';
+
+  @override
+  String get profileRemoveCover => 'Kapağı kaldır';
+
+  @override
+  String get profileDeleteTitle => 'Profil silinsin mi?';
+
+  @override
+  String get profileRestoreToCloud => 'Buluta geri yükle';
+
+  @override
+  String get profileCouldNotRestore =>
+      'Profil geri yüklenemedi. Daha sonra tekrar dene.';
+
+  @override
+  String get profileAccount => 'Hesap';
+
+  @override
+  String get profileManageProfiles => 'Profilleri yönet';
+
+  @override
+  String get profileSaveRecoveryCode => 'Kurtarma kodunu kaydet';
+
+  @override
+  String get profileISavedIt => 'Kaydettim';
+
+  @override
+  String get profileSetNumericPin => 'Sayısal PIN belirle';
+
+  @override
+  String get profileForgotPin => 'PIN\'i mi unuttun?';
+
+  @override
+  String get profileChooseNewPin => 'Yeni 4 veya 6 haneli PIN seç';
+
+  @override
+  String get profileUseFingerprint => 'Bu telefonda parmak izi kullan';
+
+  @override
+  String get profileEnterCurrentPin =>
+      'Devam etmek için bu profilin mevcut PIN\'ini gir.';
+
+  @override
+  String get profileDonate => 'Bağış yap';
+
+  @override
+  String get profileKidsProfile => 'Çocuk profili';
 }

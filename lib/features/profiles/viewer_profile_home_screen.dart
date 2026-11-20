@@ -78,7 +78,7 @@ class ViewerProfileHomeScreen extends StatelessWidget {
               ),
             ListTile(
               leading: const Icon(Icons.favorite_outline_rounded),
-              title: const Text('Donate'),
+              title: Text(context.l10n.profileDonate),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 Navigator.of(context).push<void>(
@@ -191,7 +191,7 @@ class ViewerProfileHomeScreen extends StatelessWidget {
                                 ],
                               ),
                               if (profile.isKids)
-                                Text('Kids profile', style: AppText.caption),
+                                Text(context.l10n.profileKidsProfile, style: AppText.caption),
                               GestureDetector(
                                 onTap: () => openViewerProfileEditor(
                                   context,

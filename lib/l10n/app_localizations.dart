@@ -11804,6 +11804,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Lo-fi'**
   String get musicRowLofi;
+
+  /// No description provided for @profileCouldNotUpdateAccountName.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update account name'**
+  String get profileCouldNotUpdateAccountName;
+
+  /// No description provided for @profileSavedOnDeviceCloudRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on this device; cloud sync will retry.'**
+  String get profileSavedOnDeviceCloudRetry;
+
+  /// No description provided for @profileChooseAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose avatar'**
+  String get profileChooseAvatar;
+
+  /// No description provided for @profilePhotoFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo from gallery'**
+  String get profilePhotoFromGallery;
+
+  /// No description provided for @profileChooseImageOnDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an image on this device'**
+  String get profileChooseImageOnDevice;
+
+  /// No description provided for @profileAnimatedGifFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Animated GIF file'**
+  String get profileAnimatedGifFile;
+
+  /// No description provided for @profileChooseGifOnDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a GIF on this device'**
+  String get profileChooseGifOnDevice;
+
+  /// No description provided for @profileSearchGifs.
+  ///
+  /// In en, this message translates to:
+  /// **'Search GIFs'**
+  String get profileSearchGifs;
+
+  /// No description provided for @profileFindAnimatedAvatarOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Find an animated avatar online'**
+  String get profileFindAnimatedAvatarOnline;
+
+  /// No description provided for @profileCover.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile cover'**
+  String get profileCover;
+
+  /// No description provided for @profileRemoveCover.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove cover'**
+  String get profileRemoveCover;
+
+  /// No description provided for @profileDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete profile?'**
+  String get profileDeleteTitle;
+
+  /// No description provided for @profileRestoreToCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore to cloud'**
+  String get profileRestoreToCloud;
+
+  /// No description provided for @profileCouldNotRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not restore profile. Try again later.'**
+  String get profileCouldNotRestore;
+
+  /// No description provided for @profileAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get profileAccount;
+
+  /// No description provided for @profileManageProfiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage profiles'**
+  String get profileManageProfiles;
+
+  /// No description provided for @profileSaveRecoveryCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Save your recovery code'**
+  String get profileSaveRecoveryCode;
+
+  /// No description provided for @profileISavedIt.
+  ///
+  /// In en, this message translates to:
+  /// **'I saved it'**
+  String get profileISavedIt;
+
+  /// No description provided for @profileSetNumericPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a numeric PIN'**
+  String get profileSetNumericPin;
+
+  /// No description provided for @profileForgotPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot PIN?'**
+  String get profileForgotPin;
+
+  /// No description provided for @profileChooseNewPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a new 4 or 6 digit PIN'**
+  String get profileChooseNewPin;
+
+  /// No description provided for @profileUseFingerprint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use fingerprint on this phone'**
+  String get profileUseFingerprint;
+
+  /// No description provided for @profileEnterCurrentPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter this profile’s current PIN to continue.'**
+  String get profileEnterCurrentPin;
+
+  /// No description provided for @profileDonate.
+  ///
+  /// In en, this message translates to:
+  /// **'Donate'**
+  String get profileDonate;
+
+  /// No description provided for @profileKidsProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Kids profile'**
+  String get profileKidsProfile;
 }
 
 class _AppLocalizationsDelegate

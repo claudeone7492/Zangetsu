@@ -76,7 +76,7 @@ Future<void> _showRecoveryCode(
     builder: (context) => PopScope(
       canPop: false,
       child: AlertDialog(
-        title: const Text('Save your recovery code'),
+        title: Text(context.l10n.profileSaveRecoveryCode),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,7 +96,7 @@ Future<void> _showRecoveryCode(
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('I saved it'),
+            child: Text(context.l10n.profileISavedIt),
           ),
         ],
       ),
@@ -390,7 +390,7 @@ class _PinUnlockSheetState extends State<_PinUnlockSheet> {
                         Navigator.of(context).pop(true);
                       }
                     },
-              child: const Text('Set a numeric PIN'),
+              child: Text(context.l10n.profileSetNumericPin),
             ),
           const SizedBox(height: 14),
           Row(
@@ -434,7 +434,7 @@ class _PinUnlockSheetState extends State<_PinUnlockSheet> {
                       Navigator.of(context).pop(true);
                     }
                   },
-            child: const Text('Forgot PIN?'),
+            child: Text(context.l10n.profileForgotPin),
           ),
         ],
       ),
@@ -646,7 +646,7 @@ class _PinSetupSheetState extends State<_PinSetupSheet> {
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.pin_outlined),
                   title: Text(l10n.changeProfilePin),
-                  subtitle: const Text('Choose a new 4 or 6 digit PIN'),
+                  subtitle: Text(context.l10n.profileChooseNewPin),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: _busy
                       ? null
@@ -658,7 +658,7 @@ class _PinSetupSheetState extends State<_PinSetupSheet> {
                 if (_supportsBiometrics)
                   SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Use fingerprint on this phone'),
+                    title: Text(context.l10n.profileUseFingerprint),
                     subtitle: const Text(
                       'Your PIN still works. Other devices keep their own setting.',
                     ),
@@ -788,7 +788,7 @@ class _PinConfirmationSheetState extends State<_PinConfirmationSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('Enter this profile’s current PIN to continue.'),
+          Text(context.l10n.profileEnterCurrentPin),
           const SizedBox(height: 12),
           _pinField(
             controller: _pin,

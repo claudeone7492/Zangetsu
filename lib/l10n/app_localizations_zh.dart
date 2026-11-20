@@ -6600,6 +6600,81 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get musicRowLofi => 'Lo-fi';
+
+  @override
+  String get profileCouldNotUpdateAccountName => '无法更新账户名称';
+
+  @override
+  String get profileSavedOnDeviceCloudRetry => '已保存在此设备上；云同步将重试。';
+
+  @override
+  String get profileChooseAvatar => '选择头像';
+
+  @override
+  String get profilePhotoFromGallery => '从相册选择照片';
+
+  @override
+  String get profileChooseImageOnDevice => '在此设备上选择图片';
+
+  @override
+  String get profileAnimatedGifFile => '动态 GIF 文件';
+
+  @override
+  String get profileChooseGifOnDevice => '在此设备上选择 GIF';
+
+  @override
+  String get profileSearchGifs => '搜索 GIF';
+
+  @override
+  String get profileFindAnimatedAvatarOnline => '在线查找动态头像';
+
+  @override
+  String get profileCover => '个人资料封面';
+
+  @override
+  String get profileRemoveCover => '移除封面';
+
+  @override
+  String get profileDeleteTitle => '删除个人资料？';
+
+  @override
+  String get profileRestoreToCloud => '恢复到云端';
+
+  @override
+  String get profileCouldNotRestore => '无法恢复个人资料。请稍后再试。';
+
+  @override
+  String get profileAccount => '账户';
+
+  @override
+  String get profileManageProfiles => '管理个人资料';
+
+  @override
+  String get profileSaveRecoveryCode => '保存你的恢复代码';
+
+  @override
+  String get profileISavedIt => '我已保存';
+
+  @override
+  String get profileSetNumericPin => '设置数字 PIN';
+
+  @override
+  String get profileForgotPin => '忘记 PIN？';
+
+  @override
+  String get profileChooseNewPin => '选择新的 4 位或 6 位 PIN';
+
+  @override
+  String get profileUseFingerprint => '在此手机上使用指纹';
+
+  @override
+  String get profileEnterCurrentPin => '输入此个人资料的当前 PIN 以继续。';
+
+  @override
+  String get profileDonate => '捐赠';
+
+  @override
+  String get profileKidsProfile => '儿童个人资料';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -11554,4 +11629,79 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get musicRowLofi => 'Lo-fi';
+
+  @override
+  String get profileCouldNotUpdateAccountName => '無法更新帳戶名稱';
+
+  @override
+  String get profileSavedOnDeviceCloudRetry => '已儲存在此裝置上；雲端同步將重試。';
+
+  @override
+  String get profileChooseAvatar => '選擇頭像';
+
+  @override
+  String get profilePhotoFromGallery => '從相簿選擇照片';
+
+  @override
+  String get profileChooseImageOnDevice => '在此裝置上選擇圖片';
+
+  @override
+  String get profileAnimatedGifFile => '動態 GIF 檔案';
+
+  @override
+  String get profileChooseGifOnDevice => '在此裝置上選擇 GIF';
+
+  @override
+  String get profileSearchGifs => '搜尋 GIF';
+
+  @override
+  String get profileFindAnimatedAvatarOnline => '線上尋找動態頭像';
+
+  @override
+  String get profileCover => '個人資料封面';
+
+  @override
+  String get profileRemoveCover => '移除封面';
+
+  @override
+  String get profileDeleteTitle => '刪除個人資料？';
+
+  @override
+  String get profileRestoreToCloud => '還原到雲端';
+
+  @override
+  String get profileCouldNotRestore => '無法還原個人資料。請稍後再試。';
+
+  @override
+  String get profileAccount => '帳戶';
+
+  @override
+  String get profileManageProfiles => '管理個人資料';
+
+  @override
+  String get profileSaveRecoveryCode => '儲存你的復原代碼';
+
+  @override
+  String get profileISavedIt => '我已儲存';
+
+  @override
+  String get profileSetNumericPin => '設定數字 PIN';
+
+  @override
+  String get profileForgotPin => '忘記 PIN？';
+
+  @override
+  String get profileChooseNewPin => '選擇新的 4 位數或 6 位數 PIN';
+
+  @override
+  String get profileUseFingerprint => '在此手機上使用指紋';
+
+  @override
+  String get profileEnterCurrentPin => '輸入此個人資料目前的 PIN 以繼續。';
+
+  @override
+  String get profileDonate => '捐贈';
+
+  @override
+  String get profileKidsProfile => '兒童個人資料';
 }

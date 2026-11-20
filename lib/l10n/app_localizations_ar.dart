@@ -6832,4 +6832,83 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get musicRowLofi => 'لو-فاي';
+
+  @override
+  String get profileCouldNotUpdateAccountName => 'تعذّر تحديث اسم الحساب';
+
+  @override
+  String get profileSavedOnDeviceCloudRetry =>
+      'تم الحفظ على هذا الجهاز؛ ستُعاد مزامنة السحابة.';
+
+  @override
+  String get profileChooseAvatar => 'اختر صورة رمزية';
+
+  @override
+  String get profilePhotoFromGallery => 'صورة من المعرض';
+
+  @override
+  String get profileChooseImageOnDevice => 'اختر صورة على هذا الجهاز';
+
+  @override
+  String get profileAnimatedGifFile => 'ملف GIF متحرك';
+
+  @override
+  String get profileChooseGifOnDevice => 'اختر ملف GIF على هذا الجهاز';
+
+  @override
+  String get profileSearchGifs => 'ابحث عن صور GIF';
+
+  @override
+  String get profileFindAnimatedAvatarOnline =>
+      'اعثر على صورة رمزية متحركة عبر الإنترنت';
+
+  @override
+  String get profileCover => 'غلاف الملف الشخصي';
+
+  @override
+  String get profileRemoveCover => 'إزالة الغلاف';
+
+  @override
+  String get profileDeleteTitle => 'حذف الملف الشخصي؟';
+
+  @override
+  String get profileRestoreToCloud => 'استعادة إلى السحابة';
+
+  @override
+  String get profileCouldNotRestore =>
+      'تعذّرت استعادة الملف الشخصي. حاول لاحقًا.';
+
+  @override
+  String get profileAccount => 'الحساب';
+
+  @override
+  String get profileManageProfiles => 'إدارة الملفات الشخصية';
+
+  @override
+  String get profileSaveRecoveryCode => 'احفظ رمز الاسترداد';
+
+  @override
+  String get profileISavedIt => 'لقد حفظته';
+
+  @override
+  String get profileSetNumericPin => 'تعيين رمز PIN رقمي';
+
+  @override
+  String get profileForgotPin => 'هل نسيت رمز PIN؟';
+
+  @override
+  String get profileChooseNewPin => 'اختر رمز PIN جديدًا من 4 أو 6 أرقام';
+
+  @override
+  String get profileUseFingerprint => 'استخدام بصمة الإصبع على هذا الهاتف';
+
+  @override
+  String get profileEnterCurrentPin =>
+      'أدخل رمز PIN الحالي لهذا الملف الشخصي للمتابعة.';
+
+  @override
+  String get profileDonate => 'تبرّع';
+
+  @override
+  String get profileKidsProfile => 'ملف شخصي للأطفال';
 }

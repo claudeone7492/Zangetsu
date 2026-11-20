@@ -6800,4 +6800,85 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get musicRowLofi => 'Lo-fi';
+
+  @override
+  String get profileCouldNotUpdateAccountName =>
+      'Não foi possível atualizar o nome da conta';
+
+  @override
+  String get profileSavedOnDeviceCloudRetry =>
+      'Guardado neste dispositivo; a sincronização na nuvem será repetida.';
+
+  @override
+  String get profileChooseAvatar => 'Escolher avatar';
+
+  @override
+  String get profilePhotoFromGallery => 'Foto da galeria';
+
+  @override
+  String get profileChooseImageOnDevice =>
+      'Escolher uma imagem neste dispositivo';
+
+  @override
+  String get profileAnimatedGifFile => 'Ficheiro GIF animado';
+
+  @override
+  String get profileChooseGifOnDevice => 'Escolher um GIF neste dispositivo';
+
+  @override
+  String get profileSearchGifs => 'Pesquisar GIFs';
+
+  @override
+  String get profileFindAnimatedAvatarOnline =>
+      'Encontrar um avatar animado online';
+
+  @override
+  String get profileCover => 'Capa do perfil';
+
+  @override
+  String get profileRemoveCover => 'Remover capa';
+
+  @override
+  String get profileDeleteTitle => 'Eliminar perfil?';
+
+  @override
+  String get profileRestoreToCloud => 'Restaurar na nuvem';
+
+  @override
+  String get profileCouldNotRestore =>
+      'Não foi possível restaurar o perfil. Tenta mais tarde.';
+
+  @override
+  String get profileAccount => 'Conta';
+
+  @override
+  String get profileManageProfiles => 'Gerir perfis';
+
+  @override
+  String get profileSaveRecoveryCode => 'Guarda o teu código de recuperação';
+
+  @override
+  String get profileISavedIt => 'Já guardei';
+
+  @override
+  String get profileSetNumericPin => 'Definir um PIN numérico';
+
+  @override
+  String get profileForgotPin => 'Esqueceste-te do PIN?';
+
+  @override
+  String get profileChooseNewPin => 'Escolhe um novo PIN de 4 ou 6 dígitos';
+
+  @override
+  String get profileUseFingerprint => 'Usar impressão digital neste telemóvel';
+
+  @override
+  String get profileEnterCurrentPin =>
+      'Introduz o PIN atual deste perfil para continuar.';
+
+  @override
+  String get profileDonate => 'Doar';
+
+  @override
+  String get profileKidsProfile => 'Perfil infantil';
 }

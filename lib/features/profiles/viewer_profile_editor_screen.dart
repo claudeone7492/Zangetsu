@@ -73,7 +73,7 @@ Future<void> openViewerProfileEditor(
     if (syncAccountName && !await auth.updateName(result.name)) {
       if (context.mounted) {
         ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-          const SnackBar(content: Text('Could not update account name')),
+          SnackBar(content: Text(context.l10n.profileCouldNotUpdateAccountName)),
         );
       }
       return;
@@ -108,8 +108,8 @@ Future<void> openViewerProfileEditor(
     );
     if (!synced && context.mounted) {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        const SnackBar(
-          content: Text('Saved on this device; cloud sync will retry.'),
+        SnackBar(
+          content: Text(context.l10n.profileSavedOnDeviceCloudRetry),
         ),
       );
     }
@@ -281,7 +281,7 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(4, 0, 4, 14),
-                child: Text('Choose avatar', style: AppText.title),
+                child: Text(context.l10n.profileChooseAvatar, style: AppText.title),
               ),
               ListTile(
                 tileColor: AppColors.surface2,
@@ -289,8 +289,8 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
                   borderRadius: BorderRadius.circular(18),
                 ),
                 leading: Icon(Icons.photo_outlined, color: AppColors.accent),
-                title: const Text('Photo from gallery'),
-                subtitle: const Text('Choose an image on this device'),
+                title: Text(context.l10n.profilePhotoFromGallery),
+                subtitle: Text(context.l10n.profileChooseImageOnDevice),
                 onTap: () =>
                     Navigator.of(sheetContext).pop(_PhotoSource.gallery),
               ),
@@ -304,8 +304,8 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
                   Icons.movie_filter_outlined,
                   color: AppColors.accent,
                 ),
-                title: const Text('Animated GIF file'),
-                subtitle: const Text('Choose a GIF on this device'),
+                title: Text(context.l10n.profileAnimatedGifFile),
+                subtitle: Text(context.l10n.profileChooseGifOnDevice),
                 onTap: () =>
                     Navigator.of(sheetContext).pop(_PhotoSource.fileGif),
               ),
@@ -316,8 +316,8 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
                   borderRadius: BorderRadius.circular(18),
                 ),
                 leading: Icon(Icons.search_rounded, color: AppColors.accent),
-                title: const Text('Search GIFs'),
-                subtitle: const Text('Find an animated avatar online'),
+                title: Text(context.l10n.profileSearchGifs),
+                subtitle: Text(context.l10n.profileFindAnimatedAvatarOnline),
                 onTap: () => Navigator.of(sheetContext).pop(_PhotoSource.klipy),
               ),
             ],
@@ -709,7 +709,7 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Profile cover', style: AppText.headline),
+                              Text(context.l10n.profileCover, style: AppText.headline),
                               const SizedBox(height: 2),
                               Text(
                                 'Optional image for your profile',
@@ -765,7 +765,7 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
                               Icons.delete_outline_rounded,
                               size: 18,
                             ),
-                            label: const Text('Remove cover'),
+                            label: Text(context.l10n.profileRemoveCover),
                           ),
                       ],
                     ),
