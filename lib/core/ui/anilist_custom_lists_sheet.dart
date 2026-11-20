@@ -7,6 +7,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../tracker/tracker.dart';
 import 'global_messenger.dart';
+import '../../l10n/l10n.dart';
 
 /// Ask for a name and create it on AniList. Returns the new full set of list
 /// names, or null when cancelled or the write failed.
@@ -14,8 +15,7 @@ Future<List<String>?> promptCreateAniListList(
   BuildContext context,
   AniListService service,
   MediaKind kind,
-) =>
-    _promptNewList(context, service, kind);
+) => _promptNewList(context, service, kind);
 
 Future<List<String>?> _promptNewList(
   BuildContext context,
@@ -32,18 +32,20 @@ Future<List<String>?> _promptNewList(
         controller: controller,
         autofocus: true,
         style: AppText.body.copyWith(color: AppColors.textPrimary),
-        decoration: const InputDecoration(hintText: 'Rewatching, Favourites, …'),
+        decoration: const InputDecoration(
+          hintText: 'Rewatching, Favourites, …',
+        ),
         onSubmitted: (v) => Navigator.pop(ctx, v),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(ctx, controller.text),
           style: FilledButton.styleFrom(backgroundColor: AppColors.accent),
-          child: const Text('Create'),
+          child: Text(context.l10n.create),
         ),
       ],
     ),
@@ -71,7 +73,8 @@ Future<void> showAniListCustomListsSheet(
   MediaItem item,
   List<String> current,
 ) async {
-  final kind = (item.type == ProviderType.manga || item.type == ProviderType.novel)
+  final kind =
+      (item.type == ProviderType.manga || item.type == ProviderType.novel)
       ? MediaKind.manga
       : MediaKind.anime;
 
@@ -127,8 +130,9 @@ Future<void> showAniListCustomListsSheet(
                       activeColor: AppColors.accent,
                       title: Text(
                         n,
-                        style:
-                            AppText.body.copyWith(color: AppColors.textPrimary),
+                        style: AppText.body.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       onChanged: (v) => setSheetState(() {
                         if (v ?? false) {

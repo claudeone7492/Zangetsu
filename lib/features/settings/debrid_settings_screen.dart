@@ -10,6 +10,7 @@ import '../../core/di/injector.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/ui/settings_widgets.dart';
+import '../../l10n/l10n.dart';
 
 /// Hub: routing mode, active service, Real-Debrid + TorBox connect rows.
 class DebridSettingsScreen extends StatefulWidget {
@@ -110,7 +111,10 @@ class _DebridSettingsScreenState extends State<DebridSettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Mode', style: AppText.headline.copyWith(fontSize: 15)),
+                      Text(
+                        'Mode',
+                        style: AppText.headline.copyWith(fontSize: 15),
+                      ),
                       const SizedBox(height: 10),
                       SegmentedButton<DebridMode>(
                         segments: [
@@ -121,7 +125,9 @@ class _DebridSettingsScreenState extends State<DebridSettingsScreen> {
                         onSelectionChanged: (s) => _setMode(s.first),
                         style: ButtonStyle(
                           visualDensity: VisualDensity.compact,
-                          foregroundColor: WidgetStateProperty.resolveWith((st) {
+                          foregroundColor: WidgetStateProperty.resolveWith((
+                            st,
+                          ) {
                             if (st.contains(WidgetState.selected)) {
                               return AppColors.textPrimary;
                             }
@@ -145,7 +151,8 @@ class _DebridSettingsScreenState extends State<DebridSettingsScreen> {
                     SettingsTile(
                       icon: Icons.check_circle_outline_rounded,
                       title: s.displayName,
-                      subtitle: _prefs.activeService == s ||
+                      subtitle:
+                          _prefs.activeService == s ||
                               (_prefs.activeService == null &&
                                   s ==
                                       DebridService.values.firstWhere(
@@ -154,12 +161,17 @@ class _DebridSettingsScreenState extends State<DebridSettingsScreen> {
                           ? 'Used for playback & downloads'
                           : 'Tap to use this service',
                       onTap: () => _setActive(s),
-                      trailing: (_prefs.activeService ??
+                      trailing:
+                          (_prefs.activeService ??
                                   DebridService.values.firstWhere(
                                     (x) => _connected[x] == true,
                                   )) ==
                               s
-                          ? Icon(Icons.check_rounded, color: AppColors.accent, size: 20)
+                          ? Icon(
+                              Icons.check_rounded,
+                              color: AppColors.accent,
+                              size: 20,
+                            )
                           : null,
                     ),
               ],
@@ -259,9 +271,9 @@ class _DebridServiceScreenState extends State<DebridServiceScreen> {
         _busy = false;
         _connected = true;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${_s.displayName} connected')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('${_s.displayName} connected')));
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -284,11 +296,14 @@ class _DebridServiceScreenState extends State<DebridServiceScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(c, true),
-            child: Text('Disconnect', style: TextStyle(color: AppColors.accent)),
+            child: Text(
+              'Disconnect',
+              style: TextStyle(color: AppColors.accent),
+            ),
           ),
         ],
       ),

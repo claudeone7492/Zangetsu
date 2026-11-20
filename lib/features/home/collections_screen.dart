@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/ui/app_dialog.dart';
 import '../../core/ui/settings_widgets.dart';
+import '../../l10n/l10n.dart';
 
 /// Manage personal collections: the hand-made Home rows.
 ///
@@ -47,11 +48,11 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, ctrl.text),
-            child: const Text('Save'),
+            child: Text(context.l10n.save),
           ),
         ],
       ),
@@ -85,7 +86,8 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     final ok = await AppDialog.confirm(
       context,
       title: 'Delete "${c.name}"?',
-      message: 'The collection and its folders are removed. The titles '
+      message:
+          'The collection and its folders are removed. The titles '
           'themselves stay in your library.',
       confirmLabel: 'Delete',
       destructive: true,
@@ -162,9 +164,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                     c.hidden
                         ? Icons.visibility_off_rounded
                         : Icons.visibility_rounded,
-                    color: c.hidden
-                        ? AppColors.textTertiary
-                        : AppColors.accent,
+                    color: c.hidden ? AppColors.textTertiary : AppColors.accent,
                   ),
                   onPressed: () async {
                     await _store.setHidden(c.id, !c.hidden);
@@ -185,14 +185,23 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                         _delete(c);
                     }
                   },
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(value: 'rename', child: Text('Rename')),
-                    PopupMenuItem(value: 'folder', child: Text('Add folder')),
-                    PopupMenuItem(
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(
+                      value: 'rename',
+                      child: Text('Rename'),
+                    ),
+                    const PopupMenuItem(
+                      value: 'folder',
+                      child: Text('Add folder'),
+                    ),
+                    const PopupMenuItem(
                       value: 'live',
                       child: Text('Add live folder'),
                     ),
-                    PopupMenuItem(value: 'delete', child: Text('Delete')),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Text(context.l10n.delete),
+                    ),
                   ],
                 ),
               ],

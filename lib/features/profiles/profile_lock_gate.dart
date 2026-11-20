@@ -808,7 +808,7 @@ class _PinConfirmationSheetState extends State<_PinConfirmationSheet> {
           ),
           TextButton(
             onPressed: _busy ? null : () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
         ],
       ),

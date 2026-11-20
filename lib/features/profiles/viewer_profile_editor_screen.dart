@@ -21,6 +21,7 @@ import '../../core/ui/settings_widgets.dart';
 import '../auth/auth_cubit.dart';
 import '../auth/auth_screens.dart' show requireLogin;
 import 'klipy_gif_picker.dart';
+import '../../l10n/l10n.dart';
 
 Future<void> openViewerProfileEditor(
   BuildContext context,
@@ -540,7 +541,7 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           Padding(
             padding: const EdgeInsetsDirectional.only(end: 8),
@@ -550,7 +551,7 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
                 minimumSize: const Size(64, 40),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
               ),
-              child: const Text('Save'),
+              child: Text(context.l10n.save),
             ),
           ),
         ],

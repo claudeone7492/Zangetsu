@@ -10,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/tv/tv_alert_dialog.dart';
 import '../../core/tv/tv_text_field.dart';
+import '../../l10n/l10n.dart';
 
 part 'stremio_sources_screen_tv.dart';
 
@@ -106,11 +107,11 @@ class _StremioSourcesScreenState extends State<StremioSourcesScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialog).pop(),
-                  child: const Text('Cancel'),
+                  child: Text(context.l10n.cancel),
                 ),
                 FilledButton(
                   onPressed: () => Navigator.of(dialog).pop(controller.text),
-                  child: const Text('Save'),
+                  child: Text(context.l10n.save),
                 ),
               ],
             ),
@@ -131,11 +132,11 @@ class _StremioSourcesScreenState extends State<StremioSourcesScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialog).pop(false),
-                  child: const Text('Cancel'),
+                  child: Text(context.l10n.cancel),
                 ),
                 FilledButton(
                   onPressed: () => Navigator.of(dialog).pop(true),
-                  child: const Text('Remove'),
+                  child: Text(context.l10n.remove),
                 ),
               ],
             ),

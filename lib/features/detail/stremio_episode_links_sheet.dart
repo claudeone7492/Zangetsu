@@ -16,6 +16,7 @@ import '../../core/stremio/stremio_stream_mapping.dart';
 import '../../core/stremio/stremio_subtitles.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import '../../l10n/l10n.dart';
 
 /// Stremio-owned titles bypass the normal extension resolver: Play, Resume
 /// and episode taps open this grouped links sheet instead.
@@ -246,7 +247,7 @@ class _StremioLinksSheetState extends State<_StremioLinksSheet> {
           return Column(
             children: [
               Text('No playable links found', style: AppText.caption),
-              TextButton(onPressed: _start, child: const Text('Retry')),
+              TextButton(onPressed: _start, child: Text(context.l10n.retry)),
             ],
           );
         }

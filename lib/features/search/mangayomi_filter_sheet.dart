@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../l10n/l10n.dart';
 
 Future<List<Map<String, dynamic>>?> showMangayomiFilterSheet(
   BuildContext context,
@@ -36,7 +37,7 @@ Future<List<Map<String, dynamic>>?> showMangayomiFilterSheet(
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(context, selected),
-                      child: const Text('Apply'),
+                      child: Text(context.l10n.apply),
                     ),
                   ],
                 ),

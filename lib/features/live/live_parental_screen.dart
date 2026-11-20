@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/ui/settings_widgets.dart';
 import '../../core/ui/states.dart';
+import '../../l10n/l10n.dart';
 
 /// Parental controls for live channels: a PIN, a rating ceiling, and a list of
 /// channels hidden outright.
@@ -73,9 +74,9 @@ class _LiveParentalScreenState extends State<LiveParentalScreen> {
     if (current == null || !mounted) return;
     final ok = await parental.clearPin(current);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(ok ? 'PIN removed' : 'Wrong PIN')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(ok ? 'PIN removed' : 'Wrong PIN')));
   }
 
   Future<void> _unlock() async {
@@ -89,14 +90,13 @@ class _LiveParentalScreenState extends State<LiveParentalScreen> {
     final ok = await parental.verifyPin(pin);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(ok ? 'Unlocked until the app closes' : 'Wrong PIN')),
+      SnackBar(
+        content: Text(ok ? 'Unlocked until the app closes' : 'Wrong PIN'),
+      ),
     );
   }
 
-  Future<String?> _askPin({
-    required String title,
-    required String subtitle,
-  }) {
+  Future<String?> _askPin({required String title, required String subtitle}) {
     final controller = TextEditingController();
     return showDialog<String>(
       context: context,
@@ -125,7 +125,7 @@ class _LiveParentalScreenState extends State<LiveParentalScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text),
@@ -177,7 +177,7 @@ class _LiveParentalScreenState extends State<LiveParentalScreen> {
                       ),
                       TextButton(
                         onPressed: _clearPin,
-                        child: const Text('Remove'),
+                        child: Text(context.l10n.remove),
                       ),
                     ],
                   ],

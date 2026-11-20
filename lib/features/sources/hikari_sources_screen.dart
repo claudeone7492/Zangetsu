@@ -11,6 +11,7 @@ import '../../core/theme/app_text.dart';
 import '../../core/ui/settings_widgets.dart';
 import '../../core/ui/source_icon_tile.dart';
 import '../../core/ui/states.dart';
+import '../../l10n/l10n.dart';
 
 /// Manage native `.hiki` extensions.
 ///
@@ -120,11 +121,11 @@ class _HikariSourcesScreenState extends State<HikariSourcesScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('Add'),
+            child: Text(context.l10n.add),
           ),
         ],
       ),
@@ -298,7 +299,7 @@ class _HikariSourcesScreenState extends State<HikariSourcesScreen> {
           else if (hasUpdate)
             TextButton(
               onPressed: _busy ? null : () => _install(entry),
-              child: const Text('Update'),
+              child: Text(context.l10n.update),
             )
           else
             const Icon(

@@ -10,6 +10,7 @@ import '../../core/theme/app_text.dart';
 import '../../core/ui/settings_widgets.dart';
 import '../../core/ui/source_icon_tile.dart';
 import '../../core/ui/states.dart';
+import '../../l10n/l10n.dart';
 
 /// Manage the sources of ONE JS plugin-pack family (`nuvio:`, `vega:`, …).
 ///
@@ -83,18 +84,16 @@ class _JsPackSourcesScreenState extends State<JsPackSourcesScreen> {
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'https://…/index.json',
-          ),
+          decoration: const InputDecoration(hintText: 'https://…/index.json'),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('Add'),
+            child: Text(context.l10n.add),
           ),
         ],
       ),
@@ -211,9 +210,7 @@ class _JsPackSourcesScreenState extends State<JsPackSourcesScreen> {
               Text(module.name, style: AppText.body),
               Text(
                 '${module.type} · v${module.version}',
-                style: AppText.caption.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                style: AppText.caption.copyWith(color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -233,7 +230,11 @@ class _JsPackSourcesScreenState extends State<JsPackSourcesScreen> {
     padding: const EdgeInsets.symmetric(vertical: 6),
     child: Row(
       children: [
-        const Icon(Icons.link_rounded, size: 18, color: AppColors.textSecondary),
+        const Icon(
+          Icons.link_rounded,
+          size: 18,
+          color: AppColors.textSecondary,
+        ),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
@@ -245,9 +246,7 @@ class _JsPackSourcesScreenState extends State<JsPackSourcesScreen> {
         ),
         IconButton(
           tooltip: 'Remove repo',
-          onPressed: _busy
-              ? null
-              : () => _run((m) => m.removeRepository(url)),
+          onPressed: _busy ? null : () => _run((m) => m.removeRepository(url)),
           icon: const Icon(Icons.close_rounded, size: 18),
         ),
       ],

@@ -6,12 +6,13 @@ import '../../core/subscription/subscription_models.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import 'admin_cubit.dart';
+import '../../l10n/l10n.dart';
 
 /// Opens the in-app admin console. There is no server account: the operator
 /// sets a passcode on first use and signs in with it thereafter.
-Future<void> showAdminConsole(BuildContext context) => Navigator.of(context).push(
-  MaterialPageRoute(builder: (_) => const AdminScreen()),
-);
+Future<void> showAdminConsole(BuildContext context) => Navigator.of(
+  context,
+).push(MaterialPageRoute(builder: (_) => const AdminScreen()));
 
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
@@ -40,9 +41,7 @@ class _AdminView extends StatelessWidget {
           switch (state.gate) {
             case AdminGate.checking:
               return const Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.4,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2.4),
               );
             case AdminGate.needsSetup:
               return _Gate(
@@ -66,11 +65,7 @@ class _AdminView extends StatelessWidget {
 }
 
 class _Gate extends StatefulWidget {
-  const _Gate({
-    required this.title,
-    required this.cta,
-    required this.onSubmit,
-  });
+  const _Gate({required this.title, required this.cta, required this.onSubmit});
 
   final String title;
   final String cta;
@@ -101,7 +96,11 @@ class _GateState extends State<_Gate> {
           children: [
             Icon(Icons.lock_outline, color: AppColors.accent, size: 40),
             const SizedBox(height: 16),
-            Text(widget.title, style: AppText.title, textAlign: TextAlign.center),
+            Text(
+              widget.title,
+              style: AppText.title,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: _controller,
@@ -139,7 +138,10 @@ class _GateState extends State<_Gate> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(widget.cta, style: AppText.button.copyWith(color: Colors.black)),
+                child: Text(
+                  widget.cta,
+                  style: AppText.button.copyWith(color: Colors.black),
+                ),
               ),
             ),
           ],
@@ -221,15 +223,19 @@ class _Console extends StatelessWidget {
                     final picked = await showDatePicker(
                       context: context,
                       firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 365 * 3)),
+                      lastDate: DateTime.now().add(
+                        const Duration(days: 365 * 3),
+                      ),
                       initialDate:
-                          row.expiresAt ?? DateTime.now().add(const Duration(days: 30)),
+                          row.expiresAt ??
+                          DateTime.now().add(const Duration(days: 30)),
                     );
                     if (picked != null && context.mounted) {
                       Navigator.of(context).pop(true);
                       await cubit.setPromo(
                         code: row.code,
-                        percentOff: int.tryParse(percent.text) ?? row.percentOff,
+                        percentOff:
+                            int.tryParse(percent.text) ?? row.percentOff,
                         active: row.active,
                         expiresAt: picked,
                         maxUses: row.maxUses,
@@ -248,11 +254,11 @@ class _Console extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Save'),
+            child: Text(context.l10n.save),
           ),
         ],
       ),
@@ -414,8 +420,9 @@ class _DevicesTable extends StatelessWidget {
     ],
   );
 
-  static String _short(String fp) =>
-      fp.length <= 12 ? fp : '${fp.substring(0, 6)}…${fp.substring(fp.length - 4)}';
+  static String _short(String fp) => fp.length <= 12
+      ? fp
+      : '${fp.substring(0, 6)}…${fp.substring(fp.length - 4)}';
 }
 
 class _PromosTable extends StatelessWidget {

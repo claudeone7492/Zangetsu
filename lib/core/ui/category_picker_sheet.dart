@@ -5,6 +5,7 @@ import '../models/media_item.dart';
 import '../playback/category_store.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
+import '../../l10n/l10n.dart';
 
 /// Tick which of the user's categories [item] belongs to.
 ///
@@ -51,8 +52,9 @@ Future<void> showCategoryPicker(BuildContext context, MediaItem item) async {
                       activeColor: AppColors.accent,
                       title: Text(
                         c.name,
-                        style:
-                            AppText.body.copyWith(color: AppColors.textPrimary),
+                        style: AppText.body.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       onChanged: (v) async {
                         await store.setMembership(item, c.id, v ?? false);
@@ -107,12 +109,12 @@ Future<ListCategory?> _promptNewCategory(
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(ctx, controller.text),
           style: FilledButton.styleFrom(backgroundColor: AppColors.accent),
-          child: const Text('Create'),
+          child: Text(context.l10n.create),
         ),
       ],
     ),
