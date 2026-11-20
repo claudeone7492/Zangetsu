@@ -249,7 +249,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get testing => 'Testen…';
 
   @override
-  String get searchOk => 'Search OK';
+  String get searchOk => 'Suche OK';
 
   @override
   String get working => 'Funktioniert';
@@ -482,35 +482,35 @@ class AppLocalizationsDe extends AppLocalizations {
   String get activeSource => 'Aktive Quelle';
 
   @override
-  String get streamingServices => 'Streaming Services';
+  String get streamingServices => 'Streaming-Dienste';
 
   @override
   String get streamingServicesSubtitle =>
-      'Browse what each service carries where you are';
+      'Stöbere im Angebot der Dienste an deinem Standort';
 
   @override
-  String get streamingServicesEmpty => 'No services listed for this country';
+  String get streamingServicesEmpty => 'Keine Dienste für dieses Land gelistet';
 
   @override
   String get streamingServicesMetadataNote =>
-      'Browsing only — titles still play through your own sources';
+      'Nur zum Stöbern — Titel laufen weiterhin über deine eigenen Quellen';
 
   @override
-  String get pinAsHomeRow => 'Pin as home row';
+  String get pinAsHomeRow => 'Als Home-Reihe anheften';
 
   @override
-  String get unpinHomeRow => 'Unpin';
+  String get unpinHomeRow => 'Lösen';
 
   @override
   String pinLimitReached(int count) {
-    return 'You can pin up to $count services';
+    return 'Du kannst bis zu $count Dienste anheften';
   }
 
   @override
-  String get streamingRegion => 'Streaming region';
+  String get streamingRegion => 'Streaming-Region';
 
   @override
-  String get streamingRegionSubtitle => 'Which country\'s catalogue to show';
+  String get streamingRegionSubtitle => 'Welches Länderangebot angezeigt wird';
 
   @override
   String get sourceHealth => 'Quellen-Check';
@@ -651,14 +651,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Diagnose-Log senden, um ein Problem zu beheben';
 
   @override
-  String get sendingReport => 'Sending report…';
+  String get sendingReport => 'Bericht wird gesendet…';
 
   @override
-  String get reportSent => 'Report sent';
+  String get reportSent => 'Bericht gesendet';
 
   @override
   String reportSentBody(String ref) {
-    return 'Thanks. If you tell us what happened, quote this code: $ref';
+    return 'Danke. Wenn du uns schilderst, was passiert ist, nenne diesen Code: $ref';
   }
 
   @override
@@ -1289,7 +1289,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get keepScreenOn => 'Bildschirm an lassen';
 
   @override
-  String get readerFullscreen => 'Fullscreen';
+  String get readerFullscreen => 'Vollbild';
 
   @override
   String get tapZones => 'Tippzonen';
@@ -2057,10 +2057,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get audioDelay => 'Audio-Delay';
 
   @override
-  String get androidPlayer => 'Android Player (Experimental)';
+  String get androidPlayer => 'Android-Player (experimentell)';
 
   @override
-  String get androidPlayerUnavailable => 'Android Player could not start';
+  String get androidPlayerUnavailable => 'Android-Player konnte nicht starten';
 
   @override
   String get audioNormalization => 'Audio-Normalisierung';
@@ -2079,7 +2079,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Save the loaded caption as an .srt in Downloads';
 
   @override
-  String get subtitleSavedToDownloads => 'Subtitle saved to Downloads';
+  String get subtitleSavedToDownloads => 'Untertitel in Downloads gespeichert';
 
   @override
   String get couldNotSaveSubtitle => 'Couldn\'t save the subtitle';
@@ -2207,10 +2207,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get failedToLoadThisTitle => 'Titel konnte nicht geladen werden';
 
   @override
-  String get offlineTitle => 'You\'re offline';
+  String get offlineTitle => 'Du bist offline';
 
   @override
-  String get offlineBody => 'Check your connection and try again.';
+  String get offlineBody => 'Prüfe deine Verbindung und versuche es erneut.';
 
   @override
   String get changeStatus => 'Status ändern';
@@ -2353,7 +2353,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get openSourceSite => 'Quell-Website öffnen';
 
   @override
-  String get signInToSource => 'Sign in';
+  String get signInToSource => 'Anmelden';
 
   @override
   String get welcomeBack => 'Willkommen zurück';
@@ -3011,7 +3011,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get openInBrowser => 'Im Browser öffnen';
 
   @override
-  String get markAsRead => 'Mark as read';
+  String get markAsRead => 'Als gelesen markieren';
 
   @override
   String get copyLink => 'Link kopieren';
@@ -3091,35 +3091,35 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String episodeAirsIn(int episode, String when) {
-    return 'Ep $episode · in $when';
+    return 'Folge $episode · in $when';
   }
 
   @override
-  String get duration => 'Duration';
+  String get duration => 'Dauer';
 
   @override
-  String get score => 'Score';
+  String get score => 'Bewertung';
 
   @override
-  String get popularity => 'Popularity';
+  String get popularity => 'Beliebtheit';
 
   @override
   String get favourites => 'Favourites';
 
   @override
-  String get sourceMaterial => 'Source';
+  String get sourceMaterial => 'Vorlage';
 
   @override
-  String get country => 'Country';
+  String get country => 'Land';
 
   @override
-  String get aired => 'Aired';
+  String get aired => 'Ausgestrahlt';
 
   @override
-  String get nativeTitle => 'Native title';
+  String get nativeTitle => 'Originaltitel';
 
   @override
-  String get alsoKnownAs => 'Also known as';
+  String get alsoKnownAs => 'Auch bekannt als';
 
   @override
   String get tags => 'Tags';
@@ -3129,20 +3129,20 @@ class AppLocalizationsDe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Show # spoiler tags',
-      one: 'Show # spoiler tag',
+      other: '# Spoiler-Tags anzeigen',
+      one: '# Spoiler-Tag anzeigen',
     );
     return '$_temp0';
   }
 
   @override
-  String get navTabsSwitcher => 'Mode switcher';
+  String get navTabsSwitcher => 'Moduswechsler';
 
   @override
-  String get navTabsSwitcherWhy => 'Takes the middle slot';
+  String get navTabsSwitcherWhy => 'Nimmt den mittleren Platz ein';
 
   @override
-  String get navTabsOpensOn => 'Opens on launch';
+  String get navTabsOpensOn => 'Öffnet beim Start';
 
   @override
   String get navTabsNotShown => 'Nicht angezeigt';
@@ -3152,7 +3152,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get searchMovesToHomeInZMode =>
-      'Search moves to the top of Home in Z Mode.';
+      'Die Suche wandert im Z-Modus nach oben auf Home.';
 
   @override
   String navTabsHelp(int minTabs, int maxTabs) {
@@ -3289,20 +3289,20 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get openInBrowserSubtitle =>
-      'Read this chapter on the source\'s own site';
+      'Dieses Kapitel auf der Seite der Quelle lesen';
 
   @override
-  String get readingSettings => 'Reading settings';
+  String get readingSettings => 'Leseeinstellungen';
 
   @override
-  String get markedAsRead => 'Marked as read';
+  String get markedAsRead => 'Als gelesen markiert';
 
   @override
-  String get markedUnread => 'Marked unread';
+  String get markedUnread => 'Als ungelesen markiert';
 
   @override
   String markedChaptersAsRead(int count) {
-    return 'Marked $count chapters as read';
+    return '$count Kapitel als gelesen markiert';
   }
 
   @override
@@ -3889,10 +3889,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get appIcon => 'App-Symbol';
 
   @override
-  String get splashStyle => 'Splash';
+  String get splashStyle => 'Startbild';
 
   @override
-  String get splashStyleBlurb => 'What plays while the app starts up.';
+  String get splashStyleBlurb => 'Was beim Start der App läuft.';
 
   @override
   String get currentLocation => 'Aktueller Standort';
@@ -4955,7 +4955,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get downloadPreparing => 'Vorbereitung…';
 
   @override
-  String get downloadFinalizing => 'Processing…';
+  String get downloadFinalizing => 'Wird verarbeitet…';
 
   @override
   String downloadPausedProgress(int percent) {
@@ -5504,77 +5504,77 @@ class AppLocalizationsDe extends AppLocalizations {
       'Direkt schließen – sofort verlassen';
 
   @override
-  String get zMode => 'Z Mode';
+  String get zMode => 'Z-Modus';
 
   @override
   String get zModeSubtitle =>
-      'Browse from AniList and TMDB, play from your sources';
+      'Stöbern auf AniList und TMDB, abspielen über deine Quellen';
 
   @override
-  String get metadata => 'Metadata';
+  String get metadata => 'Metadaten';
 
   @override
-  String get metadataSubtitle => 'Covers, titles and descriptions';
+  String get metadataSubtitle => 'Cover, Titel und Beschreibungen';
 
   @override
-  String get animeMetadata => 'Anime metadata';
+  String get animeMetadata => 'Anime-Metadaten';
 
   @override
-  String get animeMetadataSubtitle => 'Where anime and manga info comes from';
+  String get animeMetadataSubtitle => 'Woher Anime- und Manga-Infos kommen';
 
   @override
-  String get videoMetadata => 'Movie & TV metadata';
+  String get videoMetadata => 'Film- & Serien-Metadaten';
 
   @override
-  String get videoMetadataSubtitle => 'Where movie and series info comes from';
+  String get videoMetadataSubtitle => 'Woher Film- und Serien-Infos kommen';
 
   @override
   String get malLoginForLists =>
-      'Log in to MyAnimeList in Trackers to sync your lists';
+      'Melde dich bei Trackers bei MyAnimeList an, um deine Listen zu synchronisieren';
 
   @override
-  String get zModeExperimental => 'Experimental';
+  String get zModeExperimental => 'Experimentell';
 
   @override
   String get modeAnime => 'Anime';
 
   @override
-  String get modeMovieTv => 'Movie/TV';
+  String get modeMovieTv => 'Film/Serie';
 
   @override
   String sourceLabel(String name) {
-    return 'Source: $name';
+    return 'Quelle: $name';
   }
 
   @override
-  String get wrongTitle => 'Wrong title?';
+  String get wrongTitle => 'Falscher Titel?';
 
   @override
-  String get noSourceHasThisYet => 'No source has this yet';
+  String get noSourceHasThisYet => 'Noch hat keine Quelle das hier';
 
   @override
-  String get checkedTopSources => 'Checked your top sources — none had this';
+  String get checkedTopSources => 'Deine Top-Quellen geprüft — keine hatte es';
 
   @override
-  String get pickTheRightTitle => 'Pick the right title';
+  String get pickTheRightTitle => 'Wähle den richtigen Titel';
 
   @override
-  String get searchThisSource => 'Search this source';
+  String get searchThisSource => 'Diese Quelle durchsuchen';
 
   @override
   String matchSaved(String name) {
-    return 'Saved. Matched to $name now.';
+    return 'Gespeichert. Jetzt $name zugeordnet.';
   }
 
   @override
-  String get chooseSource => 'Choose a source';
+  String get chooseSource => 'Quelle wählen';
 
   @override
-  String get whichOneIsIt => 'Which one is it?';
+  String get whichOneIsIt => 'Welcher ist es?';
 
   @override
   String searchingSourceShort(String name) {
-    return 'Searching $name';
+    return 'Suche in $name';
   }
 
   @override
@@ -5582,59 +5582,59 @@ class AppLocalizationsDe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count results',
-      one: '1 result',
+      other: '$count Treffer',
+      one: '1 Treffer',
     );
     return '$_temp0';
   }
 
   @override
   String nothingOnSource(String name) {
-    return 'Nothing on $name';
+    return 'Nichts in $name';
   }
 
   @override
   String get sourceMayNotCarryIt =>
-      'This source may not carry it. Try another.';
+      'Diese Quelle hat es vielleicht nicht. Versuche eine andere.';
 
   @override
-  String get currentMatchBadge => 'CURRENT';
+  String get currentMatchBadge => 'AKTUELL';
 
   @override
-  String get scheduleAndLists => 'Schedule & lists';
+  String get scheduleAndLists => 'Zeitplan & Listen';
 
   @override
-  String get scheduleHubDesc => 'What is airing, day by day';
+  String get scheduleHubDesc => 'Was läuft, Tag für Tag';
 
   @override
-  String get trackerCoversVideo => 'Movies and series';
+  String get trackerCoversVideo => 'Filme und Serien';
 
   @override
   String get listKindManga => 'Manga';
 
   @override
-  String get listKindNovel => 'Novel';
+  String get listKindNovel => 'Roman';
 
   @override
-  String get listKindAnimeDesc => 'Watching, completed, planning';
+  String get listKindAnimeDesc => 'Schaue, abgeschlossen, geplant';
 
   @override
-  String get listKindMangaDesc => 'Reading, completed, planning';
+  String get listKindMangaDesc => 'Lese, abgeschlossen, geplant';
 
   @override
-  String get listKindNovelDesc => 'Light novels on this account';
+  String get listKindNovelDesc => 'Light Novels in diesem Konto';
 
   @override
-  String get sortPopularity => 'Popular';
+  String get sortPopularity => 'Beliebt';
 
   @override
-  String get sortScore => 'Top rated';
+  String get sortScore => 'Bestbewertet';
 
   @override
-  String get sortTrending => 'Trending';
+  String get sortTrending => 'Im Trend';
 
   @override
-  String get sortNewest => 'Newest';
+  String get sortNewest => 'Neueste';
 
   @override
   String get sortOldest => 'Oldest';
@@ -5686,112 +5686,112 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String filtersNeedProvider(String provider) {
-    return 'Filters need $provider. Switch it in Settings.';
+    return 'Filter brauchen $provider. Wechsle ihn in den Einstellungen.';
   }
 
   @override
   String get format => 'Format';
 
   @override
-  String get minimumScore => 'Minimum score';
+  String get minimumScore => 'Mindestbewertung';
 
   @override
-  String get searchAnime => 'Search anime';
+  String get searchAnime => 'Anime suchen';
 
   @override
-  String get searchMoviesTv => 'Search movies & TV';
+  String get searchMoviesTv => 'Filme & Serien suchen';
 
   @override
-  String get searchManga => 'Search manga';
+  String get searchManga => 'Manga suchen';
 
   @override
-  String get searchNovels => 'Search novels';
+  String get searchNovels => 'Romane suchen';
 
   @override
-  String get adultCatalogue => 'Adult titles in catalogue';
+  String get adultCatalogue => 'Erwachsenen-Titel im Katalog';
 
   @override
   String get adultCatalogueSubtitle =>
-      'Let AniList, MyAnimeList and TMDB return 18+ results';
+      'AniList, MyAnimeList und TMDB dürfen 18+ zurückgeben';
 
   @override
-  String get enableAdultCatalogue => 'Show adult titles?';
+  String get enableAdultCatalogue => 'Erwachsenen-Titel zeigen?';
 
   @override
   String get enableAdultCatalogueBody =>
-      'Search and browse may return 18+ titles from your metadata provider. Simkl has no such setting and is unaffected.';
+      'Suche und Stöbern können 18+-Titel deines Metadaten-Anbieters liefern. Simkl hat diese Einstellung nicht und ist nicht betroffen.';
 
   @override
-  String get adultOnly => 'Adult';
+  String get adultOnly => 'Erwachsene';
 
   @override
-  String get yourSavedAnimeList => 'Your saved anime list';
+  String get yourSavedAnimeList => 'Deine gespeicherte Anime-Liste';
 
   @override
-  String get yourSavedMangaList => 'Your saved manga list';
+  String get yourSavedMangaList => 'Deine gespeicherte Manga-Liste';
 
   @override
-  String get yourSavedNovelList => 'Your saved novel list';
+  String get yourSavedNovelList => 'Deine gespeicherte Roman-Liste';
 
   @override
   String get epub => 'EPUB';
 
   @override
-  String get exportAsEpub => 'Export as EPUB';
+  String get exportAsEpub => 'Als EPUB exportieren';
 
   @override
   String chaptersDownloadedCount(int done, int total) {
-    return '$done of $total chapters downloaded';
+    return '$done von $total Kapiteln heruntergeladen';
   }
 
   @override
   String get noChaptersDownloadedToExport =>
-      'No chapters downloaded yet — download some first.';
+      'Noch keine Kapitel heruntergeladen — lade zuerst welche.';
 
   @override
-  String get allChapters => 'All chapters';
+  String get allChapters => 'Alle Kapitel';
 
   @override
   String get startChapter => 'Start';
 
   @override
-  String get endChapter => 'End';
+  String get endChapter => 'Ende';
 
   @override
-  String get includeChapterNumber => 'Include chapter number';
+  String get includeChapterNumber => 'Kapitelnummer einbeziehen';
 
   @override
   String get includeChapterNumberSubtitle =>
-      '\"Chapter 5: Title\" instead of just \"Title\"';
+      '„Kapitel 5: Titel“ statt nur „Titel“';
 
   @override
-  String get fileNameLabel => 'File name';
+  String get fileNameLabel => 'Dateiname';
 
   @override
-  String get folderLabel => 'Folder';
+  String get folderLabel => 'Ordner';
 
   @override
   String exportingChapterProgress(int done, int total) {
-    return 'Chapter $done of $total';
+    return 'Kapitel $done von $total';
   }
 
   @override
   String exportedToFolder(String folder) {
-    return 'Exported to $folder';
+    return 'Nach $folder exportiert';
   }
 
   @override
-  String get epubExportFailed => 'Couldn\'t save the EPUB';
+  String get epubExportFailed => 'EPUB konnte nicht gespeichert werden';
 
   @override
-  String get export => 'Export';
+  String get export => 'Exportieren';
 
   @override
-  String get keepDownloadsPrivate => 'Keep downloads private';
+  String get keepDownloadsPrivate => 'Downloads privat halten';
 
   @override
   String get keepDownloadsPrivateSubtitle =>
-      'New video downloads stay inside Zangetsu instead of the Downloads folder. They are deleted when you uninstall Zangetsu. Chapters and exports are unaffected.';
+      'Neue Video-Downloads bleiben in Zangetsu statt im Downloads-Ordner. Sie werden beim Deinstallieren von Zangetsu gelöscht. Kapitel und Exporte sind nicht betroffen.';
 
   @override
   String get mangaPageTranslationTitle => 'Translate page';
@@ -6136,58 +6136,58 @@ class AppLocalizationsDe extends AppLocalizations {
       'Experimental · Retry failed playback';
 
   @override
-  String get subtitlePreset => 'Preset';
+  String get subtitlePreset => 'Voreinstellung';
 
   @override
-  String get subtitleWeight => 'Weight';
+  String get subtitleWeight => 'Stärke';
 
   @override
-  String get subtitleWidthAxis => 'Width axis';
+  String get subtitleWidthAxis => 'Breitenachse';
 
   @override
-  String get subtitleSlant => 'Slant';
+  String get subtitleSlant => 'Neigung';
 
   @override
-  String get subtitleLineHeight => 'Line height';
+  String get subtitleLineHeight => 'Zeilenhöhe';
 
   @override
-  String get subtitleLetterSpacing => 'Letter spacing';
+  String get subtitleLetterSpacing => 'Zeichenabstand';
 
   @override
-  String get subtitleWordSpacing => 'Word spacing';
+  String get subtitleWordSpacing => 'Wortabstand';
 
   @override
-  String get subtitleUppercase => 'Uppercase';
+  String get subtitleUppercase => 'Großbuchstaben';
 
   @override
-  String get subtitleAlignment => 'Alignment';
+  String get subtitleAlignment => 'Ausrichtung';
 
   @override
-  String get subtitleMaxLines => 'Max lines';
+  String get subtitleMaxLines => 'Max. Zeilen';
 
   @override
-  String get subtitleSyncSection => 'Sync';
+  String get subtitleSyncSection => 'Synchronisierung';
 
   @override
-  String get subtitleSyncAuto => 'Auto-sync';
+  String get subtitleSyncAuto => 'Automatisch';
 
   @override
-  String get subtitleSyncReset => 'Reset';
+  String get subtitleSyncReset => 'Zurücksetzen';
 
   @override
-  String get subtitleSyncRate => 'Rate (drift)';
+  String get subtitleSyncRate => 'Rate (Drift)';
 
   @override
   String get subtitleSyncStandard => 'Standard';
 
   @override
   String subtitleSyncReferenceReady(int count) {
-    return '$count lines in the film\'s own track';
+    return '$count Zeilen in der eigenen Spur des Films';
   }
 
   @override
   String get subtitleSyncReferenceNone =>
-      'No embedded track to measure against';
+      'Keine eingebettete Spur zum Abgleichen';
 
   @override
   String subtitleSyncMeasured(
@@ -6196,183 +6196,185 @@ class AppLocalizationsDe extends AppLocalizations {
     int delay,
     int residual,
   ) {
-    return '$matched lines matched · ${rate}x · $delay ms · ±$residual ms';
+    return '$matched Zeilen passen · ${rate}x · $delay ms · ±$residual ms';
   }
 
   @override
-  String get subtitleDwellSpeed => 'Dwell speed';
+  String get subtitleDwellSpeed => 'Verweildauer';
 
   @override
-  String get subtitleEntrance => 'Entrance';
+  String get subtitleEntrance => 'Eingang';
 
   @override
-  String get subtitleDuration => 'Duration';
+  String get subtitleDuration => 'Dauer';
 
   @override
-  String get subtitleSpring => 'Spring';
+  String get subtitleSpring => 'Feder';
 
   @override
-  String get subtitleStiffness => 'Stiffness';
+  String get subtitleStiffness => 'Steifheit';
 
   @override
-  String get subtitleDamping => 'Damping';
+  String get subtitleDamping => 'Dämpfung';
 
   @override
-  String get subtitleTravel => 'Travel';
+  String get subtitleTravel => 'Weg';
 
   @override
-  String get subtitleStretch => 'Stretch';
+  String get subtitleStretch => 'Dehnung';
 
   @override
-  String get subtitleSweep => 'Sweep';
+  String get subtitleSweep => 'Wischen';
 
   @override
-  String get subtitleReveal => 'Reveal';
+  String get subtitleReveal => 'Enthüllen';
 
   @override
-  String get subtitleCadence => 'Pulse';
+  String get subtitleCadence => 'Puls';
 
   @override
   String get subtitleCadenceHint =>
-      'Pulses the caption with the voice when the engine can supply the level.';
+      'Pulsiert die Einblendung mit der Stimme, wenn die Engine den Pegel liefern kann.';
 
   @override
-  String get subtitleAudioReactive => 'Audio reactive';
+  String get subtitleAudioReactive => 'Audioreaktiv';
 
   @override
-  String get subtitleSensitivity => 'Sensitivity';
+  String get subtitleSensitivity => 'Empfindlichkeit';
 
   @override
-  String get subtitleGlowSwell => 'Glow swell';
+  String get subtitleGlowSwell => 'Glüh-Aufblähen';
 
   @override
-  String get subtitleSmoothing => 'Smoothing';
+  String get subtitleSmoothing => 'Glättung';
 
   @override
-  String get subtitlePlate => 'Plate';
+  String get subtitlePlate => 'Platte';
 
   @override
-  String get subtitlePlateOpacity => 'Plate opacity';
+  String get subtitlePlateOpacity => 'Plattendeckkraft';
 
   @override
-  String get subtitleCornerRadius => 'Corner radius';
+  String get subtitleCornerRadius => 'Eckenradius';
 
   @override
-  String get subtitlePlatePadding => 'Plate padding';
+  String get subtitlePlatePadding => 'Plattenabstand';
 
   @override
-  String get subtitleGlowSection => 'Glow';
+  String get subtitleGlowSection => 'Glühen';
 
   @override
-  String get subtitleEdgeGlow => 'Edge glow';
+  String get subtitleEdgeGlow => 'Kantenleuchten';
 
   @override
-  String get subtitleGlowRadius => 'Glow radius';
+  String get subtitleGlowRadius => 'Glühradius';
 
   @override
-  String get subtitleGlowIntensity => 'Glow intensity';
+  String get subtitleGlowIntensity => 'Glühintensität';
 
   @override
-  String get subtitleGlowColour => 'Glow colour';
+  String get subtitleGlowColour => 'Glühfarbe';
 
   @override
   String get subtitleShadowOffset => 'Shadow offset';
 
   @override
-  String get subtitleShadowBlur => 'Shadow blur';
+  String get subtitleShadowBlur => 'Schattenunschärfe';
 
   @override
-  String get subtitlePlacementSection => 'Placement';
+  String get subtitlePlacementSection => 'Platzierung';
 
   @override
-  String get subtitlePlacementMode => 'Placement';
+  String get subtitlePlacementMode => 'Platzierung';
 
   @override
   String get subtitlePosition => 'Position';
 
   @override
-  String get subtitleMaxShift => 'Max shift';
+  String get subtitleMaxShift => 'Max. Verschiebung';
 
   @override
-  String get subtitleShrinkToFit => 'Shrink to fit';
+  String get subtitleShrinkToFit => 'Zum Einpassen verkleinern';
 
   @override
-  String get subtitleMinScale => 'Min scale';
+  String get subtitleMinScale => 'Min. Skalierung';
 
   @override
-  String get subtitleReadabilitySection => 'Readability';
+  String get subtitleReadabilitySection => 'Lesbarkeit';
 
   @override
-  String get subtitleHardenBright => 'Harden on bright frames';
+  String get subtitleHardenBright => 'Auf hellen Bildern härten';
 
   @override
-  String get subtitleThreshold => 'Threshold';
+  String get subtitleThreshold => 'Schwelle';
 
   @override
-  String get subtitleLateNightSection => 'Late night';
+  String get subtitleLateNightSection => 'Nachts';
 
   @override
-  String get subtitleAmbientMode => 'Ambient mode';
+  String get subtitleAmbientMode => 'Umgebungsmodus';
 
   @override
-  String get subtitleWarmth => 'Warmth';
+  String get subtitleWarmth => 'Wärme';
 
   @override
-  String get subtitleDimPicture => 'Dim picture';
+  String get subtitleDimPicture => 'Bild abdunkeln';
 
   @override
-  String get subtitleAmbientPlate => 'Ambient plate';
+  String get subtitleAmbientPlate => 'Umgebungsplatte';
 
   @override
-  String get subtitlePageType => 'Type';
+  String get subtitlePageType => 'Schrift';
 
   @override
   String get subtitlePageTiming => 'Timing';
 
   @override
-  String get subtitlePageLook => 'Look';
+  String get subtitlePageLook => 'Optik';
 
   @override
-  String get subtitlePageFind => 'Find';
+  String get subtitlePageFind => 'Finden';
 
   @override
-  String get subtitlePagePool => 'Pool';
+  String get subtitlePagePool => 'Sammlung';
 
   @override
-  String get subtitleDragHint => 'Drag the caption on the video to place it';
+  String get subtitleDragHint =>
+      'Ziehe die Einblendung auf dem Video, um sie zu platzieren';
 
   @override
-  String get subtitlePoolEmpty => 'No captions downloaded for this title yet';
+  String get subtitlePoolEmpty =>
+      'Für diesen Titel wurden noch keine Untertitel heruntergeladen';
 
   @override
-  String get subtitlePoolUse => 'Use';
+  String get subtitlePoolUse => 'Verwenden';
 
   @override
-  String get subtitleUploadFile => 'Upload a subtitle file';
+  String get subtitleUploadFile => 'Untertiteldatei hochladen';
 
   @override
-  String get subtitleExportFile => 'Save this caption to Downloads';
+  String get subtitleExportFile => 'Diese Einblendung in Downloads speichern';
 
   @override
-  String get subtitleSyncListen => 'Listen to the film';
+  String get subtitleSyncListen => 'Dem Film zuhören';
 
   @override
-  String get subtitleResetTiming => 'Reset sync';
+  String get subtitleResetTiming => 'Synchronisierung zurücksetzen';
 
   @override
-  String get subtitlePresetClassic => 'Classic';
+  String get subtitlePresetClassic => 'Klassisch';
 
   @override
-  String get subtitlePresetCinema => 'Cinema';
+  String get subtitlePresetCinema => 'Kino';
 
   @override
-  String get subtitlePresetBroadcast => 'Broadcast';
+  String get subtitlePresetBroadcast => 'Sendung';
 
   @override
   String get subtitlePresetNeon => 'Neon';
 
   @override
-  String get subtitlePresetLateNight => 'Late night';
+  String get subtitlePresetLateNight => 'Nachts';
 
   @override
   String get cookiesSheetTitle => 'Cookies';

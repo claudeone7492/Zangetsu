@@ -2081,7 +2081,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'Save the loaded caption as an .srt in Downloads';
 
   @override
-  String get subtitleSavedToDownloads => 'Subtitle saved to Downloads';
+  String get subtitleSavedToDownloads => 'Altyazı İndirilenler\'e kaydedildi';
 
   @override
   String get couldNotSaveSubtitle => 'Couldn\'t save the subtitle';
@@ -6106,58 +6106,57 @@ class AppLocalizationsTr extends AppLocalizations {
       'Experimental · Retry failed playback';
 
   @override
-  String get subtitlePreset => 'Preset';
+  String get subtitlePreset => 'Ön ayar';
 
   @override
-  String get subtitleWeight => 'Weight';
+  String get subtitleWeight => 'Kalınlık';
 
   @override
-  String get subtitleWidthAxis => 'Width axis';
+  String get subtitleWidthAxis => 'Genişlik ekseni';
 
   @override
-  String get subtitleSlant => 'Slant';
+  String get subtitleSlant => 'Eğim';
 
   @override
-  String get subtitleLineHeight => 'Line height';
+  String get subtitleLineHeight => 'Satır yüksekliği';
 
   @override
-  String get subtitleLetterSpacing => 'Letter spacing';
+  String get subtitleLetterSpacing => 'Harf aralığı';
 
   @override
-  String get subtitleWordSpacing => 'Word spacing';
+  String get subtitleWordSpacing => 'Kelime aralığı';
 
   @override
-  String get subtitleUppercase => 'Uppercase';
+  String get subtitleUppercase => 'Büyük harf';
 
   @override
-  String get subtitleAlignment => 'Alignment';
+  String get subtitleAlignment => 'Hizalama';
 
   @override
-  String get subtitleMaxLines => 'Max lines';
+  String get subtitleMaxLines => 'Maks. satır';
 
   @override
-  String get subtitleSyncSection => 'Sync';
+  String get subtitleSyncSection => 'Senkronizasyon';
 
   @override
-  String get subtitleSyncAuto => 'Auto-sync';
+  String get subtitleSyncAuto => 'Otomatik';
 
   @override
-  String get subtitleSyncReset => 'Reset';
+  String get subtitleSyncReset => 'Sıfırla';
 
   @override
-  String get subtitleSyncRate => 'Rate (drift)';
+  String get subtitleSyncRate => 'Oran (kayma)';
 
   @override
-  String get subtitleSyncStandard => 'Standard';
+  String get subtitleSyncStandard => 'Standart';
 
   @override
   String subtitleSyncReferenceReady(int count) {
-    return '$count lines in the film\'s own track';
+    return 'Filmin kendi parçasında $count satır';
   }
 
   @override
-  String get subtitleSyncReferenceNone =>
-      'No embedded track to measure against';
+  String get subtitleSyncReferenceNone => 'Karşılaştırılacak gömülü parça yok';
 
   @override
   String subtitleSyncMeasured(
@@ -6166,183 +6165,184 @@ class AppLocalizationsTr extends AppLocalizations {
     int delay,
     int residual,
   ) {
-    return '$matched lines matched · ${rate}x · $delay ms · ±$residual ms';
+    return '$matched satır eşleşti · ${rate}x · $delay ms · ±$residual ms';
   }
 
   @override
-  String get subtitleDwellSpeed => 'Dwell speed';
+  String get subtitleDwellSpeed => 'Kalma hızı';
 
   @override
-  String get subtitleEntrance => 'Entrance';
+  String get subtitleEntrance => 'Giriş';
 
   @override
-  String get subtitleDuration => 'Duration';
+  String get subtitleDuration => 'Süre';
 
   @override
-  String get subtitleSpring => 'Spring';
+  String get subtitleSpring => 'Yay';
 
   @override
-  String get subtitleStiffness => 'Stiffness';
+  String get subtitleStiffness => 'Sertlik';
 
   @override
-  String get subtitleDamping => 'Damping';
+  String get subtitleDamping => 'Sönümleme';
 
   @override
-  String get subtitleTravel => 'Travel';
+  String get subtitleTravel => 'Yol';
 
   @override
-  String get subtitleStretch => 'Stretch';
+  String get subtitleStretch => 'Esneme';
 
   @override
-  String get subtitleSweep => 'Sweep';
+  String get subtitleSweep => 'Süpürme';
 
   @override
-  String get subtitleReveal => 'Reveal';
+  String get subtitleReveal => 'Açığa çıkarma';
 
   @override
-  String get subtitleCadence => 'Pulse';
+  String get subtitleCadence => 'Nabız';
 
   @override
   String get subtitleCadenceHint =>
-      'Pulses the caption with the voice when the engine can supply the level.';
+      'Motor ses düzeyini sağlayabildiğinde altyazıyı sesle birlikte nabız gibi atar.';
 
   @override
-  String get subtitleAudioReactive => 'Audio reactive';
+  String get subtitleAudioReactive => 'Sese duyarlı';
 
   @override
-  String get subtitleSensitivity => 'Sensitivity';
+  String get subtitleSensitivity => 'Hassasiyet';
 
   @override
-  String get subtitleGlowSwell => 'Glow swell';
+  String get subtitleGlowSwell => 'Parıltı şişmesi';
 
   @override
-  String get subtitleSmoothing => 'Smoothing';
+  String get subtitleSmoothing => 'Yumuşatma';
 
   @override
-  String get subtitlePlate => 'Plate';
+  String get subtitlePlate => 'Plaka';
 
   @override
-  String get subtitlePlateOpacity => 'Plate opacity';
+  String get subtitlePlateOpacity => 'Plaka opaklığı';
 
   @override
-  String get subtitleCornerRadius => 'Corner radius';
+  String get subtitleCornerRadius => 'Köşe yarıçapı';
 
   @override
-  String get subtitlePlatePadding => 'Plate padding';
+  String get subtitlePlatePadding => 'Plaka dolgusu';
 
   @override
-  String get subtitleGlowSection => 'Glow';
+  String get subtitleGlowSection => 'Parıltı';
 
   @override
-  String get subtitleEdgeGlow => 'Edge glow';
+  String get subtitleEdgeGlow => 'Kenar parıltısı';
 
   @override
-  String get subtitleGlowRadius => 'Glow radius';
+  String get subtitleGlowRadius => 'Parıltı yarıçapı';
 
   @override
-  String get subtitleGlowIntensity => 'Glow intensity';
+  String get subtitleGlowIntensity => 'Parıltı yoğunluğu';
 
   @override
-  String get subtitleGlowColour => 'Glow colour';
+  String get subtitleGlowColour => 'Parıltı rengi';
 
   @override
   String get subtitleShadowOffset => 'Shadow offset';
 
   @override
-  String get subtitleShadowBlur => 'Shadow blur';
+  String get subtitleShadowBlur => 'Gölge bulanıklığı';
 
   @override
-  String get subtitlePlacementSection => 'Placement';
+  String get subtitlePlacementSection => 'Yerleştirme';
 
   @override
-  String get subtitlePlacementMode => 'Placement';
+  String get subtitlePlacementMode => 'Yerleştirme';
 
   @override
-  String get subtitlePosition => 'Position';
+  String get subtitlePosition => 'Konum';
 
   @override
-  String get subtitleMaxShift => 'Max shift';
+  String get subtitleMaxShift => 'Maks. kayma';
 
   @override
-  String get subtitleShrinkToFit => 'Shrink to fit';
+  String get subtitleShrinkToFit => 'Sığdırmak için küçült';
 
   @override
-  String get subtitleMinScale => 'Min scale';
+  String get subtitleMinScale => 'Min. ölçek';
 
   @override
-  String get subtitleReadabilitySection => 'Readability';
+  String get subtitleReadabilitySection => 'Okunabilirlik';
 
   @override
-  String get subtitleHardenBright => 'Harden on bright frames';
+  String get subtitleHardenBright => 'Açık karelerde sertleştir';
 
   @override
-  String get subtitleThreshold => 'Threshold';
+  String get subtitleThreshold => 'Eşik';
 
   @override
-  String get subtitleLateNightSection => 'Late night';
+  String get subtitleLateNightSection => 'Gece';
 
   @override
-  String get subtitleAmbientMode => 'Ambient mode';
+  String get subtitleAmbientMode => 'Ortam modu';
 
   @override
-  String get subtitleWarmth => 'Warmth';
+  String get subtitleWarmth => 'Sıcaklık';
 
   @override
-  String get subtitleDimPicture => 'Dim picture';
+  String get subtitleDimPicture => 'Görüntüyü karart';
 
   @override
-  String get subtitleAmbientPlate => 'Ambient plate';
+  String get subtitleAmbientPlate => 'Ortam plakası';
 
   @override
-  String get subtitlePageType => 'Type';
+  String get subtitlePageType => 'Yazı';
 
   @override
-  String get subtitlePageTiming => 'Timing';
+  String get subtitlePageTiming => 'Zamanlama';
 
   @override
-  String get subtitlePageLook => 'Look';
+  String get subtitlePageLook => 'Görünüm';
 
   @override
-  String get subtitlePageFind => 'Find';
+  String get subtitlePageFind => 'Bul';
 
   @override
-  String get subtitlePagePool => 'Pool';
+  String get subtitlePagePool => 'Havuz';
 
   @override
-  String get subtitleDragHint => 'Drag the caption on the video to place it';
+  String get subtitleDragHint =>
+      'Yerleştirmek için altyazıyı videoda sürükleyin';
 
   @override
-  String get subtitlePoolEmpty => 'No captions downloaded for this title yet';
+  String get subtitlePoolEmpty => 'Bu başlık için henüz altyazı indirilmedi';
 
   @override
-  String get subtitlePoolUse => 'Use';
+  String get subtitlePoolUse => 'Kullan';
 
   @override
-  String get subtitleUploadFile => 'Upload a subtitle file';
+  String get subtitleUploadFile => 'Altyazı dosyası yükle';
 
   @override
-  String get subtitleExportFile => 'Save this caption to Downloads';
+  String get subtitleExportFile => 'Bu altyazıyı İndirilenler\'e kaydet';
 
   @override
-  String get subtitleSyncListen => 'Listen to the film';
+  String get subtitleSyncListen => 'Filmi dinle';
 
   @override
-  String get subtitleResetTiming => 'Reset sync';
+  String get subtitleResetTiming => 'Senkronizasyonu sıfırla';
 
   @override
-  String get subtitlePresetClassic => 'Classic';
+  String get subtitlePresetClassic => 'Klasik';
 
   @override
-  String get subtitlePresetCinema => 'Cinema';
+  String get subtitlePresetCinema => 'Sinema';
 
   @override
-  String get subtitlePresetBroadcast => 'Broadcast';
+  String get subtitlePresetBroadcast => 'Yayın';
 
   @override
   String get subtitlePresetNeon => 'Neon';
 
   @override
-  String get subtitlePresetLateNight => 'Late night';
+  String get subtitlePresetLateNight => 'Gece';
 
   @override
   String get cookiesSheetTitle => 'Cookies';

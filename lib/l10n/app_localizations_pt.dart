@@ -2093,7 +2093,7 @@ class AppLocalizationsPt extends AppLocalizations {
       'Save the loaded caption as an .srt in Downloads';
 
   @override
-  String get subtitleSavedToDownloads => 'Subtitle saved to Downloads';
+  String get subtitleSavedToDownloads => 'Legenda salva em Downloads';
 
   @override
   String get couldNotSaveSubtitle => 'Couldn\'t save the subtitle';
@@ -6139,58 +6139,58 @@ class AppLocalizationsPt extends AppLocalizations {
       'Experimental · Retry failed playback';
 
   @override
-  String get subtitlePreset => 'Preset';
+  String get subtitlePreset => 'Predefinição';
 
   @override
-  String get subtitleWeight => 'Weight';
+  String get subtitleWeight => 'Peso';
 
   @override
-  String get subtitleWidthAxis => 'Width axis';
+  String get subtitleWidthAxis => 'Eixo de largura';
 
   @override
-  String get subtitleSlant => 'Slant';
+  String get subtitleSlant => 'Inclinação';
 
   @override
-  String get subtitleLineHeight => 'Line height';
+  String get subtitleLineHeight => 'Altura da linha';
 
   @override
-  String get subtitleLetterSpacing => 'Letter spacing';
+  String get subtitleLetterSpacing => 'Espaçamento entre letras';
 
   @override
-  String get subtitleWordSpacing => 'Word spacing';
+  String get subtitleWordSpacing => 'Espaçamento entre palavras';
 
   @override
-  String get subtitleUppercase => 'Uppercase';
+  String get subtitleUppercase => 'Maiúsculas';
 
   @override
-  String get subtitleAlignment => 'Alignment';
+  String get subtitleAlignment => 'Alinhamento';
 
   @override
-  String get subtitleMaxLines => 'Max lines';
+  String get subtitleMaxLines => 'Linhas máximas';
 
   @override
-  String get subtitleSyncSection => 'Sync';
+  String get subtitleSyncSection => 'Sincronização';
 
   @override
-  String get subtitleSyncAuto => 'Auto-sync';
+  String get subtitleSyncAuto => 'Automática';
 
   @override
-  String get subtitleSyncReset => 'Reset';
+  String get subtitleSyncReset => 'Redefinir';
 
   @override
-  String get subtitleSyncRate => 'Rate (drift)';
+  String get subtitleSyncRate => 'Taxa (deriva)';
 
   @override
-  String get subtitleSyncStandard => 'Standard';
+  String get subtitleSyncStandard => 'Padrão';
 
   @override
   String subtitleSyncReferenceReady(int count) {
-    return '$count lines in the film\'s own track';
+    return '$count linhas na faixa do próprio filme';
   }
 
   @override
   String get subtitleSyncReferenceNone =>
-      'No embedded track to measure against';
+      'Nenhuma faixa embutida para comparar';
 
   @override
   String subtitleSyncMeasured(
@@ -6199,183 +6199,183 @@ class AppLocalizationsPt extends AppLocalizations {
     int delay,
     int residual,
   ) {
-    return '$matched lines matched · ${rate}x · $delay ms · ±$residual ms';
+    return '$matched linhas coincidem · ${rate}x · $delay ms · ±$residual ms';
   }
 
   @override
-  String get subtitleDwellSpeed => 'Dwell speed';
+  String get subtitleDwellSpeed => 'Velocidade de permanência';
 
   @override
-  String get subtitleEntrance => 'Entrance';
+  String get subtitleEntrance => 'Entrada';
 
   @override
-  String get subtitleDuration => 'Duration';
+  String get subtitleDuration => 'Duração';
 
   @override
-  String get subtitleSpring => 'Spring';
+  String get subtitleSpring => 'Mola';
 
   @override
-  String get subtitleStiffness => 'Stiffness';
+  String get subtitleStiffness => 'Rigidez';
 
   @override
-  String get subtitleDamping => 'Damping';
+  String get subtitleDamping => 'Amortecimento';
 
   @override
-  String get subtitleTravel => 'Travel';
+  String get subtitleTravel => 'Percurso';
 
   @override
-  String get subtitleStretch => 'Stretch';
+  String get subtitleStretch => 'Estiramento';
 
   @override
-  String get subtitleSweep => 'Sweep';
+  String get subtitleSweep => 'Varredura';
 
   @override
-  String get subtitleReveal => 'Reveal';
+  String get subtitleReveal => 'Revelação';
 
   @override
-  String get subtitleCadence => 'Pulse';
+  String get subtitleCadence => 'Pulso';
 
   @override
   String get subtitleCadenceHint =>
-      'Pulses the caption with the voice when the engine can supply the level.';
+      'Faz a legenda pulsar com a voz quando o motor consegue fornecer o nível.';
 
   @override
-  String get subtitleAudioReactive => 'Audio reactive';
+  String get subtitleAudioReactive => 'Reativo ao áudio';
 
   @override
-  String get subtitleSensitivity => 'Sensitivity';
+  String get subtitleSensitivity => 'Sensibilidade';
 
   @override
-  String get subtitleGlowSwell => 'Glow swell';
+  String get subtitleGlowSwell => 'Inchaço do brilho';
 
   @override
-  String get subtitleSmoothing => 'Smoothing';
+  String get subtitleSmoothing => 'Suavização';
 
   @override
-  String get subtitlePlate => 'Plate';
+  String get subtitlePlate => 'Placa';
 
   @override
-  String get subtitlePlateOpacity => 'Plate opacity';
+  String get subtitlePlateOpacity => 'Opacidade da placa';
 
   @override
-  String get subtitleCornerRadius => 'Corner radius';
+  String get subtitleCornerRadius => 'Raio dos cantos';
 
   @override
-  String get subtitlePlatePadding => 'Plate padding';
+  String get subtitlePlatePadding => 'Preenchimento da placa';
 
   @override
-  String get subtitleGlowSection => 'Glow';
+  String get subtitleGlowSection => 'Brilho';
 
   @override
-  String get subtitleEdgeGlow => 'Edge glow';
+  String get subtitleEdgeGlow => 'Brilho da borda';
 
   @override
-  String get subtitleGlowRadius => 'Glow radius';
+  String get subtitleGlowRadius => 'Raio do brilho';
 
   @override
-  String get subtitleGlowIntensity => 'Glow intensity';
+  String get subtitleGlowIntensity => 'Intensidade do brilho';
 
   @override
-  String get subtitleGlowColour => 'Glow colour';
+  String get subtitleGlowColour => 'Cor do brilho';
 
   @override
   String get subtitleShadowOffset => 'Shadow offset';
 
   @override
-  String get subtitleShadowBlur => 'Shadow blur';
+  String get subtitleShadowBlur => 'Desfoque da sombra';
 
   @override
-  String get subtitlePlacementSection => 'Placement';
+  String get subtitlePlacementSection => 'Posicionamento';
 
   @override
-  String get subtitlePlacementMode => 'Placement';
+  String get subtitlePlacementMode => 'Posicionamento';
 
   @override
-  String get subtitlePosition => 'Position';
+  String get subtitlePosition => 'Posição';
 
   @override
-  String get subtitleMaxShift => 'Max shift';
+  String get subtitleMaxShift => 'Deslocamento máx.';
 
   @override
-  String get subtitleShrinkToFit => 'Shrink to fit';
+  String get subtitleShrinkToFit => 'Encolher para ajustar';
 
   @override
-  String get subtitleMinScale => 'Min scale';
+  String get subtitleMinScale => 'Escala mín.';
 
   @override
-  String get subtitleReadabilitySection => 'Readability';
+  String get subtitleReadabilitySection => 'Legibilidade';
 
   @override
-  String get subtitleHardenBright => 'Harden on bright frames';
+  String get subtitleHardenBright => 'Reforçar em imagens claras';
 
   @override
-  String get subtitleThreshold => 'Threshold';
+  String get subtitleThreshold => 'Limite';
 
   @override
-  String get subtitleLateNightSection => 'Late night';
+  String get subtitleLateNightSection => 'Madrugada';
 
   @override
-  String get subtitleAmbientMode => 'Ambient mode';
+  String get subtitleAmbientMode => 'Modo ambiente';
 
   @override
-  String get subtitleWarmth => 'Warmth';
+  String get subtitleWarmth => 'Calor';
 
   @override
-  String get subtitleDimPicture => 'Dim picture';
+  String get subtitleDimPicture => 'Escurecer imagem';
 
   @override
-  String get subtitleAmbientPlate => 'Ambient plate';
+  String get subtitleAmbientPlate => 'Placa ambiente';
 
   @override
-  String get subtitlePageType => 'Type';
+  String get subtitlePageType => 'Tipo';
 
   @override
-  String get subtitlePageTiming => 'Timing';
+  String get subtitlePageTiming => 'Sincronia';
 
   @override
-  String get subtitlePageLook => 'Look';
+  String get subtitlePageLook => 'Aparência';
 
   @override
-  String get subtitlePageFind => 'Find';
+  String get subtitlePageFind => 'Encontrar';
 
   @override
-  String get subtitlePagePool => 'Pool';
+  String get subtitlePagePool => 'Coletânea';
 
   @override
-  String get subtitleDragHint => 'Drag the caption on the video to place it';
+  String get subtitleDragHint => 'Arraste a legenda no vídeo para posicioná-la';
 
   @override
-  String get subtitlePoolEmpty => 'No captions downloaded for this title yet';
+  String get subtitlePoolEmpty => 'Nenhuma legenda baixada para este título';
 
   @override
-  String get subtitlePoolUse => 'Use';
+  String get subtitlePoolUse => 'Usar';
 
   @override
-  String get subtitleUploadFile => 'Upload a subtitle file';
+  String get subtitleUploadFile => 'Enviar um arquivo de legendas';
 
   @override
-  String get subtitleExportFile => 'Save this caption to Downloads';
+  String get subtitleExportFile => 'Salvar esta legenda em Downloads';
 
   @override
-  String get subtitleSyncListen => 'Listen to the film';
+  String get subtitleSyncListen => 'Ouvir o filme';
 
   @override
-  String get subtitleResetTiming => 'Reset sync';
+  String get subtitleResetTiming => 'Redefinir sincronia';
 
   @override
-  String get subtitlePresetClassic => 'Classic';
+  String get subtitlePresetClassic => 'Clássico';
 
   @override
   String get subtitlePresetCinema => 'Cinema';
 
   @override
-  String get subtitlePresetBroadcast => 'Broadcast';
+  String get subtitlePresetBroadcast => 'Transmissão';
 
   @override
-  String get subtitlePresetNeon => 'Neon';
+  String get subtitlePresetNeon => 'Néon';
 
   @override
-  String get subtitlePresetLateNight => 'Late night';
+  String get subtitlePresetLateNight => 'Madrugada';
 
   @override
   String get cookiesSheetTitle => 'Cookies';

@@ -2081,7 +2081,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'Save the loaded caption as an .srt in Downloads';
 
   @override
-  String get subtitleSavedToDownloads => 'Subtitle saved to Downloads';
+  String get subtitleSavedToDownloads => 'تم حفظ الترجمة في التنزيلات';
 
   @override
   String get couldNotSaveSubtitle => 'Couldn\'t save the subtitle';
@@ -6171,58 +6171,57 @@ class AppLocalizationsAr extends AppLocalizations {
       'Experimental · Retry failed playback';
 
   @override
-  String get subtitlePreset => 'Preset';
+  String get subtitlePreset => 'إعداد مسبق';
 
   @override
-  String get subtitleWeight => 'Weight';
+  String get subtitleWeight => 'السماكة';
 
   @override
-  String get subtitleWidthAxis => 'Width axis';
+  String get subtitleWidthAxis => 'محور العرض';
 
   @override
-  String get subtitleSlant => 'Slant';
+  String get subtitleSlant => 'الميل';
 
   @override
-  String get subtitleLineHeight => 'Line height';
+  String get subtitleLineHeight => 'ارتفاع السطر';
 
   @override
-  String get subtitleLetterSpacing => 'Letter spacing';
+  String get subtitleLetterSpacing => 'تباعد الأحرف';
 
   @override
-  String get subtitleWordSpacing => 'Word spacing';
+  String get subtitleWordSpacing => 'تباعد الكلمات';
 
   @override
-  String get subtitleUppercase => 'Uppercase';
+  String get subtitleUppercase => 'أحرف كبيرة';
 
   @override
-  String get subtitleAlignment => 'Alignment';
+  String get subtitleAlignment => 'المحاذاة';
 
   @override
-  String get subtitleMaxLines => 'Max lines';
+  String get subtitleMaxLines => 'أقصى عدد أسطر';
 
   @override
-  String get subtitleSyncSection => 'Sync';
+  String get subtitleSyncSection => 'المزامنة';
 
   @override
-  String get subtitleSyncAuto => 'Auto-sync';
+  String get subtitleSyncAuto => 'تلقائي';
 
   @override
-  String get subtitleSyncReset => 'Reset';
+  String get subtitleSyncReset => 'إعادة تعيين';
 
   @override
-  String get subtitleSyncRate => 'Rate (drift)';
+  String get subtitleSyncRate => 'المعدل (الانحراف)';
 
   @override
-  String get subtitleSyncStandard => 'Standard';
+  String get subtitleSyncStandard => 'قياسي';
 
   @override
   String subtitleSyncReferenceReady(int count) {
-    return '$count lines in the film\'s own track';
+    return '$count سطرًا في مسار الفيلم نفسه';
   }
 
   @override
-  String get subtitleSyncReferenceNone =>
-      'No embedded track to measure against';
+  String get subtitleSyncReferenceNone => 'لا يوجد مسار مضمّن للمقارنة معه';
 
   @override
   String subtitleSyncMeasured(
@@ -6231,183 +6230,183 @@ class AppLocalizationsAr extends AppLocalizations {
     int delay,
     int residual,
   ) {
-    return '$matched lines matched · ${rate}x · $delay ms · ±$residual ms';
+    return 'تطابقت $matched سطرًا · ${rate}x · $delay مللي ثانية · ±$residual مللي ثانية';
   }
 
   @override
-  String get subtitleDwellSpeed => 'Dwell speed';
+  String get subtitleDwellSpeed => 'سرعة المكوث';
 
   @override
-  String get subtitleEntrance => 'Entrance';
+  String get subtitleEntrance => 'الدخول';
 
   @override
-  String get subtitleDuration => 'Duration';
+  String get subtitleDuration => 'المدة';
 
   @override
-  String get subtitleSpring => 'Spring';
+  String get subtitleSpring => 'زنبرك';
 
   @override
-  String get subtitleStiffness => 'Stiffness';
+  String get subtitleStiffness => 'الصلابة';
 
   @override
-  String get subtitleDamping => 'Damping';
+  String get subtitleDamping => 'التخميد';
 
   @override
-  String get subtitleTravel => 'Travel';
+  String get subtitleTravel => 'المسافة';
 
   @override
-  String get subtitleStretch => 'Stretch';
+  String get subtitleStretch => 'التمدد';
 
   @override
-  String get subtitleSweep => 'Sweep';
+  String get subtitleSweep => 'المسح';
 
   @override
-  String get subtitleReveal => 'Reveal';
+  String get subtitleReveal => 'الكشف';
 
   @override
-  String get subtitleCadence => 'Pulse';
+  String get subtitleCadence => 'نبض';
 
   @override
   String get subtitleCadenceHint =>
-      'Pulses the caption with the voice when the engine can supply the level.';
+      'ينبض الترجمة مع الصوت عندما يستطيع المحرك توفير المستوى.';
 
   @override
-  String get subtitleAudioReactive => 'Audio reactive';
+  String get subtitleAudioReactive => 'متفاعل مع الصوت';
 
   @override
-  String get subtitleSensitivity => 'Sensitivity';
+  String get subtitleSensitivity => 'الحساسية';
 
   @override
-  String get subtitleGlowSwell => 'Glow swell';
+  String get subtitleGlowSwell => 'تضخم التوهج';
 
   @override
-  String get subtitleSmoothing => 'Smoothing';
+  String get subtitleSmoothing => 'التنعيم';
 
   @override
-  String get subtitlePlate => 'Plate';
+  String get subtitlePlate => 'لوح';
 
   @override
-  String get subtitlePlateOpacity => 'Plate opacity';
+  String get subtitlePlateOpacity => 'عتامة اللوح';
 
   @override
-  String get subtitleCornerRadius => 'Corner radius';
+  String get subtitleCornerRadius => 'نصف قطر الزوايا';
 
   @override
-  String get subtitlePlatePadding => 'Plate padding';
+  String get subtitlePlatePadding => 'حشوة اللوح';
 
   @override
-  String get subtitleGlowSection => 'Glow';
+  String get subtitleGlowSection => 'التوهج';
 
   @override
-  String get subtitleEdgeGlow => 'Edge glow';
+  String get subtitleEdgeGlow => 'توهج الحافة';
 
   @override
-  String get subtitleGlowRadius => 'Glow radius';
+  String get subtitleGlowRadius => 'نصف قطر التوهج';
 
   @override
-  String get subtitleGlowIntensity => 'Glow intensity';
+  String get subtitleGlowIntensity => 'شدة التوهج';
 
   @override
-  String get subtitleGlowColour => 'Glow colour';
+  String get subtitleGlowColour => 'لون التوهج';
 
   @override
   String get subtitleShadowOffset => 'Shadow offset';
 
   @override
-  String get subtitleShadowBlur => 'Shadow blur';
+  String get subtitleShadowBlur => 'تمويه الظل';
 
   @override
-  String get subtitlePlacementSection => 'Placement';
+  String get subtitlePlacementSection => 'الموضع';
 
   @override
-  String get subtitlePlacementMode => 'Placement';
+  String get subtitlePlacementMode => 'الموضع';
 
   @override
-  String get subtitlePosition => 'Position';
+  String get subtitlePosition => 'الموضع';
 
   @override
-  String get subtitleMaxShift => 'Max shift';
+  String get subtitleMaxShift => 'أقصى إزاحة';
 
   @override
-  String get subtitleShrinkToFit => 'Shrink to fit';
+  String get subtitleShrinkToFit => 'تصغير للاحتواء';
 
   @override
-  String get subtitleMinScale => 'Min scale';
+  String get subtitleMinScale => 'أدنى مقياس';
 
   @override
-  String get subtitleReadabilitySection => 'Readability';
+  String get subtitleReadabilitySection => 'سهولة القراءة';
 
   @override
-  String get subtitleHardenBright => 'Harden on bright frames';
+  String get subtitleHardenBright => 'تقوية على الإطارات الساطعة';
 
   @override
-  String get subtitleThreshold => 'Threshold';
+  String get subtitleThreshold => 'العتبة';
 
   @override
-  String get subtitleLateNightSection => 'Late night';
+  String get subtitleLateNightSection => 'الليل المتأخر';
 
   @override
-  String get subtitleAmbientMode => 'Ambient mode';
+  String get subtitleAmbientMode => 'الوضع المحيطي';
 
   @override
-  String get subtitleWarmth => 'Warmth';
+  String get subtitleWarmth => 'الدفء';
 
   @override
-  String get subtitleDimPicture => 'Dim picture';
+  String get subtitleDimPicture => 'تعتيم الصورة';
 
   @override
-  String get subtitleAmbientPlate => 'Ambient plate';
+  String get subtitleAmbientPlate => 'لوح محيطي';
 
   @override
-  String get subtitlePageType => 'Type';
+  String get subtitlePageType => 'الخط';
 
   @override
-  String get subtitlePageTiming => 'Timing';
+  String get subtitlePageTiming => 'التوقيت';
 
   @override
-  String get subtitlePageLook => 'Look';
+  String get subtitlePageLook => 'المظهر';
 
   @override
-  String get subtitlePageFind => 'Find';
+  String get subtitlePageFind => 'بحث';
 
   @override
-  String get subtitlePagePool => 'Pool';
+  String get subtitlePagePool => 'المجموعة';
 
   @override
-  String get subtitleDragHint => 'Drag the caption on the video to place it';
+  String get subtitleDragHint => 'اسحب الترجمة على الفيديو لتحديد موضعها';
 
   @override
-  String get subtitlePoolEmpty => 'No captions downloaded for this title yet';
+  String get subtitlePoolEmpty => 'لم تُنزَّل أي ترجمة لهذا العنوان بعد';
 
   @override
-  String get subtitlePoolUse => 'Use';
+  String get subtitlePoolUse => 'استخدام';
 
   @override
-  String get subtitleUploadFile => 'Upload a subtitle file';
+  String get subtitleUploadFile => 'رفع ملف ترجمة';
 
   @override
-  String get subtitleExportFile => 'Save this caption to Downloads';
+  String get subtitleExportFile => 'حفظ هذه الترجمة في التنزيلات';
 
   @override
-  String get subtitleSyncListen => 'Listen to the film';
+  String get subtitleSyncListen => 'الاستماع إلى الفيلم';
 
   @override
-  String get subtitleResetTiming => 'Reset sync';
+  String get subtitleResetTiming => 'إعادة ضبط المزامنة';
 
   @override
-  String get subtitlePresetClassic => 'Classic';
+  String get subtitlePresetClassic => 'كلاسيكي';
 
   @override
-  String get subtitlePresetCinema => 'Cinema';
+  String get subtitlePresetCinema => 'سينما';
 
   @override
-  String get subtitlePresetBroadcast => 'Broadcast';
+  String get subtitlePresetBroadcast => 'بث';
 
   @override
-  String get subtitlePresetNeon => 'Neon';
+  String get subtitlePresetNeon => 'نيون';
 
   @override
-  String get subtitlePresetLateNight => 'Late night';
+  String get subtitlePresetLateNight => 'الليل المتأخر';
 
   @override
   String get cookiesSheetTitle => 'Cookies';

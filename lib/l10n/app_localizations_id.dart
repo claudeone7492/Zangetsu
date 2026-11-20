@@ -2079,7 +2079,7 @@ class AppLocalizationsId extends AppLocalizations {
       'Save the loaded caption as an .srt in Downloads';
 
   @override
-  String get subtitleSavedToDownloads => 'Subtitle saved to Downloads';
+  String get subtitleSavedToDownloads => 'Subtitle disimpan ke Unduhan';
 
   @override
   String get couldNotSaveSubtitle => 'Couldn\'t save the subtitle';
@@ -6114,55 +6114,55 @@ class AppLocalizationsId extends AppLocalizations {
   String get subtitlePreset => 'Preset';
 
   @override
-  String get subtitleWeight => 'Weight';
+  String get subtitleWeight => 'Ketebalan';
 
   @override
-  String get subtitleWidthAxis => 'Width axis';
+  String get subtitleWidthAxis => 'Sumbu lebar';
 
   @override
-  String get subtitleSlant => 'Slant';
+  String get subtitleSlant => 'Kemiringan';
 
   @override
-  String get subtitleLineHeight => 'Line height';
+  String get subtitleLineHeight => 'Tinggi baris';
 
   @override
-  String get subtitleLetterSpacing => 'Letter spacing';
+  String get subtitleLetterSpacing => 'Jarak huruf';
 
   @override
-  String get subtitleWordSpacing => 'Word spacing';
+  String get subtitleWordSpacing => 'Jarak kata';
 
   @override
-  String get subtitleUppercase => 'Uppercase';
+  String get subtitleUppercase => 'Huruf besar';
 
   @override
-  String get subtitleAlignment => 'Alignment';
+  String get subtitleAlignment => 'Perataan';
 
   @override
-  String get subtitleMaxLines => 'Max lines';
+  String get subtitleMaxLines => 'Baris maks.';
 
   @override
-  String get subtitleSyncSection => 'Sync';
+  String get subtitleSyncSection => 'Sinkronisasi';
 
   @override
-  String get subtitleSyncAuto => 'Auto-sync';
+  String get subtitleSyncAuto => 'Otomatis';
 
   @override
-  String get subtitleSyncReset => 'Reset';
+  String get subtitleSyncReset => 'Atur ulang';
 
   @override
-  String get subtitleSyncRate => 'Rate (drift)';
+  String get subtitleSyncRate => 'Laju (hanyut)';
 
   @override
-  String get subtitleSyncStandard => 'Standard';
+  String get subtitleSyncStandard => 'Standar';
 
   @override
   String subtitleSyncReferenceReady(int count) {
-    return '$count lines in the film\'s own track';
+    return '$count baris di trek film itu sendiri';
   }
 
   @override
   String get subtitleSyncReferenceNone =>
-      'No embedded track to measure against';
+      'Tidak ada trek tersemat untuk dibandingkan';
 
   @override
   String subtitleSyncMeasured(
@@ -6171,183 +6171,184 @@ class AppLocalizationsId extends AppLocalizations {
     int delay,
     int residual,
   ) {
-    return '$matched lines matched · ${rate}x · $delay ms · ±$residual ms';
+    return '$matched baris cocok · ${rate}x · $delay ms · ±$residual ms';
   }
 
   @override
-  String get subtitleDwellSpeed => 'Dwell speed';
+  String get subtitleDwellSpeed => 'Kecepatan diam';
 
   @override
-  String get subtitleEntrance => 'Entrance';
+  String get subtitleEntrance => 'Masuk';
 
   @override
-  String get subtitleDuration => 'Duration';
+  String get subtitleDuration => 'Durasi';
 
   @override
-  String get subtitleSpring => 'Spring';
+  String get subtitleSpring => 'Pegas';
 
   @override
-  String get subtitleStiffness => 'Stiffness';
+  String get subtitleStiffness => 'Kekakuan';
 
   @override
-  String get subtitleDamping => 'Damping';
+  String get subtitleDamping => 'Redaman';
 
   @override
-  String get subtitleTravel => 'Travel';
+  String get subtitleTravel => 'Jarak';
 
   @override
-  String get subtitleStretch => 'Stretch';
+  String get subtitleStretch => 'Regangan';
 
   @override
-  String get subtitleSweep => 'Sweep';
+  String get subtitleSweep => 'Sapuan';
 
   @override
-  String get subtitleReveal => 'Reveal';
+  String get subtitleReveal => 'Penyingkapan';
 
   @override
-  String get subtitleCadence => 'Pulse';
+  String get subtitleCadence => 'Denyut';
 
   @override
   String get subtitleCadenceHint =>
-      'Pulses the caption with the voice when the engine can supply the level.';
+      'Mendenyutkan takarir mengikuti suara bila mesin dapat menyediakan levelnya.';
 
   @override
-  String get subtitleAudioReactive => 'Audio reactive';
+  String get subtitleAudioReactive => 'Reaktif audio';
 
   @override
-  String get subtitleSensitivity => 'Sensitivity';
+  String get subtitleSensitivity => 'Sensitivitas';
 
   @override
-  String get subtitleGlowSwell => 'Glow swell';
+  String get subtitleGlowSwell => 'Pembengkakan pendar';
 
   @override
-  String get subtitleSmoothing => 'Smoothing';
+  String get subtitleSmoothing => 'Penghalusan';
 
   @override
-  String get subtitlePlate => 'Plate';
+  String get subtitlePlate => 'Pelat';
 
   @override
-  String get subtitlePlateOpacity => 'Plate opacity';
+  String get subtitlePlateOpacity => 'Opasitas pelat';
 
   @override
-  String get subtitleCornerRadius => 'Corner radius';
+  String get subtitleCornerRadius => 'Radius sudut';
 
   @override
-  String get subtitlePlatePadding => 'Plate padding';
+  String get subtitlePlatePadding => 'Padding pelat';
 
   @override
-  String get subtitleGlowSection => 'Glow';
+  String get subtitleGlowSection => 'Pendar';
 
   @override
-  String get subtitleEdgeGlow => 'Edge glow';
+  String get subtitleEdgeGlow => 'Pendar tepi';
 
   @override
-  String get subtitleGlowRadius => 'Glow radius';
+  String get subtitleGlowRadius => 'Radius pendar';
 
   @override
-  String get subtitleGlowIntensity => 'Glow intensity';
+  String get subtitleGlowIntensity => 'Intensitas pendar';
 
   @override
-  String get subtitleGlowColour => 'Glow colour';
+  String get subtitleGlowColour => 'Warna pendar';
 
   @override
   String get subtitleShadowOffset => 'Shadow offset';
 
   @override
-  String get subtitleShadowBlur => 'Shadow blur';
+  String get subtitleShadowBlur => 'Buram bayangan';
 
   @override
-  String get subtitlePlacementSection => 'Placement';
+  String get subtitlePlacementSection => 'Penempatan';
 
   @override
-  String get subtitlePlacementMode => 'Placement';
+  String get subtitlePlacementMode => 'Penempatan';
 
   @override
-  String get subtitlePosition => 'Position';
+  String get subtitlePosition => 'Posisi';
 
   @override
-  String get subtitleMaxShift => 'Max shift';
+  String get subtitleMaxShift => 'Geser maks.';
 
   @override
-  String get subtitleShrinkToFit => 'Shrink to fit';
+  String get subtitleShrinkToFit => 'Kecilkan agar pas';
 
   @override
-  String get subtitleMinScale => 'Min scale';
+  String get subtitleMinScale => 'Skala min.';
 
   @override
-  String get subtitleReadabilitySection => 'Readability';
+  String get subtitleReadabilitySection => 'Keterbacaan';
 
   @override
-  String get subtitleHardenBright => 'Harden on bright frames';
+  String get subtitleHardenBright => 'Pertegas pada bingkai terang';
 
   @override
-  String get subtitleThreshold => 'Threshold';
+  String get subtitleThreshold => 'Ambang';
 
   @override
-  String get subtitleLateNightSection => 'Late night';
+  String get subtitleLateNightSection => 'Malam';
 
   @override
-  String get subtitleAmbientMode => 'Ambient mode';
+  String get subtitleAmbientMode => 'Mode ambien';
 
   @override
-  String get subtitleWarmth => 'Warmth';
+  String get subtitleWarmth => 'Kehangatan';
 
   @override
-  String get subtitleDimPicture => 'Dim picture';
+  String get subtitleDimPicture => 'Redupkan gambar';
 
   @override
-  String get subtitleAmbientPlate => 'Ambient plate';
+  String get subtitleAmbientPlate => 'Pelat ambien';
 
   @override
-  String get subtitlePageType => 'Type';
+  String get subtitlePageType => 'Jenis';
 
   @override
-  String get subtitlePageTiming => 'Timing';
+  String get subtitlePageTiming => 'Waktu';
 
   @override
-  String get subtitlePageLook => 'Look';
+  String get subtitlePageLook => 'Tampilan';
 
   @override
-  String get subtitlePageFind => 'Find';
+  String get subtitlePageFind => 'Temukan';
 
   @override
-  String get subtitlePagePool => 'Pool';
+  String get subtitlePagePool => 'Kumpulan';
 
   @override
-  String get subtitleDragHint => 'Drag the caption on the video to place it';
+  String get subtitleDragHint => 'Seret takarir di video untuk menempatkannya';
 
   @override
-  String get subtitlePoolEmpty => 'No captions downloaded for this title yet';
+  String get subtitlePoolEmpty =>
+      'Belum ada takarir yang diunduh untuk judul ini';
 
   @override
-  String get subtitlePoolUse => 'Use';
+  String get subtitlePoolUse => 'Pakai';
 
   @override
-  String get subtitleUploadFile => 'Upload a subtitle file';
+  String get subtitleUploadFile => 'Unggah berkas takarir';
 
   @override
-  String get subtitleExportFile => 'Save this caption to Downloads';
+  String get subtitleExportFile => 'Simpan takarir ini ke Unduhan';
 
   @override
-  String get subtitleSyncListen => 'Listen to the film';
+  String get subtitleSyncListen => 'Dengarkan filmnya';
 
   @override
-  String get subtitleResetTiming => 'Reset sync';
+  String get subtitleResetTiming => 'Atur ulang waktu';
 
   @override
-  String get subtitlePresetClassic => 'Classic';
+  String get subtitlePresetClassic => 'Klasik';
 
   @override
-  String get subtitlePresetCinema => 'Cinema';
+  String get subtitlePresetCinema => 'Bioskop';
 
   @override
-  String get subtitlePresetBroadcast => 'Broadcast';
+  String get subtitlePresetBroadcast => 'Siaran';
 
   @override
   String get subtitlePresetNeon => 'Neon';
 
   @override
-  String get subtitlePresetLateNight => 'Late night';
+  String get subtitlePresetLateNight => 'Malam';
 
   @override
   String get cookiesSheetTitle => 'Cookies';
