@@ -2989,5 +2989,19 @@
 	"sourcesHomeRows": "ホームの行",
 	"sourcesHideRowsKeepMetadata": "行を隠したままメタデータは利用可能に",
 	"sourcesAddAccount": "アカウントを追加",
-	"sourcesAddXtreamAccount": "Xtreamアカウントを追加"
+	"sourcesAddXtreamAccount": "Xtreamアカウントを追加",
+	"collectionsNewCollection": "新しいコレクション",
+	"collectionsAddFolder": "フォルダを追加",
+	"collectionsAddLiveFolder": "ライブフォルダを追加",
+	"collectionsEmpty": "コレクションはまだありません。",
+	"collectionsNoFolders": "フォルダはまだありません。追加して中身を入れましょう。",
+	"liveNoGuideData": "番組表データがありません",
+	"liveRecordingsAndReminders": "録画とリマインダー",
+	"liveRecordings": "録画",
+	"liveReminders": "リマインダー",
+	"liveNoStreamResolved": "まだストリームが解決されていません。チャンネルを開いて録画してください",
+	"liveParentalPin": "PIN",
+	"liveParentalConfirm": "確認",
+	"liveParentalShowUpTo": "表示上限",
+	"liveParentalEverything": "すべて — レーティングによる絞り込みなし"
 }

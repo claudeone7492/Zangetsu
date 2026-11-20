@@ -12146,6 +12146,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add Xtream account'**
   String get sourcesAddXtreamAccount;
+
+  /// No description provided for @collectionsNewCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'New collection'**
+  String get collectionsNewCollection;
+
+  /// No description provided for @collectionsAddFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add folder'**
+  String get collectionsAddFolder;
+
+  /// No description provided for @collectionsAddLiveFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add live folder'**
+  String get collectionsAddLiveFolder;
+
+  /// No description provided for @collectionsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No collections yet.'**
+  String get collectionsEmpty;
+
+  /// No description provided for @collectionsNoFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'No folders yet. Add one to start filling it.'**
+  String get collectionsNoFolders;
+
+  /// No description provided for @liveNoGuideData.
+  ///
+  /// In en, this message translates to:
+  /// **'No guide data'**
+  String get liveNoGuideData;
+
+  /// No description provided for @liveRecordingsAndReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Recordings & reminders'**
+  String get liveRecordingsAndReminders;
+
+  /// No description provided for @liveRecordings.
+  ///
+  /// In en, this message translates to:
+  /// **'Recordings'**
+  String get liveRecordings;
+
+  /// No description provided for @liveReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders'**
+  String get liveReminders;
+
+  /// No description provided for @liveNoStreamResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'No stream resolved yet — open the channel to record it'**
+  String get liveNoStreamResolved;
+
+  /// No description provided for @liveParentalPin.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN'**
+  String get liveParentalPin;
+
+  /// No description provided for @liveParentalConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get liveParentalConfirm;
+
+  /// No description provided for @liveParentalShowUpTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Show up to'**
+  String get liveParentalShowUpTo;
+
+  /// No description provided for @liveParentalEverything.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything — no rating filtering'**
+  String get liveParentalEverything;
 }
 
 class _AppLocalizationsDelegate

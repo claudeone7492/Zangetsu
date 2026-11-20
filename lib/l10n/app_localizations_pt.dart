@@ -6988,4 +6988,48 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get sourcesAddXtreamAccount => 'Adicionar conta Xtream';
+
+  @override
+  String get collectionsNewCollection => 'Nova coleção';
+
+  @override
+  String get collectionsAddFolder => 'Adicionar pasta';
+
+  @override
+  String get collectionsAddLiveFolder => 'Adicionar pasta em direto';
+
+  @override
+  String get collectionsEmpty => 'Ainda não há coleções.';
+
+  @override
+  String get collectionsNoFolders =>
+      'Ainda não há pastas. Adiciona uma para começar a preenchê-la.';
+
+  @override
+  String get liveNoGuideData => 'Sem dados de grelha';
+
+  @override
+  String get liveRecordingsAndReminders => 'Gravações e lembretes';
+
+  @override
+  String get liveRecordings => 'Gravações';
+
+  @override
+  String get liveReminders => 'Lembretes';
+
+  @override
+  String get liveNoStreamResolved =>
+      'Ainda não foi resolvido nenhum fluxo — abre o canal para o gravar';
+
+  @override
+  String get liveParentalPin => 'PIN';
+
+  @override
+  String get liveParentalConfirm => 'Confirmar';
+
+  @override
+  String get liveParentalShowUpTo => 'Mostrar até';
+
+  @override
+  String get liveParentalEverything => 'Tudo — sem filtragem por classificação';
 }

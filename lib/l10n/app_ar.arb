@@ -3141,5 +3141,19 @@
 	"sourcesHomeRows": "صفوف الرئيسية",
 	"sourcesHideRowsKeepMetadata": "إخفاء الصفوف مع إبقاء البيانات الوصفية متاحة",
 	"sourcesAddAccount": "إضافة حساب",
-	"sourcesAddXtreamAccount": "إضافة حساب Xtream"
+	"sourcesAddXtreamAccount": "إضافة حساب Xtream",
+	"collectionsNewCollection": "مجموعة جديدة",
+	"collectionsAddFolder": "إضافة مجلد",
+	"collectionsAddLiveFolder": "إضافة مجلد مباشر",
+	"collectionsEmpty": "لا توجد مجموعات بعد.",
+	"collectionsNoFolders": "لا توجد مجلدات بعد. أضف واحدًا لبدء تعبئته.",
+	"liveNoGuideData": "لا توجد بيانات دليل",
+	"liveRecordingsAndReminders": "التسجيلات والتذكيرات",
+	"liveRecordings": "التسجيلات",
+	"liveReminders": "التذكيرات",
+	"liveNoStreamResolved": "لم يتم حل أي بث بعد — افتح القناة لتسجيله",
+	"liveParentalPin": "رمز PIN",
+	"liveParentalConfirm": "تأكيد",
+	"liveParentalShowUpTo": "إظهار حتى",
+	"liveParentalEverything": "الكل — دون تصفية حسب التصنيف"
 }

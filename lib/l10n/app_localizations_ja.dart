@@ -6815,4 +6815,46 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get sourcesAddXtreamAccount => 'Xtreamアカウントを追加';
+
+  @override
+  String get collectionsNewCollection => '新しいコレクション';
+
+  @override
+  String get collectionsAddFolder => 'フォルダを追加';
+
+  @override
+  String get collectionsAddLiveFolder => 'ライブフォルダを追加';
+
+  @override
+  String get collectionsEmpty => 'コレクションはまだありません。';
+
+  @override
+  String get collectionsNoFolders => 'フォルダはまだありません。追加して中身を入れましょう。';
+
+  @override
+  String get liveNoGuideData => '番組表データがありません';
+
+  @override
+  String get liveRecordingsAndReminders => '録画とリマインダー';
+
+  @override
+  String get liveRecordings => '録画';
+
+  @override
+  String get liveReminders => 'リマインダー';
+
+  @override
+  String get liveNoStreamResolved => 'まだストリームが解決されていません。チャンネルを開いて録画してください';
+
+  @override
+  String get liveParentalPin => 'PIN';
+
+  @override
+  String get liveParentalConfirm => '確認';
+
+  @override
+  String get liveParentalShowUpTo => '表示上限';
+
+  @override
+  String get liveParentalEverything => 'すべて — レーティングによる絞り込みなし';
 }

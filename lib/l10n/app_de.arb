@@ -2989,5 +2989,19 @@
 	"sourcesHomeRows": "Home-Reihen",
 	"sourcesHideRowsKeepMetadata": "Reihen ausblenden, Metadaten bleiben verfügbar",
 	"sourcesAddAccount": "Konto hinzufügen",
-	"sourcesAddXtreamAccount": "Xtream-Konto hinzufügen"
+	"sourcesAddXtreamAccount": "Xtream-Konto hinzufügen",
+	"collectionsNewCollection": "Neue Sammlung",
+	"collectionsAddFolder": "Ordner hinzufügen",
+	"collectionsAddLiveFolder": "Live-Ordner hinzufügen",
+	"collectionsEmpty": "Noch keine Sammlungen.",
+	"collectionsNoFolders": "Noch keine Ordner. Füge einen hinzu, um ihn zu füllen.",
+	"liveNoGuideData": "Keine Programmdaten",
+	"liveRecordingsAndReminders": "Aufnahmen & Erinnerungen",
+	"liveRecordings": "Aufnahmen",
+	"liveReminders": "Erinnerungen",
+	"liveNoStreamResolved": "Noch kein Stream aufgelöst – öffne den Sender, um ihn aufzunehmen",
+	"liveParentalPin": "PIN",
+	"liveParentalConfirm": "Bestätigen",
+	"liveParentalShowUpTo": "Anzeigen bis",
+	"liveParentalEverything": "Alles – keine Altersfreigabefilterung"
 }

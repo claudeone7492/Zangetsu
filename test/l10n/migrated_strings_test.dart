@@ -73,6 +73,22 @@ const _strings = <String, String>{
   'sourcesHideRowsKeepMetadata': 'Hide rows while keeping metadata available',
   'sourcesAddAccount': 'Add account',
   'sourcesAddXtreamAccount': 'Add Xtream account',
+  // collections and live TV
+  'collectionsNewCollection': 'New collection',
+  'collectionsAddFolder': 'Add folder',
+  'collectionsAddLiveFolder': 'Add live folder',
+  'collectionsEmpty': 'No collections yet.',
+  'collectionsNoFolders': 'No folders yet. Add one to start filling it.',
+  'liveNoGuideData': 'No guide data',
+  'liveRecordingsAndReminders': 'Recordings & reminders',
+  'liveRecordings': 'Recordings',
+  'liveReminders': 'Reminders',
+  'liveNoStreamResolved':
+      'No stream resolved yet — open the channel to record it',
+  'liveParentalPin': 'PIN',
+  'liveParentalConfirm': 'Confirm',
+  'liveParentalShowUpTo': 'Show up to',
+  'liveParentalEverything': 'Everything — no rating filtering',
 };
 
 /// Words that are genuinely spelled the same in the target language, so the
@@ -80,6 +96,13 @@ const _strings = <String, String>{
 const _legitCognates = <String, Set<String>>{
   'fr': {'posterLayoutPortrait'}, // French "Portrait" is correct French
   'it': {'profileAccount'}, // Italian "Account" is correct Italian
+};
+
+/// Keys that are acronyms or universal loanwords, so the same text in every
+/// locale is the correct translation rather than a missed one. Listing them
+/// keeps the "differs from English" rule strict for real prose.
+const _universalTokens = <String>{
+  'liveParentalPin', // PIN is the word in every one of these languages
 };
 
 /// Pulls one key's value out of a catalogue.
@@ -140,6 +163,20 @@ String _value(AppLocalizations l, String key) => switch (key) {
   'sourcesHideRowsKeepMetadata' => l.sourcesHideRowsKeepMetadata,
   'sourcesAddAccount' => l.sourcesAddAccount,
   'sourcesAddXtreamAccount' => l.sourcesAddXtreamAccount,
+  'collectionsNewCollection' => l.collectionsNewCollection,
+  'collectionsAddFolder' => l.collectionsAddFolder,
+  'collectionsAddLiveFolder' => l.collectionsAddLiveFolder,
+  'collectionsEmpty' => l.collectionsEmpty,
+  'collectionsNoFolders' => l.collectionsNoFolders,
+  'liveNoGuideData' => l.liveNoGuideData,
+  'liveRecordingsAndReminders' => l.liveRecordingsAndReminders,
+  'liveRecordings' => l.liveRecordings,
+  'liveReminders' => l.liveReminders,
+  'liveNoStreamResolved' => l.liveNoStreamResolved,
+  'liveParentalPin' => l.liveParentalPin,
+  'liveParentalConfirm' => l.liveParentalConfirm,
+  'liveParentalShowUpTo' => l.liveParentalShowUpTo,
+  'liveParentalEverything' => l.liveParentalEverything,
   _ => throw ArgumentError('key $key is registered but not mapped in _value'),
 };
 
@@ -161,7 +198,8 @@ void main() {
           reason: '$key is empty in ${locale.languageCode}',
         );
 
-        if (locale.languageCode != 'en' && !allowed.contains(key)) {
+        final isUniversal = _universalTokens.contains(key);
+        if (locale.languageCode != 'en' && !allowed.contains(key) && !isUniversal) {
           expect(
             value,
             isNot(entry.value),

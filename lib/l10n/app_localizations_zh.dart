@@ -6771,6 +6771,48 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sourcesAddXtreamAccount => '添加 Xtream 账户';
+
+  @override
+  String get collectionsNewCollection => '新建收藏';
+
+  @override
+  String get collectionsAddFolder => '添加文件夹';
+
+  @override
+  String get collectionsAddLiveFolder => '添加直播文件夹';
+
+  @override
+  String get collectionsEmpty => '还没有收藏。';
+
+  @override
+  String get collectionsNoFolders => '还没有文件夹。添加一个即可开始填充。';
+
+  @override
+  String get liveNoGuideData => '无节目指南数据';
+
+  @override
+  String get liveRecordingsAndReminders => '录制与提醒';
+
+  @override
+  String get liveRecordings => '录制';
+
+  @override
+  String get liveReminders => '提醒';
+
+  @override
+  String get liveNoStreamResolved => '尚未解析到串流——打开频道即可录制';
+
+  @override
+  String get liveParentalPin => 'PIN';
+
+  @override
+  String get liveParentalConfirm => '确认';
+
+  @override
+  String get liveParentalShowUpTo => '显示至';
+
+  @override
+  String get liveParentalEverything => '全部——不按分级过滤';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -11896,4 +11938,46 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get sourcesAddXtreamAccount => '新增 Xtream 帳戶';
+
+  @override
+  String get collectionsNewCollection => '新增收藏';
+
+  @override
+  String get collectionsAddFolder => '新增資料夾';
+
+  @override
+  String get collectionsAddLiveFolder => '新增直播資料夾';
+
+  @override
+  String get collectionsEmpty => '尚無收藏。';
+
+  @override
+  String get collectionsNoFolders => '尚無資料夾。新增一個即可開始填入。';
+
+  @override
+  String get liveNoGuideData => '無節目表資料';
+
+  @override
+  String get liveRecordingsAndReminders => '錄影與提醒';
+
+  @override
+  String get liveRecordings => '錄影';
+
+  @override
+  String get liveReminders => '提醒';
+
+  @override
+  String get liveNoStreamResolved => '尚未解析到串流——開啟頻道即可錄影';
+
+  @override
+  String get liveParentalPin => 'PIN';
+
+  @override
+  String get liveParentalConfirm => '確認';
+
+  @override
+  String get liveParentalShowUpTo => '顯示至';
+
+  @override
+  String get liveParentalEverything => '全部——不依分級篩選';
 }

@@ -2990,5 +2990,19 @@
 	"sourcesHomeRows": "主畫面列",
 	"sourcesHideRowsKeepMetadata": "隱藏列但保留中繼資料可用",
 	"sourcesAddAccount": "新增帳戶",
-	"sourcesAddXtreamAccount": "新增 Xtream 帳戶"
+	"sourcesAddXtreamAccount": "新增 Xtream 帳戶",
+	"collectionsNewCollection": "新增收藏",
+	"collectionsAddFolder": "新增資料夾",
+	"collectionsAddLiveFolder": "新增直播資料夾",
+	"collectionsEmpty": "尚無收藏。",
+	"collectionsNoFolders": "尚無資料夾。新增一個即可開始填入。",
+	"liveNoGuideData": "無節目表資料",
+	"liveRecordingsAndReminders": "錄影與提醒",
+	"liveRecordings": "錄影",
+	"liveReminders": "提醒",
+	"liveNoStreamResolved": "尚未解析到串流——開啟頻道即可錄影",
+	"liveParentalPin": "PIN",
+	"liveParentalConfirm": "確認",
+	"liveParentalShowUpTo": "顯示至",
+	"liveParentalEverything": "全部——不依分級篩選"
 }

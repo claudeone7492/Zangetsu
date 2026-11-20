@@ -9,6 +9,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/ui/settings_widgets.dart';
 import '../../core/ui/states.dart';
+import '../../l10n/l10n.dart';
 
 /// Recordings and reminders — the DVR schedule.
 ///
@@ -87,7 +88,7 @@ class _RecordingsScreenState extends State<RecordingsScreen> {
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: settingsAppBar(
-        'Recordings & reminders',
+        context.l10n.liveRecordingsAndReminders,
         actions: [
           IconButton(
             tooltip: 'Refresh',
@@ -112,13 +113,13 @@ class _RecordingsScreenState extends State<RecordingsScreen> {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
               children: [
                 if (recordings.isNotEmpty) ...[
-                  Text('Recordings', style: AppText.overline),
+                  Text(context.l10n.liveRecordings, style: AppText.overline),
                   const SizedBox(height: 8),
                   for (final e in recordings) _row(store, e),
                   const SizedBox(height: 24),
                 ],
                 if (reminders.isNotEmpty) ...[
-                  Text('Reminders', style: AppText.overline),
+                  Text(context.l10n.liveReminders, style: AppText.overline),
                   const SizedBox(height: 8),
                   for (final e in reminders) _row(store, e),
                 ],
@@ -195,7 +196,7 @@ class _RecordingsScreenState extends State<RecordingsScreen> {
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
-                'No stream resolved yet — open the channel to record it',
+                context.l10n.liveNoStreamResolved,
                 style: AppText.caption.copyWith(color: AppColors.textTertiary),
               ),
             ),

@@ -6986,4 +6986,48 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sourcesAddXtreamAccount => 'Xtream-Konto hinzufügen';
+
+  @override
+  String get collectionsNewCollection => 'Neue Sammlung';
+
+  @override
+  String get collectionsAddFolder => 'Ordner hinzufügen';
+
+  @override
+  String get collectionsAddLiveFolder => 'Live-Ordner hinzufügen';
+
+  @override
+  String get collectionsEmpty => 'Noch keine Sammlungen.';
+
+  @override
+  String get collectionsNoFolders =>
+      'Noch keine Ordner. Füge einen hinzu, um ihn zu füllen.';
+
+  @override
+  String get liveNoGuideData => 'Keine Programmdaten';
+
+  @override
+  String get liveRecordingsAndReminders => 'Aufnahmen & Erinnerungen';
+
+  @override
+  String get liveRecordings => 'Aufnahmen';
+
+  @override
+  String get liveReminders => 'Erinnerungen';
+
+  @override
+  String get liveNoStreamResolved =>
+      'Noch kein Stream aufgelöst – öffne den Sender, um ihn aufzunehmen';
+
+  @override
+  String get liveParentalPin => 'PIN';
+
+  @override
+  String get liveParentalConfirm => 'Bestätigen';
+
+  @override
+  String get liveParentalShowUpTo => 'Anzeigen bis';
+
+  @override
+  String get liveParentalEverything => 'Alles – keine Altersfreigabefilterung';
 }

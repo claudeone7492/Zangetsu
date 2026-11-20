@@ -11,6 +11,7 @@ import '../../core/theme/app_text.dart';
 import '../../core/ui/settings_widgets.dart';
 import '../../core/ui/source_icon_tile.dart';
 import '../../core/ui/states.dart';
+import '../../l10n/l10n.dart';
 
 /// One channel row the guide renders: the playlist entry plus the EPG channel
 /// id it resolved to (null when the guide doesn't cover it).
@@ -128,7 +129,7 @@ class _LiveTvGuideScreenState extends State<LiveTvGuideScreen> {
                       Expanded(
                         child: Text(
                           covered == 0
-                              ? 'No guide data yet'
+                              ? context.l10n.liveNoGuideData
                               : '$covered of ${widget.channels.length} '
                                     'channels have guide data',
                           style: AppText.caption.copyWith(
@@ -205,7 +206,7 @@ class _LiveTvGuideScreenState extends State<LiveTvGuideScreen> {
           const SizedBox(height: 6),
           if (now == null)
             Text(
-              'No guide data',
+              context.l10n.liveNoGuideData,
               style: AppText.caption.copyWith(color: AppColors.textTertiary),
             )
           else ...[

@@ -6957,4 +6957,48 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get sourcesAddXtreamAccount => 'Tambah akun Xtream';
+
+  @override
+  String get collectionsNewCollection => 'Koleksi baru';
+
+  @override
+  String get collectionsAddFolder => 'Tambah folder';
+
+  @override
+  String get collectionsAddLiveFolder => 'Tambah folder langsung';
+
+  @override
+  String get collectionsEmpty => 'Belum ada koleksi.';
+
+  @override
+  String get collectionsNoFolders =>
+      'Belum ada folder. Tambahkan satu untuk mulai mengisinya.';
+
+  @override
+  String get liveNoGuideData => 'Tidak ada data panduan';
+
+  @override
+  String get liveRecordingsAndReminders => 'Rekaman & pengingat';
+
+  @override
+  String get liveRecordings => 'Rekaman';
+
+  @override
+  String get liveReminders => 'Pengingat';
+
+  @override
+  String get liveNoStreamResolved =>
+      'Belum ada stream yang ditemukan — buka saluran untuk merekamnya';
+
+  @override
+  String get liveParentalPin => 'PIN';
+
+  @override
+  String get liveParentalConfirm => 'Konfirmasi';
+
+  @override
+  String get liveParentalShowUpTo => 'Tampilkan hingga';
+
+  @override
+  String get liveParentalEverything => 'Semua — tanpa penyaringan rating';
 }

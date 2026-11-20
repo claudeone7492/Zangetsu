@@ -107,7 +107,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
         onPressed: _create,
         backgroundColor: AppColors.accent,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('New collection'),
+        label: Text(context.l10n.collectionsNewCollection),
       ),
       body: ListView(
         padding: const EdgeInsets.only(top: 8, bottom: 96),
@@ -124,7 +124,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
             Padding(
               padding: const EdgeInsets.all(24),
               child: Text(
-                'No collections yet.',
+                context.l10n.collectionsEmpty,
                 style: AppText.body.copyWith(color: AppColors.textTertiary),
                 textAlign: TextAlign.center,
               ),
@@ -190,13 +190,13 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                       value: 'rename',
                       child: Text(context.l10n.rename),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'folder',
-                      child: Text('Add folder'),
+                      child: Text(context.l10n.collectionsAddFolder),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'live',
-                      child: Text('Add live folder'),
+                      child: Text(context.l10n.collectionsAddLiveFolder),
                     ),
                     PopupMenuItem(
                       value: 'delete',
@@ -211,7 +211,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
               child: Text(
-                'No folders yet. Add one to start filling it.',
+                context.l10n.collectionsNoFolders,
                 style: AppText.caption,
               ),
             )

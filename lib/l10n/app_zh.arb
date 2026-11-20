@@ -2989,5 +2989,19 @@
 	"sourcesHomeRows": "主屏幕行",
 	"sourcesHideRowsKeepMetadata": "隐藏行但保留元数据可用",
 	"sourcesAddAccount": "添加账户",
-	"sourcesAddXtreamAccount": "添加 Xtream 账户"
+	"sourcesAddXtreamAccount": "添加 Xtream 账户",
+	"collectionsNewCollection": "新建收藏",
+	"collectionsAddFolder": "添加文件夹",
+	"collectionsAddLiveFolder": "添加直播文件夹",
+	"collectionsEmpty": "还没有收藏。",
+	"collectionsNoFolders": "还没有文件夹。添加一个即可开始填充。",
+	"liveNoGuideData": "无节目指南数据",
+	"liveRecordingsAndReminders": "录制与提醒",
+	"liveRecordings": "录制",
+	"liveReminders": "提醒",
+	"liveNoStreamResolved": "尚未解析到串流——打开频道即可录制",
+	"liveParentalPin": "PIN",
+	"liveParentalConfirm": "确认",
+	"liveParentalShowUpTo": "显示至",
+	"liveParentalEverything": "全部——不按分级过滤"
 }

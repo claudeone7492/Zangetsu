@@ -3724,5 +3724,19 @@
   "sourcesHomeRows": "Home rows",
   "sourcesHideRowsKeepMetadata": "Hide rows while keeping metadata available",
   "sourcesAddAccount": "Add account",
-  "sourcesAddXtreamAccount": "Add Xtream account"
+  "sourcesAddXtreamAccount": "Add Xtream account",
+  "collectionsNewCollection": "New collection",
+  "collectionsAddFolder": "Add folder",
+  "collectionsAddLiveFolder": "Add live folder",
+  "collectionsEmpty": "No collections yet.",
+  "collectionsNoFolders": "No folders yet. Add one to start filling it.",
+  "liveNoGuideData": "No guide data",
+  "liveRecordingsAndReminders": "Recordings & reminders",
+  "liveRecordings": "Recordings",
+  "liveReminders": "Reminders",
+  "liveNoStreamResolved": "No stream resolved yet — open the channel to record it",
+  "liveParentalPin": "PIN",
+  "liveParentalConfirm": "Confirm",
+  "liveParentalShowUpTo": "Show up to",
+  "liveParentalEverything": "Everything — no rating filtering"
 }

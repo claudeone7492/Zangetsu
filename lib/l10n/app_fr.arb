@@ -2989,5 +2989,19 @@
 	"sourcesHomeRows": "Rangées d'accueil",
 	"sourcesHideRowsKeepMetadata": "Masquer les rangées tout en gardant les métadonnées",
 	"sourcesAddAccount": "Ajouter un compte",
-	"sourcesAddXtreamAccount": "Ajouter un compte Xtream"
+	"sourcesAddXtreamAccount": "Ajouter un compte Xtream",
+	"collectionsNewCollection": "Nouvelle collection",
+	"collectionsAddFolder": "Ajouter un dossier",
+	"collectionsAddLiveFolder": "Ajouter un dossier direct",
+	"collectionsEmpty": "Pas encore de collections.",
+	"collectionsNoFolders": "Pas encore de dossiers. Ajoutes-en un pour le remplir.",
+	"liveNoGuideData": "Aucune donnée de programme",
+	"liveRecordingsAndReminders": "Enregistrements et rappels",
+	"liveRecordings": "Enregistrements",
+	"liveReminders": "Rappels",
+	"liveNoStreamResolved": "Aucun flux résolu pour l'instant — ouvre la chaîne pour l'enregistrer",
+	"liveParentalPin": "PIN",
+	"liveParentalConfirm": "Confirmer",
+	"liveParentalShowUpTo": "Afficher jusqu'à",
+	"liveParentalEverything": "Tout — aucun filtrage par classification"
 }

@@ -3141,5 +3141,19 @@
 	"sourcesHomeRows": "Linhas de Início",
 	"sourcesHideRowsKeepMetadata": "Ocultar linhas mantendo os metadados disponíveis",
 	"sourcesAddAccount": "Adicionar conta",
-	"sourcesAddXtreamAccount": "Adicionar conta Xtream"
+	"sourcesAddXtreamAccount": "Adicionar conta Xtream",
+	"collectionsNewCollection": "Nova coleção",
+	"collectionsAddFolder": "Adicionar pasta",
+	"collectionsAddLiveFolder": "Adicionar pasta em direto",
+	"collectionsEmpty": "Ainda não há coleções.",
+	"collectionsNoFolders": "Ainda não há pastas. Adiciona uma para começar a preenchê-la.",
+	"liveNoGuideData": "Sem dados de grelha",
+	"liveRecordingsAndReminders": "Gravações e lembretes",
+	"liveRecordings": "Gravações",
+	"liveReminders": "Lembretes",
+	"liveNoStreamResolved": "Ainda não foi resolvido nenhum fluxo — abre o canal para o gravar",
+	"liveParentalPin": "PIN",
+	"liveParentalConfirm": "Confirmar",
+	"liveParentalShowUpTo": "Mostrar até",
+	"liveParentalEverything": "Tudo — sem filtragem por classificação"
 }

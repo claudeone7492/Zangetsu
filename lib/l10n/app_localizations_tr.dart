@@ -6950,4 +6950,48 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get sourcesAddXtreamAccount => 'Xtream hesabı ekle';
+
+  @override
+  String get collectionsNewCollection => 'Yeni koleksiyon';
+
+  @override
+  String get collectionsAddFolder => 'Klasör ekle';
+
+  @override
+  String get collectionsAddLiveFolder => 'Canlı klasör ekle';
+
+  @override
+  String get collectionsEmpty => 'Henüz koleksiyon yok.';
+
+  @override
+  String get collectionsNoFolders =>
+      'Henüz klasör yok. Doldurmaya başlamak için bir tane ekle.';
+
+  @override
+  String get liveNoGuideData => 'Rehber verisi yok';
+
+  @override
+  String get liveRecordingsAndReminders => 'Kayıtlar ve hatırlatıcılar';
+
+  @override
+  String get liveRecordings => 'Kayıtlar';
+
+  @override
+  String get liveReminders => 'Hatırlatıcılar';
+
+  @override
+  String get liveNoStreamResolved =>
+      'Henüz bir akış çözülmedi — kaydetmek için kanalı aç';
+
+  @override
+  String get liveParentalPin => 'PIN';
+
+  @override
+  String get liveParentalConfirm => 'Onayla';
+
+  @override
+  String get liveParentalShowUpTo => 'Şuna kadar göster';
+
+  @override
+  String get liveParentalEverything => 'Her şey — derecelendirme filtresi yok';
 }

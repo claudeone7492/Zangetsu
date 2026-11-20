@@ -6931,4 +6931,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sourcesAddXtreamAccount => 'Add Xtream account';
+
+  @override
+  String get collectionsNewCollection => 'New collection';
+
+  @override
+  String get collectionsAddFolder => 'Add folder';
+
+  @override
+  String get collectionsAddLiveFolder => 'Add live folder';
+
+  @override
+  String get collectionsEmpty => 'No collections yet.';
+
+  @override
+  String get collectionsNoFolders =>
+      'No folders yet. Add one to start filling it.';
+
+  @override
+  String get liveNoGuideData => 'No guide data';
+
+  @override
+  String get liveRecordingsAndReminders => 'Recordings & reminders';
+
+  @override
+  String get liveRecordings => 'Recordings';
+
+  @override
+  String get liveReminders => 'Reminders';
+
+  @override
+  String get liveNoStreamResolved =>
+      'No stream resolved yet — open the channel to record it';
+
+  @override
+  String get liveParentalPin => 'PIN';
+
+  @override
+  String get liveParentalConfirm => 'Confirm';
+
+  @override
+  String get liveParentalShowUpTo => 'Show up to';
+
+  @override
+  String get liveParentalEverything => 'Everything — no rating filtering';
 }

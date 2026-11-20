@@ -3140,5 +3140,19 @@
 	"sourcesHomeRows": "Ana sayfa satırları",
 	"sourcesHideRowsKeepMetadata": "Satırları gizle, üst veriler kullanılabilir kalsın",
 	"sourcesAddAccount": "Hesap ekle",
-	"sourcesAddXtreamAccount": "Xtream hesabı ekle"
+	"sourcesAddXtreamAccount": "Xtream hesabı ekle",
+	"collectionsNewCollection": "Yeni koleksiyon",
+	"collectionsAddFolder": "Klasör ekle",
+	"collectionsAddLiveFolder": "Canlı klasör ekle",
+	"collectionsEmpty": "Henüz koleksiyon yok.",
+	"collectionsNoFolders": "Henüz klasör yok. Doldurmaya başlamak için bir tane ekle.",
+	"liveNoGuideData": "Rehber verisi yok",
+	"liveRecordingsAndReminders": "Kayıtlar ve hatırlatıcılar",
+	"liveRecordings": "Kayıtlar",
+	"liveReminders": "Hatırlatıcılar",
+	"liveNoStreamResolved": "Henüz bir akış çözülmedi — kaydetmek için kanalı aç",
+	"liveParentalPin": "PIN",
+	"liveParentalConfirm": "Onayla",
+	"liveParentalShowUpTo": "Şuna kadar göster",
+	"liveParentalEverything": "Her şey — derecelendirme filtresi yok"
 }

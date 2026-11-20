@@ -7014,4 +7014,48 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sourcesAddXtreamAccount => 'إضافة حساب Xtream';
+
+  @override
+  String get collectionsNewCollection => 'مجموعة جديدة';
+
+  @override
+  String get collectionsAddFolder => 'إضافة مجلد';
+
+  @override
+  String get collectionsAddLiveFolder => 'إضافة مجلد مباشر';
+
+  @override
+  String get collectionsEmpty => 'لا توجد مجموعات بعد.';
+
+  @override
+  String get collectionsNoFolders =>
+      'لا توجد مجلدات بعد. أضف واحدًا لبدء تعبئته.';
+
+  @override
+  String get liveNoGuideData => 'لا توجد بيانات دليل';
+
+  @override
+  String get liveRecordingsAndReminders => 'التسجيلات والتذكيرات';
+
+  @override
+  String get liveRecordings => 'التسجيلات';
+
+  @override
+  String get liveReminders => 'التذكيرات';
+
+  @override
+  String get liveNoStreamResolved =>
+      'لم يتم حل أي بث بعد — افتح القناة لتسجيله';
+
+  @override
+  String get liveParentalPin => 'رمز PIN';
+
+  @override
+  String get liveParentalConfirm => 'تأكيد';
+
+  @override
+  String get liveParentalShowUpTo => 'إظهار حتى';
+
+  @override
+  String get liveParentalEverything => 'الكل — دون تصفية حسب التصنيف';
 }

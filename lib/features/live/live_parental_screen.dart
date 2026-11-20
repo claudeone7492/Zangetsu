@@ -118,7 +118,7 @@ class _LiveParentalScreenState extends State<LiveParentalScreen> {
               obscureText: true,
               keyboardType: TextInputType.number,
               maxLength: 8,
-              decoration: const InputDecoration(labelText: 'PIN'),
+              decoration: InputDecoration(labelText: context.l10n.liveParentalPin),
             ),
           ],
         ),
@@ -129,7 +129,7 @@ class _LiveParentalScreenState extends State<LiveParentalScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Confirm'),
+            child: Text(context.l10n.liveParentalConfirm),
           ),
         ],
       ),
@@ -150,7 +150,7 @@ class _LiveParentalScreenState extends State<LiveParentalScreen> {
           : ListView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
               children: [
-                Text('PIN', style: AppText.overline),
+                Text(context.l10n.liveParentalPin, style: AppText.overline),
                 const SizedBox(height: 4),
                 Text(
                   parental.pinSet
@@ -183,7 +183,7 @@ class _LiveParentalScreenState extends State<LiveParentalScreen> {
                   ],
                 ),
                 const SizedBox(height: 28),
-                Text('Show up to', style: AppText.overline),
+                Text(context.l10n.liveParentalShowUpTo, style: AppText.overline),
                 const SizedBox(height: 8),
                 RadioGroup<ContentRating>(
                   groupValue: parental.ceiling,
@@ -201,7 +201,7 @@ class _LiveParentalScreenState extends State<LiveParentalScreen> {
                           title: Text(rating.label, style: AppText.body),
                           subtitle: rating == ContentRating.adult
                               ? Text(
-                                  'Everything — no rating filtering',
+                                  context.l10n.liveParentalEverything,
                                   style: AppText.caption.copyWith(
                                     color: AppColors.textTertiary,
                                   ),

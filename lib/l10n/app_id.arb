@@ -3141,5 +3141,19 @@
 	"sourcesHomeRows": "Baris Beranda",
 	"sourcesHideRowsKeepMetadata": "Sembunyikan baris sambil tetap menyediakan metadata",
 	"sourcesAddAccount": "Tambah akun",
-	"sourcesAddXtreamAccount": "Tambah akun Xtream"
+	"sourcesAddXtreamAccount": "Tambah akun Xtream",
+	"collectionsNewCollection": "Koleksi baru",
+	"collectionsAddFolder": "Tambah folder",
+	"collectionsAddLiveFolder": "Tambah folder langsung",
+	"collectionsEmpty": "Belum ada koleksi.",
+	"collectionsNoFolders": "Belum ada folder. Tambahkan satu untuk mulai mengisinya.",
+	"liveNoGuideData": "Tidak ada data panduan",
+	"liveRecordingsAndReminders": "Rekaman & pengingat",
+	"liveRecordings": "Rekaman",
+	"liveReminders": "Pengingat",
+	"liveNoStreamResolved": "Belum ada stream yang ditemukan — buka saluran untuk merekamnya",
+	"liveParentalPin": "PIN",
+	"liveParentalConfirm": "Konfirmasi",
+	"liveParentalShowUpTo": "Tampilkan hingga",
+	"liveParentalEverything": "Semua — tanpa penyaringan rating"
 }
