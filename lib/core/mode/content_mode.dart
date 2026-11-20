@@ -15,7 +15,13 @@ import '../provider/provider_registry.dart';
 /// rows. It is deliberately NOT a `StreamKind` — the dock's Reels tab already
 /// owns the autoplaying vertical feed, and this mode exists so the *menu*
 /// entry populates Home the way every other selection does.
-enum ContentMode { anime, manga, novel, shorts }
+///
+/// [music] is unlike every other mode: it has no source-backed provider at all.
+/// Tracks come from a catalogue API ([MusicService]) rather than the provider
+/// registry, so it never appears in a source list and [matchesProvider] is
+/// always false for it. That is why it needs its own screen instead of the
+/// shared Home.
+enum ContentMode { anime, manga, novel, shorts, music }
 
 /// Content kind a source id belongs to, when it can be told from the id alone.
 ///
@@ -55,6 +61,8 @@ bool sourceIdMatchesContentMode(
       // Shorts is a video shelf, so it takes the video family exactly as anime
       // does — the drama catalogues are declared as video sources.
       ContentMode.shorts => mangayomiType == MangayomiContentType.video,
+      // Music has no provider-backed sources, so no id belongs to it.
+      ContentMode.music => false,
     };
   }
   // Prefix-encoded reading types first, so the mode cubit's cheap id-only check
@@ -130,6 +138,7 @@ extension ContentModeX on ContentMode {
     ContentMode.manga => 'Manga',
     ContentMode.novel => 'Novel',
     ContentMode.shorts => 'Shorts',
+    ContentMode.music => 'Music',
   };
 
   IconData get icon => switch (this) {
@@ -137,12 +146,18 @@ extension ContentModeX on ContentMode {
     ContentMode.manga => Icons.auto_stories_outlined,
     ContentMode.novel => Icons.menu_book_outlined,
     ContentMode.shorts => Icons.bolt_outlined,
+    ContentMode.music => Icons.music_note_outlined,
   };
 
   /// Manga/novel read; anime and shorts watch. Shorts is video, so it must not
   /// inherit the reading wording ("Chapter") that a bare `!= anime` would give
   /// it.
   bool get isReading => this == ContentMode.manga || this == ContentMode.novel;
+
+  /// Music is neither watching nor reading: it has its own screen and its own
+  /// catalogue, so the video-only affordances (episodes, servers, qualities)
+  /// and the reading ones (chapters) both have to stand down for it.
+  bool get isMusic => this == ContentMode.music;
 
   /// Which provider types belong to this mode. Anime and Shorts both keep the
   /// video types — the short-drama sources are declared `movie` — so a source
@@ -153,6 +168,8 @@ extension ContentModeX on ContentMode {
     ContentMode.manga => t == ProviderType.manga,
     ContentMode.novel => t == ProviderType.novel,
     ContentMode.shorts => t == ProviderType.anime || t == ProviderType.movie,
+    // No provider type is music — the catalogue is an API, not a provider.
+    ContentMode.music => false,
   };
 }
 

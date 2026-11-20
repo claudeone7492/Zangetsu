@@ -118,6 +118,8 @@ bool hasInstalledPlaybackSources(ContentMode mode) {
     ContentMode.anime || ContentMode.shorts => allIds.any(
       (id) => sourceInMode(id, ContentMode.anime, types),
     ),
+    // Music has no provider sources, so no source can be "missing" for it.
+    ContentMode.music => true,
   };
   debugPrint(
     '[tv-playback] hasInstalledPlaybackSources · mode=$mode → $result '

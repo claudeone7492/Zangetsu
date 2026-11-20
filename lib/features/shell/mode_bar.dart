@@ -49,6 +49,12 @@ final List<ModeChoice> modeChoices = [
     mode: ContentMode.shorts,
     kind: StreamKind.anime,
   ),
+  (
+    label: (c) => c.l10n.modeMusic,
+    icon: Icons.music_note_outlined,
+    mode: ContentMode.music,
+    kind: StreamKind.anime,
+  ),
 ];
 
 IconData iconForMode(ContentMode mode, StreamKind kind) => modeChoices

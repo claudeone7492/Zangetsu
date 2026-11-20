@@ -15,10 +15,10 @@ class _Tracker implements Tracker {
 class _MangaBaka extends _Tracker implements MangaBakaService {}
 
 /// Every category a library can show. Shorts shares the video list, so it is
-/// never a tab of its own.
+/// never a tab of its own; music has no library, so it is never one either.
 final _allKinds = [
   for (final m in ContentMode.values)
-    if (m != ContentMode.shorts) m,
+    if (m != ContentMode.shorts && m != ContentMode.music) m,
 ];
 
 void main() {

@@ -17,6 +17,7 @@ import '../../core/mihon/mihon_extension_service.dart';
 import '../../core/mihon/mihon_image_provider.dart';
 import '../../core/mode/content_mode.dart';
 import '../../core/ui/nav_prefs.dart';
+import '../music/music_screen.dart';
 import '../../core/mode/content_mode_cubit.dart';
 import '../../core/models/watch_status.dart';
 import '../../core/tracker/tracker_hub.dart';
@@ -49,6 +50,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/zmode/zmode_prefs.dart';
 import '../../l10n/l10n.dart';
+import '../../l10n/ui_strings.dart';
 import '../../core/announce/announcement.dart';
 import '../announce/announcement_sheet.dart';
 import '../community/community_sheet.dart';
@@ -121,13 +123,25 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use the shared singleton so the splash can warm it before this mounts.
-    return BlocProvider.value(
-      value: sl<HomeCubit>(),
-      child: _HomeView(
-        isTabActive: isTabActive,
-        scrollToTopSignal: scrollToTopSignal,
-      ),
+    // Music is a catalogue, not a source, so it has nothing to show through
+    // HomeCubit. Returning its screen here — rather than adding another dock
+    // tab — keeps "Home" meaning "what this mode browses", which is what every
+    // other mode already does.
+    return BlocBuilder<ContentModeCubit, ContentMode>(
+      bloc: sl<ContentModeCubit>(),
+      builder: (context, mode) {
+        if (mode == ContentMode.music) {
+          return MusicScreen(active: isTabActive);
+        }
+        // Use the shared singleton so the splash can warm it before this mounts.
+        return BlocProvider.value(
+          value: sl<HomeCubit>(),
+          child: _HomeView(
+            isTabActive: isTabActive,
+            scrollToTopSignal: scrollToTopSignal,
+          ),
+        );
+      },
     );
   }
 }
@@ -1537,7 +1551,9 @@ class _HomeViewState extends State<_HomeView>
                     // label has ~68px and "Streaming" does not fit.
                     Flexible(
                       child: Text(
-                        m.label,
+                        // Localised: the bare `label` getter is the English
+                        // fallback used off the UI layer.
+                        m.localizedLabel(context),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppText.body.copyWith(
@@ -1713,6 +1729,9 @@ class _HomeViewState extends State<_HomeView>
       }
       return (cover: null, headers: null);
     }
+    // Music keeps no history box of its own, and falling through would hand
+    // its card a novel cover from ReadHistory.
+    if (m.isMusic) return (cover: null, headers: null);
     if (!Hive.isBoxOpen(ReadHistory.boxName)) {
       return (cover: null, headers: null);
     }
@@ -2036,6 +2055,9 @@ class _HomeViewState extends State<_HomeView>
                           // the active source, so it never shows the no-source
                           // guide — the aggregate drops dead sources itself.
                           ContentMode.shorts => false,
+                          // Music has no provider sources at all, and it never
+                          // renders this Home — its own screen owns it.
+                          ContentMode.music => false,
                         };
                   return CustomScrollView(
                     controller: _homeScroll,
@@ -2437,12 +2459,15 @@ class _NoSourcesGuide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = mode.label; // Streaming / Manga / Novel / Shorts
-    final (icon, noun) = switch (mode) {
-      ContentMode.anime => (Icons.live_tv_rounded, 'shows'),
-      ContentMode.manga => (Icons.auto_stories_rounded, 'manga'),
-      ContentMode.novel => (Icons.menu_book_rounded, 'novels'),
-      ContentMode.shorts => (Icons.bolt_rounded, 'shorts'),
+    // Icon only — the wording comes from the shared l10n helpers the TV
+    // surface and the load-error dialog already use, so a new mode adds its
+    // icon here and its words in one place (ui_strings.dart).
+    final icon = switch (mode) {
+      ContentMode.anime => Icons.live_tv_rounded,
+      ContentMode.manga => Icons.auto_stories_rounded,
+      ContentMode.novel => Icons.menu_book_rounded,
+      ContentMode.shorts => Icons.bolt_rounded,
+      ContentMode.music => Icons.music_note_rounded,
     };
     return Center(
       child: Padding(
@@ -2461,13 +2486,15 @@ class _NoSourcesGuide extends StatelessWidget {
             ),
             const SizedBox(height: 22),
             Text(
-              'No $label sources yet',
+              context.l10n.noModeSourcesYet(mode.localizedLabel(context)),
               textAlign: TextAlign.center,
               style: AppText.headline.copyWith(fontSize: 20),
             ),
             const SizedBox(height: 10),
             Text(
-              'Add a source from Providers and your $noun will show up here.',
+              context.l10n.addSourceFromProvidersHint(
+                contentModeContentNoun(context.l10n, mode),
+              ),
               textAlign: TextAlign.center,
               style: AppText.body.copyWith(
                 color: AppColors.textSecondary,

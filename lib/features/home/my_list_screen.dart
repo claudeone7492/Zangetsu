@@ -388,6 +388,8 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
                 // Shorts shares the video list, so it reads as the video one.
                 ContentMode.anime || ContentMode.shorts =>
                   l10n.yourSavedAnimeList,
+                // Music has no saved list of its own; it is not a list kind.
+                ContentMode.music => l10n.yourSavedAnimeList,
               };
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -1418,6 +1420,9 @@ String myListFilteredEmptyMessage(AppLocalizations l10n, ContentMode mode) =>
       ContentMode.anime || ContentMode.shorts => l10n.nothingHereInThisFilter,
       ContentMode.manga => l10n.noMangaHereInThisFilter,
       ContentMode.novel => l10n.noNovelsHereInThisFilter,
+      // Music never reaches My List — it has no save surface — so this wording
+      // is only a fallback for a stray mode read.
+      ContentMode.music => l10n.nothingHereInThisFilter,
     };
 
 /// EmptyState message for a genuinely empty My List (nothing saved yet, of
@@ -1427,6 +1432,7 @@ String myListEmptyMessage(AppLocalizations l10n, ContentMode mode) =>
       ContentMode.anime || ContentMode.shorts => l10n.titlesYouAddAppearHere,
       ContentMode.manga => l10n.mangaYouAddAppearHere,
       ContentMode.novel => l10n.novelsYouAddAppearHere,
+      ContentMode.music => l10n.musicNoTracksBody,
     };
 
 /// The list kind that backs [mode]. Shorts is a video shelf with no list of its
