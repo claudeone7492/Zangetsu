@@ -112,7 +112,7 @@ class _HikariSourcesScreenState extends State<HikariSourcesScreen> {
     final url = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add repository'),
+        title: Text(context.l10n.addRepository),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -294,7 +294,7 @@ class _HikariSourcesScreenState extends State<HikariSourcesScreen> {
           if (record == null)
             TextButton(
               onPressed: _busy ? null : () => _install(entry),
-              child: const Text('Install'),
+              child: Text(context.l10n.install),
             )
           else if (hasUpdate)
             TextButton(

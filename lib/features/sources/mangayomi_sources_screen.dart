@@ -142,7 +142,7 @@ class _MangayomiSourcesScreenState extends State<MangayomiSourcesScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const ListTile(title: Text('Add repository')),
+            ListTile(title: Text(context.l10n.addRepository)),
             for (final (index, label, icon) in [
               (1, 'Anime', Icons.play_circle_outline_rounded),
               (2, 'Manga', Icons.menu_book_rounded),
@@ -247,7 +247,7 @@ class _MangayomiSourcesScreenState extends State<MangayomiSourcesScreen>
     final remove = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove repository?'),
+        title: Text(context.l10n.removeRepository2),
         content: const Text(
           'Installed sources stay on this device. Only this repository entry is removed.',
         ),
@@ -751,14 +751,14 @@ class _MangayomiSourcesScreenState extends State<MangayomiSourcesScreen>
                     }
                     if (action == 'remove') _removeRepository(repository);
                   },
-                  itemBuilder: (_) => const [
+                  itemBuilder: (_) => [
                     PopupMenuItem(
                       value: 'check',
-                      child: Text('Check for updates'),
+                      child: Text(context.l10n.checkForUpdates),
                     ),
                     PopupMenuItem(
                       value: 'remove',
-                      child: Text('Remove repository'),
+                      child: Text(context.l10n.removeRepository),
                     ),
                   ],
                 ),
@@ -903,7 +903,7 @@ class _MangayomiSourcesScreenState extends State<MangayomiSourcesScreen>
           minimumSize: const Size(96, 36),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        child: const Text('Installed'),
+        child: Text(context.l10n.installed),
       );
     }
     final isUpdate = installed != null;

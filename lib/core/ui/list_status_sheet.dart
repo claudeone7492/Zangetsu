@@ -20,6 +20,7 @@ import '../theme/app_text.dart';
 import '../tracker/tracker.dart';
 import '../tracker/tracker_hub.dart';
 import '../../features/auth/auth_cubit.dart';
+import '../../l10n/l10n.dart';
 
 /// Sentinel popped by [ListStatusSheet] for the "Remove from list" row.
 const String _kRemove = '__remove__';
@@ -284,7 +285,7 @@ class ListStatusSheet extends StatelessWidget {
                       Icons.folder_outlined,
                       color: AppColors.textSecondary,
                     ),
-                    title: const Text('Categories'),
+                    title: Text(context.l10n.categories),
                     trailing: const Icon(
                       Icons.chevron_right_rounded,
                       color: AppColors.textSecondary,

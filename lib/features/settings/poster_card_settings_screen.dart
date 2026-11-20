@@ -9,6 +9,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/ui/poster_card.dart';
 import '../../core/ui/settings_widgets.dart';
+import '../../l10n/l10n.dart';
 
 const _previewItem = MediaItem(
   id: 'tmdb:tv:76479',
@@ -333,13 +334,19 @@ class _PosterCardSettingsScreenState extends State<PosterCardSettingsScreen> {
         SizedBox(
           width: double.infinity,
           child: SegmentedButton<PosterCardSize>(
-            segments: const [
-              ButtonSegment(value: PosterCardSize.small, label: Text('Small')),
+            segments: [
+              const ButtonSegment(
+                value: PosterCardSize.small,
+                label: Text('Small'),
+              ),
               ButtonSegment(
                 value: PosterCardSize.standard,
-                label: Text('Default'),
+                label: Text(context.l10n.defaultLabel),
               ),
-              ButtonSegment(value: PosterCardSize.large, label: Text('Large')),
+              const ButtonSegment(
+                value: PosterCardSize.large,
+                label: Text('Large'),
+              ),
             ],
             selected: {size},
             onSelectionChanged: (selected) => _change(save(selected.first)),

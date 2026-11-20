@@ -14,6 +14,7 @@ import '../tv/tv_list_focusable.dart';
 import 'anilist_custom_lists_sheet.dart';
 import '../tracker/tracker.dart';
 import '../tracker/tracker_item_url.dart';
+import '../../l10n/l10n.dart';
 
 /// Per-card editor for ONE tracker's library entry (AniList / MAL). Unlike the
 /// own-list sheet ([showListStatusSheet]) — which mirrors a change to every
@@ -355,7 +356,7 @@ class _TrackerEntrySheetState extends State<_TrackerEntrySheet> {
           Icons.playlist_add_rounded,
           color: AppColors.textSecondary,
         ),
-        title: const Text('Custom lists'),
+        title: Text(context.l10n.customLists),
         subtitle: Text(
           n == 0 ? 'Not in any' : widget.customLists.join(', '),
           maxLines: 1,

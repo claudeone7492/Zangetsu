@@ -45,7 +45,8 @@ Future<List<Map<String, dynamic>>?> showMangayomiFilterSheet(
               Expanded(
                 child: ListView(
                   children: [
-                    for (final filter in selected) _filterRow(filter, update),
+                    for (final filter in selected)
+                      _filterRow(context, filter, update),
                   ],
                 ),
               ),
@@ -57,7 +58,11 @@ Future<List<Map<String, dynamic>>?> showMangayomiFilterSheet(
   );
 }
 
-Widget _filterRow(Map<String, dynamic> filter, StateSetter update) {
+Widget _filterRow(
+  BuildContext context,
+  Map<String, dynamic> filter,
+  StateSetter update,
+) {
   final name = filter['name']?.toString() ?? '';
   final kind = filter['type_name']?.toString() ?? '';
   switch (kind) {
@@ -98,10 +103,10 @@ Widget _filterRow(Map<String, dynamic> filter, StateSetter update) {
         title: Text(name),
         trailing: DropdownButton<int>(
           value: state.clamp(0, 2),
-          items: const [
-            DropdownMenuItem(value: 0, child: Text('Any')),
-            DropdownMenuItem(value: 1, child: Text('Include')),
-            DropdownMenuItem(value: 2, child: Text('Exclude')),
+          items: [
+            DropdownMenuItem(value: 0, child: Text(context.l10n.any)),
+            const DropdownMenuItem(value: 1, child: Text('Include')),
+            const DropdownMenuItem(value: 2, child: Text('Exclude')),
           ],
           onChanged: (value) => update(() => filter['state'] = value),
         ),
@@ -123,7 +128,8 @@ Widget _filterRow(Map<String, dynamic> filter, StateSetter update) {
         title: Text(name),
         children: [
           for (final child in children)
-            if (child is Map) _filterRow(child.cast<String, dynamic>(), update),
+            if (child is Map)
+              _filterRow(context, child.cast<String, dynamic>(), update),
         ],
       );
     case 'SortFilter':

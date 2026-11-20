@@ -14,6 +14,7 @@ import 'app_dialog.dart';
 import 'global_messenger.dart';
 import 'tracker_badge.dart';
 import 'tracker_sync_sheet.dart';
+import '../../l10n/l10n.dart';
 
 /// Tracking entry point on phone: one row per connected tracker, each showing
 /// what that tracker matched and its own progress, plus a "Sync all at once"
@@ -270,12 +271,12 @@ class _TrackerListSheetState extends State<TrackerListSheet> {
         PopupMenuItem<String>(
           value: 'open',
           enabled: hasUrl,
-          child: const Text('Open in browser'),
+          child: Text(context.l10n.openInBrowser),
         ),
         PopupMenuItem<String>(
           value: 'copy',
           enabled: hasUrl,
-          child: const Text('Copy link'),
+          child: Text(context.l10n.copyLink),
         ),
         if (onList)
           PopupMenuItem<String>(
@@ -368,7 +369,7 @@ class _TrackerListSheetState extends State<TrackerListSheet> {
                     backgroundColor: AppColors.accent,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: const Text('Sync all at once'),
+                  child: Text(context.l10n.syncAllAtOnce),
                 ),
               ),
             ],

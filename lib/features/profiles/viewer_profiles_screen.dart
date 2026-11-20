@@ -258,7 +258,7 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Turn off'),
+            child: Text(context.l10n.turnOff),
           ),
         ],
       ),
@@ -314,7 +314,7 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Later'),
+            child: Text(context.l10n.later),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),

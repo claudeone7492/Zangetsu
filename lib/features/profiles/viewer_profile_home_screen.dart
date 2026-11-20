@@ -18,6 +18,7 @@ import '../settings/settings_screen.dart';
 import '../settings/donate_screen.dart';
 import 'viewer_profile_editor_screen.dart';
 import 'viewer_profiles_screen.dart';
+import '../../l10n/l10n.dart';
 
 class ViewerProfileHomeScreen extends StatelessWidget {
   const ViewerProfileHomeScreen({super.key});
@@ -55,7 +56,7 @@ class ViewerProfileHomeScreen extends StatelessWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.settings_outlined),
-              title: const Text('App settings'),
+              title: Text(context.l10n.appSettingsBundle),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 _openSettings(context);
@@ -67,7 +68,7 @@ class ViewerProfileHomeScreen extends StatelessWidget {
                 builder: (_, state) => state.isLoggedIn
                     ? ListTile(
                         leading: const Icon(Icons.tv_outlined),
-                        title: const Text('Pair a TV'),
+                        title: Text(context.l10n.pairATV),
                         onTap: () {
                           Navigator.of(sheetContext).pop();
                           Navigator.of(context).push(PairTvScreen.route());

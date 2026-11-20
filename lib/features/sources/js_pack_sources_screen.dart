@@ -80,7 +80,7 @@ class _JsPackSourcesScreenState extends State<JsPackSourcesScreen> {
     final url = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add repo'),
+        title: Text(context.l10n.addRepo),
         content: TextField(
           controller: controller,
           autofocus: true,

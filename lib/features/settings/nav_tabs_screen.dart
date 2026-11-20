@@ -515,7 +515,7 @@ class _NavTabsScreenState extends State<NavTabsScreen> {
               else
                 TextButton(
                   onPressed: _resetGlassTint,
-                  child: const Text('Reset'),
+                  child: Text(context.l10n.reset),
                 ),
             ],
           ),

@@ -186,9 +186,9 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                     }
                   },
                   itemBuilder: (_) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'rename',
-                      child: Text('Rename'),
+                      child: Text(context.l10n.rename),
                     ),
                     const PopupMenuItem(
                       value: 'folder',

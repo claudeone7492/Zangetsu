@@ -92,7 +92,7 @@ Future<void> _showRecoveryCode(
           TextButton.icon(
             onPressed: () => Clipboard.setData(ClipboardData(text: code)),
             icon: const Icon(Icons.copy_rounded),
-            label: const Text('Copy'),
+            label: Text(context.l10n.copy),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -730,7 +730,7 @@ class _PinSetupSheetState extends State<_PinSetupSheet> {
                             _pin.clear();
                             _confirm.clear();
                           }),
-                    child: const Text('Back'),
+                    child: Text(context.l10n.back),
                   ),
               ],
             ),
