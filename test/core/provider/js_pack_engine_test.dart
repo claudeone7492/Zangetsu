@@ -108,7 +108,9 @@ void main() {
       expect(JsPackEngine.forSourceId('vega:x'), JsPackEngine.vega);
       expect(JsPackEngine.forSourceId('sora:x'), JsPackEngine.sora);
       expect(JsPackEngine.forSourceId('sky:x'), JsPackEngine.skystream);
-      expect(JsPackEngine.forSourceId('hiki:x'), JsPackEngine.hiki);
+      // `hiki:` is NOT a JS-pack family: real `.hiki` files are dexed Kotlin
+      // and are hosted natively (see HikariBridge), so it must not route here.
+      expect(JsPackEngine.forSourceId('hiki:x'), isNull);
       expect(JsPackEngine.forSourceId('kot:x'), JsPackEngine.kotatsu);
       expect(JsPackEngine.forSourceId('anikoto'), isNull);
       expect(JsPackEngine.forSourceId('us:foo'), isNull);
@@ -241,7 +243,9 @@ void main() {
     });
 
     test('maps Hikari dialect names onto the canonical slots', () {
-      final js = wrapJsPackModule('hiki:probe', _hikariModuleJs);
+      // The dialect shim is family-agnostic; `hiki:` itself is no longer a JS
+      // family (native dex host), so use a real one here.
+      final js = wrapJsPackModule('nuvio:probe', _hikariModuleJs);
       expect(js.contains("'getDetail', 'getItem'"), isTrue);
       expect(js.contains("'getVideoSources', 'getStreams'"), isTrue);
     });

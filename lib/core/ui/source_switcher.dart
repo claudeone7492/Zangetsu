@@ -17,6 +17,7 @@ import '../mode/content_mode_cubit.dart';
 import '../playback/pinned_sources.dart';
 import '../models/provider_info.dart';
 import '../playback/playback_prefs.dart';
+import '../hikari/hikari_manager.dart';
 import '../provider/cloudstream_provider.dart';
 import '../provider/provider_manager.dart';
 import '../universal/universal_manager.dart';
@@ -254,6 +255,25 @@ SourceBuckets categorizedSources() {
       icon: p is AniyomiProvider ? SourceIconStore.urlFor(p.pkg) : null,
     ));
   }
+  // Hikari `.hiki` extensions — Kotlin scrapers, so they can be either a
+  // series source (anime bucket) or a film source (movies bucket); the
+  // extension declares which. Same isRegistered guard as the Mihon block
+  // below: plenty of existing tests build a GetIt without HikariManager.
+  if (sl.isRegistered<HikariManager>()) {
+    for (final p in sl<HikariManager>().all) {
+      final row = (
+        id: p.sourceId,
+        label: 'Hikari · ${p.displayName}',
+        repo: 'Hikari',
+        icon: (p.info.iconUrl?.isNotEmpty ?? false) ? p.info.iconUrl : null,
+      );
+      if (p.providerType == ProviderType.anime) {
+        anime.add(row);
+      } else {
+        movies.add(row);
+      }
+    }
+  }
   // Mihon providers — always manga; keyed by their `mihon:` sourceId. Only the
   // manga bucket, never anime/movies/nsfw, so TvSourcePicker (which reads
   // anime/movies/nsfw and has no mode filter) renders exactly as before.
@@ -390,6 +410,13 @@ ProviderType sourceTypeOf(String id) {
     final p = sl<CloudStreamManager>().get(id);
     return p is CloudStreamProvider ? p.providerType : ProviderType.anime;
   }
+  // Native `.hiki` extensions are Kotlin scrapers for film/TV — typed from
+  // their own media type so a series reads as anime and a film as movie.
+  if (id.startsWith('hiki:')) {
+    final p =
+        sl.isRegistered<HikariManager>() ? sl<HikariManager>().get(id) : null;
+    return p?.providerType ?? ProviderType.anime;
+  }
   // LNReader novel extensions. Same reasoning as the Mihon line right below:
   // a dedicated `lnr:` prefix, checked first, types these as novel without
   // touching the `mihon:`/`ani:` lines — no GetIt lookup needed since an
@@ -436,9 +463,14 @@ ProviderType _typeOfFromMap(String id, Map<String, String> typeMap) {
     return p is CloudStreamProvider ? p.providerType : ProviderType.anime;
   }
   // Must stay in lockstep with [sourceTypeOf]'s branches — this twin is what
-  // filterBucketsForMode uses, so without them a `lnr:`/`mihon:` row would
-  // resolve to anime here and get filtered straight out of the novel/manga
-  // bucket it was just put in.
+  // filterBucketsForMode uses, so without them a `hiki:`/`lnr:`/`mihon:` row
+  // would resolve to anime here and get filtered straight out of the bucket it
+  // was just put in.
+  if (id.startsWith('hiki:')) {
+    final p =
+        sl.isRegistered<HikariManager>() ? sl<HikariManager>().get(id) : null;
+    return p?.providerType ?? ProviderType.anime;
+  }
   if (id.startsWith('lnr:')) return ProviderType.novel;
   if (id.startsWith('mihon:')) return ProviderType.manga;
   if (id.startsWith('mg:')) {

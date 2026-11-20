@@ -4,6 +4,8 @@ import 'package:zangetsu_source_bridge/zangetsu_source_bridge.dart';
 
 import '../aniyomi/aniyomi_extension_service.dart';
 import '../aniyomi/aniyomi_repo.dart';
+import '../hikari/hikari_extension_service.dart';
+import '../hikari/hikari_repo.dart';
 import '../lnreader/lnreader_extension_service.dart';
 import '../mangayomi/mangayomi_manager.dart';
 import '../mihon/mihon_extension_service.dart';
@@ -46,6 +48,7 @@ class SourcesBackup {
     Future<List<AniyomiRepoEntry>> Function(String repoBaseUrl)?
         fetchMihonIndex,
     LnReaderExtensionService? lnreader,
+    HikariExtensionService? hikari,
     MangayomiManager? mangayomi,
     UniversalManager? universal,
     List<JsPackManager>? packs,
@@ -54,6 +57,7 @@ class SourcesBackup {
         _mihon = mihon,
         _fetchMihonIndex = fetchMihonIndex ?? MihonRepo.fetchIndex,
         _lnr = lnreader,
+        _hikari = hikari,
         _mangayomi = mangayomi,
         _universal = universal,
         _packs = packs ?? const <JsPackManager>[];
@@ -78,6 +82,10 @@ class SourcesBackup {
 
   /// Null in tests that don't need LNReader restore.
   final LnReaderExtensionService? _lnr;
+
+  /// Null on non-Android platforms or in tests that don't need Hikari restore
+  /// (`.hiki` extensions are dexed Kotlin, so they only exist on Android).
+  final HikariExtensionService? _hikari;
 
   final MangayomiManager? _mangayomi;
 
@@ -130,6 +138,10 @@ class SourcesBackup {
   /// - `aniyomiPkgs` — installed Aniyomi extension package names.
   /// - `mihonRepoUrls` — tracked Mihon (manga) repo base URLs.
   /// - `mihonPkgs` — installed Mihon extension package names.
+  /// - `hikariRepoUrls` — tracked Hikari (`.hiki`) repo index URLs.
+  /// - `hikariSources` — installed Hikari extension provider ids.
+  /// - `hikariSourceUrls` — `{sourceId: .hiki url}` so a restore can re-download
+  ///   an extension the catalogue no longer lists.
   /// - `lnreaderRepoUrls` — tracked LNReader (novel) repo index URLs.
   /// - `lnreaderPkgs` — installed LNReader (novel) plugin ids.
   /// - `mangayomiRepoUrls` — tracked Mangayomi repository URLs.
@@ -147,6 +159,9 @@ class SourcesBackup {
         'aniyomiPkgs': _readAniyomiPkgs(),
         'mihonRepoUrls': _readMihonRepoUrls(),
         'mihonPkgs': _readMihonPkgs(),
+        'hikariRepoUrls': _readHikariRepoUrls(),
+        'hikariSources': _readHikariSourceIds(),
+        'hikariSourceUrls': _readHikariSourceUrls(),
         'lnreaderRepoUrls': _readLnReaderRepoUrls(),
         'lnreaderPkgs': _readLnReaderPkgs(),
         'mangayomiRepoUrls': _mangayomi?.repositories
@@ -344,6 +359,80 @@ class SourcesBackup {
           // installFromRepo never throws — [] means the install failed.
           final providers = await _mihon.installFromRepo(entry);
           if (providers.isEmpty) failures.add('Mihon extension: ${entry.name}');
+        }
+      }
+    }
+
+    // Hikari repos (union into the Box<String> list) -------------------------
+    final hikariRepoUrls =
+        (data['hikariRepoUrls'] as List?)?.cast<String>() ?? const <String>[];
+    if (hikariRepoUrls.isNotEmpty) {
+      try {
+        final box = Hive.isBoxOpen(kHikariReposBox)
+            ? Hive.box<String>(kHikariReposBox)
+            : await openBoxSafely<String>(kHikariReposBox);
+        for (final url in hikariRepoUrls) {
+          if (box.values.contains(url)) continue;
+          await box.add(url);
+        }
+      } catch (_) {
+        failures.add('Hikari repos');
+      }
+    }
+
+    // Hikari extensions (re-download from any tracked repo's index) -----------
+    final hikariSources =
+        (data['hikariSources'] as List?)?.cast<String>() ?? const <String>[];
+    if (hikariSources.isNotEmpty && _hikari != null) {
+      // install() persists its record only when this box is open.
+      if (!Hive.isBoxOpen(HikariExtensionService.installedBoxName)) {
+        try {
+          await openBoxSafely<dynamic>(HikariExtensionService.installedBoxName);
+        } catch (_) {}
+      }
+      final installedIds = _hikari.installed().map((e) => e.sourceId).toSet();
+      final missing =
+          hikariSources.where((id) => !installedIds.contains(id)).toList();
+      if (missing.isNotEmpty) {
+        // Match on the DOWNLOAD URL, not the name. A repo entry's `name` is the
+        // catalogue's label while our source id carries the provider id the
+        // archive itself declares — `51CG` vs `hiki:51cg` — so name matching
+        // misses almost every extension. The URL is what the record stores.
+        final entriesByUrl = <String, HikariRepoEntry>{};
+        final repoUrls = <String>{
+          ...hikariRepoUrls,
+          if (Hive.isBoxOpen(kHikariReposBox))
+            ...Hive.box<String>(kHikariReposBox).values,
+          kDefaultHikariRepo,
+        };
+        for (final url in repoUrls) {
+          final repo = await _hikari.fetchRepo(url);
+          if (repo == null) continue;
+          for (final e in repo.entries) {
+            entriesByUrl.putIfAbsent(e.url, () => e);
+          }
+        }
+        // A backup also carries the URL each extension came from, which
+        // survives even when the tracked repo list or the catalogue itself
+        // changed. Build the entry from it when the index no longer lists it.
+        final savedUrls =
+            (data['hikariSourceUrls'] as Map?)?.cast<String, dynamic>() ??
+            const <String, dynamic>{};
+        for (final id in missing) {
+          final savedUrl = (savedUrls[id] ?? '').toString();
+          final entry =
+              entriesByUrl[savedUrl] ??
+              (savedUrl.isEmpty
+                  ? null
+                  : HikariRepoEntry(name: id, url: savedUrl, version: 1));
+          if (entry == null) {
+            failures.add('Hikari extension: $id');
+            continue;
+          }
+          // install() never throws — null means the install failed.
+          if (await _hikari.install(entry) == null) {
+            failures.add('Hikari extension: ${entry.name}');
+          }
         }
       }
     }
@@ -610,6 +699,22 @@ class SourcesBackup {
   List<String> _readMihonRepoUrls() => Hive.isBoxOpen(_mihonReposBoxName)
       ? Hive.box<String>(_mihonReposBoxName).values.toList()
       : const [];
+
+  /// Tracked Hikari repo index URLs (empty when the box isn't open).
+  List<String> _readHikariRepoUrls() => Hive.isBoxOpen(kHikariReposBox)
+      ? Hive.box<String>(kHikariReposBox).values.toList()
+      : const [];
+
+  /// Installed Hikari provider ids (`hiki:<id>`), empty when not wired.
+  List<String> _readHikariSourceIds() =>
+      _hikari?.installed().map((e) => e.sourceId).toList() ?? const [];
+
+  /// The `.hiki` download URL per installed Hikari source id, so a restore can
+  /// re-download an extension the catalogue no longer lists.
+  Map<String, String> _readHikariSourceUrls() => {
+    for (final e in _hikari?.installed() ?? const <HikariInstalled>[])
+      if (e.repoUrl.isNotEmpty) e.sourceId: e.repoUrl,
+  };
 
   /// Installed Mihon extension package names (empty when the box isn't open).
   List<String> _readMihonPkgs() =>

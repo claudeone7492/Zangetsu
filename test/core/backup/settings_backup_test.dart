@@ -115,6 +115,18 @@ void _driftGuard() {
       'provider_repos': 'sources bundle',
       'cs_repos': 'sources bundle',
       'aniyomi_installed': 'sources bundle',
+      'aniyomi_repos': 'sources bundle',
+      'mihon_installed': 'sources bundle',
+      'mihon_repos': 'sources bundle',
+      'hikari_installed': 'sources bundle',
+      'hikari_repos': 'sources bundle',
+      'lnreader_repos': 'sources bundle',
+      // A one-shot "community sheet already shown" flag. Device-local by
+      // nature — a restore must not suppress it on a device that never saw it.
+      'app_flags': 'device-local one-shot UI flags',
+      // Last cloud-pull timestamps for the library sync throttle. Restoring
+      // another device's timestamps would stall this device's first pull.
+      'library_sync_meta': 'device-local sync throttle',
       'lnreader_plugins': 'sources bundle',
       'universal_scrapers': 'sources bundle',
       // The TV guide cache — refetched from its XMLTV feeds on any device.
@@ -128,7 +140,6 @@ void _driftGuard() {
       'vega_packs': 'sources bundle',
       'sora_packs': 'sources bundle',
       'skystream_packs': 'sources bundle',
-      'hiki_packs': 'sources bundle',
       'kotatsu_packs': 'sources bundle',
       // User data — carried by the library backup, not settings.
       'my_list': 'library backup',
@@ -163,7 +174,11 @@ void _driftGuard() {
 
     test('every settings box is either backed up or explicitly excluded', () {
       final declared = <String>{};
-      final re = RegExp(r"boxName\s*=\s*'([a-z0-9_]+)'");
+      // Matches every declaration shape in lib/, not just `boxName = '…'`:
+      // families also use `installedBoxName`, `kFooReposBox`, `_flagsBox`,
+      // `syncMetaBox`. The narrower pattern silently skipped them, which made
+      // this guard pass by not looking.
+      final re = RegExp(r"[A-Za-z_]*[Bb]ox(?:Name)?\s*=\s*'([a-z0-9_]+)'");
       for (final f in Directory('lib').listSync(recursive: true)) {
         if (f is! File || !f.path.endsWith('.dart')) continue;
         for (final m in re.allMatches(f.readAsStringSync())) {

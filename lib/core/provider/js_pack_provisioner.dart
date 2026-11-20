@@ -28,9 +28,6 @@ const Map<JsPackEngine, List<String>> kDefaultPackRepoUrls = {
   JsPackEngine.skystream: [
     'https://raw.githubusercontent.com/akashdh11/skystream-plugins/main/index.json',
   ],
-  JsPackEngine.hiki: [
-    'https://raw.githubusercontent.com/codegeasse1/hikari-extensions/main/index.json',
-  ],
   JsPackEngine.kotatsu: [
     'https://raw.githubusercontent.com/KotatsuApp/kotatsu-parsers/main/index.json',
   ],

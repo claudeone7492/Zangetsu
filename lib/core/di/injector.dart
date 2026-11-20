@@ -145,6 +145,8 @@ import '../mihon/mihon_extension_service.dart';
 import '../mihon/mihon_manager.dart';
 import '../mihon/mihon_provider.dart';
 import '../mihon/mihon_repo.dart';
+import '../hikari/hikari_extension_service.dart';
+import '../hikari/hikari_manager.dart';
 import '../../features/auth/auth_cubit.dart';
 import '../../features/auth/migration_bridge.dart';
 import '../../features/auth/tv_pairing_service.dart';
@@ -792,6 +794,14 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   final mihonManager = MihonManager();
   sl.registerSingleton<MihonManager>(mihonManager);
 
+  // Native `.hiki` extension registry (`hiki:` sources). Registered on every
+  // platform for the same reason as MihonManager above — it's an in-memory map
+  // that touches no channel, so `sl<HikariManager>()` can never throw. The
+  // Android-only gate is on the boot load below, which is the only thing that
+  // constructs a HikariProviderAdapter.
+  final hikariManager = HikariManager();
+  sl.registerSingleton<HikariManager>(hikariManager);
+
   // LNReader novel-extension registry — the novel twin of MihonManager above.
   // Unlike Mihon, LNReader plugins are plain JS (no native APK/DEX), so there's
   // no Platform.isAndroid gate here — same reasoning as the JS provider path.
@@ -937,7 +947,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
     debugPrint('[boot] universal pack install failed: $e');
   }
 
-  // JS plugin-pack families (nuvio/vega/sora/sky/hiki/kotatsu). One manager
+  // JS plugin-pack families (nuvio/vega/sora/sky/kotatsu). One manager
   // per family, all running on the shared QuickJS host (`manager`), each with
   // its own Hive box and id prefix. Boot only reads installed modules; the
   // module code itself loads on demand the first time a source is used.
@@ -1011,6 +1021,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
         aniyomi: AniyomiExtensionService(),
         mihon: MihonExtensionService(),
         lnreader: lnrService,
+        hikari: Platform.isAndroid ? HikariExtensionService() : null,
         mangayomi: mangayomiManager,
         universal: universalManager,
         packs: packManagers,
@@ -1282,6 +1293,45 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
     }
   });
 
+  // Native `.hiki` extension reload — the Hikari twin of the Mihon step above,
+  // and load-bearing for the same two reasons:
+  //
+  //  1. It OPENS the `hikari_installed` box, which `HikariExtensionService`
+  //     only writes to when open — so without this an install would look like
+  //     it worked and then vanish on the next launch.
+  //  2. It is the single Platform.isAndroid gate for the whole Hikari stack
+  //     (`.hiki` files are DEX, loaded through DexClassLoader). Off Android
+  //     nothing loads, so no HikariProviderAdapter is ever constructed and
+  //     every `hiki:` id simply fails to resolve.
+  Future.microtask(() async {
+    if (!Platform.isAndroid) return;
+    try {
+      if (!Hive.isBoxOpen(HikariExtensionService.installedBoxName)) {
+        await openBoxSafely<dynamic>(HikariExtensionService.installedBoxName);
+      }
+      // Repo-URL box, opened here so the Sources screen can add a repo at any
+      // time and the choice survives a restart.
+      if (!Hive.isBoxOpen(kHikariReposBox)) {
+        await openBoxSafely<String>(kHikariReposBox);
+      }
+      final box = Hive.box<dynamic>(HikariExtensionService.installedBoxName);
+      if (box.isEmpty) {
+        return; // nothing installed yet
+      }
+      await HikariExtensionService().loadInstalledInto(hikariManager);
+      if (sl.isRegistered<ActiveSourceCubit>()) {
+        final changed = sl<ActiveSourceCubit>().reapplySaved(
+          (id) => hikariManager.get(id) != null,
+        );
+        if (changed && sl.isRegistered<HomeCubit>()) {
+          sl<HomeCubit>().load();
+        }
+      }
+    } catch (e, st) {
+      debugPrint('[hikari] boot step failed (non-fatal): $e\n$st');
+    }
+  });
+
   // Global cubit so any widget can read/write the active source id and
   // descendants can react via BlocBuilder/BlocListener. Persists the pick to a
   // Hive box and restores it on launch, validated against the providers that
@@ -1325,6 +1375,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
     SourceRepository(
       manager: manager,
       csManager: csManager,
+      hikariManager: hikariManager,
       aniManager: aniyomiManager,
       mihonManager: mihonManager,
       lnrManager: lnrManager,

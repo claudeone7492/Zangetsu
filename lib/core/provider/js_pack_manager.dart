@@ -17,7 +17,7 @@ import 'js_pack_module.dart';
 import 'provider_manager.dart';
 
 /// Owns every installed JS plugin-pack source for ONE family (`nuvio:`,
-/// `vega:`, `sora:`, `sky:`, `hiki:`, `kot:`).
+/// `vega:`, `sora:`, `sky:`, `kot:`).
 ///
 /// The six families are the same thing — a repo of JS modules, each module a
 /// source — so they share this manager rather than each re-implementing

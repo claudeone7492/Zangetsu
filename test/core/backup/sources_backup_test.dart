@@ -346,13 +346,13 @@ void main() {
   test('a pack family that is not wired on the restoring device is skipped',
       () async {
     final original = JsPackManager(
-      engine: JsPackEngine.hiki,
+      engine: JsPackEngine.kotatsu,
       runtime: ProviderManager(dio: Dio()),
     );
     await original.init();
     await original.restore([
       const JsPackModule(
-        engine: JsPackEngine.hiki,
+        engine: JsPackEngine.kotatsu,
         id: 'probe',
         name: 'Probe',
         code: 'module.exports = {};',
@@ -366,7 +366,7 @@ void main() {
       packs: [original],
     ).build();
 
-    // Restoring device has no hiki manager at all: the entry is ignored
+    // Restoring device has no kotatsu manager at all: the entry is ignored
     // rather than counted as a failure.
     final failures = await SourcesBackup(
       _StubRepos([]),

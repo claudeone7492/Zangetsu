@@ -5,6 +5,7 @@ import '../../core/ui/settings_widgets.dart';
 
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
+import '../../core/hikari/hikari_manager.dart';
 import '../../core/lnreader/lnreader_manager.dart';
 import '../../core/mangayomi/mangayomi_manager.dart';
 import '../../core/provider/js_pack_engine.dart';
@@ -26,6 +27,7 @@ import '../../core/ui/source_switcher.dart';
 import 'aniyomi_sources_screen.dart';
 import 'bloc/sources_state.dart';
 import 'cloudstream_sources_screen.dart';
+import 'hikari_sources_screen.dart';
 import 'stremio_sources_screen.dart';
 import 'lnreader_sources_screen.dart';
 import 'js_pack_sources_screen.dart';
@@ -107,6 +109,9 @@ class _HubPhoneView extends StatelessWidget {
     // Mihon (manga extensions) boot-loads the same way Aniyomi does — the
     // load step is Android-only (M7) — so the row is gated identically.
     final showMihon = Platform.isAndroid;
+    // Hikari extensions are dexed Kotlin (`.hiki`) loaded through
+    // DexClassLoader, so like CloudStream they exist on Android only.
+    final showHikari = Platform.isAndroid;
     // LNReader (novel sources) is a JS provider, same as Zangetsu — no
     // platform gate needed. Gated on registration instead, so a minimal-GetIt
     // test that never registers LnReaderManager doesn't crash reading it,
@@ -118,6 +123,7 @@ class _HubPhoneView extends StatelessWidget {
     final csRepos = csGroups.length;
     final aniCount = sl<AniyomiManager>().all.length;
     final mihonCount = sl<MihonManager>().all.length;
+    final hikariCount = showHikari ? sl<HikariManager>().all.length : 0;
     final lnrCount = showLnReader
         ? sl<LnReaderManager>().installedSources.length
         : 0;
@@ -152,6 +158,7 @@ class _HubPhoneView extends StatelessWidget {
         (showCs ? csInstalled : 0) +
         (showAniyomi ? aniCount : 0) +
         (showMihon ? mihonCount : 0) +
+        (showHikari ? hikariCount : 0) +
         (showLnReader ? lnrCount : 0) +
         mangayomiCount +
         packCount;
@@ -165,6 +172,7 @@ class _HubPhoneView extends StatelessWidget {
     final activeIsCs = activeId.startsWith('cs:');
     final activeIsAni = activeId.startsWith('ani:');
     final activeIsMihon = activeId.startsWith('mihon:');
+    final activeIsHikari = activeId.startsWith('hiki:');
     final activeIsLnReader = activeId.startsWith('lnr:');
     final activeIsMangayomi = activeId.startsWith('mg:');
     final activePack = JsPackEngine.forSourceId(activeId);
@@ -173,6 +181,7 @@ class _HubPhoneView extends StatelessWidget {
         !activeIsCs &&
         !activeIsAni &&
         !activeIsMihon &&
+        !activeIsHikari &&
         !activeIsMangayomi &&
         activePack == null;
 
@@ -281,6 +290,18 @@ class _HubPhoneView extends StatelessWidget {
               onTap: () => open(const CloudStreamSourcesScreen()),
             ),
           ],
+          if (showHikari) ...[
+            const SizedBox(height: 12),
+            _EcoRow(
+              icon: Icons.bolt_outlined,
+              title: 'Hikari',
+              desc: 'Hikari .hiki extensions',
+              info: '$hikariCount sources',
+              active: activeId.startsWith('hiki:'),
+              updateCount: 0,
+              onTap: () => open(const HikariSourcesScreen()),
+            ),
+          ],
           if (showAniyomi) ...[
             const SizedBox(height: 12),
             _EcoRow(
@@ -361,6 +382,11 @@ String _activeSourceLabel(String id) {
   }
   if (id.startsWith('mihon:')) {
     return sl<MihonManager>().get(id)?.displayName ?? id;
+  }
+  if (id.startsWith('hiki:')) {
+    return sl.isRegistered<HikariManager>()
+        ? (sl<HikariManager>().get(id)?.displayName ?? id)
+        : id;
   }
   if (id.startsWith('lnr:')) {
     return sl.isRegistered<LnReaderManager>()

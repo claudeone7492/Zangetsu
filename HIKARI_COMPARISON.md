@@ -34,20 +34,21 @@ input to Hikari, which is why the two catalogues overlap.
 | Engine / ecosystem | Zangetsu (ours) | Hikari | Notes |
 |---|:---:|:---:|---|
 | Own JS sources (`.js`) | ✅ `lib/core/provider/cloudstream_provider.dart` | ✅ `.hiki` (`hiki/HikariPluginManager`) | Different SDK, same shape |
+| **`.hiki` Kotlin extensions** | ✅ `lib/core/hikari/` + `com/hikari/ext` host (`hiki:`) | ✅ `hiki/HikariPluginManager` | Dexed Kotlin, `DexClassLoader` |
 | CloudStream `.cs3` | ✅ | ✅ `cs3/Cs3PluginManager` | Hikari adds a native cloudstream3 API layer (MainAPI, nicehttp `app`, M3u8Helper, WebViewResolver, CloudflareKiller) |
 | Aniyomi extensions | ✅ | ✅ `aniyomi/AniyomiExtensionManager` | |
 | Mihon / Tachiyomi manga | ✅ | ✅ `manga/MangaExtensionManager` | |
 | LNReader novel plugins | ✅ | ✅ `lnreader/LnReaderPluginManager` | |
 | Mangayomi JS sources | ✅ | ❌ (removed) | Hikari comment: Mangayomi repo "index never serves a catalogue" |
 | Stremio addons | ✅ | ✅ `providers/StremioAddon.kt` | |
-| **Universal JSON-rule scrapers** | ❌ | ✅ `providers/UniversalScraper.kt` | HTML-selector **and** JSON-API mode, no code |
-| **Nuvio providers** | ❌ | ✅ `nuvio/NuvioPluginManager` | QuickJS runtime, TMDB resolver, crypto bridge |
-| **Vega providers** | ❌ | ✅ `providers/vega/VegaPluginManager` | CommonJS modules in embedded QuickJS |
-| **SkyStream plugins** | ❌ | ✅ `skystream/SkyStreamPluginManager` | Stage 3 shim |
-| **Sora modules** | ❌ | ✅ `sora/SoraPluginManager` | anime/films/series/manga/novels |
-| **Anymex plugins** | ❌ | ✅ `anymex/AnymexPluginManager` | anime + manga (kegareta-sauces) |
-| **Kotatsu parsers** | ❌ | ✅ `kotatsu/KotatsuRegistry` | KotatsuApp/kotatsu-parsers |
-| **IPTV engine (Xtream/M3U)** | 🟡 bundled `iptv` JS provider only | ✅ full engine `iptv/` (5.6k LOC) | See §4 |
+| **Universal JSON-rule scrapers** | ✅ `lib/core/universal/` (`us:`) | ✅ `providers/UniversalScraper.kt` | HTML-selector **and** JSON-API mode, no code |
+| **Nuvio providers** | ✅ JS-pack family (`nuvio:`) | ✅ `nuvio/NuvioPluginManager` | QuickJS runtime, TMDB resolver, crypto bridge |
+| **Vega providers** | ✅ JS-pack family (`vega:`) | ✅ `providers/vega/VegaPluginManager` | CommonJS modules in embedded QuickJS |
+| **SkyStream plugins** | ✅ JS-pack family (`sky:`) | ✅ `skystream/SkyStreamPluginManager` | Stage 3 shim |
+| **Sora modules** | ✅ JS-pack family (`sora:`) | ✅ `sora/SoraPluginManager` | anime/films/series/manga/novels |
+| **Anymex plugins** | ✅ seeded as Mangayomi repos (`mg:`) | ✅ `anymex/AnymexPluginManager` | anime + manga (kegareta-sauces) |
+| **Kotatsu parsers** | ✅ JS-pack family (`kot:`) | ✅ `kotatsu/KotatsuRegistry` | KotatsuApp/kotatsu-parsers |
+| **IPTV engine (Xtream/M3U)** | ✅ `lib/core/live/` (EPG, Xtream, DVR, sports, catch-up, parental) | ✅ full engine `iptv/` (5.6k LOC) | See §4 |
 | **Telegram (TDLib) streaming** | ❌ | ✅ `telegram/` | `TdStream`, channels, links, web |
 
 Engines we have that Hikari does not: **Mangayomi JS**.
@@ -64,7 +65,7 @@ Legend: ✅ present · 🟡 partial/disabled · ❌ absent.
 | Manga mode + reader | ✅ | ✅ | `features/reader/manga_reader_screen.dart` / `ui/screens/MangaReaderScreen.kt` |
 | Novel mode + reader | ✅ | ✅ | `features/reader/novel_reader_screen.dart` / `NovelReaderScreen.kt` |
 | Metadata catalogues (TMDB/MAL/AniList/Simkl) | ✅ | ✅ | `lib/core/zmode/` / `data/*Metadata*` |
-| Detail-page **title-as-logo** header | 🟡 text/logo | ✅ | `docs/DETAIL_HEADER.md` (ours: `detail_screen.dart`) |
+| Detail-page **title-as-logo** header | ✅ | ✅ | `lib/core/metadata/title_logo_service.dart` / `docs/DETAIL_HEADER.md` |
 | Player: mpv / Media3 | ✅ (media_kit/mpv) | ✅ (Media3) | `features/player/mpv_player_pool.dart` / `player/PlayerActivity.kt` |
 | Per-source headers + subtitles on streams | ✅ | ✅ | `subtitle_sync_engine.dart` / `DefaultPlayback.kt` |
 | Customisable player controls / skins | ✅ | ✅ | `player_controls_config.dart` / `player/PlayerSkins.kt` |
@@ -78,9 +79,9 @@ Legend: ✅ present · 🟡 partial/disabled · ❌ absent.
 | Trailers | ✅ | ✅ | `features/trailer/` / `trailer` refs |
 | Voice search | ✅ | ❌ | `phone_voice_search_sheet.dart` / — |
 | Episode comments | ✅ | ✅ | `episode_comments_sheet.dart` / comment refs |
-| **AI dub (TTS) + Dub audio (neural)** | ❌ | ✅ | — / `dub/` (27 files: AiDub, NeuralTtsService, PiperVoice, SpeakerVoices) |
+| **AI dub (TTS) + Dub audio (neural)** | ✅ | ✅ | `lib/core/dub/` (`dub_engine`, `neural_dub_engine`, `http_tts_service`, `dub_narrator`) / `dub/` (27 files) |
 | **Voice scan** (speaker detect / gender) | ❌ | ✅ | — / `dub/VoiceScan*`, `SpeakerEmbedder.kt` |
-| **Speech-to-subtitle (Whisper)** | ❌ | ✅ | ours: voice *search* only / `dub/SubtitleGen*`, `VoiceTranscriber.kt` |
+| **Speech-to-subtitle (Whisper)** | ✅ hosted | ✅ | `lib/core/dub/voice_transcriber.dart` / `dub/SubtitleGen*`, `VoiceTranscriber.kt` |
 | Subtitle translation | ✅ | ✅ | `subtitle_translate_service.dart` / `translat` refs |
 | Manga page translation | ✅ | ❌ | `lib/core/reading/manga_translation/` / — |
 | Download from internet subtitles | ✅ | ✅ | `subtitle_download_service.dart` / `subtitles/SubtitleSites.kt` |
@@ -88,22 +89,22 @@ Legend: ✅ present · 🟡 partial/disabled · ❌ absent.
 | Offline export | ✅ | ✅ | EPUB export / "downloads (offline + export)" |
 | Favourites / continue-watching | ✅ | ✅ | `lib/core/state`, history / roadmap Stage 3 |
 | Trackers (AniList/MAL/Simkl/MangaBaka) | ✅ | 🟡 (stub) | `lib/core/tracker/` / `tracker/TrackerApi.kt`, "Trakt" still roadmap |
-| **Stats page** (watch/read time) | ❌ | ✅ | — / `ui/screens/StatsScreen.kt`, `docs/STATS.md` |
-| **App lock (PIN + biometric)** | ❌ | ✅ | — / `lock/`, `docs/APP_LOCK.md` |
-| **Pair & sync over Wi-Fi (QR)** | ❌ | ✅ | — / `pair/PairProtocol.kt`, `docs/PAIRING.md` |
-| Personal catalogs / collections | 🟡 genres/folders | ✅ | `features/home/genres_screen.dart` / `ui/screens/CollectionScreens.kt` |
+| **Stats page** (watch/read time) | ✅ | ✅ | `lib/features/stats/` / `ui/screens/StatsScreen.kt`, `docs/STATS.md` |
+| **App lock (PIN + biometric)** | ✅ | ✅ | `lib/core/privacy/app_lock.dart`, `features/privacy/` / `lock/`, `docs/APP_LOCK.md` |
+| **Pair & sync over Wi-Fi (QR)** | ✅ | ✅ | `lib/core/pair/pair_protocol.dart`, `features/backup/pair_sync_screen.dart` / `pair/PairProtocol.kt`, `docs/PAIRING.md` |
+| Personal catalogs / collections | ✅ | ✅ | `lib/core/collections/collection_store.dart`, `features/home/collections_screen.dart` / `ui/screens/CollectionScreens.kt` |
 | Poster styling controls | ✅ | ✅ | `poster_card_settings_screen.dart` / `PosterStyle.kt` |
 | Adult-content switch / NSFW gate | ✅ | ✅ | `lib/core/privacy/` / `data/NsfwGate.kt` |
-| In-app log / diagnostics viewer | 🟡 crash reports | ✅ | `lib/core/logging/crash_reports.dart` / `ui/screens/LogsScreen.kt` |
-| Extension settings gear (per provider) | 🟡 | ✅ | `source_settings_screen.dart` / `docs/EXTENSION_SETTINGS.md` |
+| In-app log / diagnostics viewer | ✅ | ✅ | `lib/core/logging/app_logger.dart`, `features/settings/logs_screen.dart` / `ui/screens/LogsScreen.kt` |
+| Extension settings gear (per provider) | ✅ | ✅ | `source_settings_screen.dart` (`hasSourceSettings`/`openSourceSettings`) / `docs/EXTENSION_SETTINGS.md` |
 | Profiles | ✅ | ✅ | `lib/features/profiles/` / `ProfilesScreen.kt` |
 | Announcements / in-app notifications | ✅ | 🟡 | `lib/features/announce/` / — |
 | Watch Together / Watch Party | 🟡 built, disabled | ❌ | `watch_together_controller.dart` (`isEnabled=false`) / — |
 | **Music mode (JioSaavn / lossless)** | ❌ | ✅ | — / `music/` (30 files, `VxJioSaavnApi`, `VxLosslessApi`, `MusicService`) |
-| **IPTV: EPG / XMLTV guide** | ❌ | ✅ | — / `iptv/EpgStore.kt`, `XmltvParser.kt`, `LiveTvGuideScreen.kt` |
-| **IPTV: DVR / recordings / reminders** | ❌ | ✅ | — / `LiveTvRecord*`, `LiveTvReminders.kt` |
-| **IPTV: Xtream Codes** | ❌ | ✅ | — / `iptv/XtreamApi.kt` |
-| **IPTV: sports leagues / catch-up / parental** | ❌ | ✅ | — / `LiveTvSports.kt`, `CatchupUrlBuilder.kt`, `LiveTvParental.kt` |
+| **IPTV: EPG / XMLTV guide** | ✅ | ✅ | `lib/core/live/{xmltv_parser,epg_store}.dart`, `features/live/live_tv_guide_screen.dart` / `iptv/EpgStore.kt`, `XmltvParser.kt`, `LiveTvGuideScreen.kt` |
+| **IPTV: DVR / recordings / reminders** | ✅ | ✅ | `lib/core/live/{dvr_store,dvr_capture_service}.dart`, `features/live/recordings_screen.dart` / `LiveTvRecord*`, `LiveTvReminders.kt` |
+| **IPTV: Xtream Codes** | ✅ | ✅ | `lib/core/live/{xtream_api,xtream_account_store}.dart`, `features/live/xtream_accounts_screen.dart` / `iptv/XtreamApi.kt` |
+| **IPTV: sports leagues / catch-up / parental** | ✅ | ✅ | `lib/core/live/{sports_catalog,catchup_url,live_parental}.dart` / `LiveTvSports.kt`, `CatchupUrlBuilder.kt`, `LiveTvParental.kt` |
 | **Telegram channel streaming** | ❌ | ✅ | — / `telegram/` |
 | Android TV interface | ✅ | ✅ | `features/shell/root_shell_tv.dart` / Compose TV rail |
 | iOS / tvOS | ✅ beta | ❌ | `ios/`, `tvos/` / Android-only |
@@ -124,49 +125,47 @@ Ranked by size of the thing we would have to build.
    *Nothing equivalent in ours.*
 
 ### B. IPTV / Live TV, at real scale
-Ours is a bundled `providers/iptv.js` (211 lines) that lists M3U channels from
-iptv-org and lets Search filter them (`features/live/live_tv_screen.dart`, 1026 lines).
-Hikari's `iptv/` is ~5,600 lines across 20 files and adds:
-3. **EPG / XMLTV program guide** (`EpgStore.kt`, `XmltvParser.kt`, `LiveTvGuideScreen.kt`).
-4. **DVR** — scheduled recordings, recordings browser, record service, reminders
-   (`LiveTvRecordService.kt`, `LiveTvRecordings.kt`, `LiveTvRecordScheduler.kt`, `LiveTvReminders.kt`).
-5. **Xtream Codes** account support (`XtreamApi.kt`).
-6. **Sports league catalogue + catch-up URLs + parental control**
-   (`SportsLeagueCatalog.kt`, `CatchupUrlBuilder.kt`, `LiveTvParental.kt`).
-7. **Live on-demand / torrent-stream bridge** (`LiveTvVod.kt`, `LiveTvTorrentStream.kt`).
+Ours started as a bundled `providers/iptv.js` (211 lines) listing iptv-org M3U
+channels; `lib/core/live/` now carries the engine (EPG, Xtream, DVR, sports,
+catch-up, parental, VOD routing) and `live_tv_screen.dart` the UI.
+Hikari's `iptv/` is ~5,600 lines across 20 files.
+3. ✅ **EPG / XMLTV program guide** — `lib/core/live/xmltv_parser.dart`, `epg_store.dart`, `features/live/live_tv_guide_screen.dart`.
+4. ✅ **DVR** — `lib/core/live/dvr_store.dart`, `dvr_capture_service.dart`, `features/live/recordings_screen.dart`.
+5. ✅ **Xtream Codes** — `lib/core/live/xtream_api.dart`, `xtream_account_store.dart`, `features/live/xtream_accounts_screen.dart`.
+6. ✅ **Sports / catch-up / parental** — `sports_catalog.dart`, `catchup_url.dart`, `live_parental.dart`.
+7. ✅ **Live VOD / torrent-stream bridge** — `lib/core/live/live_vod.dart` (`planPlayback`).
 
 ### C. Provider engines we don't speak
-8. **Universal JSON-rule scrapers** (`providers/UniversalScraper.kt`) — user adds a
-   site by pasting HTML-selector or JSON-API config; no code, no APK. Big differentiator.
-9. **Nuvio providers** (QuickJS) — `nuvio/`.
-10. **Vega providers** (CommonJS) — `providers/vega/`.
-11. **SkyStream plugins** — `skystream/`.
-12. **Sora modules** — `sora/`.
-13. **Anymex plugins** — `anymex/`.
-14. **Kotatsu parsers** — `kotatsu/`.
+8. ✅ **Universal JSON-rule scrapers** — `lib/core/universal/` (`us:`).
+9. ✅ **Nuvio providers** — JS-pack family (`nuvio:`).
+10. ✅ **Vega providers** — JS-pack family (`vega:`).
+11. ✅ **SkyStream plugins** — JS-pack family (`sky:`).
+12. ✅ **Sora modules** — JS-pack family (`sora:`).
+13. ✅ **Anymex plugins** — seeded as Mangayomi repos (`mg:`).
+14. ✅ **Kotatsu parsers** — JS-pack family (`kot:`).
 
 ### D. Player / audio features
-15. **AI Dub** — live TTS narration of subtitles (`dub/AiDub.kt`, `LocalTtsVoice`,
-    `GoogleTtsVoice`, `PiperVoice`, `NeuralTtsService`).
-16. **Dub audio** — per-character neural voices, downloaded voice packs, original-voice scan.
+15. ✅ **AI Dub** — `lib/core/dub/` + `features/player/dub_sheet.dart`.
+16. ✅ **Dub audio (neural voices, hosted)** — `neural_dub_engine.dart`, `http_tts_service.dart`.
 17. **Voice scan** — speaker embedding, gender detection, voice-cut
-    (`VoiceScanRunner.kt`, `SpeakerEmbedder.kt`, `VoiceCut.kt`).
-18. **Speech-to-subtitle** — Whisper transcription (`SubtitleGenClient.kt`, `VoiceTranscriber.kt`).
-19. **Volume boost processor** (`VolumeBoostProcessor.kt`).
+    (`VoiceScanRunner.kt`, `SpeakerEmbedder.kt`, `VoiceCut.kt`). *Still open: needs a
+    native speaker-embedding model.*
+18. ✅ **Speech-to-subtitle** — `lib/core/dub/voice_transcriber.dart` (hosted Whisper).
+19. ✅ **Volume boost processor** — Player > Audio boost, 100–200%.
 
 ### E. UX / system features
-20. **Stats page** — watch/read totals and time (`StatsScreen.kt`, `docs/STATS.md`).
-21. **App lock** — PBKDF2 PIN + biometric, screen-off lock (`lock/`, `docs/APP_LOCK.md`).
-22. **Pair & sync over Wi-Fi** — QR + 6-char code, UDP discovery, no account/cloud
-    (`pair/`, `docs/PAIRING.md`).
-23. **Logs & diagnostics viewer** — two rolling logs + crash log, share/save/clear
-    (`ui/screens/LogsScreen.kt`, `docs/LOGGING.md`).
-24. **Detail header title-as-logo** behaviour (`docs/DETAIL_HEADER.md`).
-25. **Per-extension settings gear** with engine-specific dialogs (`docs/EXTENSION_SETTINGS.md`).
+20. ✅ **Stats page** — `lib/features/stats/`.
+21. ✅ **App lock** — `lib/core/privacy/app_lock.dart`, `features/privacy/`.
+22. ✅ **Pair & sync over Wi-Fi** — `lib/core/pair/pair_protocol.dart`.
+23. ✅ **Logs & diagnostics viewer** — `AppLogger` + `features/settings/logs_screen.dart`.
+24. ✅ **Detail header title-as-logo** — `TitleLogoService`.
+25. ✅ **Per-extension settings gear** — `hasSourceSettings`/`openSourceSettings`.
 
 ### F. Smaller
-26. **`.hiki` extension SDK** (native Kotlin provider API, `hiki/`).
+26. ✅ **`.hiki` extension SDK** — `lib/core/hikari/` + vendored `com/hikari/ext` host,
+    `DexClassLoader`-backed, prefix `hiki:`.
 27. **`.cs3` native API compatibility layer** (MainAPI/nicehttp/M3u8Helper/etc.).
+    *Still open: incremental shim work against the CloudStream catalogue.*
 
 ---
 

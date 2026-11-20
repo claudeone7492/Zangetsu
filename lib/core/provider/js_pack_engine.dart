@@ -23,10 +23,6 @@ enum JsPackEngine {
   /// `akashdh11/skystream-plugins`. Plain JS modules.
   skystream(prefix: 'sky:', box: 'skystream_packs', label: 'SkyStream'),
 
-  /// `codegeasse1/hikari-extensions`. Hikari SDK modules (`module.exports`
-  /// with `id/name/site/getHome/getItem/getStreams`).
-  hiki(prefix: 'hiki:', box: 'hiki_packs', label: 'Hikari'),
-
   /// `KotatsuApp/kotatsu-parsers` — Kotatsu parsers are Kotlin; the curated
   /// JS-port subset is served in the same module shape, so it rides this
   /// engine like the others rather than needing a native host.

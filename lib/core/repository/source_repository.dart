@@ -33,6 +33,8 @@ import '../i18n/source_languages.dart';
 import '../prefs/source_lang_prefs.dart';
 import '../provider/cf_solve_needed.dart';
 import '../provider/cloudstream_provider.dart';
+import '../hikari/hikari_manager.dart';
+import '../hikari/hikari_provider.dart';
 import '../universal/universal_manager.dart';
 import '../universal/universal_provider.dart';
 import '../provider/provider_manager.dart';
@@ -54,6 +56,7 @@ class SourceRepository implements CatalogueRepository {
   SourceRepository({
     required ProviderManager manager,
     required CloudStreamManager csManager,
+    HikariManager? hikariManager,
     required AniyomiManager aniManager,
     required ActiveSourceCubit activeSource,
     required PlaybackPrefs prefs,
@@ -71,6 +74,7 @@ class SourceRepository implements CatalogueRepository {
        _animeLangs = animeLangs,
        _manager = manager,
        _csManager = csManager,
+       _hikariManager = hikariManager,
        _aniManager = aniManager,
        _active = activeSource,
        _prefs = prefs,
@@ -96,6 +100,10 @@ class SourceRepository implements CatalogueRepository {
 
   final ProviderManager _manager;
   final CloudStreamManager _csManager;
+
+  /// Native `.hiki` extensions (`hiki:<id>`). Null in tests that don't wire it
+  /// — those ids then simply never resolve, same as any unknown id.
+  final HikariManager? _hikariManager;
   final AniyomiManager _aniManager;
   final MihonManager _mihonManager;
   final LnReaderManager? _lnrManager;
@@ -105,7 +113,7 @@ class SourceRepository implements CatalogueRepository {
   /// wire it — `us:` ids then simply never resolve, same as any unknown id.
   final UniversalManager? _universalManager;
 
-  /// JS plugin-pack families (`nuvio:`/`vega:`/`sora:`/`sky:`/`hiki:`/`kot:`),
+  /// JS plugin-pack families (`nuvio:`/`vega:`/`sora:`/`sky:`/`kot:`),
   /// keyed by engine. Empty in tests that don't wire them — those ids then
   /// simply never resolve, same as any unknown id.
   final Map<JsPackEngine, JsPackManager> _packManagers;
@@ -178,6 +186,12 @@ class SourceRepository implements CatalogueRepository {
   /// True for CloudStream source ids (`cs:<name>`), which route to the native
   /// plugin host instead of the JS runtime.
   static bool _isCloudStream(String id) => id.startsWith('cs:');
+
+  /// True for native `.hiki` extension ids (`hiki:<providerId>`).
+  ///
+  /// Deliberately NOT a JS-pack prefix: `.hiki` files are dexed Kotlin, so they
+  /// route to the native [HikariManager], not the JS runtime.
+  static bool _isHikari(String id) => id.startsWith('hiki:');
 
   /// True for Aniyomi source ids (`ani:<sourceId>`).
   static bool _isAniyomi(String id) => id.startsWith('ani:');
@@ -398,6 +412,11 @@ class SourceRepository implements CatalogueRepository {
     ..._csManager.enabled.map(
       (p) => (id: p.sourceId, name: p.displayName, lang: null),
     ),
+    // Native `.hiki` extensions. Loaded extensions only — an extension that
+    // failed to load is absent from the manager, so it can't be searched.
+    ...?_hikariManager?.enabled.map(
+      (p) => (id: p.sourceId, name: p.displayName, lang: null),
+    ),
     // Aniyomi sources — NSFW entries filtered when the pref is off.
     ..._aniManager.all
         .where(
@@ -443,7 +462,7 @@ class SourceRepository implements CatalogueRepository {
       ..._universalManager.all
           .where((c) => !c.nsfw || _prefs.nsfwSources)
           .map((c) => (id: 'us:${c.id}', name: c.name, lang: c.lang)),
-    // JS plugin-pack sources (nuvio/vega/sora/sky/hiki/kotatsu). NSFW entries
+    // JS plugin-pack sources (nuvio/vega/sora/sky/kotatsu). NSFW entries
     // reuse the general "show NSFW sources" toggle, same default (off).
     for (final pack in _packManagers.values)
       ...pack.all
@@ -481,7 +500,10 @@ class SourceRepository implements CatalogueRepository {
     // is used only for the Cloudflare/browser actions, never for turning an
     // item url into an absolute one.
     final c = _csManager.get(sourceId);
-    return c is CloudStreamProvider ? c.mainUrl : '';
+    if (c is CloudStreamProvider) return c.mainUrl;
+    // Hikari extensions expose their site the same way (`HikariProvider
+    // .mainUrl`), and their item urls are absolute too.
+    return _hikariManager?.get(sourceId)?.mainUrl ?? '';
   }
 
   /// The url to actually TARGET when the user asks to solve Cloudflare for
@@ -567,6 +589,9 @@ class SourceRepository implements CatalogueRepository {
     if (_isCloudStream(sourceId)) {
       return _csManager.get(sourceId)?.displayName ?? sourceId;
     }
+    if (_isHikari(sourceId)) {
+      return _hikariManager?.get(sourceId)?.displayName ?? sourceId;
+    }
     if (_isAniyomi(sourceId)) {
       return _aniManager.get(sourceId)?.displayName ?? sourceId;
     }
@@ -604,6 +629,9 @@ class SourceRepository implements CatalogueRepository {
   bool hasSource(String sourceId) {
     if (_isCloudStream(sourceId)) {
       return _csManager.resolveCompatible(sourceId) != null;
+    }
+    if (_isHikari(sourceId)) {
+      return _hikariManager?.get(sourceId) != null;
     }
     if (_isAniyomi(sourceId)) {
       return _aniManager.get(sourceId) != null;
@@ -691,6 +719,8 @@ class SourceRepository implements CatalogueRepository {
     final BaseProvider? p;
     if (_isCloudStream(resolved)) {
       p = _csManager.resolveCompatible(resolved);
+    } else if (_isHikari(resolved)) {
+      p = _hikariManager?.get(resolved);
     } else if (_isAniyomi(resolved)) {
       p = _aniManager.get(resolved);
     } else if (_isMihon(resolved)) {
@@ -792,6 +822,7 @@ class SourceRepository implements CatalogueRepository {
   ///   * `mihon_latest`  → the Mihon manga provider's `latest(page:)`
   ///   * `lnr_popular` → the LNReader novel provider's `popular(page:)`
   ///   * `cs_mainpage` → the CloudStream provider's `browseMainPage(id, page)`
+  ///   * `hiki_catalog` → the Hikari extension's `catalogPage(catalog, page)`
   ///
   /// Never throws — any failure (unknown kind, wrong provider type, provider
   /// error) degrades to an empty list so the caller just stops the scroll.
@@ -828,6 +859,10 @@ class SourceRepository implements CatalogueRepository {
         case 'cs_mainpage':
           return (p is CloudStreamProvider && more.categoryId != null)
               ? p.browseMainPage(more.categoryId!, page)
+              : const [];
+        case 'hiki_catalog':
+          return (p is HikariProviderAdapter && more.categoryId != null)
+              ? p.catalogPage(more.categoryId!, page)
               : const [];
         default:
           return const [];

@@ -798,6 +798,14 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
         // channels; inert until Dart calls enqueue.
         TorrentDownloadEngine(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
 
+        // Hikari channel: load `.hiki` extensions (dexed Kotlin against the
+        // vendored com.hikari.ext SDK) and drive their search/catalog/detail/
+        // streams. Own executor inside the bridge; inert until Dart loads one.
+        com.spyou.watch_app.hikari.HikariBridge(
+            applicationContext,
+            flutterEngine.dartExecutor.binaryMessenger,
+        )
+
         // CloudStream channel: install repos and drive `.cs3` plugins' search /
         // load / loadLinks. All handlers run on [csExecutor] (network + plugin
         // work is blocking) and post back via runOnUiThread; any failure is

@@ -14,6 +14,8 @@ import 'package:watch_app/core/aniyomi/aniyomi_provider.dart';
 import 'package:watch_app/core/aniyomi/aniyomi_source_info.dart';
 import 'package:watch_app/core/app_mode.dart';
 import 'package:watch_app/core/di/injector.dart' show sl;
+import 'package:watch_app/core/hikari/hikari_manager.dart';
+import 'package:watch_app/core/hikari/hikari_provider.dart';
 import 'package:watch_app/core/hive/safe_box.dart';
 import 'package:watch_app/core/mihon/mihon_manager.dart';
 import 'package:watch_app/core/mihon/mihon_provider.dart';
@@ -87,11 +89,37 @@ MihonProvider mihonSource({required int id, required String name, String lang = 
       ),
     );
 
+/// Builds a Hikari `.hiki` source row. [providerId] becomes the `hiki:<id>`
+/// source id the test asserts on; [tvTypes] decides which picker bucket the
+/// row lands in (`movie` → movies, anything else → anime).
+HikariProviderAdapter hikariSource({
+  required String providerId,
+  required String name,
+  List<String> tvTypes = const ['series'],
+  String mainUrl = 'https://example.test',
+  String? iconUrl,
+}) => HikariProviderAdapter(
+  path: '/tmp/$providerId.hiki',
+  info: HikariLoadedInfo(
+    name: name,
+    version: 1,
+    mainClass: 'com.example.$providerId',
+    providerId: providerId,
+    providerName: name,
+    mainUrl: mainUrl,
+    description: '',
+    iconUrl: iconUrl,
+    tvTypes: tvTypes,
+  ),
+  lang: '',
+);
+
 /// Registers everything `SourceSwitcher.showPicker` needs. Call after
 /// `Hive.init`, and pair with [disposePickerDeps] before `sl.reset()`.
 Future<void> registerPickerDeps({
   List<AniyomiProvider> aniyomi = const [],
   List<MihonProvider> mihon = const [],
+  List<HikariProviderAdapter> hikari = const [],
   ContentMode? mode,
 }) async {
   await ProviderRegistry.init();
@@ -117,6 +145,13 @@ Future<void> registerPickerDeps({
     final mihonManager = MihonManager()..registerAll(mihon);
     sl.registerSingleton<MihonManager>(mihonManager);
   }
+  // Registered even when empty, so a test that asserts on a hiki: row does not
+  // depend on this helper's seeding to make sourceTypeOf's lookup succeed.
+  final hikariManager = HikariManager();
+  for (final p in hikari) {
+    hikariManager.register(p);
+  }
+  sl.registerSingleton<HikariManager>(hikariManager);
   sl.registerSingleton<AppMode>(const AppMode(isTv: false));
 
   // Seed the mode BEFORE the cubit reads it. Calling setMode afterwards would
