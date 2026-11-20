@@ -51,6 +51,7 @@ class SettingsBackup {
     'debrid_prefs', // debrid mode + active service (tokens are not here)
     'daily_picks_prefs', // the daily-picks digest switch
     'dub_prefs', // AI Dub voice, rate, pitch, volume
+    'music_prefs', // music streaming quality ceiling
   ];
 
   /// Returns a map of `{boxName: {key: value, ...}}` for every open box.
