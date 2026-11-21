@@ -1427,7 +1427,13 @@ class _TvExoPlayerScreenState extends State<TvExoPlayerScreen> {
   Future<void> _openSubtitleSearch() async {
     final query = widget.showTitle ?? '';
     final hasKey = sl<PlaybackPrefs>().subtitleApiKey.isNotEmpty;
-    if (!hasKey && !OnlineSubtitleSearch.canUseFrameX(widget.tmdbId)) {
+    // The keyless OpenSubtitles.org mirror can answer with an IMDb id or a
+    // title, so the key is only required when there is nothing to search by.
+    final hasImdb = (widget.imdbId ?? '').trim().isNotEmpty;
+    if (!hasKey &&
+        !OnlineSubtitleSearch.canUseFrameX(widget.tmdbId) &&
+        query.trim().isEmpty &&
+        !hasImdb) {
       _toast('Add an OpenSubtitles API key in Settings to search.');
       return;
     }

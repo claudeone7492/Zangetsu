@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watch_app/core/playback/framex_subtitle_source.dart';
 import 'package:watch_app/core/playback/online_subtitle_search.dart';
+import 'package:watch_app/core/playback/opensubtitles_org_source.dart';
 import 'package:watch_app/core/playback/subtitle_search_service.dart';
 
 /// Stands in for OpenSubtitles: returns whatever it was given and records that
@@ -56,6 +57,39 @@ class _FakeFrameX extends FrameXSubtitleSource {
       '/tmp/framex.vtt';
 }
 
+/// Stands in for the keyless OpenSubtitles.org mirror: no HTTP.
+class _FakeOrg extends OpenSubtitlesOrgSource {
+  _FakeOrg({this.rows = const []});
+
+  List<OpenSubtitlesOrgHit> rows;
+  int searches = 0;
+
+  @override
+  Future<List<OpenSubtitlesOrgHit>> search({
+    String? query,
+    String? imdbId,
+    int? season,
+    int? episode,
+  }) async {
+    searches++;
+    return rows;
+  }
+
+  @override
+  Future<String?> download(OpenSubtitlesOrgHit hit) async => '/tmp/org.srt';
+}
+
+/// Every test gets the keyless fake, so a real network call never happens.
+OnlineSubtitleSearch _search({
+  SubtitleSearchService? openSubtitles,
+  FrameXSubtitleSource? framex,
+  OpenSubtitlesOrgSource? org,
+}) => OnlineSubtitleSearch(
+  openSubtitles: openSubtitles,
+  framex: framex,
+  openSubtitlesOrg: org ?? _FakeOrg(),
+);
+
 SubtitleSearchResult _openSubResult(String id, String name, String lang) =>
     SubtitleSearchResult(id: id, name: name, language: lang, fileId: 1);
 
@@ -74,7 +108,7 @@ void main() {
           ),
         ],
       );
-      final search = OnlineSubtitleSearch(
+      final search = _search(
         openSubtitles: openSub,
         framex: framex,
       );
@@ -94,7 +128,7 @@ void main() {
 
     test('skips OpenSubtitles when no key is set', () async {
       final openSub = _FakeOpenSubtitles(keyed: false);
-      final search = OnlineSubtitleSearch(
+      final search = _search(
         openSubtitles: openSub,
         framex: _FakeFrameX(
           subs: const [FrameXSubtitle(url: 'https://x/a.vtt', language: 'en')],
@@ -108,7 +142,7 @@ void main() {
 
     test('skips FrameX when there is no TMDB id', () async {
       final framex = _FakeFrameX();
-      final search = OnlineSubtitleSearch(
+      final search = _search(
         openSubtitles: _FakeOpenSubtitles(
           results: [_openSubResult('1', 'Only source', 'en')],
         ),
@@ -122,7 +156,7 @@ void main() {
     });
 
     test('one provider failing does not sink the other', () async {
-      final search = OnlineSubtitleSearch(
+      final search = _search(
         openSubtitles: _FakeOpenSubtitles(
           throws: const SubtitleSearchException('quota reached'),
         ),
@@ -145,7 +179,7 @@ void main() {
     });
 
     test('reports the failure when the only keyed provider fails', () async {
-      final search = OnlineSubtitleSearch(
+      final search = _search(
         openSubtitles: _FakeOpenSubtitles(
           throws: const SubtitleSearchException('quota reached'),
         ),
@@ -162,13 +196,46 @@ void main() {
     test('an empty query does no work', () async {
       final openSub = _FakeOpenSubtitles();
       final framex = _FakeFrameX();
-      final search = OnlineSubtitleSearch(
+      final search = _search(
         openSubtitles: openSub,
         framex: framex,
       );
       expect(await search.search('   ', tmdbId: 1), isEmpty);
       expect(openSub.searchCalls, 0);
       expect(framex.lookups, 0);
+    });
+
+    test('adds keyless OpenSubtitles.org rows and filters by language', () async {
+      final org = _FakeOrg(
+        rows: const [
+          OpenSubtitlesOrgHit(
+            fileId: '1',
+            label: 'EN release',
+            language: 'en',
+            format: 'srt',
+            downloadUrl: 'https://x/1',
+          ),
+          OpenSubtitlesOrgHit(
+            fileId: '2',
+            label: 'FR release',
+            language: 'fr',
+            format: 'srt',
+            downloadUrl: 'https://x/2',
+          ),
+        ],
+      );
+      final search = _search(
+        openSubtitles: _FakeOpenSubtitles(keyed: false),
+        framex: _FakeFrameX(),
+        org: org,
+      );
+
+      final hits = await search.search('Dune', language: 'en');
+
+      expect(org.searches, 1);
+      expect(hits, hasLength(1));
+      expect(hits.single.source, 'OpenSubtitles.org');
+      expect(hits.single.label, 'EN release');
     });
   });
 
