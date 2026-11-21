@@ -3777,5 +3777,7 @@
   "userscriptMatches": "Correspondências, uma por linha",
   "userscriptCode": "Código do script de usuário",
   "userscriptAdded": "Script de usuário adicionado",
-  "userscriptInvalid": "Cole um script de usuário com um cabeçalho @name ou @match"
+  "userscriptInvalid": "Cole um script de usuário com um cabeçalho @name ou @match",
+  "slowConnection": "Modo de conexão lenta",
+  "slowConnectionBody": "Duplica os tempos limite quando os streams demoram a iniciar."
 }

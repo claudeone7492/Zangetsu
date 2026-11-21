@@ -7800,4 +7800,11 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get userscriptInvalid =>
       '@name veya @match başlığı olan bir kullanıcı betiği yapıştırın';
+
+  @override
+  String get slowConnection => 'Yavaş bağlantı modu';
+
+  @override
+  String get slowConnectionBody =>
+      'Yayınlar başlamakta uzun sürdüğünde ağ zaman aşımlarını ikiye katla.';
 }

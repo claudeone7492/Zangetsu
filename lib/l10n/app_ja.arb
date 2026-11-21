@@ -3737,5 +3737,7 @@
   "userscriptMatches": "一致パターン（1 行に 1 つ）",
   "userscriptCode": "ユーザースクリプトのコード",
   "userscriptAdded": "ユーザースクリプトを追加しました",
-  "userscriptInvalid": "@name または @match ヘッダー付きのユーザースクリプトを貼り付けてください"
+  "userscriptInvalid": "@name または @match ヘッダー付きのユーザースクリプトを貼り付けてください",
+  "slowConnection": "低速接続モード",
+  "slowConnectionBody": "ストリームの開始に時間がかかるとき、ネットワークのタイムアウトを 2 倍にします。"
 }

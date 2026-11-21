@@ -3997,5 +3997,7 @@
   "userscriptCode": "Userscript code",
   "userscriptAdded": "Userscript added",
   "userscriptInvalid": "Paste a userscript with an @name or @match header",
-  "@adListUpdated": {"description": "Number of ad-block hosts loaded.", "placeholders": {"count": {"type": "int"}}}
+  "@adListUpdated": {"description": "Number of ad-block hosts loaded.", "placeholders": {"count": {"type": "int"}}},
+  "slowConnection": "Slow connection mode",
+  "slowConnectionBody": "Double network timeouts when streams take long to start."
 }

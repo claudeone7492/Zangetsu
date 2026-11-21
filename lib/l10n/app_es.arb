@@ -3737,5 +3737,7 @@
   "userscriptMatches": "Coincidencias, una por línea",
   "userscriptCode": "Código del script de usuario",
   "userscriptAdded": "Script de usuario añadido",
-  "userscriptInvalid": "Pega un script de usuario con una cabecera @name o @match"
+  "userscriptInvalid": "Pega un script de usuario con una cabecera @name o @match",
+  "slowConnection": "Modo de conexión lenta",
+  "slowConnectionBody": "Duplica los tiempos de espera cuando los streams tardan en empezar."
 }

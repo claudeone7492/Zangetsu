@@ -7858,4 +7858,11 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get userscriptInvalid =>
       'Collez un script utilisateur avec un en-tête @name ou @match';
+
+  @override
+  String get slowConnection => 'Mode connexion lente';
+
+  @override
+  String get slowConnectionBody =>
+      'Double les délais réseau lorsque les flux mettent du temps à démarrer.';
 }

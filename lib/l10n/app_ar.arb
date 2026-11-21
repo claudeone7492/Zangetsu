@@ -3777,5 +3777,7 @@
   "userscriptMatches": "المطابقات، واحدة في كل سطر",
   "userscriptCode": "كود سكربت المستخدم",
   "userscriptAdded": "تمت إضافة سكربت المستخدم",
-  "userscriptInvalid": "الصق سكربت مستخدم يحتوي على ترويسة @name أو @match"
+  "userscriptInvalid": "الصق سكربت مستخدم يحتوي على ترويسة @name أو @match",
+  "slowConnection": "وضع الاتصال البطيء",
+  "slowConnectionBody": "ضاعف مهلات الشبكة عندما تستغرق البثوث وقتًا طويلًا للبدء."
 }

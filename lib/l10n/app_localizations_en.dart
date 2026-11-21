@@ -7769,4 +7769,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get userscriptInvalid =>
       'Paste a userscript with an @name or @match header';
+
+  @override
+  String get slowConnection => 'Slow connection mode';
+
+  @override
+  String get slowConnectionBody =>
+      'Double network timeouts when streams take long to start.';
 }

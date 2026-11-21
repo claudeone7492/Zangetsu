@@ -34,6 +34,7 @@ import '../../core/di/injector.dart';
 import '../../core/platform/apple_tv.dart';
 import '../../core/playback/external_player.dart';
 import '../../core/playback/my_list.dart';
+import '../../core/playback/net_tuning.dart';
 import '../../core/playback/playback_prefs.dart';
 import '../../core/playback/watch_history.dart';
 import '../auth/reconnect.dart';

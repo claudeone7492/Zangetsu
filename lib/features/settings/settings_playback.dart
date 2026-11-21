@@ -23,6 +23,12 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
   bool _shadersReady = ShaderPresets.downloaded;
   bool _shaderDownloading = false;
   double _shaderProgress = 0;
+  bool _slow = NetTuning.slow;
+
+  Future<void> _setSlow(bool value) async {
+    await NetTuning.setSlow(value);
+    if (mounted) setState(() => _slow = value);
+  }
 
   // The main picker: Off + the three filters. The GPU tier (Mid/High) is a
   // separate row below.
@@ -665,6 +671,17 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
                 title: context.l10n.defaultSpeed,
                 subtitle: _labelFor(_speedOptions, _prefs.defaultSpeed, '${_prefs.defaultSpeed}x'),
                 onTap: _pickSpeed,
+              ),
+              SettingsTile(
+                icon: Icons.network_check_rounded,
+                title: context.l10n.slowConnection,
+                subtitle: context.l10n.slowConnectionBody,
+                onTap: () => _setSlow(!_slow),
+                trailing: Switch.adaptive(
+                  value: _slow,
+                  activeThumbColor: AppColors.accent,
+                  onChanged: _setSlow,
+                ),
               ),
               // Video decoder + Anime4K are mpv-renderer-only — the native TV
               // player (ExoPlayer) ignores them, so hide them on TV.

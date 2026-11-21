@@ -3737,5 +3737,7 @@
   "userscriptMatches": "Correspondances, une par ligne",
   "userscriptCode": "Code du script utilisateur",
   "userscriptAdded": "Script utilisateur ajouté",
-  "userscriptInvalid": "Collez un script utilisateur avec un en-tête @name ou @match"
+  "userscriptInvalid": "Collez un script utilisateur avec un en-tête @name ou @match",
+  "slowConnection": "Mode connexion lente",
+  "slowConnectionBody": "Double les délais réseau lorsque les flux mettent du temps à démarrer."
 }

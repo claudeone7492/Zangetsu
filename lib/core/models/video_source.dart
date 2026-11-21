@@ -161,6 +161,27 @@ class VideoSource extends Equatable {
     this.drmKey,
   });
 
+  /// Rewrites the URL after a pre-flight probe resolved a wrapper page to the
+  /// direct stream, keeping every other field (audio cut, headers, subtitles).
+  VideoSource withUrlAndContainer(String newUrl, SourceContainer newContainer) =>
+      VideoSource(
+        url: newUrl,
+        quality: quality,
+        label: label,
+        container: newContainer,
+        headers: headers,
+        kind: kind,
+        audioLang: audioLang,
+        subtitles: subtitles,
+        subtitleSkewSeconds: subtitleSkewSeconds,
+        subtitleSkewAfterSeconds: subtitleSkewAfterSeconds,
+        proxyUrl: proxyUrl,
+        torrentFileIndex: torrentFileIndex,
+        bingeGroup: bingeGroup,
+        drmKid: drmKid,
+        drmKey: drmKey,
+      );
+
   VideoSource withSubtitles(List<Subtitle> tracks) => VideoSource(
     url: url,
     quality: quality,

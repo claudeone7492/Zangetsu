@@ -30,6 +30,7 @@ import '../../core/playback/hls.dart';
 import '../../core/playback/hls_segment_proxy.dart';
 import '../../core/playback/playback_prefs.dart';
 import '../../core/playback/source_health_store.dart';
+import '../../core/playback/stream_probe.dart';
 import '../../core/playback/filler_service.dart';
 import '../../core/playback/skip_service.dart';
 import '../../core/playback/subtitle_language.dart';
@@ -3575,12 +3576,19 @@ class PlayerCubit extends Cubit<PlayerState> {
               allowTorrent: true,
             )
           : await _resolveSources(epUrl);
+      var refined = out;
+      try {
+        refined = await StreamProbe.refine(out);
+      } catch (_) {
+        // A probe outage must never cost the user a playable link list.
+      }
       sw.stop();
       debugPrint(
-        '[player-timing] resolve ${sw.elapsedMilliseconds}ms (${out.length} links)',
+        '[player-timing] resolve ${sw.elapsedMilliseconds}ms '
+        '(${out.length} links, ${refined.length} playable)',
       );
-      _notePlayback(ok: out.isNotEmpty);
-      return out;
+      _notePlayback(ok: refined.isNotEmpty);
+      return refined;
     } catch (_) {
       sw.stop();
       debugPrint(

@@ -13706,6 +13706,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Paste a userscript with an @name or @match header'**
   String get userscriptInvalid;
+
+  /// No description provided for @slowConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Slow connection mode'**
+  String get slowConnection;
+
+  /// No description provided for @slowConnectionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Double network timeouts when streams take long to start.'**
+  String get slowConnectionBody;
 }
 
 class _AppLocalizationsDelegate

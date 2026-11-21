@@ -3777,5 +3777,7 @@
   "userscriptMatches": "Kecocokan, satu per baris",
   "userscriptCode": "Kode skrip pengguna",
   "userscriptAdded": "Skrip pengguna ditambahkan",
-  "userscriptInvalid": "Tempel skrip pengguna dengan header @name atau @match"
+  "userscriptInvalid": "Tempel skrip pengguna dengan header @name atau @match",
+  "slowConnection": "Mode koneksi lambat",
+  "slowConnectionBody": "Gandakan batas waktu jaringan saat streaming lama dimulai."
 }

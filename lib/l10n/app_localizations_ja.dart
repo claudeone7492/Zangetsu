@@ -7563,4 +7563,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get userscriptInvalid => '@name または @match ヘッダー付きのユーザースクリプトを貼り付けてください';
+
+  @override
+  String get slowConnection => '低速接続モード';
+
+  @override
+  String get slowConnectionBody => 'ストリームの開始に時間がかかるとき、ネットワークのタイムアウトを 2 倍にします。';
 }

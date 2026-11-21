@@ -7806,4 +7806,11 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get userscriptInvalid =>
       'Tempel skrip pengguna dengan header @name atau @match';
+
+  @override
+  String get slowConnection => 'Mode koneksi lambat';
+
+  @override
+  String get slowConnectionBody =>
+      'Gandakan batas waktu jaringan saat streaming lama dimulai.';
 }

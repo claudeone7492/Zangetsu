@@ -3737,5 +3737,7 @@
   "userscriptMatches": "Corrispondenze, una per riga",
   "userscriptCode": "Codice dello script utente",
   "userscriptAdded": "Script utente aggiunto",
-  "userscriptInvalid": "Incolla uno script utente con un'intestazione @name o @match"
+  "userscriptInvalid": "Incolla uno script utente con un'intestazione @name o @match",
+  "slowConnection": "Modalità connessione lenta",
+  "slowConnectionBody": "Raddoppia i timeout di rete quando gli stream impiegano a partire."
 }

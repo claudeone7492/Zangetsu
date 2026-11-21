@@ -7504,6 +7504,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get userscriptInvalid => '粘贴带有 @name 或 @match 头的用户脚本';
+
+  @override
+  String get slowConnection => '慢速连接模式';
+
+  @override
+  String get slowConnectionBody => '当流媒体启动较慢时，将网络超时加倍。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -15006,4 +15012,10 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get userscriptInvalid => '貼上帶有 @name 或 @match 標頭的使用者腳本';
+
+  @override
+  String get slowConnection => '慢速連線模式';
+
+  @override
+  String get slowConnectionBody => '當串流啟動較慢時，將網路逾時加倍。';
 }

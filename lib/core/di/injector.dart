@@ -32,6 +32,7 @@ import '../playback/category_store.dart';
 import '../playback/list_status_store.dart';
 import '../collections/collection_store.dart';
 import '../playback/my_list.dart';
+import '../playback/net_tuning.dart';
 import '../dub/dub_engine.dart';
 import '../dub/dub_prefs.dart';
 import '../dub/switching_dub_engine.dart';
@@ -553,6 +554,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   await AdBlock.instance.init();
   await RedirectAllow.instance.init();
   await UserscriptStore.instance.init();
+  await NetTuning.init();
   sl.registerLazySingleton<MpvPlayerPool>(
     MpvPlayerPool.new,
     dispose: (pool) => pool.clear(),

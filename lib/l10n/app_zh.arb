@@ -3737,5 +3737,7 @@
   "userscriptMatches": "匹配规则，每行一个",
   "userscriptCode": "用户脚本代码",
   "userscriptAdded": "已添加用户脚本",
-  "userscriptInvalid": "粘贴带有 @name 或 @match 头的用户脚本"
+  "userscriptInvalid": "粘贴带有 @name 或 @match 头的用户脚本",
+  "slowConnection": "慢速连接模式",
+  "slowConnectionBody": "当流媒体启动较慢时，将网络超时加倍。"
 }

@@ -3776,5 +3776,7 @@
   "userscriptMatches": "Eşleşmeler, satır başına bir tane",
   "userscriptCode": "Kullanıcı betiği kodu",
   "userscriptAdded": "Kullanıcı betiği eklendi",
-  "userscriptInvalid": "@name veya @match başlığı olan bir kullanıcı betiği yapıştırın"
+  "userscriptInvalid": "@name veya @match başlığı olan bir kullanıcı betiği yapıştırın",
+  "slowConnection": "Yavaş bağlantı modu",
+  "slowConnectionBody": "Yayınlar başlamakta uzun sürdüğünde ağ zaman aşımlarını ikiye katla."
 }

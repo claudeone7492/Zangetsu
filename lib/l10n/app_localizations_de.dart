@@ -7857,4 +7857,11 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get userscriptInvalid =>
       'Füge ein Benutzerskript mit @name- oder @match-Kopf ein';
+
+  @override
+  String get slowConnection => 'Langsame Verbindung';
+
+  @override
+  String get slowConnectionBody =>
+      'Verdopple die Netzwerk-Zeitlimits, wenn Streams lange zum Starten brauchen.';
 }

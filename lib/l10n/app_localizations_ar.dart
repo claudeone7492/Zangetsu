@@ -7834,4 +7834,11 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get userscriptInvalid =>
       'الصق سكربت مستخدم يحتوي على ترويسة @name أو @match';
+
+  @override
+  String get slowConnection => 'وضع الاتصال البطيء';
+
+  @override
+  String get slowConnectionBody =>
+      'ضاعف مهلات الشبكة عندما تستغرق البثوث وقتًا طويلًا للبدء.';
 }
