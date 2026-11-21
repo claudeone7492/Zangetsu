@@ -402,6 +402,7 @@ class _DevicesTable extends StatelessWidget {
       'Active',
       'Seen',
       'Watch',
+      'Sharing',
     ],
     rows: [
       for (final r in rows)
@@ -416,6 +417,7 @@ class _DevicesTable extends StatelessWidget {
           r.isActive ? 'active' : 'idle',
           r.lastSeenLabel.isEmpty ? '—' : r.lastSeenLabel,
           '${r.watch}',
+          r.sharingLabel,
         ],
     ],
   );

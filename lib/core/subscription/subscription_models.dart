@@ -189,6 +189,8 @@ class AdminDeviceRow {
     this.renewsAt,
     this.watch = 0,
     this.lastSeenAt,
+    this.seatOwner,
+    this.seats = 1,
   });
 
   final String fingerprint;
@@ -201,6 +203,27 @@ class AdminDeviceRow {
   final DateTime? renewsAt;
   final int watch;
   final DateTime? lastSeenAt;
+
+  /// The fingerprint this device is linked to, when it watches on someone
+  /// else's plan. Null for a device that pays for itself.
+  final String? seatOwner;
+
+  /// Devices on the plan this device is on, itself included. 1 when unshared.
+  final int seats;
+
+  /// The Sharing column: who this device rides on, or how many ride on it.
+  String get sharingLabel {
+    final owner = seatOwner;
+    if (owner != null && owner.isNotEmpty) {
+      return 'on ${_shortFingerprint(owner)}';
+    }
+    if (seats > 1) return 'owner of $seats';
+    return '—';
+  }
+
+  static String _shortFingerprint(String fp) => fp.length <= 10
+      ? fp
+      : '${fp.substring(0, 6)}…${fp.substring(fp.length - 4)}';
 
   /// Whether this device counts as "active" on the dashboard: the app checked in
   /// recently. A device the operator is looking at is only useful to know about
@@ -236,6 +259,8 @@ class AdminDeviceRow {
     renewsAt: _dt(m['renews_at']),
     watch: (m['watch'] as num?)?.toInt() ?? 0,
     lastSeenAt: _dt(m['last_seen_at']),
+    seatOwner: m['seat_owner'] as String?,
+    seats: (m['seats'] as num?)?.toInt() ?? 1,
   );
 }
 
