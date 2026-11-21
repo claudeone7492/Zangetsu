@@ -28,6 +28,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.Collections
 import org.json.JSONObject
+import com.spyou.watch_app.parity.Cs3BuiltInResolvers
 import java.io.File
 import okhttp3.Interceptor
 
@@ -891,7 +892,46 @@ class PluginHost(private val context: Context) {
                 "subtitles" to emptyList<Any?>(),
                 "done" to true,
             )
-        return sessionResult(session, done = session.done)
+        val result = sessionResult(session, done = session.done)
+        val sources = result["sources"] as? List<*>
+        if (sources.isNullOrEmpty()) {
+            // Last resort: a plugin that yields nothing (wrapper page, dead
+            // extractor) still has a page behind `data` — let the bundled
+            // resolvers look for a media URL there. Only on the empty path, so
+            // a plugin that works is never second-guessed.
+            val builtIn = builtInSources(data)
+            if (builtIn.isNotEmpty()) {
+                return mapOf(
+                    "sources" to builtIn,
+                    "subtitles" to (result["subtitles"] ?: emptyList<Any?>()),
+                    "done" to true,
+                )
+            }
+        }
+        return result
+    }
+
+    /** Bundled CS3 resolvers as a final fallback for [loadLinks] (see above). */
+    private fun builtInSources(data: String): List<Map<String, Any?>> {
+        if (!data.startsWith("http://") && !data.startsWith("https://")) {
+            return emptyList()
+        }
+        val html = runCatching {
+            runBlocking { com.lagradost.cloudstream3.app.get(data).text }
+        }.getOrNull().orEmpty()
+        if (html.isBlank()) return emptyList()
+        return Cs3BuiltInResolvers.resolve(data, html).map { url ->
+            mapOf(
+                "url" to url,
+                "name" to "Built-in",
+                "referer" to data,
+                "quality" to 0,
+                "headers" to enrichLinkHeaders(url, data, emptyMap()),
+                "isM3u8" to url.contains(".m3u8", ignoreCase = true),
+                "drmKid" to null,
+                "drmKey" to null,
+            )
+        }
     }
 
     /** Stops a resolve the viewer walked away from (back during "Finding…").
