@@ -12,6 +12,7 @@ import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.spyou.watch_app.R
 import kotlinx.coroutines.*
 import sx.proxies.peer.ProxiesPeerSDK
 import sx.proxies.peer.PeerNotification
@@ -91,7 +92,10 @@ class PeerProxyService : Service() {
         Log.d(TAG, "Starting proxy service")
 
         // Start foreground immediately
-        startForeground(NOTIFICATION_ID, createNotification("Connecting..."))
+        startForeground(
+            NOTIFICATION_ID,
+            createNotification(getString(R.string.bandwidth_share_notification_connecting)),
+        )
 
         serviceScope.launch {
             try {
@@ -116,7 +120,7 @@ class PeerProxyService : Service() {
                     },
                     onDisconnected = {
                         isConnected = false
-                        updateNotification("Disconnected - reconnecting")
+                        updateNotification(getString(R.string.bandwidth_share_notification_reconnecting))
                         runCatching { ProxiesPeerSDK.getInstance().updateStatus(ProxiesPeerSDK.Status.CONNECTING) }
                     },
                     onProxyRequest = { request ->
@@ -132,7 +136,7 @@ class PeerProxyService : Service() {
                 relayConnection?.connect()
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to start proxy", e)
-                updateNotification("Connection failed: ${e.message}")
+                updateNotification(getString(R.string.bandwidth_share_notification_failed))
             }
         }
     }
@@ -239,7 +243,7 @@ class PeerProxyService : Service() {
                 appLabel(),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Shows while the app is sharing bandwidth"
+                description = getString(R.string.bandwidth_share_channel_description)
                 setShowBadge(false)
             }
             val notificationManager = getSystemService(NotificationManager::class.java)
@@ -271,7 +275,11 @@ class PeerProxyService : Service() {
             .setContentText(status)
             .setSmallIcon(notificationIcon)
             .apply { pendingIntent?.let { setContentIntent(it) } }
-            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop", stopIntent)
+            .addAction(
+                android.R.drawable.ic_menu_close_clear_cancel,
+                getString(R.string.bandwidth_share_notification_stop),
+                stopIntent,
+            )
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()

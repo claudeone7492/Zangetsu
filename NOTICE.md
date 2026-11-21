@@ -134,5 +134,6 @@ Proxies.sx Peer SDK (android-peer-sdk)
   bandwidth sharing runs can carry this app's name instead of the SDK vendor's,
   and without a device identifier. Local changes are limited to that
   notification copy (PeerNotification.kt, ProxiesPeerSDK.Config,
-  PeerProxyService); everything else is upstream.
+  PeerProxyService, and the strings it now reads from
+  res/values/bandwidth_share_strings.xml); everything else is upstream.
 

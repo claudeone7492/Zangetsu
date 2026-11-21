@@ -6,6 +6,7 @@ import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import com.spyou.watch_app.BuildConfig
+import com.spyou.watch_app.R
 import sx.proxies.peer.ProxiesPeerSDK
 
 /**
@@ -60,7 +61,9 @@ object PeerShare {
                         // vendor. A null title falls back to the app label, and
                         // the connected text replaces upstream's
                         // "Connected as <deviceId>".
-                        notificationConnectedText = "Streaming movies",
+                        notificationConnectedText = context.getString(
+                            R.string.bandwidth_share_notification_connected,
+                        ),
                         onStatusChange = { s -> broadcast(statusName(s)) },
                     ),
                 )
