@@ -23,6 +23,7 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
       sl<AniListService>(),
       sl<MalService>(),
       sl<SimklService>(),
+      if (sl.isRegistered<TraktService>()) sl<TraktService>(),
       sl<MangaBakaService>(),
     ];
     return Scaffold(

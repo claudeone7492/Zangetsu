@@ -16,7 +16,7 @@ import '../../l10n/l10n.dart';
 
 class TvTrackerConnectScreen extends StatefulWidget {
   const TvTrackerConnectScreen({super.key, required this.trackerId});
-  final String trackerId; // 'anilist' | 'mal' | 'simkl'
+  final String trackerId; // 'anilist' | 'mal' | 'simkl' | 'trakt'
 
   @override
   State<TvTrackerConnectScreen> createState() => _TvTrackerConnectScreenState();
@@ -31,6 +31,7 @@ class _TvTrackerConnectScreenState extends State<TvTrackerConnectScreen> {
     'anilist' => context.l10n.anilist,
     'mal' => context.l10n.myAnimeList,
     'simkl' => context.l10n.simkl,
+    'trakt' => 'Trakt',
     _ => widget.trackerId,
   };
 

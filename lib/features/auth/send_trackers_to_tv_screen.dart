@@ -9,6 +9,7 @@ import '../../core/tracker/relay/tracker_relay.dart';
 import '../../core/tracker/relay/tracker_relay_crypto.dart';
 import '../../core/tracker/simkl_service.dart';
 import '../../core/tracker/tracker.dart';
+import '../../core/tracker/trakt_service.dart';
 import 'tv_pairing_service.dart';
 import '../../l10n/l10n.dart';
 
@@ -34,11 +35,13 @@ class _SendTrackersToTvScreenState extends State<SendTrackersToTvScreen> {
     (id: 'anilist', t: sl<AniListService>()),
     (id: 'mal', t: sl<MalService>()),
     (id: 'simkl', t: sl<SimklService>()),
+    if (sl.isRegistered<TraktService>()) (id: 'trakt', t: sl<TraktService>()),
   ];
 
   String _labelFor(String id, AppLocalizations l10n) => switch (id) {
     'anilist' => l10n.anilist,
     'mal' => l10n.myAnimeList,
+    'trakt' => 'Trakt',
     _ => l10n.simkl,
   };
   final _selected = <String>{};

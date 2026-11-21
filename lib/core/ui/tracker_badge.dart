@@ -25,6 +25,9 @@ class TrackerBadge extends StatelessWidget {
         return (bg: const Color(0xFF2E51A2), label: 'MAL', scale: 0.28);
       case 'simkl':
         return (bg: const Color(0xFF0B1622), label: 'SK', scale: 0.36);
+      // Trakt's red, from its own branding.
+      case 'trakt':
+        return (bg: const Color(0xFFED1C24), label: 'TR', scale: 0.32);
       default:
         return (
           bg: const Color(0xFF3A3A3C),

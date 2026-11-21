@@ -113,6 +113,7 @@ import '../anilist/anilist_store.dart';
 import '../tracker/mal_service.dart';
 import '../tracker/mangabaka_service.dart';
 import '../tracker/simkl_service.dart';
+import '../tracker/trakt_service.dart';
 import '../tracker/tracker_binding_store.dart';
 import '../tracker/tracker_hub.dart';
 import '../tracker/relay/tracker_relay.dart';
@@ -728,11 +729,14 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   sl.registerSingleton<SimklService>(SimklService(dio));
   await MangaBakaService.init();
   sl.registerSingleton<MangaBakaService>(MangaBakaService(dio));
+  await TraktService.init();
+  sl.registerSingleton<TraktService>(TraktService(dio));
   sl.registerSingleton<TrackerHub>(
     TrackerHub([
       sl<AniListService>(),
       sl<MalService>(),
       sl<SimklService>(),
+      sl<TraktService>(),
       // Reading-only: MangaBaka has no anime library, so TrackerHub.forMode
       // keeps it out of anime contexts the way it already keeps Simkl out of
       // reading ones.
@@ -749,6 +753,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
       'anilist': sl<AniListService>(),
       'mal': sl<MalService>(),
       'simkl': sl<SimklService>(),
+      'trakt': sl<TraktService>(),
       'mangabaka': sl<MangaBakaService>(),
     }),
   );

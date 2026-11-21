@@ -1,7 +1,8 @@
 import 'dart:convert';
 
 /// A relayed bundle of tracker sessions. `trackers` is keyed by the stable ids
-/// 'anilist' | 'mal' | 'simkl'; each value is that service's persisted session
+/// 'anilist' | 'mal' | 'simkl' | 'trakt' | 'mangabaka'; each value is that
+/// service's persisted session
 /// map verbatim. Only connected trackers appear.
 class TrackerBlob {
   const TrackerBlob({required this.version, required this.trackers});

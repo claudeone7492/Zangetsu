@@ -8,13 +8,15 @@ import '../../core/tracker/mal_service.dart';
 import '../../core/tracker/mangabaka_service.dart';
 import '../../core/tracker/simkl_service.dart';
 import '../../core/tracker/tracker.dart';
+import '../../core/tracker/trakt_service.dart';
 import '../../core/tv/tv_back_button.dart';
 import '../../core/tv/tv_list_focusable.dart';
 import '../../l10n/l10n.dart';
 import '../auth/tv_tracker_connect_screen.dart';
 
-/// TV-native tracker Connections: each of AniList / MAL / Simkl with its status
-/// and a D-pad Connect (per-tracker relay QR) / Disconnect (local-only).
+/// TV-native tracker Connections: each of AniList / MAL / Simkl / Trakt /
+/// MangaBaka with its status and a D-pad Connect (per-tracker relay QR) /
+/// Disconnect (local-only).
 class ConnectionsScreenTv extends StatefulWidget {
   const ConnectionsScreenTv({super.key});
 
@@ -27,6 +29,8 @@ class _ConnectionsScreenTvState extends State<ConnectionsScreenTv> {
     (id: 'anilist', label: 'AniList', t: sl<AniListService>()),
     (id: 'mal', label: 'MyAnimeList', t: sl<MalService>()),
     (id: 'simkl', label: 'Simkl', t: sl<SimklService>()),
+    if (sl.isRegistered<TraktService>())
+      (id: 'trakt', label: 'Trakt', t: sl<TraktService>()),
     (id: 'mangabaka', label: 'MangaBaka', t: sl<MangaBakaService>()),
   ];
 

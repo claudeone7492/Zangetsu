@@ -1,14 +1,17 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../l10n/l10n.dart';
 import '../../core/tracker/tracker.dart';
+import '../../core/tracker/trakt_service.dart';
 import '../../core/ui/app_dialog.dart';
 import '../../core/ui/settings_widgets.dart';
 
-/// Connect / disconnect any [Tracker] (AniList, MyAnimeList, Simkl) and toggle
+/// Connect / disconnect any [Tracker] (AniList, MyAnimeList, Simkl, Trakt,
+/// MangaBaka) and toggle
 /// its auto-sync. Connecting opens the provider's OAuth consent in the browser;
 /// the token returns via the `zangetsu://…` deep link captured by the service.
 class TrackerSettingsScreen extends StatefulWidget {
@@ -26,7 +29,34 @@ class _TrackerSettingsScreenState extends State<TrackerSettingsScreen> {
 
   Future<void> _connect() async {
     setState(() => _busy = true);
-    final ok = await _t.connect();
+    bool ok;
+    final trakt = _t is TraktService ? _t as TraktService : null;
+    if (trakt != null) {
+      // Trakt's device flow needs the user code on screen, which a generic
+      // `connect()` cannot do by itself.
+      final login = await trakt.beginDeviceLogin();
+      if (!mounted) return;
+      if (login == null) {
+        setState(() => _busy = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              context.l10n.trackerConnectionCanceled(_t.displayName),
+            ),
+          ),
+        );
+        return;
+      }
+      ok =
+          await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => _TraktDeviceDialog(trakt: trakt, login: login),
+          ) ??
+          false;
+    } else {
+      ok = await _t.connect();
+    }
     if (!mounted) return;
     setState(() => _busy = false);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -182,4 +212,78 @@ class _TrackerSettingsScreenState extends State<TrackerSettingsScreen> {
     ),
     child: const Icon(Icons.person_rounded, color: AppColors.textTertiary),
   );
+}
+
+/// Shows the code Trakt wants typed on its activate page, and closes when the
+/// device poll resolves.
+class _TraktDeviceDialog extends StatefulWidget {
+  const _TraktDeviceDialog({required this.trakt, required this.login});
+
+  final TraktService trakt;
+  final TraktDeviceLogin login;
+
+  @override
+  State<_TraktDeviceDialog> createState() => _TraktDeviceDialogState();
+}
+
+class _TraktDeviceDialogState extends State<_TraktDeviceDialog> {
+  late final Future<bool> _poll = widget.trakt.pollDeviceLogin(widget.login);
+  bool _closed = false;
+
+  void _close(bool ok) {
+    if (_closed) return;
+    _closed = true;
+    Navigator.pop(context, ok);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(context.l10n.connectTracker(widget.trakt.displayName)),
+      content: FutureBuilder<bool>(
+        future: _poll,
+        builder: (context, snap) {
+          if (snap.connectionState == ConnectionState.done) {
+            WidgetsBinding.instance.addPostFrameCallback(
+              (_) => _close(snap.data ?? false),
+            );
+          }
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(context.l10n.signInToLinkYourAccount),
+              const SizedBox(height: 12),
+              SelectableText(
+                widget.login.userCode,
+                style: AppText.headline.copyWith(
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 4,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: () => launchUrl(
+                  Uri.parse(widget.login.verificationUrl),
+                  mode: LaunchMode.externalApplication,
+                ),
+                icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                label: Text(context.l10n.openInBrowser),
+              ),
+              if (snap.connectionState != ConnectionState.done) ...[
+                const SizedBox(height: 8),
+                const LinearProgressIndicator(minHeight: 2),
+              ],
+            ],
+          );
+        },
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => _close(false),
+          child: Text(context.l10n.cancel),
+        ),
+      ],
+    );
+  }
 }

@@ -7,7 +7,7 @@ import 'tracker_blob.dart';
 class TrackerRelay {
   TrackerRelay(this._trackers);
 
-  /// Keyed by relay id ('anilist' | 'mal' | 'simkl').
+  /// Keyed by relay id ('anilist' | 'mal' | 'simkl' | 'trakt' | 'mangabaka').
   final Map<String, Tracker> _trackers;
 
   TrackerBlob pack({Set<String>? only}) {
