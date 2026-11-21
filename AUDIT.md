@@ -396,6 +396,8 @@ import), and a test.
 | `music/VxAudioFx.kt` | `core/music/vx_audio_fx.dart` | music player `af` chain | `test/core/music/vx_audio_fx_test.dart` |
 | `player/AudioOutput.kt` (filter seam) | `core/music/audio_output.dart` | `MusicPlayerController` | `test/core/music/music_player_controller_test.dart` |
 | `ui/LosslessSource.kt` (tier order) | `core/music/lossless_source.dart` | music stream resolution | `test/core/music/vx_quality_test.dart` |
+| `music/MusicDownload.kt` | `core/music/music_download.dart` | download button in the music player sheet | `test/core/music/music_download_test.dart` |
+| `player/PlayerSkins.kt` | `features/player/player_skins.dart` | overlay scrims, title block and button-group weight | `test/features/player/player_skins_test.dart` |
 
 Two behaviours changed with the port rather than just gaining code:
 

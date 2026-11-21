@@ -802,6 +802,7 @@ class _ControlsOverlay extends StatelessWidget {
                         // move it.
                         final left = _barButtons(context, barConfig.left);
                         final right = _barButtons(context, barConfig.right);
+                        final groupOpacity = PlayerSkins.groupOpacity(skin);
                         // Buttons are a uniform 48 (12 padding + 24 icon + 12)
                         // and each group adds 8 of its own, so the width the bar
                         // wants is arithmetic rather than something to measure.
@@ -815,9 +816,17 @@ class _ControlsOverlay extends StatelessWidget {
                         if (wanted <= constraints.maxWidth) {
                           return Row(
                             children: [
-                              if (left.isNotEmpty) _BarGroup(children: left),
+                              if (left.isNotEmpty)
+                                _BarGroup(
+                                  opacity: groupOpacity,
+                                  children: left,
+                                ),
                               const Spacer(),
-                              if (right.isNotEmpty) _BarGroup(children: right),
+                              if (right.isNotEmpty)
+                                _BarGroup(
+                                  opacity: groupOpacity,
+                                  children: right,
+                                ),
                             ],
                           );
                         }
@@ -832,10 +841,18 @@ class _ControlsOverlay extends StatelessWidget {
                           scrollDirection: Axis.horizontal,
                           child: Row(
                             children: [
-                              if (left.isNotEmpty) _BarGroup(children: left),
+                              if (left.isNotEmpty)
+                                _BarGroup(
+                                  opacity: groupOpacity,
+                                  children: left,
+                                ),
                               if (left.isNotEmpty && right.isNotEmpty)
                                 const SizedBox(width: 8),
-                              if (right.isNotEmpty) _BarGroup(children: right),
+                              if (right.isNotEmpty)
+                                _BarGroup(
+                                  opacity: groupOpacity,
+                                  children: right,
+                                ),
                             ],
                           ),
                         );

@@ -61,6 +61,9 @@ class SettingsBackup {
     'userscripts', // the user's own scripts
     'websites', // the user's web sources
     'telegram_prefs', // Telegram channels the viewer added
+    'dns_prefs', // resolver choice and the custom DoH endpoint
+    'music_quality', // music quality tier ceiling
+    'music_eq', // the music player's EQ curve
   ];
 
   /// Returns a map of `{boxName: {key: value, ...}}` for every open box.

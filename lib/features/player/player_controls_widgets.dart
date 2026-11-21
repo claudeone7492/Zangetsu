@@ -193,14 +193,17 @@ IconData _fitIcon(String label) => switch (label) {
 /// composite. It's also the Material the buttons' ripples paint onto; without
 /// it they'd splash on the Scaffold underneath and be hidden by this backdrop.
 class _BarGroup extends StatelessWidget {
-  const _BarGroup({required this.children});
+  const _BarGroup({required this.children, this.opacity = 0.3});
 
   final List<Widget> children;
+
+  /// How dark the group's backdrop is; the player skin sets it.
+  final double opacity;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.black.withValues(alpha: 0.3),
+      color: Colors.black.withValues(alpha: opacity),
       borderRadius: BorderRadius.circular(26),
       clipBehavior: Clip.antiAlias,
       child: Padding(
