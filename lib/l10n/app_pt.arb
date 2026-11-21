@@ -3623,5 +3623,19 @@
 	"appLockPinMismatch": "Os PINs não coincidem",
 	"appLockInvalidPin": "Use um PIN de 4 ou 6 dígitos",
 	"appLockEnabled": "O bloqueio do app está ativado",
-	"appLockDisabled": "O bloqueio do app está desativado"
+	"appLockDisabled": "O bloqueio do app está desativado",
+  "voiceLangEnglish": "Inglês",
+  "voiceLangSpanish": "Espanhol",
+  "voiceLangFrench": "Francês",
+  "voiceLangGerman": "Alemão",
+  "voiceLangItalian": "Italiano",
+  "voiceLangPortuguese": "Português",
+  "voiceLangRussian": "Russo",
+  "voiceLangTurkish": "Turco",
+  "voiceLangIndonesian": "Indonésio",
+  "voiceLangHindi": "Híndi",
+  "voiceLangArabic": "Árabe",
+  "voiceLangJapanese": "Japonês",
+  "voiceLangKorean": "Coreano",
+  "voiceLangChineseMandarin": "Chinês (mandarim)"
 }

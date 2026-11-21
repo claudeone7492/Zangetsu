@@ -12782,6 +12782,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reverse episode list always on'**
   String get appearanceReverseEpisodeOrder;
+
+  /// No description provided for @voiceLangEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get voiceLangEnglish;
+
+  /// No description provided for @voiceLangSpanish.
+  ///
+  /// In en, this message translates to:
+  /// **'Spanish'**
+  String get voiceLangSpanish;
+
+  /// No description provided for @voiceLangFrench.
+  ///
+  /// In en, this message translates to:
+  /// **'French'**
+  String get voiceLangFrench;
+
+  /// No description provided for @voiceLangGerman.
+  ///
+  /// In en, this message translates to:
+  /// **'German'**
+  String get voiceLangGerman;
+
+  /// No description provided for @voiceLangItalian.
+  ///
+  /// In en, this message translates to:
+  /// **'Italian'**
+  String get voiceLangItalian;
+
+  /// No description provided for @voiceLangPortuguese.
+  ///
+  /// In en, this message translates to:
+  /// **'Portuguese'**
+  String get voiceLangPortuguese;
+
+  /// No description provided for @voiceLangRussian.
+  ///
+  /// In en, this message translates to:
+  /// **'Russian'**
+  String get voiceLangRussian;
+
+  /// No description provided for @voiceLangTurkish.
+  ///
+  /// In en, this message translates to:
+  /// **'Turkish'**
+  String get voiceLangTurkish;
+
+  /// No description provided for @voiceLangIndonesian.
+  ///
+  /// In en, this message translates to:
+  /// **'Indonesian'**
+  String get voiceLangIndonesian;
+
+  /// No description provided for @voiceLangHindi.
+  ///
+  /// In en, this message translates to:
+  /// **'Hindi'**
+  String get voiceLangHindi;
+
+  /// No description provided for @voiceLangArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic'**
+  String get voiceLangArabic;
+
+  /// No description provided for @voiceLangJapanese.
+  ///
+  /// In en, this message translates to:
+  /// **'Japanese'**
+  String get voiceLangJapanese;
+
+  /// No description provided for @voiceLangKorean.
+  ///
+  /// In en, this message translates to:
+  /// **'Korean'**
+  String get voiceLangKorean;
+
+  /// No description provided for @voiceLangChineseMandarin.
+  ///
+  /// In en, this message translates to:
+  /// **'Chinese (Mandarin)'**
+  String get voiceLangChineseMandarin;
 }
 
 class _AppLocalizationsDelegate

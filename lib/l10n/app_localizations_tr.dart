@@ -7304,4 +7304,46 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get appearanceReverseEpisodeOrder => 'Bölüm listesi her zaman ters';
+
+  @override
+  String get voiceLangEnglish => 'İngilizce';
+
+  @override
+  String get voiceLangSpanish => 'İspanyolca';
+
+  @override
+  String get voiceLangFrench => 'Fransızca';
+
+  @override
+  String get voiceLangGerman => 'Almanca';
+
+  @override
+  String get voiceLangItalian => 'İtalyanca';
+
+  @override
+  String get voiceLangPortuguese => 'Portekizce';
+
+  @override
+  String get voiceLangRussian => 'Rusça';
+
+  @override
+  String get voiceLangTurkish => 'Türkçe';
+
+  @override
+  String get voiceLangIndonesian => 'Endonezce';
+
+  @override
+  String get voiceLangHindi => 'Hintçe';
+
+  @override
+  String get voiceLangArabic => 'Arapça';
+
+  @override
+  String get voiceLangJapanese => 'Japonca';
+
+  @override
+  String get voiceLangKorean => 'Korece';
+
+  @override
+  String get voiceLangChineseMandarin => 'Çince (Mandarin)';
 }

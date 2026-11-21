@@ -7084,4 +7084,46 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get appearanceReverseEpisodeOrder => 'エピソード一覧を常に逆順にする';
+
+  @override
+  String get voiceLangEnglish => '英語';
+
+  @override
+  String get voiceLangSpanish => 'スペイン語';
+
+  @override
+  String get voiceLangFrench => 'フランス語';
+
+  @override
+  String get voiceLangGerman => 'ドイツ語';
+
+  @override
+  String get voiceLangItalian => 'イタリア語';
+
+  @override
+  String get voiceLangPortuguese => 'ポルトガル語';
+
+  @override
+  String get voiceLangRussian => 'ロシア語';
+
+  @override
+  String get voiceLangTurkish => 'トルコ語';
+
+  @override
+  String get voiceLangIndonesian => 'インドネシア語';
+
+  @override
+  String get voiceLangHindi => 'ヒンディー語';
+
+  @override
+  String get voiceLangArabic => 'アラビア語';
+
+  @override
+  String get voiceLangJapanese => '日本語';
+
+  @override
+  String get voiceLangKorean => '韓国語';
+
+  @override
+  String get voiceLangChineseMandarin => '中国語（標準語）';
 }

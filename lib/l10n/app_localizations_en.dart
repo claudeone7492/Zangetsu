@@ -7275,4 +7275,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appearanceReverseEpisodeOrder => 'Reverse episode list always on';
+
+  @override
+  String get voiceLangEnglish => 'English';
+
+  @override
+  String get voiceLangSpanish => 'Spanish';
+
+  @override
+  String get voiceLangFrench => 'French';
+
+  @override
+  String get voiceLangGerman => 'German';
+
+  @override
+  String get voiceLangItalian => 'Italian';
+
+  @override
+  String get voiceLangPortuguese => 'Portuguese';
+
+  @override
+  String get voiceLangRussian => 'Russian';
+
+  @override
+  String get voiceLangTurkish => 'Turkish';
+
+  @override
+  String get voiceLangIndonesian => 'Indonesian';
+
+  @override
+  String get voiceLangHindi => 'Hindi';
+
+  @override
+  String get voiceLangArabic => 'Arabic';
+
+  @override
+  String get voiceLangJapanese => 'Japanese';
+
+  @override
+  String get voiceLangKorean => 'Korean';
+
+  @override
+  String get voiceLangChineseMandarin => 'Chinese (Mandarin)';
 }

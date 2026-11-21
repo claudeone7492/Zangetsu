@@ -3623,5 +3623,19 @@
 	"appLockPinMismatch": "PIN tidak cocok",
 	"appLockInvalidPin": "Gunakan PIN 4 atau 6 digit",
 	"appLockEnabled": "Kunci aplikasi aktif",
-	"appLockDisabled": "Kunci aplikasi mati"
+	"appLockDisabled": "Kunci aplikasi mati",
+  "voiceLangEnglish": "Inggris",
+  "voiceLangSpanish": "Spanyol",
+  "voiceLangFrench": "Prancis",
+  "voiceLangGerman": "Jerman",
+  "voiceLangItalian": "Italia",
+  "voiceLangPortuguese": "Portugis",
+  "voiceLangRussian": "Rusia",
+  "voiceLangTurkish": "Turki",
+  "voiceLangIndonesian": "Indonesia",
+  "voiceLangHindi": "Hindi",
+  "voiceLangArabic": "Arab",
+  "voiceLangJapanese": "Jepang",
+  "voiceLangKorean": "Korea",
+  "voiceLangChineseMandarin": "Mandarin"
 }

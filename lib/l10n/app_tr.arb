@@ -3622,5 +3622,19 @@
 	"appLockPinMismatch": "PIN'ler eşleşmiyor",
 	"appLockInvalidPin": "4 veya 6 haneli bir PIN kullanın",
 	"appLockEnabled": "Uygulama kilidi açık",
-	"appLockDisabled": "Uygulama kilidi kapalı"
+	"appLockDisabled": "Uygulama kilidi kapalı",
+  "voiceLangEnglish": "İngilizce",
+  "voiceLangSpanish": "İspanyolca",
+  "voiceLangFrench": "Fransızca",
+  "voiceLangGerman": "Almanca",
+  "voiceLangItalian": "İtalyanca",
+  "voiceLangPortuguese": "Portekizce",
+  "voiceLangRussian": "Rusça",
+  "voiceLangTurkish": "Türkçe",
+  "voiceLangIndonesian": "Endonezce",
+  "voiceLangHindi": "Hintçe",
+  "voiceLangArabic": "Arapça",
+  "voiceLangJapanese": "Japonca",
+  "voiceLangKorean": "Korece",
+  "voiceLangChineseMandarin": "Çince (Mandarin)"
 }

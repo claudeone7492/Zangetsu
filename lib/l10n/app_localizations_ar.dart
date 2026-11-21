@@ -7345,4 +7345,46 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get appearanceReverseEpisodeOrder => 'قائمة الحلقات معكوسة دائمًا';
+
+  @override
+  String get voiceLangEnglish => 'الإنجليزية';
+
+  @override
+  String get voiceLangSpanish => 'الإسبانية';
+
+  @override
+  String get voiceLangFrench => 'الفرنسية';
+
+  @override
+  String get voiceLangGerman => 'الألمانية';
+
+  @override
+  String get voiceLangItalian => 'الإيطالية';
+
+  @override
+  String get voiceLangPortuguese => 'البرتغالية';
+
+  @override
+  String get voiceLangRussian => 'الروسية';
+
+  @override
+  String get voiceLangTurkish => 'التركية';
+
+  @override
+  String get voiceLangIndonesian => 'الإندونيسية';
+
+  @override
+  String get voiceLangHindi => 'الهندية';
+
+  @override
+  String get voiceLangArabic => 'العربية';
+
+  @override
+  String get voiceLangJapanese => 'اليابانية';
+
+  @override
+  String get voiceLangKorean => 'الكورية';
+
+  @override
+  String get voiceLangChineseMandarin => 'الصينية (الماندرين)';
 }

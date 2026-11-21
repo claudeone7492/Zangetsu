@@ -71,7 +71,12 @@ class NeuralDubEngine implements DubEngine {
   @override
   Future<List<DubVoice>> voices() async => [
     for (final v in HttpTtsService.voices)
-      DubVoice(name: v.label, locale: v.iso, isNetwork: true),
+      DubVoice(
+        name: v.label,
+        locale: v.iso,
+        isNetwork: true,
+        labelKey: v.labelKey,
+      ),
   ];
 
   @override

@@ -3623,5 +3623,19 @@
 	"appLockPinMismatch": "الرموز غير متطابقة",
 	"appLockInvalidPin": "استخدم رمزًا من 4 أو 6 أرقام",
 	"appLockEnabled": "قفل التطبيق مفعّل",
-	"appLockDisabled": "قفل التطبيق معطّل"
+	"appLockDisabled": "قفل التطبيق معطّل",
+  "voiceLangEnglish": "الإنجليزية",
+  "voiceLangSpanish": "الإسبانية",
+  "voiceLangFrench": "الفرنسية",
+  "voiceLangGerman": "الألمانية",
+  "voiceLangItalian": "الإيطالية",
+  "voiceLangPortuguese": "البرتغالية",
+  "voiceLangRussian": "الروسية",
+  "voiceLangTurkish": "التركية",
+  "voiceLangIndonesian": "الإندونيسية",
+  "voiceLangHindi": "الهندية",
+  "voiceLangArabic": "العربية",
+  "voiceLangJapanese": "اليابانية",
+  "voiceLangKorean": "الكورية",
+  "voiceLangChineseMandarin": "الصينية (الماندرين)"
 }

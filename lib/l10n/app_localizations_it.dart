@@ -7346,4 +7346,46 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get appearanceReverseEpisodeOrder => 'Elenco episodi sempre invertito';
+
+  @override
+  String get voiceLangEnglish => 'Inglese';
+
+  @override
+  String get voiceLangSpanish => 'Spagnolo';
+
+  @override
+  String get voiceLangFrench => 'Francese';
+
+  @override
+  String get voiceLangGerman => 'Tedesco';
+
+  @override
+  String get voiceLangItalian => 'Italiano';
+
+  @override
+  String get voiceLangPortuguese => 'Portoghese';
+
+  @override
+  String get voiceLangRussian => 'Russo';
+
+  @override
+  String get voiceLangTurkish => 'Turco';
+
+  @override
+  String get voiceLangIndonesian => 'Indonesiano';
+
+  @override
+  String get voiceLangHindi => 'Hindi';
+
+  @override
+  String get voiceLangArabic => 'Arabo';
+
+  @override
+  String get voiceLangJapanese => 'Giapponese';
+
+  @override
+  String get voiceLangKorean => 'Coreano';
+
+  @override
+  String get voiceLangChineseMandarin => 'Cinese (mandarino)';
 }

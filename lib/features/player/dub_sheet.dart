@@ -261,13 +261,13 @@ class _DubSheetState extends State<_DubSheet> {
                     runSpacing: 8,
                     children: [
                       _voiceChip(
-                        label: 'Default',
+                        label: context.l10n.defaultLabel,
                         selected: _prefs.voice == null,
                         onTap: () => _prefs.setVoice(null),
                       ),
                       for (final v in voices)
                         _voiceChip(
-                          label: v.isNetwork ? '${v.label} · net' : v.label,
+                          label: _dubVoiceLabel(context.l10n, v),
                           selected: _prefs.voice == v.name,
                           onTap: () => _prefs.setVoice(v.name),
                         ),
@@ -466,7 +466,7 @@ class _DubSheetState extends State<_DubSheet> {
                       ),
                       for (final v in HttpTtsService.voices)
                         _voiceChip(
-                          label: v.label,
+                          label: _voiceName(context.l10n, v.labelKey, v.label),
                           selected: _prefs.neuralLanguage == v.iso,
                           onTap: () => _prefs.setNeuralLanguage(v.iso),
                         ),
@@ -519,6 +519,47 @@ class _DubSheetState extends State<_DubSheet> {
         ),
       ),
     );
+  }
+
+  /// A language name, translated when the app knows the language.
+  ///
+  /// [labelKey] is the ARB id; [fallback] is the catalogue's own English name,
+  /// used for a key the app has no translation for. Only the display name is
+  /// translated — the values persisted by [DubPrefs] are the ISO codes and
+  /// voice names passed alongside it, never this label.
+  String _voiceName(AppLocalizations l10n, String? labelKey, String fallback) =>
+      switch (labelKey) {
+        'voiceLangEnglish' => l10n.voiceLangEnglish,
+        'voiceLangSpanish' => l10n.voiceLangSpanish,
+        'voiceLangFrench' => l10n.voiceLangFrench,
+        'voiceLangGerman' => l10n.voiceLangGerman,
+        'voiceLangItalian' => l10n.voiceLangItalian,
+        'voiceLangPortuguese' => l10n.voiceLangPortuguese,
+        'voiceLangRussian' => l10n.voiceLangRussian,
+        'voiceLangTurkish' => l10n.voiceLangTurkish,
+        'voiceLangIndonesian' => l10n.voiceLangIndonesian,
+        'voiceLangHindi' => l10n.voiceLangHindi,
+        'voiceLangArabic' => l10n.voiceLangArabic,
+        'voiceLangJapanese' => l10n.voiceLangJapanese,
+        'voiceLangKorean' => l10n.voiceLangKorean,
+        'voiceLangChineseMandarin' => l10n.voiceLangChineseMandarin,
+        _ => fallback,
+      };
+
+  /// A device or hosted voice as the picker shows it.
+  ///
+  /// The stored value is [DubVoice.name] alone, so the `(locale)` suffix and
+  /// the `· net` marker are display-only. A hosted voice is named by its
+  /// language, which the app translates; a device voice keeps the name its own
+  /// engine reports, because that is the name the viewer sees in Android's
+  /// settings.
+  String _dubVoiceLabel(AppLocalizations l10n, DubVoice voice) {
+    if (voice.labelKey != null) {
+      final name = _voiceName(l10n, voice.labelKey, voice.name);
+      return voice.isNetwork ? '$name · net' : name;
+    }
+    final name = voice.locale.isEmpty ? voice.name : voice.label;
+    return voice.isNetwork ? '$name · net' : name;
   }
 
   Widget _voiceChip({

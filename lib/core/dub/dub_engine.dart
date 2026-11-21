@@ -9,6 +9,7 @@ class DubVoice {
     required this.name,
     required this.locale,
     this.isNetwork = false,
+    this.labelKey,
   });
 
   final String name;
@@ -19,6 +20,11 @@ class DubVoice {
   /// Network voices sound better but need data and add latency; shown so the
   /// picker can say so.
   final bool isNetwork;
+
+  /// Set for voices whose display name the app localises. [name] stays the
+  /// value handed back to the engine and persisted, so translating the label
+  /// never changes what is stored.
+  final String? labelKey;
 
   String get label => '$name ($locale)';
 }

@@ -7309,4 +7309,46 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get appearanceReverseEpisodeOrder => 'Daftar episode selalu terbalik';
+
+  @override
+  String get voiceLangEnglish => 'Inggris';
+
+  @override
+  String get voiceLangSpanish => 'Spanyol';
+
+  @override
+  String get voiceLangFrench => 'Prancis';
+
+  @override
+  String get voiceLangGerman => 'Jerman';
+
+  @override
+  String get voiceLangItalian => 'Italia';
+
+  @override
+  String get voiceLangPortuguese => 'Portugis';
+
+  @override
+  String get voiceLangRussian => 'Rusia';
+
+  @override
+  String get voiceLangTurkish => 'Turki';
+
+  @override
+  String get voiceLangIndonesian => 'Indonesia';
+
+  @override
+  String get voiceLangHindi => 'Hindi';
+
+  @override
+  String get voiceLangArabic => 'Arab';
+
+  @override
+  String get voiceLangJapanese => 'Jepang';
+
+  @override
+  String get voiceLangKorean => 'Korea';
+
+  @override
+  String get voiceLangChineseMandarin => 'Mandarin';
 }

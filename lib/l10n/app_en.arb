@@ -3830,5 +3830,19 @@
   "collections": "Collections",
   "settingsDebrid": "Debrid",
   "settingsSourcePrioritySubtitle": "Order Auto Resolve tries sources in",
-  "appearanceReverseEpisodeOrder": "Reverse episode list always on"
+  "appearanceReverseEpisodeOrder": "Reverse episode list always on",
+  "voiceLangEnglish": "English",
+  "voiceLangSpanish": "Spanish",
+  "voiceLangFrench": "French",
+  "voiceLangGerman": "German",
+  "voiceLangItalian": "Italian",
+  "voiceLangPortuguese": "Portuguese",
+  "voiceLangRussian": "Russian",
+  "voiceLangTurkish": "Turkish",
+  "voiceLangIndonesian": "Indonesian",
+  "voiceLangHindi": "Hindi",
+  "voiceLangArabic": "Arabic",
+  "voiceLangJapanese": "Japanese",
+  "voiceLangKorean": "Korean",
+  "voiceLangChineseMandarin": "Chinese (Mandarin)"
 }

@@ -7028,6 +7028,48 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get appearanceReverseEpisodeOrder => '剧集列表始终倒序';
+
+  @override
+  String get voiceLangEnglish => '英语';
+
+  @override
+  String get voiceLangSpanish => '西班牙语';
+
+  @override
+  String get voiceLangFrench => '法语';
+
+  @override
+  String get voiceLangGerman => '德语';
+
+  @override
+  String get voiceLangItalian => '意大利语';
+
+  @override
+  String get voiceLangPortuguese => '葡萄牙语';
+
+  @override
+  String get voiceLangRussian => '俄语';
+
+  @override
+  String get voiceLangTurkish => '土耳其语';
+
+  @override
+  String get voiceLangIndonesian => '印尼语';
+
+  @override
+  String get voiceLangHindi => '印地语';
+
+  @override
+  String get voiceLangArabic => '阿拉伯语';
+
+  @override
+  String get voiceLangJapanese => '日语';
+
+  @override
+  String get voiceLangKorean => '韩语';
+
+  @override
+  String get voiceLangChineseMandarin => '中文（普通话）';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -14054,4 +14096,46 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get appearanceReverseEpisodeOrder => '劇集列表始終倒序';
+
+  @override
+  String get voiceLangEnglish => '英語';
+
+  @override
+  String get voiceLangSpanish => '西班牙語';
+
+  @override
+  String get voiceLangFrench => '法語';
+
+  @override
+  String get voiceLangGerman => '德語';
+
+  @override
+  String get voiceLangItalian => '義大利語';
+
+  @override
+  String get voiceLangPortuguese => '葡萄牙語';
+
+  @override
+  String get voiceLangRussian => '俄語';
+
+  @override
+  String get voiceLangTurkish => '土耳其語';
+
+  @override
+  String get voiceLangIndonesian => '印尼語';
+
+  @override
+  String get voiceLangHindi => '印地語';
+
+  @override
+  String get voiceLangArabic => '阿拉伯語';
+
+  @override
+  String get voiceLangJapanese => '日語';
+
+  @override
+  String get voiceLangKorean => '韓語';
+
+  @override
+  String get voiceLangChineseMandarin => '中文（國語）';
 }

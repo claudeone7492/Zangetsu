@@ -9,13 +9,16 @@ import 'package:dio/dio.dart';
 /// catalogue is therefore one entry per language, which is also what the viewer
 /// actually cares about when dubbing a programme that is not in their language.
 class NeuralVoice {
-  const NeuralVoice({required this.iso, required this.label});
+  const NeuralVoice({required this.iso, required this.label, required this.labelKey});
 
   /// Language tag the endpoint expects (`en`, `pt-BR`).
   final String iso;
 
-  /// What the picker shows.
+  /// English name, kept as the fallback for a locale the app has no name for.
   final String label;
+
+  /// Stable id the UI localises the name with, e.g. `voiceLangGerman`.
+  final String labelKey;
 
   /// The BCP-47 tag handed to the endpoint. Region is dropped because the
   /// catalogue is keyed on the language, and the endpoint treats `pt-BR` and
@@ -74,20 +77,24 @@ class HttpTtsService {
   /// to answer a question with a fixed answer. The list is the languages the
   /// endpoint was verified to speak, which is what the picker needs.
   static const List<NeuralVoice> voices = [
-    NeuralVoice(iso: 'en', label: 'English'),
-    NeuralVoice(iso: 'es', label: 'Spanish'),
-    NeuralVoice(iso: 'fr', label: 'French'),
-    NeuralVoice(iso: 'de', label: 'German'),
-    NeuralVoice(iso: 'it', label: 'Italian'),
-    NeuralVoice(iso: 'pt', label: 'Portuguese'),
-    NeuralVoice(iso: 'ru', label: 'Russian'),
-    NeuralVoice(iso: 'tr', label: 'Turkish'),
-    NeuralVoice(iso: 'id', label: 'Indonesian'),
-    NeuralVoice(iso: 'hi', label: 'Hindi'),
-    NeuralVoice(iso: 'ar', label: 'Arabic'),
-    NeuralVoice(iso: 'ja', label: 'Japanese'),
-    NeuralVoice(iso: 'ko', label: 'Korean'),
-    NeuralVoice(iso: 'zh-CN', label: 'Chinese (Mandarin)'),
+    NeuralVoice(iso: 'en', label: 'English', labelKey: 'voiceLangEnglish'),
+    NeuralVoice(iso: 'es', label: 'Spanish', labelKey: 'voiceLangSpanish'),
+    NeuralVoice(iso: 'fr', label: 'French', labelKey: 'voiceLangFrench'),
+    NeuralVoice(iso: 'de', label: 'German', labelKey: 'voiceLangGerman'),
+    NeuralVoice(iso: 'it', label: 'Italian', labelKey: 'voiceLangItalian'),
+    NeuralVoice(iso: 'pt', label: 'Portuguese', labelKey: 'voiceLangPortuguese'),
+    NeuralVoice(iso: 'ru', label: 'Russian', labelKey: 'voiceLangRussian'),
+    NeuralVoice(iso: 'tr', label: 'Turkish', labelKey: 'voiceLangTurkish'),
+    NeuralVoice(iso: 'id', label: 'Indonesian', labelKey: 'voiceLangIndonesian'),
+    NeuralVoice(iso: 'hi', label: 'Hindi', labelKey: 'voiceLangHindi'),
+    NeuralVoice(iso: 'ar', label: 'Arabic', labelKey: 'voiceLangArabic'),
+    NeuralVoice(iso: 'ja', label: 'Japanese', labelKey: 'voiceLangJapanese'),
+    NeuralVoice(iso: 'ko', label: 'Korean', labelKey: 'voiceLangKorean'),
+    NeuralVoice(
+      iso: 'zh-CN',
+      label: 'Chinese (Mandarin)',
+      labelKey: 'voiceLangChineseMandarin',
+    ),
   ];
 
   /// Whether [iso] is a language the service speaks.
