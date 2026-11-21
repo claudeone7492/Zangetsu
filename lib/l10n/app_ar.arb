@@ -3743,5 +3743,20 @@
   "websitesRemoveTitle": "إزالة الموقع؟",
   "websitesRemoveBody": "إزالة {name} من مواقعك المحفوظة؟",
   "websitesOpenExternal": "فتح في المتصفح",
-  "websitesLoadFailed": "تعذّر تحميل هذه الصفحة"
+  "websitesLoadFailed": "تعذّر تحميل هذه الصفحة",
+  "livePlaylists": "قوائم التشغيل",
+  "addPlaylist": "إضافة قائمة تشغيل",
+  "playlistName": "اسم القائمة",
+  "playlistUrl": "رابط M3U / JSON",
+  "playlistPaste": "أو الصق نص القائمة",
+  "playlistEmpty": "لا توجد قوائم تشغيل بعد.\nأضف قائمة M3U أو JSON لترى قنواتها هنا.",
+  "playlistRemoveTitle": "إزالة القائمة؟",
+  "playlistRemoveBody": "ستختفي القنوات من البث المباشر.",
+  "playlistAdded": "تمت إضافة القائمة",
+  "playlistFailed": "تعذر تحميل القائمة",
+  "playlistChannels": "{count} قناة",
+  "playlistSourceUrl": "الرابط",
+  "playlistSourcePaste": "نص ملصق",
+  "playlistRemove": "إزالة",
+  "playlistCount": "{count} قوائم تشغيل"
 }

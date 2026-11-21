@@ -7685,4 +7685,54 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get websitesLoadFailed => 'Bu sayfa yüklenemedi';
+
+  @override
+  String get livePlaylists => 'Oynatma listeleri';
+
+  @override
+  String get addPlaylist => 'Oynatma listesi ekle';
+
+  @override
+  String get playlistName => 'Oynatma listesi adı';
+
+  @override
+  String get playlistUrl => 'M3U / JSON URL\'si';
+
+  @override
+  String get playlistPaste => 'Veya oynatma listesi metnini yapıştırın';
+
+  @override
+  String get playlistEmpty =>
+      'Henüz oynatma listesi yok.\nKanallarını burada görmek için bir M3U veya JSON listesi ekleyin.';
+
+  @override
+  String get playlistRemoveTitle => 'Oynatma listesi kaldırılsın mı?';
+
+  @override
+  String get playlistRemoveBody => 'Kanallar Canlı TV\'den kaybolur.';
+
+  @override
+  String get playlistAdded => 'Oynatma listesi eklendi';
+
+  @override
+  String get playlistFailed => 'Oynatma listesi yüklenemedi';
+
+  @override
+  String playlistChannels(int count) {
+    return '$count kanal';
+  }
+
+  @override
+  String get playlistSourceUrl => 'URL';
+
+  @override
+  String get playlistSourcePaste => 'Yapıştırılan metin';
+
+  @override
+  String get playlistRemove => 'Kaldır';
+
+  @override
+  String playlistCount(int count) {
+    return '$count oynatma listesi';
+  }
 }

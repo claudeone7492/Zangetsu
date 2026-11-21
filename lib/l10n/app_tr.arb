@@ -3742,5 +3742,20 @@
   "websitesRemoveTitle": "Site kaldırılsın mı?",
   "websitesRemoveBody": "{name} kaydedilen sitelerden kaldırılsın mı?",
   "websitesOpenExternal": "Tarayıcıda aç",
-  "websitesLoadFailed": "Bu sayfa yüklenemedi"
+  "websitesLoadFailed": "Bu sayfa yüklenemedi",
+  "livePlaylists": "Oynatma listeleri",
+  "addPlaylist": "Oynatma listesi ekle",
+  "playlistName": "Oynatma listesi adı",
+  "playlistUrl": "M3U / JSON URL'si",
+  "playlistPaste": "Veya oynatma listesi metnini yapıştırın",
+  "playlistEmpty": "Henüz oynatma listesi yok.\nKanallarını burada görmek için bir M3U veya JSON listesi ekleyin.",
+  "playlistRemoveTitle": "Oynatma listesi kaldırılsın mı?",
+  "playlistRemoveBody": "Kanallar Canlı TV'den kaybolur.",
+  "playlistAdded": "Oynatma listesi eklendi",
+  "playlistFailed": "Oynatma listesi yüklenemedi",
+  "playlistChannels": "{count} kanal",
+  "playlistSourceUrl": "URL",
+  "playlistSourcePaste": "Yapıştırılan metin",
+  "playlistRemove": "Kaldır",
+  "playlistCount": "{count} oynatma listesi"
 }

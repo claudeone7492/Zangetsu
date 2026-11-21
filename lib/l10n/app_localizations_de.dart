@@ -7742,4 +7742,54 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get websitesLoadFailed => 'Diese Seite konnte nicht geladen werden';
+
+  @override
+  String get livePlaylists => 'Wiedergabelisten';
+
+  @override
+  String get addPlaylist => 'Wiedergabeliste hinzufügen';
+
+  @override
+  String get playlistName => 'Name der Wiedergabeliste';
+
+  @override
+  String get playlistUrl => 'M3U-/JSON-URL';
+
+  @override
+  String get playlistPaste => 'Oder Wiedergabelistentext einfügen';
+
+  @override
+  String get playlistEmpty =>
+      'Noch keine Wiedergabelisten.\nFüge eine M3U- oder JSON-Liste hinzu, um ihre Sender hier zu sehen.';
+
+  @override
+  String get playlistRemoveTitle => 'Wiedergabeliste entfernen?';
+
+  @override
+  String get playlistRemoveBody => 'Die Sender verschwinden aus Live-TV.';
+
+  @override
+  String get playlistAdded => 'Wiedergabeliste hinzugefügt';
+
+  @override
+  String get playlistFailed => 'Wiedergabeliste konnte nicht geladen werden';
+
+  @override
+  String playlistChannels(int count) {
+    return '$count Sender';
+  }
+
+  @override
+  String get playlistSourceUrl => 'URL';
+
+  @override
+  String get playlistSourcePaste => 'Eingefügter Text';
+
+  @override
+  String get playlistRemove => 'Entfernen';
+
+  @override
+  String playlistCount(int count) {
+    return '$count Wiedergabelisten';
+  }
 }

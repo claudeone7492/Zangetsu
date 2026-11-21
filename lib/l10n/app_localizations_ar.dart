@@ -7721,4 +7721,54 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get websitesLoadFailed => 'تعذّر تحميل هذه الصفحة';
+
+  @override
+  String get livePlaylists => 'قوائم التشغيل';
+
+  @override
+  String get addPlaylist => 'إضافة قائمة تشغيل';
+
+  @override
+  String get playlistName => 'اسم القائمة';
+
+  @override
+  String get playlistUrl => 'رابط M3U / JSON';
+
+  @override
+  String get playlistPaste => 'أو الصق نص القائمة';
+
+  @override
+  String get playlistEmpty =>
+      'لا توجد قوائم تشغيل بعد.\nأضف قائمة M3U أو JSON لترى قنواتها هنا.';
+
+  @override
+  String get playlistRemoveTitle => 'إزالة القائمة؟';
+
+  @override
+  String get playlistRemoveBody => 'ستختفي القنوات من البث المباشر.';
+
+  @override
+  String get playlistAdded => 'تمت إضافة القائمة';
+
+  @override
+  String get playlistFailed => 'تعذر تحميل القائمة';
+
+  @override
+  String playlistChannels(int count) {
+    return '$count قناة';
+  }
+
+  @override
+  String get playlistSourceUrl => 'الرابط';
+
+  @override
+  String get playlistSourcePaste => 'نص ملصق';
+
+  @override
+  String get playlistRemove => 'إزالة';
+
+  @override
+  String playlistCount(int count) {
+    return '$count قوائم تشغيل';
+  }
 }

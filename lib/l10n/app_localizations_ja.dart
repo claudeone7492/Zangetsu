@@ -7454,4 +7454,54 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get websitesLoadFailed => 'このページを読み込めませんでした';
+
+  @override
+  String get livePlaylists => 'プレイリスト';
+
+  @override
+  String get addPlaylist => 'プレイリストを追加';
+
+  @override
+  String get playlistName => 'プレイリスト名';
+
+  @override
+  String get playlistUrl => 'M3U / JSON URL';
+
+  @override
+  String get playlistPaste => 'またはプレイリストのテキストを貼り付け';
+
+  @override
+  String get playlistEmpty =>
+      'プレイリストはまだありません。\nM3U または JSON プレイリストを追加すると、ここにチャンネルが表示されます。';
+
+  @override
+  String get playlistRemoveTitle => 'プレイリストを削除しますか？';
+
+  @override
+  String get playlistRemoveBody => 'チャンネルはライブTVから消えます。';
+
+  @override
+  String get playlistAdded => 'プレイリストを追加しました';
+
+  @override
+  String get playlistFailed => 'プレイリストを読み込めませんでした';
+
+  @override
+  String playlistChannels(int count) {
+    return '$count チャンネル';
+  }
+
+  @override
+  String get playlistSourceUrl => 'URL';
+
+  @override
+  String get playlistSourcePaste => '貼り付けたテキスト';
+
+  @override
+  String get playlistRemove => '削除';
+
+  @override
+  String playlistCount(int count) {
+    return '$count プレイリスト';
+  }
 }

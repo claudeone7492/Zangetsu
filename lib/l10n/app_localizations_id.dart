@@ -7691,4 +7691,54 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get websitesLoadFailed => 'Halaman ini tidak dapat dimuat';
+
+  @override
+  String get livePlaylists => 'Daftar putar';
+
+  @override
+  String get addPlaylist => 'Tambah daftar putar';
+
+  @override
+  String get playlistName => 'Nama daftar putar';
+
+  @override
+  String get playlistUrl => 'URL M3U / JSON';
+
+  @override
+  String get playlistPaste => 'Atau tempel teks daftar putar';
+
+  @override
+  String get playlistEmpty =>
+      'Belum ada daftar putar.\nTambahkan daftar M3U atau JSON untuk melihat channel-nya di sini.';
+
+  @override
+  String get playlistRemoveTitle => 'Hapus daftar putar?';
+
+  @override
+  String get playlistRemoveBody => 'Channel akan hilang dari Live TV.';
+
+  @override
+  String get playlistAdded => 'Daftar putar ditambahkan';
+
+  @override
+  String get playlistFailed => 'Tidak dapat memuat daftar putar';
+
+  @override
+  String playlistChannels(int count) {
+    return '$count channel';
+  }
+
+  @override
+  String get playlistSourceUrl => 'URL';
+
+  @override
+  String get playlistSourcePaste => 'Teks ditempel';
+
+  @override
+  String get playlistRemove => 'Hapus';
+
+  @override
+  String playlistCount(int count) {
+    return '$count daftar putar';
+  }
 }

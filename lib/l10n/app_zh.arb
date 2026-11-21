@@ -3703,5 +3703,20 @@
   "websitesRemoveTitle": "移除网站？",
   "websitesRemoveBody": "从已保存网站中移除 {name}？",
   "websitesOpenExternal": "在浏览器中打开",
-  "websitesLoadFailed": "无法加载此页面"
+  "websitesLoadFailed": "无法加载此页面",
+  "livePlaylists": "播放列表",
+  "addPlaylist": "添加播放列表",
+  "playlistName": "播放列表名称",
+  "playlistUrl": "M3U / JSON 地址",
+  "playlistPaste": "或粘贴播放列表文本",
+  "playlistEmpty": "还没有播放列表。\n添加 M3U 或 JSON 播放列表后，频道会显示在这里。",
+  "playlistRemoveTitle": "移除播放列表？",
+  "playlistRemoveBody": "频道将从直播电视中消失。",
+  "playlistAdded": "已添加播放列表",
+  "playlistFailed": "无法加载播放列表",
+  "playlistChannels": "{count} 个频道",
+  "playlistSourceUrl": "地址",
+  "playlistSourcePaste": "粘贴的文本",
+  "playlistRemove": "移除",
+  "playlistCount": "{count} 个播放列表"
 }

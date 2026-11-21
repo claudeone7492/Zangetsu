@@ -7396,6 +7396,55 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get websitesLoadFailed => '无法加载此页面';
+
+  @override
+  String get livePlaylists => '播放列表';
+
+  @override
+  String get addPlaylist => '添加播放列表';
+
+  @override
+  String get playlistName => '播放列表名称';
+
+  @override
+  String get playlistUrl => 'M3U / JSON 地址';
+
+  @override
+  String get playlistPaste => '或粘贴播放列表文本';
+
+  @override
+  String get playlistEmpty => '还没有播放列表。\n添加 M3U 或 JSON 播放列表后，频道会显示在这里。';
+
+  @override
+  String get playlistRemoveTitle => '移除播放列表？';
+
+  @override
+  String get playlistRemoveBody => '频道将从直播电视中消失。';
+
+  @override
+  String get playlistAdded => '已添加播放列表';
+
+  @override
+  String get playlistFailed => '无法加载播放列表';
+
+  @override
+  String playlistChannels(int count) {
+    return '$count 个频道';
+  }
+
+  @override
+  String get playlistSourceUrl => '地址';
+
+  @override
+  String get playlistSourcePaste => '粘贴的文本';
+
+  @override
+  String get playlistRemove => '移除';
+
+  @override
+  String playlistCount(int count) {
+    return '$count 个播放列表';
+  }
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -14790,4 +14839,53 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get websitesLoadFailed => '無法載入此頁面';
+
+  @override
+  String get livePlaylists => '播放清單';
+
+  @override
+  String get addPlaylist => '新增播放清單';
+
+  @override
+  String get playlistName => '播放清單名稱';
+
+  @override
+  String get playlistUrl => 'M3U / JSON 網址';
+
+  @override
+  String get playlistPaste => '或貼上播放清單文字';
+
+  @override
+  String get playlistEmpty => '尚無播放清單。\n新增 M3U 或 JSON 播放清單後，頻道會顯示在這裡。';
+
+  @override
+  String get playlistRemoveTitle => '移除播放清單？';
+
+  @override
+  String get playlistRemoveBody => '頻道將從直播電視中消失。';
+
+  @override
+  String get playlistAdded => '已新增播放清單';
+
+  @override
+  String get playlistFailed => '無法載入播放清單';
+
+  @override
+  String playlistChannels(int count) {
+    return '$count 個頻道';
+  }
+
+  @override
+  String get playlistSourceUrl => '網址';
+
+  @override
+  String get playlistSourcePaste => '貼上的文字';
+
+  @override
+  String get playlistRemove => '移除';
+
+  @override
+  String playlistCount(int count) {
+    return '$count 個播放清單';
+  }
 }

@@ -13502,6 +13502,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This page could not be loaded'**
   String get websitesLoadFailed;
+
+  /// No description provided for @livePlaylists.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlists'**
+  String get livePlaylists;
+
+  /// No description provided for @addPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Add playlist'**
+  String get addPlaylist;
+
+  /// No description provided for @playlistName.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist name'**
+  String get playlistName;
+
+  /// No description provided for @playlistUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'M3U / JSON URL'**
+  String get playlistUrl;
+
+  /// No description provided for @playlistPaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Or paste the playlist text'**
+  String get playlistPaste;
+
+  /// No description provided for @playlistEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No playlists yet.\nAdd an M3U or JSON playlist to see its channels here.'**
+  String get playlistEmpty;
+
+  /// No description provided for @playlistRemoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove playlist?'**
+  String get playlistRemoveTitle;
+
+  /// No description provided for @playlistRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The channels will disappear from Live TV.'**
+  String get playlistRemoveBody;
+
+  /// No description provided for @playlistAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist added'**
+  String get playlistAdded;
+
+  /// No description provided for @playlistFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the playlist'**
+  String get playlistFailed;
+
+  /// Number of channels imported from a playlist.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} channels'**
+  String playlistChannels(int count);
+
+  /// No description provided for @playlistSourceUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'URL'**
+  String get playlistSourceUrl;
+
+  /// No description provided for @playlistSourcePaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Pasted text'**
+  String get playlistSourcePaste;
+
+  /// No description provided for @playlistRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get playlistRemove;
+
+  /// Number of saved playlists.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} playlists'**
+  String playlistCount(int count);
 }
 
 class _AppLocalizationsDelegate

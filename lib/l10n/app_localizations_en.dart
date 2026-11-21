@@ -7655,4 +7655,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get websitesLoadFailed => 'This page could not be loaded';
+
+  @override
+  String get livePlaylists => 'Playlists';
+
+  @override
+  String get addPlaylist => 'Add playlist';
+
+  @override
+  String get playlistName => 'Playlist name';
+
+  @override
+  String get playlistUrl => 'M3U / JSON URL';
+
+  @override
+  String get playlistPaste => 'Or paste the playlist text';
+
+  @override
+  String get playlistEmpty =>
+      'No playlists yet.\nAdd an M3U or JSON playlist to see its channels here.';
+
+  @override
+  String get playlistRemoveTitle => 'Remove playlist?';
+
+  @override
+  String get playlistRemoveBody => 'The channels will disappear from Live TV.';
+
+  @override
+  String get playlistAdded => 'Playlist added';
+
+  @override
+  String get playlistFailed => 'Could not load the playlist';
+
+  @override
+  String playlistChannels(int count) {
+    return '$count channels';
+  }
+
+  @override
+  String get playlistSourceUrl => 'URL';
+
+  @override
+  String get playlistSourcePaste => 'Pasted text';
+
+  @override
+  String get playlistRemove => 'Remove';
+
+  @override
+  String playlistCount(int count) {
+    return '$count playlists';
+  }
 }

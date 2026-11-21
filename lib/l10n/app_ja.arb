@@ -3703,5 +3703,20 @@
   "websitesRemoveTitle": "ウェブサイトを削除しますか？",
   "websitesRemoveBody": "{name} を保存済みウェブサイトから削除しますか？",
   "websitesOpenExternal": "ブラウザで開く",
-  "websitesLoadFailed": "このページを読み込めませんでした"
+  "websitesLoadFailed": "このページを読み込めませんでした",
+  "livePlaylists": "プレイリスト",
+  "addPlaylist": "プレイリストを追加",
+  "playlistName": "プレイリスト名",
+  "playlistUrl": "M3U / JSON URL",
+  "playlistPaste": "またはプレイリストのテキストを貼り付け",
+  "playlistEmpty": "プレイリストはまだありません。\nM3U または JSON プレイリストを追加すると、ここにチャンネルが表示されます。",
+  "playlistRemoveTitle": "プレイリストを削除しますか？",
+  "playlistRemoveBody": "チャンネルはライブTVから消えます。",
+  "playlistAdded": "プレイリストを追加しました",
+  "playlistFailed": "プレイリストを読み込めませんでした",
+  "playlistChannels": "{count} チャンネル",
+  "playlistSourceUrl": "URL",
+  "playlistSourcePaste": "貼り付けたテキスト",
+  "playlistRemove": "削除",
+  "playlistCount": "{count} プレイリスト"
 }

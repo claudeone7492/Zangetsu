@@ -3704,5 +3704,20 @@
   "websitesRemoveTitle": "移除網站？",
   "websitesRemoveBody": "從已儲存網站中移除 {name}？",
   "websitesOpenExternal": "在瀏覽器中開啟",
-  "websitesLoadFailed": "無法載入此頁面"
+  "websitesLoadFailed": "無法載入此頁面",
+  "livePlaylists": "播放清單",
+  "addPlaylist": "新增播放清單",
+  "playlistName": "播放清單名稱",
+  "playlistUrl": "M3U / JSON 網址",
+  "playlistPaste": "或貼上播放清單文字",
+  "playlistEmpty": "尚無播放清單。\n新增 M3U 或 JSON 播放清單後，頻道會顯示在這裡。",
+  "playlistRemoveTitle": "移除播放清單？",
+  "playlistRemoveBody": "頻道將從直播電視中消失。",
+  "playlistAdded": "已新增播放清單",
+  "playlistFailed": "無法載入播放清單",
+  "playlistChannels": "{count} 個頻道",
+  "playlistSourceUrl": "網址",
+  "playlistSourcePaste": "貼上的文字",
+  "playlistRemove": "移除",
+  "playlistCount": "{count} 個播放清單"
 }

@@ -3703,5 +3703,20 @@
   "websitesRemoveTitle": "Rimuovere il sito?",
   "websitesRemoveBody": "Rimuovere {name} dai siti salvati?",
   "websitesOpenExternal": "Apri nel browser",
-  "websitesLoadFailed": "Impossibile caricare questa pagina"
+  "websitesLoadFailed": "Impossibile caricare questa pagina",
+  "livePlaylists": "Playlist",
+  "addPlaylist": "Aggiungi playlist",
+  "playlistName": "Nome playlist",
+  "playlistUrl": "URL M3U / JSON",
+  "playlistPaste": "Oppure incolla il testo della playlist",
+  "playlistEmpty": "Nessuna playlist.\nAggiungi una playlist M3U o JSON per vedere i suoi canali qui.",
+  "playlistRemoveTitle": "Rimuovere la playlist?",
+  "playlistRemoveBody": "I canali spariranno dalla TV live.",
+  "playlistAdded": "Playlist aggiunta",
+  "playlistFailed": "Impossibile caricare la playlist",
+  "playlistChannels": "{count} canali",
+  "playlistSourceUrl": "URL",
+  "playlistSourcePaste": "Testo incollato",
+  "playlistRemove": "Rimuovi",
+  "playlistCount": "{count} playlist"
 }

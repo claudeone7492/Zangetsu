@@ -3957,5 +3957,25 @@
   "@websitesRemoveBody": {
     "description": "Confirmation body; {name} is the saved site's name.",
     "placeholders": {"name": {"type": "String"}}
-  }
+  },
+  "livePlaylists": "Playlists",
+  "addPlaylist": "Add playlist",
+  "playlistName": "Playlist name",
+  "playlistUrl": "M3U / JSON URL",
+  "playlistPaste": "Or paste the playlist text",
+  "playlistEmpty": "No playlists yet.\nAdd an M3U or JSON playlist to see its channels here.",
+  "playlistRemoveTitle": "Remove playlist?",
+  "playlistRemoveBody": "The channels will disappear from Live TV.",
+  "playlistAdded": "Playlist added",
+  "playlistFailed": "Could not load the playlist",
+  "playlistChannels": "{count} channels",
+  "playlistSourceUrl": "URL",
+  "playlistSourcePaste": "Pasted text",
+  "playlistRemove": "Remove",
+  "@playlistChannels": {
+    "description": "Number of channels imported from a playlist.",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "playlistCount": "{count} playlists",
+  "@playlistCount": {"description": "Number of saved playlists.", "placeholders": {"count": {"type": "int"}}}
 }

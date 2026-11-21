@@ -162,6 +162,7 @@ import '../cast/cast_controller.dart';
 import '../live/dvr_capture_service.dart';
 import '../live/dvr_store.dart';
 import '../live/epg_store.dart';
+import '../live/live_playlist_store.dart';
 import '../live/live_parental.dart';
 import '../live/xtream_account_store.dart';
 import '../live/xtream_api.dart';
@@ -1006,6 +1007,9 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   final xtreamStore = XtreamAccountStore();
   await xtreamStore.ensureLoaded();
   sl.registerSingleton<XtreamAccountStore>(xtreamStore);
+  final livePlaylists = LivePlaylistStore();
+  await livePlaylists.init();
+  sl.registerSingleton<LivePlaylistStore>(livePlaylists);
   unawaited(() async {
     try {
       await epgStore.installDefaults();

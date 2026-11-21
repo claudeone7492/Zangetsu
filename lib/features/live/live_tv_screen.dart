@@ -7,15 +7,19 @@ import '../../core/app_config.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
 import '../../core/live/dvr_store.dart';
+import '../../core/live/live_playlist_store.dart';
 import '../../core/live/live_parental.dart';
 import '../../core/live/sports_catalog.dart';
 import '../../core/live/epg_store.dart';
 import '../../core/live/xtream_account_store.dart';
 import '../../core/live/live_match_enrichment.dart';
 import '../../core/live/live_match_format.dart';
+import '../../core/models/episode.dart';
 import '../../core/models/home_section.dart';
 import '../../core/models/media_item.dart';
+import '../../core/models/video_source.dart';
 import '../../core/playback/playback_prefs.dart';
+import '../../core/playback/resume_store.dart';
 import '../../core/repository/source_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
@@ -30,9 +34,11 @@ import '../../core/ui/states.dart';
 import '../../l10n/l10n.dart';
 import '../detail/detail_screen.dart';
 import 'live_tv_guide_screen.dart';
+import 'live_playlists_screen.dart';
 import 'live_parental_screen.dart';
 import 'recordings_screen.dart';
 import 'xtream_accounts_screen.dart';
+import '../player/player_screen.dart';
 import '../home/home_screen_tv.dart';
 import '../home/provider_browse_route.dart' show openProviderExtensionItem;
 import '../search/browse_source_screen.dart' show canonicalTargetFor;
@@ -297,11 +303,35 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
       final sections = await repo
           .home(sourceId: kLiveTvSourceId)
           .timeout(_timeout);
-      _cachedSections = sections;
+      final imported = await _importedSections();
+      _cachedSections = [...imported, ...sections];
       _cachedSports = sports;
       _cacheOwner = repo;
     } catch (_) {
       // Best-effort: the screen fetches on open if this never landed.
+    }
+  }
+
+  /// The user's own playlists as Home rows. Empty when none are saved or a
+  /// remote playlist is unreachable, so Live TV still paints the bundled
+  /// catalogue.
+  static Future<List<HomeSection>> _importedSections() async {
+    if (!sl.isRegistered<LivePlaylistStore>()) return const [];
+    try {
+      return await sl<LivePlaylistStore>()
+          .sections(sl<Dio>())
+          .timeout(const Duration(seconds: 20));
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  static Future<List<MediaItem>> _localSearch(String query) async {
+    if (!sl.isRegistered<LivePlaylistStore>()) return const [];
+    try {
+      return await sl<LivePlaylistStore>().search(query, sl<Dio>());
+    } catch (_) {
+      return const [];
     }
   }
 
@@ -328,17 +358,20 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     // channels so the two don't serialize, but never let it sink the page: a
     // missing MovieBox (or a dead sports endpoint) just yields no rail.
     final sportsFuture = _fetchSports(_repo);
+    final importedFuture = _importedSections();
     try {
       final sections = await _repo
           .home(sourceId: kLiveTvSourceId)
           .timeout(_timeout);
       final sports = await sportsFuture;
+      final imported = await importedFuture;
       if (!mounted) return;
-      _cachedSections = sections;
+      final merged = [...imported, ...sections];
+      _cachedSections = merged;
       _cachedSports = sports;
       _cacheOwner = _repo;
       setState(() {
-        _sections = sections;
+        _sections = merged;
         _sports = sports;
         _loading = false;
       });
@@ -349,6 +382,15 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
       // fetch failure on a re-open should not hide the channels the user was
       // just looking at. Only a first open with no cache shows the error state.
       if (cached != null) return;
+      final imported = await importedFuture;
+      if (imported.isNotEmpty) {
+        setState(() {
+          _sections = imported;
+          _loading = false;
+          _failed = false;
+        });
+        return;
+      }
       setState(() {
         _failed = true;
         _loading = false;
@@ -531,14 +573,16 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   }
 
   Future<void> _runSearch(String query) async {
+    final localFuture = _localSearch(query);
     try {
       final hits = await _repo
           .search(query, sourceId: kLiveTvSourceId)
           .timeout(_timeout);
+      final local = await localFuture;
       // A slower earlier query must never overwrite a newer one's results.
       if (!mounted || query != _query) return;
       setState(() {
-        _results = hits;
+        _results = [...local, ...hits];
         _searching = false;
         _searchFailed = false;
       });
@@ -581,6 +625,10 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   }
 
   Future<void> _open(MediaItem item) async {
+    if (item.sourceId == LivePlaylistStore.sourceId) {
+      await _openImported(item);
+      return;
+    }
     // A live-sports match is a provider-extension handle (`live:` scheme), not
     // a title: it has no detail page, so it opens the player directly. IPTV
     // channels are ordinary items and fall through to the Detail route.
@@ -590,6 +638,35 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     final target = await canonicalTargetFor(item);
     if (!mounted) return;
     Navigator.of(context).push(DetailScreen.route(target ?? item));
+  }
+
+  /// An imported channel has no provider behind it, so its URL is the stream.
+  /// Handing it straight to the player skips the detail route (which would
+  /// have to resolve a source id that is not registered).
+  Future<void> _openImported(MediaItem item) async {
+    final episode = Episode(id: item.url, title: item.title, url: item.url);
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => PlayerScreen(
+          sourceId: LivePlaylistStore.sourceId,
+          episodes: [episode],
+          startIndex: 0,
+          resume: sl<ResumeStore>(),
+          resolveSources: (_) async => [
+            VideoSource(
+              url: item.url,
+              quality: 'live',
+              label: item.title,
+              container: item.url.contains('.m3u8')
+                  ? SourceContainer.hls
+                  : SourceContainer.unknown,
+            ),
+          ],
+          showTitle: item.title,
+          cover: item.cover,
+        ),
+      ),
+    );
   }
 
   @override
@@ -614,6 +691,16 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
           ],
         ),
         actions: [
+          if (sl.isRegistered<LivePlaylistStore>())
+            IconButton(
+              tooltip: context.l10n.livePlaylists,
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const LivePlaylistsScreen(),
+                ),
+              ),
+              icon: const Icon(Icons.playlist_play_rounded),
+            ),
           if (sl.isRegistered<XtreamAccountStore>())
             IconButton(
               tooltip: context.l10n.liveXtreamAccounts,

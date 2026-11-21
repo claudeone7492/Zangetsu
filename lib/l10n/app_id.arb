@@ -3743,5 +3743,20 @@
   "websitesRemoveTitle": "Hapus situs?",
   "websitesRemoveBody": "Hapus {name} dari situs tersimpan?",
   "websitesOpenExternal": "Buka di browser",
-  "websitesLoadFailed": "Halaman ini tidak dapat dimuat"
+  "websitesLoadFailed": "Halaman ini tidak dapat dimuat",
+  "livePlaylists": "Daftar putar",
+  "addPlaylist": "Tambah daftar putar",
+  "playlistName": "Nama daftar putar",
+  "playlistUrl": "URL M3U / JSON",
+  "playlistPaste": "Atau tempel teks daftar putar",
+  "playlistEmpty": "Belum ada daftar putar.\nTambahkan daftar M3U atau JSON untuk melihat channel-nya di sini.",
+  "playlistRemoveTitle": "Hapus daftar putar?",
+  "playlistRemoveBody": "Channel akan hilang dari Live TV.",
+  "playlistAdded": "Daftar putar ditambahkan",
+  "playlistFailed": "Tidak dapat memuat daftar putar",
+  "playlistChannels": "{count} channel",
+  "playlistSourceUrl": "URL",
+  "playlistSourcePaste": "Teks ditempel",
+  "playlistRemove": "Hapus",
+  "playlistCount": "{count} daftar putar"
 }

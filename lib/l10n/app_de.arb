@@ -3703,5 +3703,20 @@
   "websitesRemoveTitle": "Website entfernen?",
   "websitesRemoveBody": "{name} aus deinen gespeicherten Websites entfernen?",
   "websitesOpenExternal": "Im Browser öffnen",
-  "websitesLoadFailed": "Diese Seite konnte nicht geladen werden"
+  "websitesLoadFailed": "Diese Seite konnte nicht geladen werden",
+  "livePlaylists": "Wiedergabelisten",
+  "addPlaylist": "Wiedergabeliste hinzufügen",
+  "playlistName": "Name der Wiedergabeliste",
+  "playlistUrl": "M3U-/JSON-URL",
+  "playlistPaste": "Oder Wiedergabelistentext einfügen",
+  "playlistEmpty": "Noch keine Wiedergabelisten.\nFüge eine M3U- oder JSON-Liste hinzu, um ihre Sender hier zu sehen.",
+  "playlistRemoveTitle": "Wiedergabeliste entfernen?",
+  "playlistRemoveBody": "Die Sender verschwinden aus Live-TV.",
+  "playlistAdded": "Wiedergabeliste hinzugefügt",
+  "playlistFailed": "Wiedergabeliste konnte nicht geladen werden",
+  "playlistChannels": "{count} Sender",
+  "playlistSourceUrl": "URL",
+  "playlistSourcePaste": "Eingefügter Text",
+  "playlistRemove": "Entfernen",
+  "playlistCount": "{count} Wiedergabelisten"
 }
