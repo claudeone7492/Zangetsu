@@ -60,6 +60,7 @@ import '../schedule/airing_service.dart';
 import '../schedule/coming_soon_service.dart';
 import '../privacy/app_lock.dart';
 import '../privacy/nsfw_gate.dart';
+import '../live/iptv_mark_store.dart';
 import '../privacy/incognito_mode.dart';
 import '../profiles/viewer_profile.dart';
 import '../profiles/profile_lock_store.dart';
@@ -1504,6 +1505,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   // just the index plus the fetch queue. Anything a kill interrupted last run
   // is picked back up here; it's unawaited so a slow disk can't hold up boot.
   await ChapterDownloadStore.init();
+  await IptvMarkStore.init();
   sl.registerSingleton<ChapterDownloadStore>(ChapterDownloadStore());
   sl.registerSingleton<ChapterDownloader>(
     ChapterDownloader(sl<SourceRepository>(), sl<ChapterDownloadStore>()),
