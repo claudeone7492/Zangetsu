@@ -118,7 +118,7 @@ Hikari: `iptv/` ~5,600 lines / 20 files.
 | # | Feature | Hikari evidence | Wiring plan in ours |
 |---|---|---|---|
 | F1 | ✅ *done* — **`.hiki` extension SDK host** | `hiki/` | Landed with A8: the `com.hikari.ext` SDK is vendored in `android/app/src/main/kotlin/com/hikari/ext/` and loaded through `DexClassLoader`. |
-| F2 | **CloudStream native API completeness** | `cs3/Cs3MainApiProvider.kt` | See A9. |
+| F2 | ✅ *done* — **CloudStream native API completeness** | `cs3/Cs3MainApiProvider.kt` | Closed by A9, and this row was only ever a pointer to it. A9's bytecode audit of 761 `.cs3` plugins found 0 missing classes and 0 missing methods against `library-android:v4.8.0`, so there is no separate item here to finish. Keeping it open implied work that the measurement had already ruled out. |
 
 ---
 
