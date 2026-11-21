@@ -10,11 +10,8 @@ import 'cubit/my_list_cubit.dart';
 List<ContentMode> libraryKindsForTracker(Tracker? tracker) => [
   for (final mode in ContentMode.values)
     // Shorts has no list of its own — it shares the video list — so it is
-    // never a category tab (see listKindOf in my_list_screen.dart). Music has
-    // no library at all: its catalogue is an API with no watch status, so
-    // there is nothing to file under a category.
+    // never a category tab (see listKindOf in my_list_screen.dart).
     if (mode != ContentMode.shorts &&
-        mode != ContentMode.music &&
         (tracker == null ||
             (mode.isReading
                 ? tracker.supportsReading

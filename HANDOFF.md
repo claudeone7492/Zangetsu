@@ -20,7 +20,6 @@ The first job is the one that was deliberately left: **the full test suite**.
 ```bash
 # One file at a time — this sandbox kills long runs. The suite is large.
 flutter test test/core/telegram/
-flutter test test/core/music/
 # ...then the rest, directory by directory.
 ```
 

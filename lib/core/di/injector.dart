@@ -177,21 +177,12 @@ import '../live/xtream_account_store.dart';
 import '../live/xtream_api.dart';
 import '../cast/cast_proxy.dart';
 import '../comments/episode_comments_service.dart';
-import '../music/audio_output.dart';
-import '../music/music_player_controller.dart';
-import '../music/music_prefs.dart';
-import '../music/jiosaavn_source.dart';
-import '../music/lossless_source.dart';
-import '../music/youtube_music_source.dart';
-import '../music/music_service.dart';
 import '../supabase/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show OtpType;
 import '../ui/ui_scale.dart';
 import '../ui/header_prefs.dart';
 import '../net/doh_dns.dart';
 import '../net/dns_providers.dart';
-import '../music/vx_quality.dart';
-import '../music/vx_audio_fx.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -648,12 +639,10 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   // Persisted Cloudflare clearances: JS sources reuse a solved cf_clearance
   // across restarts instead of re-popping the "Verifying…" solver each session.
   await CfClearanceStore.init();
-  // Interface scale, detail-header height, music quality/EQ and the DNS mode
-  // are read before the first frame so the shell never flashes the defaults.
+  // Interface scale, detail-header height and the DNS mode are read before the
+  // first frame so the shell never flashes the defaults.
   await UiScale.load();
   await HeaderPrefs.load();
-  await VxQuality.load();
-  await VxAudioFx.load();
   await DnsProviders.load();
 
   final dio = Dio(
@@ -1425,36 +1414,6 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   // wraps it.
   sl.registerSingleton<ContentModeCubit>(
     await ContentModeCubit.create(sl<ActiveSourceCubit>()),
-  );
-
-  // Music mode's catalogue. Registered eagerly (no network on construct) so the
-  // music screen and the player can both reach one instance: the screen builds
-  // rows from it, and the player resolves stream URLs through it. A second
-  // instance would mean two Dio clients and two sets of timeouts.
-  await MusicPrefs.init();
-  sl.registerLazySingleton<MusicService>(
-    () => MusicService(
-      sources: [
-        JioSaavnSource(),
-        // Second catalogue, ported from Hikari: YouTube Music over InnerTube.
-        // Keyless, and the player endpoint needs no account — only the web
-        // fallback wants a PO token, which it mints on demand.
-        YouTubeMusicSource(dio: sl<Dio>()),
-        // Ships unconfigured and the service hides it until Parity tools
-        // stores an endpoint, so music mode is unchanged out of the box.
-        LosslessSource(sl<Dio>()),
-      ],
-    ),
-  );
-  // The lossless source ships unconfigured; this reads the endpoint the user
-  // saved in Parity tools so the singleton is usable without a restart.
-  unawaited(LosslessSource.load());
-
-  sl.registerLazySingleton<MusicPlayerController>(
-    () => MusicPlayerController(
-      service: sl<MusicService>(),
-      output: MediaKitAudioOutput(),
-    ),
   );
 
   // Addon settings are local; configured URLs stay in secure storage.

@@ -43,7 +43,6 @@ import '../home/cubit/home_cubit.dart';
 import '../home/home_screen.dart';
 import '../home/my_list_screen.dart';
 import '../home/search_screen.dart';
-import '../music/music_screen.dart';
 import '../settings/settings_screen.dart';
 import 'dock_icons.dart';
 import 'mode_bar.dart';
@@ -86,11 +85,6 @@ List<Widget> buildShellPages(
 /// `sl<ContentModeCubit>()` there needs the cubit registered just to describe
 /// the pages, which no caller should have to arrange. Here the lookup happens
 /// when the page is actually built, inside the app that registered it.
-///
-/// Music has no providers, so the shared [SearchScreen] has nothing to search
-/// in that mode — it would offer movie metadata. The music screen's own search
-/// looks through the song catalogue instead, so the tab keeps meaning "search
-/// what this mode shows".
 class _ModeAwareSearchPage extends StatelessWidget {
   const _ModeAwareSearchPage({
     required this.homeIsActive,
@@ -104,15 +98,10 @@ class _ModeAwareSearchPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ContentModeCubit, ContentMode>(
-      bloc: sl<ContentModeCubit>(),
-      builder: (context, mode) => mode == ContentMode.music
-          ? MusicScreen(active: homeIsActive, searchOnOpen: true)
-          : SearchScreen(
-              showBack: false,
-              focusSignal: focusSignal,
-              fixedSourceId: fixedSourceId,
-            ),
+    return SearchScreen(
+      showBack: false,
+      focusSignal: focusSignal,
+      fixedSourceId: fixedSourceId,
     );
   }
 }

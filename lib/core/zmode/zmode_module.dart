@@ -335,6 +335,4 @@ ZKind browseKindFor(ContentMode mode, StreamKind stream) => switch (mode) {
   ContentMode.novel => ZKind.novel,
   ContentMode.shorts => ZKind.movie,
   ContentMode.anime => stream == StreamKind.movie ? ZKind.movie : ZKind.anime,
-  // Music has no metadata kind — its Home never goes through Z Mode.
-  ContentMode.music => ZKind.movie,
 };

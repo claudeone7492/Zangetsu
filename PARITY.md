@@ -2,6 +2,10 @@
 
 > **Superseded in depth by [`AUDIT.md`](AUDIT.md)**, which walks all 33
 > Hikari packages (149 units) and corrects several statuses below.
+>
+> **Music mode was removed in full on 2026-11-21** — code, `ContentMode.music`,
+> Settings row, Parity-tools endpoint, DI and strings. The music rows below
+> describe it as it was before that removal.
 
 Measured against `claudeone7492/Zangetsu` at the head of `main` and the Hikari tree at
 `codegeasse1/hikari` (`/workspace/hikari`). Every row was checked by file and

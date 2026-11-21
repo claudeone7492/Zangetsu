@@ -87,7 +87,6 @@ class ListsHubScreen extends StatelessWidget {
     ContentMode.manga => Icons.auto_stories_outlined,
     ContentMode.novel => Icons.menu_book_outlined,
     ContentMode.shorts => Icons.bolt_outlined,
-    ContentMode.music => Icons.music_note_outlined,
   };
 
   /// A video-only tracker's single row says what it covers; elsewhere the kind
@@ -102,7 +101,6 @@ class ListsHubScreen extends StatelessWidget {
     ContentMode.manga => context.l10n.listKindManga,
     ContentMode.novel => context.l10n.listKindNovel,
     ContentMode.shorts => context.l10n.shorts,
-    ContentMode.music => context.l10n.modeMusic,
   };
 
   static String _descFor(BuildContext context, ContentMode k) => switch (k) {
@@ -110,7 +108,6 @@ class ListsHubScreen extends StatelessWidget {
     ContentMode.manga => context.l10n.listKindMangaDesc,
     ContentMode.novel => context.l10n.listKindNovelDesc,
     ContentMode.shorts => context.l10n.listKindAnimeDesc,
-    ContentMode.music => context.l10n.musicSongsForYou,
   };
 
   /// Each service's own colour, so the rows are told apart by more than their

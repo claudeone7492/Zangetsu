@@ -6,26 +6,23 @@ import android.content.Intent
 
 /**
  * Restarts bandwidth sharing after a reboot or an app update — but ONLY when the
- * user previously opted in ([BandwidthSharePrefs.ENABLED]). The SDK runs its own
- * foreground service with a visible notification, so a restart here restores the
- * user's own choice; it never turns sharing on for someone who declined or never
- * answered.
+ * user previously opted in ([BandwidthSharePrefs.isEnabled]). The SDK runs its
+ * own foreground service with a visible notification, so a restart here restores
+ * the user's own choice; it never turns sharing on for someone who declined or
+ * never answered.
  *
- * Two things decide whether the restart can happen here, and both live in
- * [PeerShareRestart]: whether the platform allows a `dataSync` service to be
- * started from this broadcast, and keeping the process alive long enough for the
- * SDK's network registration to finish.
+ * This is the primary restart path, not a fallback. The SDK's service is
+ * `specialUse`, and Android 15's ban on starting from BOOT_COMPLETED covers only
+ * `dataSync` and `mediaProcessing` — BOOT_COMPLETED is otherwise on the
+ * foreground-service allowlist, so the service starts here without any battery
+ * exemption. [PeerShareRestart] waits for the registration to settle and arms one
+ * retry alarm if it did not take.
  */
 class PeerShareBootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action ?: return
         if (action !in ACTIONS) return
         if (!BandwidthSharePrefs.isEnabled(context)) return
-
-        if (PeerShareRestart.blockedFromBoot(context)) {
-            PeerShareRestart.scheduleDeferredRestart(context)
-            return
-        }
         PeerShareRestart.restart(context, goAsync())
     }
 

@@ -86,9 +86,18 @@ class BandwidthShare extends ChangeNotifier {
   /// dialling, or opted in with the SDK having failed to come up.
   bool _running = false;
 
+  /// Whether Android has exempted the app from battery optimisation. Until it
+  /// has, the system may stop the sharing service and refuse to restart it after
+  /// a reboot, so Settings offers the exemption while sharing is on. Defaults to
+  /// true so the offer does not flash up before the first native read.
+  bool _batteryExempt = true;
+
   bool get supported => bandwidthShareSupported;
   BandwidthShareStatus get status => _status;
   bool get enabled => _enabled;
+
+  /// Whether the app is exempt from battery optimisation. See [_batteryExempt].
+  bool get batteryExempt => _batteryExempt;
 
   /// Whether the peer SDK is actually running and sharing traffic.
   bool get running => _running;
@@ -133,11 +142,29 @@ class BandwidthShare extends ChangeNotifier {
       _answeredConsent = result['answeredConsent'] == true;
       _running = result['running'] == true;
       _available = result['available'] as bool? ?? true;
+      _batteryExempt = result['batteryExempt'] as bool? ?? true;
       _status = _statusFromName(result['status'] as String?);
       notifyListeners();
     } catch (_) {
       // Channel missing (non-Android test host, older build): stay inert.
     }
+  }
+
+  /// Re-reads the native state. Called when the app returns to the foreground,
+  /// which is how the battery-exemption tile learns the user answered the system
+  /// dialog — that dialog reports nothing back to us.
+  Future<void> refresh() => supported ? _refresh() : Future<void>.value();
+
+  /// Opens Android's "don't optimise this app" dialog.
+  ///
+  /// Android stops background services of optimised apps and refuses to restart
+  /// them, so without this the reboot restart is best-effort. The user answers in
+  /// the system UI; [refresh] picks the result up on resume.
+  Future<void> requestBatteryExemption() async {
+    if (!supported) return;
+    try {
+      await _method.invokeMethod<bool>('requestBatteryExemption');
+    } catch (_) {}
   }
 
   /// The user accepted the sheet: remember the choice and start sharing.
@@ -166,6 +193,7 @@ class BandwidthShare extends ChangeNotifier {
       _enabled = result['enabled'] == true;
       _running = result['running'] == true;
       _available = result['available'] as bool? ?? true;
+      _batteryExempt = result['batteryExempt'] as bool? ?? _batteryExempt;
       _status = _statusFromName(result['status'] as String?);
       if (!started) {
         _enabled = false;

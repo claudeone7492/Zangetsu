@@ -740,8 +740,6 @@ class _HomeScreenTvState extends State<HomeScreenTv> {
             ContentMode.anime => false,
             // Shorts browses the drama aggregate, not the active source.
             ContentMode.shorts => false,
-            // Music is catalogue-backed, not source-backed.
-            ContentMode.music => false,
             null => false,
           };
 
@@ -1199,7 +1197,6 @@ class _TvNoSourcesGuide extends StatelessWidget {
       ContentMode.manga => Icons.auto_stories_rounded,
       ContentMode.novel => Icons.menu_book_rounded,
       ContentMode.shorts => Icons.bolt_rounded,
-      ContentMode.music => Icons.music_note_rounded,
     };
     final l10n = context.l10n;
     return Center(

@@ -6533,6 +6533,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bandwidthNotifBody => 'تستمر الميزات الخلفية الاختيارية في العمل';
 
   @override
+  String get bandwidthBatteryTitle => 'المتابعة بعد إعادة التشغيل';
+
+  @override
+  String get bandwidthBatterySubtitle =>
+      'أوقف تحسين البطارية لتستأنف الميزات الخلفية من تلقاء نفسها';
+
+  @override
   String get tapToPlay => 'انقر للتشغيل';
 
   @override
@@ -6785,103 +6792,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get appLockDisabled => 'قفل التطبيق معطّل';
 
   @override
-  String get musicQuality => 'جودة الموسيقى';
-
-  @override
-  String get musicQualitySubtitle => 'معدل البت للأغاني المتدفقة';
-
-  @override
-  String get musicQualityDataSaver => 'توفير البيانات';
-
-  @override
-  String get musicQualityBalanced => 'متوازنة';
-
-  @override
-  String get musicQualityHigh => 'عالية';
-
-  @override
-  String get modeMusic => 'الموسيقى';
-
-  @override
   String get contentSongs => 'أغانٍ';
-
-  @override
-  String get musicSongsForYou => 'أغانٍ لك';
-
-  @override
-  String get musicNowPlaying => 'يُشغَّل الآن';
-
-  @override
-  String get musicUpNext => 'التالي';
-
-  @override
-  String get musicQueue => 'قائمة الانتظار';
-
-  @override
-  String get musicSearchHint => 'ابحث عن أغانٍ وفنانين وألبومات';
-
-  @override
-  String get musicSearchSongs => 'ابحث عن أغانٍ';
-
-  @override
-  String get musicNoTracks => 'لا توجد أغانٍ هنا بعد';
-
-  @override
-  String get musicNoTracksBody =>
-      'لم يُرجع الكتالوج شيئًا لهذا الصف. جرّب صفًا آخر أو ابحث.';
-
-  @override
-  String get musicCantPlay => 'تعذّر تشغيل هذه الأغنية';
-
-  @override
-  String get musicCantPlayBody =>
-      'لم يُرجع الكتالوج رابطًا قابلًا للتشغيل. جرّب أغنية أخرى.';
-
-  @override
-  String get musicRepeatOff => 'التكرار متوقف';
-
-  @override
-  String get musicRepeatAll => 'تكرار الكل';
-
-  @override
-  String get musicRepeatOne => 'تكرار واحدة';
-
-  @override
-  String get musicShuffleOn => 'الخلط مفعّل';
-
-  @override
-  String get musicShuffleOff => 'الخلط متوقف';
-
-  @override
-  String get musicUnknownArtist => 'فنان غير معروف';
-
-  @override
-  String get musicUnavailable => 'الموسيقى غير متاحة';
-
-  @override
-  String get musicUnavailableBody =>
-      'لا يوجد كتالوج موسيقى يمكن الوصول إليه الآن. تحقق من اتصالك وحاول مجددًا.';
-
-  @override
-  String get musicSearchFailed => 'فشل البحث';
-
-  @override
-  String get musicPlayAll => 'تشغيل الكل';
-
-  @override
-  String get musicPaused => 'متوقف مؤقتًا';
-
-  @override
-  String get musicPlaying => 'قيد التشغيل';
-
-  @override
-  String get musicRowTrending => 'الأكثر رواجًا';
-
-  @override
-  String get musicRowNewReleases => 'إصدارات جديدة';
-
-  @override
-  String get musicRowLofi => 'لو-فاي';
 
   @override
   String get profileCouldNotUpdateAccountName => 'تعذّر تحديث اسم الحساب';
@@ -7942,24 +7853,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get detailHeaderHeight => 'ارتفاع رأس صفحة العمل';
-
-  @override
-  String get preferLossless => 'تفضيل الصوت بلا فقد';
-
-  @override
-  String get streamingQuality => 'جودة البث';
-
-  @override
-  String get downloadQuality => 'جودة التنزيل';
-
-  @override
-  String get bitPerfect => 'إخراج بت مثالي';
-
-  @override
-  String get studioClarity => 'نقاء الاستوديو';
-
-  @override
-  String get equalizer => 'موازن الصوت';
 
   @override
   String get dnsMode => 'وضع DNS';

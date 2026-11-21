@@ -267,6 +267,17 @@ class _BandwidthShareCard extends StatelessWidget {
                 ],
               ),
             ),
+            // Only while sharing is on and Android still optimises the app:
+            // without the exemption the system may stop the service and will not
+            // restart it after a reboot. Shown as a plain row rather than a nag
+            // dialog, and it disappears the moment the user answers.
+            if (share.enabled && !share.batteryExempt)
+              SettingsTile(
+                icon: Icons.battery_saver_rounded,
+                title: context.l10n.bandwidthBatteryTitle,
+                subtitle: context.l10n.bandwidthBatterySubtitle,
+                onTap: share.requestBatteryExemption,
+              ),
           ],
         );
       },

@@ -1,6 +1,11 @@
 package com.spyou.watch_app.bandwidth
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.PowerManager
+import android.provider.Settings
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -52,6 +57,7 @@ class BandwidthShareBridge(context: Context) : MethodChannel.MethodCallHandler {
                             "running" to PeerShare.isRunning(appContext),
                             "available" to configured,
                             "status" to status,
+                            "batteryExempt" to batteryExempt(),
                         ),
                     )
                 }.start()
@@ -70,6 +76,11 @@ class BandwidthShareBridge(context: Context) : MethodChannel.MethodCallHandler {
                 BandwidthSharePrefs.setAnswered(appContext, true)
                 result.success(null)
             }
+            // Android will refuse to restart a background service for an app it
+            // has put to sleep, so the reboot restart is only dependable once the
+            // user exempts the app. The dialog is the system's own; we never
+            // grant anything ourselves.
+            "requestBatteryExemption" -> result.success(openBatteryExemptionDialog())
             "snapshot" -> result.success(
                 mapOf(
                     "enabled" to BandwidthSharePrefs.isEnabled(appContext),
@@ -77,9 +88,35 @@ class BandwidthShareBridge(context: Context) : MethodChannel.MethodCallHandler {
                     "running" to PeerShare.isRunning(appContext),
                     "available" to PeerShare.isConfigured(),
                     "status" to PeerShare.currentStatus(appContext),
+                    "batteryExempt" to batteryExempt(),
                 ),
             )
             else -> result.notImplemented()
+        }
+    }
+
+    private fun batteryExempt(): Boolean =
+        appContext.getSystemService(PowerManager::class.java)
+            ?.isIgnoringBatteryOptimizations(appContext.packageName) == true
+
+    /**
+     * Opens the system's "don't optimise this app" dialog, falling back to the
+     * optimiser's app list on devices that do not handle the direct request
+     * (some OEM builds). Returns whether a screen was actually opened, so the UI
+     * can say "no" instead of pretending.
+     */
+    @SuppressLint("BatteryLife")
+    private fun openBatteryExemptionDialog(): Boolean {
+        val direct = Intent(
+            Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+            Uri.parse("package:${appContext.packageName}"),
+        )
+        val list = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+        return listOf(direct, list).any { intent ->
+            runCatching {
+                appContext.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                true
+            }.getOrDefault(false)
         }
     }
 }

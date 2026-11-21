@@ -6515,6 +6515,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Les fonctions d\'arrière-plan optionnelles continuent';
 
   @override
+  String get bandwidthBatteryTitle => 'Continuer après un redémarrage';
+
+  @override
+  String get bandwidthBatterySubtitle =>
+      'Désactivez l\'optimisation de la batterie pour que les fonctions d\'arrière-plan redémarrent seules';
+
+  @override
   String get tapToPlay => 'Touchez pour lire';
 
   @override
@@ -6771,103 +6778,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get appLockDisabled => 'Le verrouillage de l\'app est désactivé';
 
   @override
-  String get musicQuality => 'Qualité audio';
-
-  @override
-  String get musicQualitySubtitle => 'Débit des morceaux en streaming';
-
-  @override
-  String get musicQualityDataSaver => 'Économiseur de données';
-
-  @override
-  String get musicQualityBalanced => 'Équilibrée';
-
-  @override
-  String get musicQualityHigh => 'Élevée';
-
-  @override
-  String get modeMusic => 'Musique';
-
-  @override
   String get contentSongs => 'morceaux';
-
-  @override
-  String get musicSongsForYou => 'Morceaux pour vous';
-
-  @override
-  String get musicNowPlaying => 'Lecture en cours';
-
-  @override
-  String get musicUpNext => 'À suivre';
-
-  @override
-  String get musicQueue => 'File d\'attente';
-
-  @override
-  String get musicSearchHint => 'Rechercher des morceaux, artistes, albums';
-
-  @override
-  String get musicSearchSongs => 'Rechercher des morceaux';
-
-  @override
-  String get musicNoTracks => 'Pas encore de morceaux ici';
-
-  @override
-  String get musicNoTracksBody =>
-      'Le catalogue n\'a rien renvoyé pour cette rangée. Essayez une autre rangée ou une recherche.';
-
-  @override
-  String get musicCantPlay => 'Impossible de lire ce morceau';
-
-  @override
-  String get musicCantPlayBody =>
-      'Le catalogue n\'a pas renvoyé de lien lisible. Essayez un autre morceau.';
-
-  @override
-  String get musicRepeatOff => 'Répétition désactivée';
-
-  @override
-  String get musicRepeatAll => 'Tout répéter';
-
-  @override
-  String get musicRepeatOne => 'Répéter un titre';
-
-  @override
-  String get musicShuffleOn => 'Aléatoire activé';
-
-  @override
-  String get musicShuffleOff => 'Aléatoire désactivé';
-
-  @override
-  String get musicUnknownArtist => 'Artiste inconnu';
-
-  @override
-  String get musicUnavailable => 'Musique indisponible';
-
-  @override
-  String get musicUnavailableBody =>
-      'Aucun catalogue musical n\'est joignable pour l\'instant. Vérifiez votre connexion et réessayez.';
-
-  @override
-  String get musicSearchFailed => 'Échec de la recherche';
-
-  @override
-  String get musicPlayAll => 'Tout lire';
-
-  @override
-  String get musicPaused => 'En pause';
-
-  @override
-  String get musicPlaying => 'En lecture';
-
-  @override
-  String get musicRowTrending => 'Tendances';
-
-  @override
-  String get musicRowNewReleases => 'Nouveautés';
-
-  @override
-  String get musicRowLofi => 'Lo-fi';
 
   @override
   String get profileCouldNotUpdateAccountName =>
@@ -7968,24 +7879,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get detailHeaderHeight => 'Hauteur de l\'en-tête';
-
-  @override
-  String get preferLossless => 'Préférer le sans perte';
-
-  @override
-  String get streamingQuality => 'Qualité en streaming';
-
-  @override
-  String get downloadQuality => 'Qualité de téléchargement';
-
-  @override
-  String get bitPerfect => 'Sortie bit-perfect';
-
-  @override
-  String get studioClarity => 'Clarté studio';
-
-  @override
-  String get equalizer => 'Égaliseur';
 
   @override
   String get dnsMode => 'Mode DNS';

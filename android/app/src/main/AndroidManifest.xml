@@ -28,6 +28,13 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <!-- The sharing service is `specialUse`, not `dataSync`: Android 15 forbids
+         starting a dataSync service from BOOT_COMPLETED and caps one at 6h per
+         24h, which between them make an always-on sharing service impossible. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+    <!-- Asked for at opt-in so sharing can restart after a reboot without the
+         user opening the app. Never requested automatically. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <!-- Saving player screenshots to the gallery (gal); Android 10+ needs none. -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
     <!-- Android TV leanback: required=false so the app still installs on phones. -->
@@ -340,11 +347,21 @@
             android:name=".bandwidth.PeerShareRestartReceiver" />
         <!-- The peer SDK is vendored as source (android/app/src/main/kotlin/sx/proxies/peer)
              so its notification copy is ours; an AAR would have merged this same
-             declaration, so it moves here with the source. -->
+             declaration, so it moves here with the source.
+
+             `specialUse`, not `dataSync`: a dataSync service cannot be started
+             from BOOT_COMPLETED on Android 15+ and is stopped after 6h in any
+             24h window, so it could never be the always-on sharing service this
+             feature needs. specialUse has neither limit; the subtype property is
+             what Android asks for to justify the type. -->
         <service
             android:exported="false"
-            android:foregroundServiceType="dataSync"
-            android:name="sx.proxies.peer.service.PeerProxyService" />
+            android:foregroundServiceType="specialUse"
+            android:name="sx.proxies.peer.service.PeerProxyService">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="peer-to-peer bandwidth sharing while the user is opted in" />
+        </service>
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.videoprovider"

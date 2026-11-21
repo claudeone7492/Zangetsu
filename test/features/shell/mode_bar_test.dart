@@ -63,34 +63,24 @@ void main() {
     expect(picked, 0);
   });
 
-  testWidgets('offers Music and reports the pick', (t) async {
-    ContentMode? mode;
+  testWidgets('offers no Music entry', (t) async {
     await t.pumpWidget(MaterialApp(home: Scaffold(
       body: ModeBar(
         open: true,
         current: (ContentMode.anime, StreamKind.anime),
         onLiveTv: () {},
-        onPicked: (m, _) => mode = m,
-      ),
-    )));
-    expect(find.text('Music'), findsOneWidget);
-    await t.tap(find.text('Music'));
-    expect(mode, ContentMode.music);
-  });
-
-  testWidgets('Music is selectable and never reads as Anime', (t) async {
-    await t.pumpWidget(MaterialApp(home: Scaffold(
-      body: ModeBar(
-        open: true,
-        // Anime's Movie/TV entry shares the anime ContentMode; music must not
-        // be highlighted by that match, and anime must not highlight music.
-        current: (ContentMode.music, StreamKind.anime),
-        onLiveTv: () {},
         onPicked: (_, _) {},
       ),
     )));
-    expect(find.text('Music'), findsOneWidget);
-    expect(iconForMode(ContentMode.music, StreamKind.anime),
-        Icons.music_note_outlined);
+    expect(find.text('Music'), findsNothing);
+    expect(
+      modeChoices.map((c) => c.mode).toSet(),
+      {
+        ContentMode.anime,
+        ContentMode.manga,
+        ContentMode.novel,
+        ContentMode.shorts,
+      },
+    );
   });
 }

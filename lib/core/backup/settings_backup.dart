@@ -51,7 +51,6 @@ class SettingsBackup {
     'debrid_prefs', // debrid mode + active service (tokens are not here)
     'daily_picks_prefs', // the daily-picks digest switch
     'dub_prefs', // AI Dub voice, rate, pitch, volume
-    'music_prefs', // music streaming quality ceiling
     // Added 2026-11-21 — the same drift again: these landed with the parity
     // work and a restore silently dropped them.
     'ad_block', // ad-block switch + blocklists
@@ -62,8 +61,6 @@ class SettingsBackup {
     'websites', // the user's web sources
     'telegram_prefs', // Telegram channels the viewer added
     'dns_prefs', // resolver choice and the custom DoH endpoint
-    'music_quality', // music quality tier ceiling
-    'music_eq', // the music player's EQ curve
   ];
 
   /// Returns a map of `{boxName: {key: value, ...}}` for every open box.

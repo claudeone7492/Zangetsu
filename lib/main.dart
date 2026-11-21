@@ -15,6 +15,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'core/analytics/analytics.dart';
 import 'core/app_config.dart';
 import 'core/app_mode.dart';
+import 'core/bandwidth/bandwidth_share.dart';
 import 'core/boot_network.dart';
 import 'core/di/injector.dart';
 import 'core/subscription/subscription_repository.dart';
@@ -524,6 +525,11 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
       // A resume is the cheapest chance to catch a slot that came due while the
       // app was backgrounded; the day-stamp makes a repeat call a no-op.
       unawaited(DailyPicksService.instance.sync());
+      // The battery-optimisation dialog answers into the system UI and reports
+      // nothing back, so the sharing row can only learn the result on resume.
+      if (sl.isRegistered<BandwidthShare>()) {
+        unawaited(sl<BandwidthShare>().refresh());
+      }
       // The wallpaper may have changed while we were away. No-op unless
       // Material You is on, and only rebuilds if the colours actually moved.
       ThemeController.refresh();

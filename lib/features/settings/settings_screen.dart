@@ -14,7 +14,6 @@ import '../../core/bandwidth/bandwidth_share.dart';
 import '../../core/app_mode.dart';
 import '../../core/metadata/streaming_providers.dart';
 import '../../core/tracker/tracker_hub.dart';
-import '../../core/music/music_prefs.dart';
 import '../../core/ui/streaming_prefs.dart';
 import '../../core/zmode/metadata_provider_prefs.dart';
 import '../../core/cache/media_cache.dart';
@@ -647,45 +646,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) setState(() {});
   }
 
-  /// Music streams at whatever bitrate the catalogue offers by default, which
-  /// on a metered connection is the difference between a few MB and a hundred
-  /// per album. Three choices, no slider: the catalogue only publishes a fixed
-  /// set of encodings, so a finer control would promise a precision it cannot
-  /// deliver.
-  Future<void> _pickMusicQuality() async {
-    final current = MusicPrefs.quality;
-    final l10n = context.l10n;
-    String labelOf(MusicQuality q) => switch (q) {
-      MusicQuality.dataSaver => l10n.musicQualityDataSaver,
-      MusicQuality.balanced => l10n.musicQualityBalanced,
-      MusicQuality.high => l10n.musicQualityHigh,
-    };
-    final picked = await showModalBottomSheet<MusicQuality>(
-      context: context,
-      backgroundColor: AppColors.surface,
-      isScrollControlled: true,
-      builder: (ctx) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            for (final q in MusicQuality.values)
-              ListTile(
-                title: Text(labelOf(q), style: AppText.body),
-                subtitle: Text(q.label, style: AppText.caption),
-                trailing: q == current
-                    ? Icon(Icons.check_rounded, color: AppColors.accent)
-                    : null,
-                onTap: () => Navigator.pop(ctx, q),
-              ),
-          ],
-        ),
-      ),
-    );
-    if (picked == null || picked == current) return;
-    await MusicPrefs.setQuality(picked);
-    if (mounted) setState(() {});
-  }
-
   /// One Settings entry for both the active viewer profile and the account.
   Widget _accountCard(BuildContext context) {
     final profiles = sl<ViewerProfileStore>();
@@ -1073,14 +1033,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     ],
     // Playback & downloads
-    _SettingsEntry(
-      section: SettingsSection.playback,
-      icon: Icons.music_note_outlined,
-      title: l10n.musicQuality,
-      subtitle: '${l10n.musicQualitySubtitle} · ${MusicPrefs.quality.label}',
-      keywords: 'music quality bitrate audio songs data saver streaming',
-      onTap: _pickMusicQuality,
-    ),
     _SettingsEntry(
       section: SettingsSection.playback,
       id: LeafParent.playback,

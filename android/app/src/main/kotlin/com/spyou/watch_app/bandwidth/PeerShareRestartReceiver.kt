@@ -5,18 +5,18 @@ import android.content.Context
 import android.content.Intent
 
 /**
- * Delivers the alarm that [PeerShareRestart.scheduleDeferredRestart] sets after a
- * reboot: the only way a build targeting Android 15+ can bring sharing back on
- * its own, since a boot receiver may not start the SDK's `dataSync` service.
+ * Delivers the single retry alarm that [PeerShareRestart.scheduleRetry] arms when
+ * a boot-time restart did not take. Not a boot receiver, so no foreground-service
+ * type restriction applies; it only runs when the app is battery-exempt.
  */
 class PeerShareRestartReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != ACTION_RESTART) return
+        if (intent.action != ACTION_RETRY) return
         if (!BandwidthSharePrefs.isEnabled(context)) return
-        PeerShareRestart.restart(context, goAsync())
+        PeerShareRestart.restart(context, goAsync(), allowRetry = false)
     }
 
     companion object {
-        const val ACTION_RESTART = "com.spyou.watch_app.action.PEER_SHARE_RESTART"
+        const val ACTION_RETRY = "com.spyou.watch_app.action.PEER_SHARE_RETRY"
     }
 }

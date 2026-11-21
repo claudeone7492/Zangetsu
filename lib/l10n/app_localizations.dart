@@ -11325,6 +11325,18 @@ abstract class AppLocalizations {
   /// **'Keeping optional background features running'**
   String get bandwidthNotifBody;
 
+  /// No description provided for @bandwidthBatteryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep running after a reboot'**
+  String get bandwidthBatteryTitle;
+
+  /// No description provided for @bandwidthBatterySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off battery optimisation so background features restart on their own'**
+  String get bandwidthBatterySubtitle;
+
   /// No description provided for @tapToPlay.
   ///
   /// In en, this message translates to:
@@ -11721,197 +11733,11 @@ abstract class AppLocalizations {
   /// **'App lock is off'**
   String get appLockDisabled;
 
-  /// No description provided for @musicQuality.
-  ///
-  /// In en, this message translates to:
-  /// **'Music quality'**
-  String get musicQuality;
-
-  /// No description provided for @musicQualitySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Bitrate for streamed songs'**
-  String get musicQualitySubtitle;
-
-  /// No description provided for @musicQualityDataSaver.
-  ///
-  /// In en, this message translates to:
-  /// **'Data saver'**
-  String get musicQualityDataSaver;
-
-  /// No description provided for @musicQualityBalanced.
-  ///
-  /// In en, this message translates to:
-  /// **'Balanced'**
-  String get musicQualityBalanced;
-
-  /// No description provided for @musicQualityHigh.
-  ///
-  /// In en, this message translates to:
-  /// **'High'**
-  String get musicQualityHigh;
-
-  /// No description provided for @modeMusic.
-  ///
-  /// In en, this message translates to:
-  /// **'Music'**
-  String get modeMusic;
-
   /// No description provided for @contentSongs.
   ///
   /// In en, this message translates to:
   /// **'songs'**
   String get contentSongs;
-
-  /// No description provided for @musicSongsForYou.
-  ///
-  /// In en, this message translates to:
-  /// **'Songs for you'**
-  String get musicSongsForYou;
-
-  /// No description provided for @musicNowPlaying.
-  ///
-  /// In en, this message translates to:
-  /// **'Now playing'**
-  String get musicNowPlaying;
-
-  /// No description provided for @musicUpNext.
-  ///
-  /// In en, this message translates to:
-  /// **'Up next'**
-  String get musicUpNext;
-
-  /// No description provided for @musicQueue.
-  ///
-  /// In en, this message translates to:
-  /// **'Queue'**
-  String get musicQueue;
-
-  /// No description provided for @musicSearchHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Search songs, artists, albums'**
-  String get musicSearchHint;
-
-  /// No description provided for @musicSearchSongs.
-  ///
-  /// In en, this message translates to:
-  /// **'Search songs'**
-  String get musicSearchSongs;
-
-  /// No description provided for @musicNoTracks.
-  ///
-  /// In en, this message translates to:
-  /// **'No songs here yet'**
-  String get musicNoTracks;
-
-  /// No description provided for @musicNoTracksBody.
-  ///
-  /// In en, this message translates to:
-  /// **'The catalogue returned nothing for this row. Try another row or a search.'**
-  String get musicNoTracksBody;
-
-  /// No description provided for @musicCantPlay.
-  ///
-  /// In en, this message translates to:
-  /// **'Couldn\'t play this song'**
-  String get musicCantPlay;
-
-  /// No description provided for @musicCantPlayBody.
-  ///
-  /// In en, this message translates to:
-  /// **'The catalogue didn\'t return a playable link. Try another song.'**
-  String get musicCantPlayBody;
-
-  /// No description provided for @musicRepeatOff.
-  ///
-  /// In en, this message translates to:
-  /// **'Repeat off'**
-  String get musicRepeatOff;
-
-  /// No description provided for @musicRepeatAll.
-  ///
-  /// In en, this message translates to:
-  /// **'Repeat all'**
-  String get musicRepeatAll;
-
-  /// No description provided for @musicRepeatOne.
-  ///
-  /// In en, this message translates to:
-  /// **'Repeat one'**
-  String get musicRepeatOne;
-
-  /// No description provided for @musicShuffleOn.
-  ///
-  /// In en, this message translates to:
-  /// **'Shuffle on'**
-  String get musicShuffleOn;
-
-  /// No description provided for @musicShuffleOff.
-  ///
-  /// In en, this message translates to:
-  /// **'Shuffle off'**
-  String get musicShuffleOff;
-
-  /// No description provided for @musicUnknownArtist.
-  ///
-  /// In en, this message translates to:
-  /// **'Unknown artist'**
-  String get musicUnknownArtist;
-
-  /// No description provided for @musicUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Music unavailable'**
-  String get musicUnavailable;
-
-  /// No description provided for @musicUnavailableBody.
-  ///
-  /// In en, this message translates to:
-  /// **'No music catalogue is reachable right now. Check your connection and try again.'**
-  String get musicUnavailableBody;
-
-  /// No description provided for @musicSearchFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Search failed'**
-  String get musicSearchFailed;
-
-  /// No description provided for @musicPlayAll.
-  ///
-  /// In en, this message translates to:
-  /// **'Play all'**
-  String get musicPlayAll;
-
-  /// No description provided for @musicPaused.
-  ///
-  /// In en, this message translates to:
-  /// **'Paused'**
-  String get musicPaused;
-
-  /// No description provided for @musicPlaying.
-  ///
-  /// In en, this message translates to:
-  /// **'Playing'**
-  String get musicPlaying;
-
-  /// No description provided for @musicRowTrending.
-  ///
-  /// In en, this message translates to:
-  /// **'Trending'**
-  String get musicRowTrending;
-
-  /// No description provided for @musicRowNewReleases.
-  ///
-  /// In en, this message translates to:
-  /// **'New releases'**
-  String get musicRowNewReleases;
-
-  /// No description provided for @musicRowLofi.
-  ///
-  /// In en, this message translates to:
-  /// **'Lo-fi'**
-  String get musicRowLofi;
 
   /// No description provided for @profileCouldNotUpdateAccountName.
   ///
@@ -13910,42 +13736,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Detail header height'**
   String get detailHeaderHeight;
-
-  /// No description provided for @preferLossless.
-  ///
-  /// In en, this message translates to:
-  /// **'Prefer lossless'**
-  String get preferLossless;
-
-  /// No description provided for @streamingQuality.
-  ///
-  /// In en, this message translates to:
-  /// **'Streaming quality'**
-  String get streamingQuality;
-
-  /// No description provided for @downloadQuality.
-  ///
-  /// In en, this message translates to:
-  /// **'Download quality'**
-  String get downloadQuality;
-
-  /// No description provided for @bitPerfect.
-  ///
-  /// In en, this message translates to:
-  /// **'Bit-perfect output'**
-  String get bitPerfect;
-
-  /// No description provided for @studioClarity.
-  ///
-  /// In en, this message translates to:
-  /// **'Studio clarity'**
-  String get studioClarity;
-
-  /// No description provided for @equalizer.
-  ///
-  /// In en, this message translates to:
-  /// **'Equaliser'**
-  String get equalizer;
 
   /// No description provided for @dnsMode.
   ///

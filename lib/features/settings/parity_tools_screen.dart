@@ -4,18 +4,14 @@ import 'package:flutter/material.dart';
 
 import '../../core/collections/nuvio_import.dart';
 import '../../core/mihon/tachiyomi_backup.dart';
-import '../../core/music/lossless_source.dart';
-import '../../core/music/potoken.dart';
 import '../../core/parity/parity_native.dart';
 import '../../core/tracker/kitsu_service.dart';
 import '../../core/tracker/shikimori_service.dart';
 import '../../core/ui/help_sheet.dart';
 import '../../core/ui/ui_scale.dart';
-import '../../core/music/vx_quality.dart';
 import '../../core/net/dns_providers.dart';
 import '../../core/ui/header_prefs.dart';
 import 'dns_mode_screen.dart';
-import 'music_quality_screen.dart';
 import '../../l10n/l10n.dart';
 import '../home/tmdb_browse_screen.dart';
 
@@ -32,8 +28,6 @@ class ParityToolsScreen extends StatefulWidget {
 class _ParityToolsScreenState extends State<ParityToolsScreen> {
   final _nuvio = TextEditingController();
   final _tachiyomi = TextEditingController();
-  final _losslessUrl = TextEditingController();
-  final _losslessKey = TextEditingController();
   String? _status;
   double _scale = UiScale.factor;
   int _header = HeaderPrefs.percent;
@@ -43,8 +37,6 @@ class _ParityToolsScreenState extends State<ParityToolsScreen> {
   @override
   void initState() {
     super.initState();
-    _losslessUrl.text = LosslessSource.baseUrl;
-    _losslessKey.text = LosslessSource.apiKey;
     unawaited(_loadVoicePacks());
   }
 
@@ -63,8 +55,6 @@ class _ParityToolsScreenState extends State<ParityToolsScreen> {
   void dispose() {
     _nuvio.dispose();
     _tachiyomi.dispose();
-    _losslessUrl.dispose();
-    _losslessKey.dispose();
     super.dispose();
   }
 
@@ -114,42 +104,6 @@ class _ParityToolsScreenState extends State<ParityToolsScreen> {
           const SizedBox(height: 8),
           FilledButton(onPressed: _importTachiyomi, child: const Text('Parse backup')),
           const Divider(height: 32),
-          Text('Lossless music endpoint', style: Theme.of(context).textTheme.titleMedium),
-          TextField(
-            controller: _losslessUrl,
-            decoration: const InputDecoration(hintText: 'https://music.example.com'),
-          ),
-          TextField(
-            controller: _losslessKey,
-            decoration: const InputDecoration(hintText: 'API key (optional)'),
-          ),
-          const SizedBox(height: 8),
-          FilledButton(
-            onPressed: () async {
-              await LosslessSource.save(
-                baseUrl: _losslessUrl.text,
-                apiKey: _losslessKey.text,
-              );
-              if (mounted) {
-                setState(
-                  () => _status = LosslessSource.baseUrl.isNotEmpty
-                      ? 'Lossless endpoint saved'
-                      : 'Lossless endpoint cleared',
-                );
-              }
-            },
-            child: const Text('Save endpoint'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.music_video_outlined),
-            title: const Text('YouTube Music'),
-            subtitle: Text(
-              YouTubePoToken.isAvailable
-                  ? 'Catalogue ready · PO token minted on demand'
-                  : 'Catalogue ready · PO token unavailable on this build, '
-                        'native clients still play',
-            ),
-          ),
           const Divider(height: 32),
           Text('Trackers', style: Theme.of(context).textTheme.titleMedium),
           ListTile(
@@ -187,15 +141,6 @@ class _ParityToolsScreenState extends State<ParityToolsScreen> {
               HeaderPrefs.setPercent(value.round());
               setState(() => _header = value.round());
             },
-          ),
-          ListTile(
-            leading: const Icon(Icons.graphic_eq),
-            title: Text(context.l10n.equalizer),
-            subtitle: Text(
-              '${context.l10n.streamingQuality}: '
-              '${VxQuality.labelFor(VxQuality.streamQuality)}',
-            ),
-            onTap: () => Navigator.push(context, MusicQualityScreen.route()),
           ),
           ListTile(
             leading: const Icon(Icons.movie_filter_outlined),

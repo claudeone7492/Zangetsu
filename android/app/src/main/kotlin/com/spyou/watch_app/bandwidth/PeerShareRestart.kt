@@ -5,7 +5,6 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.PowerManager
 import android.os.SystemClock
 import android.util.Log
@@ -24,71 +23,69 @@ import android.util.Log
 internal object PeerShareRestart {
     private const val TAG = "PeerShareRestart"
     private const val SETTLE_TIMEOUT_MS = 8_000L
-    private const val ALARM_DELAY_MS = 10_000L
+    private const val RETRY_DELAY_MS = 60_000L
 
     /**
-     * Whether the platform forbids starting the SDK's service from a boot
-     * broadcast.
+     * Starts sharing and blocks a worker thread until the SDK settles.
      *
-     * Android 15 blocks `dataSync` foreground services from BOOT_COMPLETED, and
-     * the SDK's `PeerProxyService` is `dataSync`. The rule keys off the app's
-     * targetSdkVersion, not the OS version, so gating on `SDK_INT` alone (as
-     * this did) switched the restart off on every Android 15 device, including
-     * builds that target 34 and are still allowed to do it.
+     * `allowRetry` arms one alarm retry when the attempt does not take. The
+     * alarm receiver passes `false`, so a device that keeps failing gets one
+     * extra attempt per boot instead of an endless chain.
      */
-    fun blockedFromBoot(context: Context): Boolean =
-        context.applicationInfo.targetSdkVersion >= Build.VERSION_CODES.VANILLA_ICE_CREAM &&
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM
-
-    /** Starts sharing, then blocks a worker thread until the SDK settles. */
-    fun restart(context: Context, pending: BroadcastReceiver.PendingResult? = null) {
+    fun restart(
+        context: Context,
+        pending: BroadcastReceiver.PendingResult?,
+        allowRetry: Boolean = true,
+    ) {
         val app = context.applicationContext
         Thread {
+            var settled = false
             try {
-                if (PeerShare.start(app)) PeerShare.awaitSettled(app, SETTLE_TIMEOUT_MS)
+                settled = PeerShare.start(app) &&
+                    PeerShare.awaitSettled(app, SETTLE_TIMEOUT_MS)
+                        .let { it == "connected" || it == "connecting" }
             } catch (t: Throwable) {
                 Log.w(TAG, "restart failed: ${t.message}")
             } finally {
                 pending?.finish()
             }
+            if (!settled && allowRetry) scheduleRetry(app)
         }.start()
     }
 
     /**
-     * Re-arms the restart through an alarm, which is not a boot broadcast and is
-     * therefore allowed to start the service.
+     * One retry, a minute later, for when the first attempt did not take.
      *
-     * It only lands when the user exempted the app from battery optimisation,
-     * because that exemption is what permits a foreground-service start from the
-     * background at all. Without it there is no way to restart automatically on
-     * a build targeting 35+, so this defers to the next launch, where
-     * [PeerShare.resumeIfOptedIn] picks the opt-in up.
+     * Only armed when the app is exempt from battery optimisation. That exemption
+     * is what lets an alarm start a foreground service from the background at
+     * all, so without it the alarm would be refused and the retry would be
+     * theatre. [PeerShareBootReceiver] itself needs no exemption: BOOT_COMPLETED
+     * is on the platform's allowlist, and the service is `specialUse`, which the
+     * boot restriction does not cover.
      */
-    fun scheduleDeferredRestart(context: Context) {
+    fun scheduleRetry(context: Context) {
         val app = context.applicationContext
-        val power = app.getSystemService(Context.POWER_SERVICE) as? PowerManager
-        if (power?.isIgnoringBatteryOptimizations(app.packageName) != true) {
+        val power = app.getSystemService(PowerManager::class.java) ?: return
+        if (!power.isIgnoringBatteryOptimizations(app.packageName)) {
             Log.i(
                 TAG,
-                "restart deferred to next launch: Android 15+ blocks dataSync at " +
-                    "boot and the app is still battery-optimised",
+                "no retry: app is battery-optimised, so a background start would be refused",
             )
             return
         }
-        val alarm = app.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
-        val intent = Intent(app, PeerShareRestartReceiver::class.java)
-            .setAction(PeerShareRestartReceiver.ACTION_RESTART)
+        val alarm = app.getSystemService(AlarmManager::class.java) ?: return
         val pending = PendingIntent.getBroadcast(
             app,
             0,
-            intent,
+            Intent(app, PeerShareRestartReceiver::class.java)
+                .setAction(PeerShareRestartReceiver.ACTION_RETRY),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         alarm.set(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            SystemClock.elapsedRealtime() + ALARM_DELAY_MS,
+            SystemClock.elapsedRealtime() + RETRY_DELAY_MS,
             pending,
         )
-        Log.i(TAG, "scheduled restart ${ALARM_DELAY_MS}ms after boot")
+        Log.i(TAG, "retry scheduled in ${RETRY_DELAY_MS}ms")
     }
 }

@@ -6252,6 +6252,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bandwidthNotifBody => '可选的后台功能保持运行';
 
   @override
+  String get bandwidthBatteryTitle => '重启后继续运行';
+
+  @override
+  String get bandwidthBatterySubtitle => '关闭电池优化，让后台功能自动重新启动';
+
+  @override
   String get tapToPlay => '点击播放';
 
   @override
@@ -6499,100 +6505,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appLockDisabled => '应用锁已关闭';
 
   @override
-  String get musicQuality => '音乐音质';
-
-  @override
-  String get musicQualitySubtitle => '流媒体歌曲的比特率';
-
-  @override
-  String get musicQualityDataSaver => '省流量';
-
-  @override
-  String get musicQualityBalanced => '均衡';
-
-  @override
-  String get musicQualityHigh => '高音质';
-
-  @override
-  String get modeMusic => '音乐';
-
-  @override
   String get contentSongs => '首歌曲';
-
-  @override
-  String get musicSongsForYou => '为你推荐的歌曲';
-
-  @override
-  String get musicNowPlaying => '正在播放';
-
-  @override
-  String get musicUpNext => '接下来播放';
-
-  @override
-  String get musicQueue => '播放队列';
-
-  @override
-  String get musicSearchHint => '搜索歌曲、艺人、专辑';
-
-  @override
-  String get musicSearchSongs => '搜索歌曲';
-
-  @override
-  String get musicNoTracks => '这里还没有歌曲';
-
-  @override
-  String get musicNoTracksBody => '音乐库没有为此行返回任何内容。请试试其他行或搜索。';
-
-  @override
-  String get musicCantPlay => '无法播放这首歌';
-
-  @override
-  String get musicCantPlayBody => '音乐库未返回可播放的链接。请试试别的歌曲。';
-
-  @override
-  String get musicRepeatOff => '不循环';
-
-  @override
-  String get musicRepeatAll => '全部循环';
-
-  @override
-  String get musicRepeatOne => '单曲循环';
-
-  @override
-  String get musicShuffleOn => '随机开启';
-
-  @override
-  String get musicShuffleOff => '随机关闭';
-
-  @override
-  String get musicUnknownArtist => '未知艺人';
-
-  @override
-  String get musicUnavailable => '音乐不可用';
-
-  @override
-  String get musicUnavailableBody => '当前无法连接任何音乐库。请检查网络后重试。';
-
-  @override
-  String get musicSearchFailed => '搜索失败';
-
-  @override
-  String get musicPlayAll => '全部播放';
-
-  @override
-  String get musicPaused => '已暂停';
-
-  @override
-  String get musicPlaying => '播放中';
-
-  @override
-  String get musicRowTrending => '热门';
-
-  @override
-  String get musicRowNewReleases => '新歌上架';
-
-  @override
-  String get musicRowLofi => 'Lo-fi';
 
   @override
   String get profileCouldNotUpdateAccountName => '无法更新账户名称';
@@ -7607,24 +7520,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get detailHeaderHeight => '详情页头图高度';
-
-  @override
-  String get preferLossless => '优先无损';
-
-  @override
-  String get streamingQuality => '流媒体音质';
-
-  @override
-  String get downloadQuality => '下载音质';
-
-  @override
-  String get bitPerfect => '比特完美输出';
-
-  @override
-  String get studioClarity => '录音室清晰度';
-
-  @override
-  String get equalizer => '均衡器';
 
   @override
   String get dnsMode => 'DNS 模式';
@@ -13932,6 +13827,12 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get bandwidthNotifBody => '可選的背景功能保持執行';
 
   @override
+  String get bandwidthBatteryTitle => '重新啟動後繼續執行';
+
+  @override
+  String get bandwidthBatterySubtitle => '關閉電池最佳化，讓背景功能自動重新啟動';
+
+  @override
   String get tapToPlay => '點按播放';
 
   @override
@@ -14179,100 +14080,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get appLockDisabled => '應用程式鎖已關閉';
 
   @override
-  String get musicQuality => '音樂音質';
-
-  @override
-  String get musicQualitySubtitle => '串流歌曲的位元率';
-
-  @override
-  String get musicQualityDataSaver => '節省流量';
-
-  @override
-  String get musicQualityBalanced => '均衡';
-
-  @override
-  String get musicQualityHigh => '高音質';
-
-  @override
-  String get modeMusic => '音樂';
-
-  @override
   String get contentSongs => '首歌曲';
-
-  @override
-  String get musicSongsForYou => '為你推薦的歌曲';
-
-  @override
-  String get musicNowPlaying => '正在播放';
-
-  @override
-  String get musicUpNext => '接下來播放';
-
-  @override
-  String get musicQueue => '播放佇列';
-
-  @override
-  String get musicSearchHint => '搜尋歌曲、藝人、專輯';
-
-  @override
-  String get musicSearchSongs => '搜尋歌曲';
-
-  @override
-  String get musicNoTracks => '這裡還沒有歌曲';
-
-  @override
-  String get musicNoTracksBody => '音樂庫沒有為此列回傳任何內容。請試試其他列或搜尋。';
-
-  @override
-  String get musicCantPlay => '無法播放這首歌';
-
-  @override
-  String get musicCantPlayBody => '音樂庫未回傳可播放的連結。請試試其他歌曲。';
-
-  @override
-  String get musicRepeatOff => '不重複';
-
-  @override
-  String get musicRepeatAll => '全部重複';
-
-  @override
-  String get musicRepeatOne => '單曲重複';
-
-  @override
-  String get musicShuffleOn => '隨機開啟';
-
-  @override
-  String get musicShuffleOff => '隨機關閉';
-
-  @override
-  String get musicUnknownArtist => '未知藝人';
-
-  @override
-  String get musicUnavailable => '音樂無法使用';
-
-  @override
-  String get musicUnavailableBody => '目前無法連線任何音樂庫。請檢查網路後再試一次。';
-
-  @override
-  String get musicSearchFailed => '搜尋失敗';
-
-  @override
-  String get musicPlayAll => '全部播放';
-
-  @override
-  String get musicPaused => '已暫停';
-
-  @override
-  String get musicPlaying => '播放中';
-
-  @override
-  String get musicRowTrending => '熱門';
-
-  @override
-  String get musicRowNewReleases => '新歌上架';
-
-  @override
-  String get musicRowLofi => 'Lo-fi';
 
   @override
   String get profileCouldNotUpdateAccountName => '無法更新帳戶名稱';
@@ -15287,24 +15095,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get detailHeaderHeight => '詳情頁橫幅高度';
-
-  @override
-  String get preferLossless => '優先無損';
-
-  @override
-  String get streamingQuality => '串流音質';
-
-  @override
-  String get downloadQuality => '下載音質';
-
-  @override
-  String get bitPerfect => '位元完美輸出';
-
-  @override
-  String get studioClarity => '錄音室清晰度';
-
-  @override
-  String get equalizer => '等化器';
 
   @override
   String get dnsMode => 'DNS 模式';

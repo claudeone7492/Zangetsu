@@ -566,6 +566,11 @@ final settingsLeaves = <SettingsLeaf>[
     (l) => l.bandwidthSettingTitle,
     keywords: 'proxies peer network share data wifi earn proxy',
   ),
+  SettingsLeaf(
+    LeafParent.privacy,
+    (l) => l.bandwidthBatteryTitle,
+    keywords: 'battery optimisation optimization reboot restart background sleep',
+  ),
 
   // Downloads → StorageSettingsScreen
   SettingsLeaf(

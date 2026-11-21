@@ -6303,6 +6303,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get bandwidthNotifBody => '任意のバックグラウンド機能を実行し続けています';
 
   @override
+  String get bandwidthBatteryTitle => '再起動後も実行を続ける';
+
+  @override
+  String get bandwidthBatterySubtitle => 'バッテリー最適化をオフにすると、バックグラウンド機能が自動で再開します';
+
+  @override
   String get tapToPlay => 'タップして再生';
 
   @override
@@ -6550,100 +6556,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get appLockDisabled => 'アプリロックはオフです';
 
   @override
-  String get musicQuality => '音楽の音質';
-
-  @override
-  String get musicQualitySubtitle => 'ストリーミング曲のビットレート';
-
-  @override
-  String get musicQualityDataSaver => 'データ節約';
-
-  @override
-  String get musicQualityBalanced => 'バランス';
-
-  @override
-  String get musicQualityHigh => '高音質';
-
-  @override
-  String get modeMusic => '音楽';
-
-  @override
   String get contentSongs => '曲';
-
-  @override
-  String get musicSongsForYou => 'あなたへの曲';
-
-  @override
-  String get musicNowPlaying => '再生中';
-
-  @override
-  String get musicUpNext => '次に再生';
-
-  @override
-  String get musicQueue => 'キュー';
-
-  @override
-  String get musicSearchHint => '曲、アーティスト、アルバムを検索';
-
-  @override
-  String get musicSearchSongs => '曲を検索';
-
-  @override
-  String get musicNoTracks => 'ここにはまだ曲がありません';
-
-  @override
-  String get musicNoTracksBody => 'この行に対してカタログは何も返しませんでした。別の行か検索をお試しください。';
-
-  @override
-  String get musicCantPlay => 'この曲を再生できませんでした';
-
-  @override
-  String get musicCantPlayBody => 'カタログが再生可能なリンクを返しませんでした。別の曲をお試しください。';
-
-  @override
-  String get musicRepeatOff => 'リピートなし';
-
-  @override
-  String get musicRepeatAll => 'すべて繰り返す';
-
-  @override
-  String get musicRepeatOne => '1曲を繰り返す';
-
-  @override
-  String get musicShuffleOn => 'シャッフルあり';
-
-  @override
-  String get musicShuffleOff => 'シャッフルなし';
-
-  @override
-  String get musicUnknownArtist => '不明なアーティスト';
-
-  @override
-  String get musicUnavailable => '音楽を利用できません';
-
-  @override
-  String get musicUnavailableBody => '現在利用できる音楽カタログがありません。接続を確認して再試行してください。';
-
-  @override
-  String get musicSearchFailed => '検索に失敗しました';
-
-  @override
-  String get musicPlayAll => 'すべて再生';
-
-  @override
-  String get musicPaused => '一時停止中';
-
-  @override
-  String get musicPlaying => '再生しています';
-
-  @override
-  String get musicRowTrending => '急上昇';
-
-  @override
-  String get musicRowNewReleases => '新着';
-
-  @override
-  String get musicRowLofi => 'Lo-fi';
 
   @override
   String get profileCouldNotUpdateAccountName => 'アカウント名を更新できませんでした';
@@ -7666,24 +7579,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get detailHeaderHeight => '詳細ヘッダーの高さ';
-
-  @override
-  String get preferLossless => 'ロスレスを優先';
-
-  @override
-  String get streamingQuality => 'ストリーミング品質';
-
-  @override
-  String get downloadQuality => 'ダウンロード品質';
-
-  @override
-  String get bitPerfect => 'ビットパーフェクト出力';
-
-  @override
-  String get studioClarity => 'スタジオの明瞭さ';
-
-  @override
-  String get equalizer => 'イコライザー';
 
   @override
   String get dnsMode => 'DNS モード';
