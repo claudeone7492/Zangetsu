@@ -15,6 +15,7 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/i18n/tag_translator.dart';
 import '../../core/zmode/season_chain.dart';
 import '../../core/zmode/metadata_provider_prefs.dart';
 import '../../core/ui/poster_card.dart';
@@ -2538,8 +2539,12 @@ class _DetailViewState extends State<_DetailView>
         : null;
     // For anime (or anything without cast) surface Genres instead of an empty
     // Starring line — never show an empty label.
+    final languageCode = Localizations.localeOf(context).languageCode;
     final genresLine = (starring == null && detail.genres.isNotEmpty)
-        ? detail.genres.take(4).join(', ')
+        ? detail.genres
+              .take(4)
+              .map((genre) => TagTranslator.translate(genre, languageCode))
+              .join(', ')
         : null;
 
     // Friendly provider name + its origin repo, so the user can tell which repo
