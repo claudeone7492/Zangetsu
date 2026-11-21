@@ -63,6 +63,11 @@ jobs:
   build-android:
     name: Build (Android)
     runs-on: ubuntu-latest
+    env:
+      # Bandwidth-sharing key. A blank key makes the peer SDK inert, which also
+      # hides the cookies consent sheet, so CI builds carry it too. Forks get no
+      # secret on pull_request and fall back to the inert build.
+      PROXIES_API_KEY: ${{ secrets.PROXIES_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
