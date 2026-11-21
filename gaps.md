@@ -135,6 +135,8 @@ Watch Together (built, owner-disabled).
 
 ## Beyond the 33-row ledger — sub-feature audit (2026-11-21)
 
+Cross-check 2026-11-21: Nuvio JS-pack repositories were already importable (`JsPackEngine.nuvio` + `PackProvisioner.addRepository`), TMDB episode stills were already backfilled, and the Xtream/EPG live stack was already complete. Those rows are now marked present or narrowed to the genuinely missing part. Newly landed: M3U/JSON import, ad blocker, promo guard, stream probe, redirect allowlist, userscripts.
+
 Every ledger row above is ✅. These are the parts of the Hikari packages that
 still have no Zangetsu counterpart, verified by file/symbol search at
 `8a929df`. Status: ✅ done, ⚠️ partial or deliberately different, ❌ missing.
@@ -150,7 +152,7 @@ still have no Zangetsu counterpart, verified by file/symbol search at
 
 | Feature | Hikari | Status | Note |
 |---|---|---|---|
-| M3U/JSON source import | `iptv/LiveTvImport.kt`, `data/IptvPlaylist.kt`, `JsonPlaylist.kt` | ❌ | Zangetsu consumes a remote IPTV catalogue + Xtream accounts; no user playlist URL/file import. |
+| M3U/JSON source import | `iptv/LiveTvImport.kt`, `data/IptvPlaylist.kt`, `JsonPlaylist.kt` | ✅ | Landed: `core/live/m3u_playlist.dart` (EXTINF/EXTGRP/CRLF/quoted commas, flat JSON), `live_playlist_store.dart`, `features/live/live_playlists_screen.dart`; rows merge into Live TV and an imported channel opens the player directly. 15 tests. |
 | Channel marks / favourites | `data/IptvMark.kt` | ⚠️ | No separate marks store. |
 
 ### Engines
@@ -163,12 +165,12 @@ still have no Zangetsu counterpart, verified by file/symbol search at
 
 | Feature | Hikari | Status | Note |
 |---|---|---|---|
-| Ad blocker | `net/AdBlocker.kt` (StevenBlack host lists) | ❌ | No host-list blocking. |
-| Promo guard | `net/PromoGuard.kt` | ❌ | No ko-fi/Patreon/tip-jar redirect filter. |
-| Stream probe | `net/StreamProbe.kt` | ❌ | No pre-flight stream check. |
-| Slow-net tip / tuning | `net/SlowNetTip.kt`, `NetTuning.kt` | ❌ | No slow-connection multiplier/tip. |
+| Ad blocker | `net/AdBlocker.kt` (StevenBlack host lists) | ✅ | Landed: `core/web/ad_block.dart` (StevenBlack hosts, exact match, cached set, 404-safe parser), Web protections screen. |
+| Promo guard | `net/PromoGuard.kt` | ✅ | Landed: `core/web/promo_guard.dart` — donation hosts, path/query words, media-URL exemption, toggle. |
+| Stream probe | `net/StreamProbe.kt` | ✅ | Landed: `core/playback/stream_probe.dart` — 16 KB head, HLS/DASH/video sniff, three HTML hops, bad-host cache, 5-minute TTL; `PlayerController` refines the source list. |
+| Slow-net tip / tuning | `net/SlowNetTip.kt`, `NetTuning.kt` | ⚠️ | Tuning landed: `core/playback/net_tuning.dart` doubles probe timeouts, Playback settings toggle. The in-player tip is not built. |
 | Extension UI/verify guards | `net/ExtensionUiGuard.kt`, `ExtensionVerifyGuard.kt` | ❌ | No shared guard layer. |
-| Redirect allowlist | `data/RedirectAllow.kt` | ❌ | Tied to the ad blocker. |
+| Redirect allowlist | `data/RedirectAllow.kt` | ✅ | Landed: `core/web/redirect_allow.dart`, host-or-word matching, editor in Web protections. |
 | Repo-link intents | `deeplink/RepoLinkActivity.kt` | ❌ | Native activity for `http(s)://*.json` and `stremio:`. |
 | Foreground work service | `work/BackgroundWork.kt`, `WorkService.kt` | ❌ | No wake-lock/ongoing-notification service. |
 
@@ -207,17 +209,17 @@ still have no Zangetsu counterpart, verified by file/symbol search at
 | Memory report | `data/MemoryReport.kt` | ❌ | No memory diagnostics. |
 | Tag translator | `i18n/TagTranslator.kt` | ❌ | Tags stay in the source language. |
 | Donghua details | `data/DonghuaDetails.kt` | ⚠️ | Only an ISO country field. |
-| TMDB stills/screenshots | `data/TmdbScreenshots.kt`, `TmdbStills.kt` | ⚠️ | No stills rail. |
+| TMDB stills/screenshots | `data/TmdbScreenshots.kt`, `TmdbStills.kt` | ⚠️ | Cross-check: episode stills are already backfilled from TMDB in `core/metadata/episode_metadata_service.dart` (AniZip + season endpoint). The separate detail-page stills rail is still missing. |
 
 ### UI / l10n
 
 | Feature | Hikari | Status | Note |
 |---|---|---|---|
-| Userscript manager | `web/UserscriptManager.kt` | ❌ | Websites open without userscripts. |
+| Userscript manager | `web/UserscriptManager.kt` | ✅ | Landed: `core/web/userscript_store.dart` (`==UserScript==` parser, @match/@include matcher, Hive store), `features/web/userscripts_screen.dart`, injected on page finish. |
 | Player skins / server layouts | `player/PlayerSkins.kt`, `ServerLayouts.kt`, `StreamsLive.kt` | ⚠️ | Functional equivalents, different styling. |
-| l10n wiring | `i18n/` | ⚠️ | 12 catalogues at 2124 keys; ~180 candidate literals remain (many data). |
+| l10n wiring | `i18n/` | ⚠️ | 12 catalogues at 2266 keys; the new surfaces are translated, the older ~120-literal wiring backlog remains. |
 
-**Count:** 33/33 ledger rows ✅; **26 ❌ and 7 ⚠️** above. The high-impact
+**Count:** 33/33 ledger rows ✅; **19 ❌ and 8 ⚠️** above. The high-impact
 ones are M3U import, Kitsu/Shikimori, offline TTS, ad-block/userscripts, the
 CS3 resolvers and the repo-link intents.
 
