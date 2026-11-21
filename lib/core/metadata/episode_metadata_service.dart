@@ -7,6 +7,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/episode.dart';
 import '../models/provider_info.dart';
 import 'bangumi.dart';
+import 'episode_dub_sub.dart';
 
 /// One episode's fetched extras. Any field may be null (source lacked it).
 typedef EpisodeMeta = ({
@@ -246,6 +247,7 @@ class EpisodeMetadataService {
     String? originalTitle,
   }) async {
     if (episodes.isEmpty) return episodes;
+    episodes = EpisodeDubSub.merge(episodes);
 
     var out = episodes;
     if (type == ProviderType.anime && malId != null) {

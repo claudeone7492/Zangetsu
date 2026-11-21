@@ -1,5 +1,6 @@
 import 'dart:async';
 import '../../core/theme/theme_controller.dart';
+import '../../core/privacy/nsfw_gate.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';

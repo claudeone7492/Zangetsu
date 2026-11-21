@@ -19,13 +19,13 @@ Legend: ✅ present and reachable · ⚠️ partial or deliberately different ·
 
 | Status | Units |
 |---|---:|
-| ✅ | 100 |
-| ⚠️ | 15 |
-| ❌ | 23 |
+| ✅ | 104 |
+| ⚠️ | 13 |
+| ❌ | 21 |
 | ➖ | 2 |
 | **Total** | **140** |
 
-The 33-row ledger is fully closed (33/33 ✅, evidence in §1). All 23 open
+The 33-row ledger is fully closed (33/33 ✅, evidence in §1). All 21 open
 items are outside the ledger, and 12 of them are native-only or
 account-gated. The 15 partial rows are either cosmetic, source-level instead
 of item-level, or a deliberate architectural choice.
@@ -212,10 +212,10 @@ Every path below was checked to exist at `65b7db3`.
 
 | Hikari unit | Status | Zangetsu evidence |
 |---|---|---|
-| `HomeDedupe` | ⚠️ | Dedupes within a row by source id; no cross-engine TMDB collapse |
-| `NsfwGate`, `ExtensionNsfw`, `ContentGate` | ⚠️ | Per-source NSFW blocking + Aniyomi toggle; no item-level gate |
-| `TitleQuality` | ❌ | No quality badge that improves as better copies appear |
-| `EpisodeDubSub` | ❌ | Title-level `dubBadge`; no episode-level dub/sub merge |
+| `HomeDedupe` | ✅ | `core/metadata/home_dedupe.dart`, wired into the home rows |
+| `NsfwGate`, `ExtensionNsfw`, `ContentGate` | ✅ | `core/privacy/nsfw_gate.dart`, driven by the NSFW-source switch |
+| `TitleQuality` | ✅ | `core/metadata/title_quality.dart`, badge on home cards |
+| `EpisodeDubSub` | ✅ | `core/metadata/episode_dub_sub.dart`, merged in `EpisodeMetadataService` |
 | `DownloadsSaver` | ❌ | No export to public Downloads via MediaStore |
 | `PerfMode` | ✅ | `core/performance/perf_mode.dart` |
 | `MemoryReport` | ✅ | `core/diagnostics/memory_report.dart` |
@@ -274,7 +274,7 @@ Every path below was checked to exist at `65b7db3`.
 
 ## 3. What is actually open
 
-The 23 ❌ units, with the work each needs:
+The 21 ❌ units, with the work each needs:
 
 | Gap | Kind | Why it is open | Effort |
 |---|---|---|---|
@@ -294,15 +294,13 @@ The 23 ❌ units, with the work each needs:
 | Generic scraper reader | Dart | Image-list reader for scraped pages | M |
 | Nuvio catalog/collections import | Dart | Parser + paste flow | M |
 | Tachiyomi decoder | Dart | Backup/reader-settings decode | M |
-| Title quality badge | Dart | Parse release names, keep the best | S |
-| Episode dub/sub merge | Dart | Merge rows differing only by audio tag | M |
 | Multi-source ratings | API | IMDb/RT/Metacritic aggregation | M |
 | Download export to gallery | Native | MediaStore write | S |
 | Mouse mode (TV) | Dart | Pointer handling on leanback | S |
 | Custom background | Dart | Theming layer | S |
 | In-app UI scale | Dart | Global scale factor | S |
 
-The 15 ⚠️ rows in §2 are either cosmetic (skins, scroll animation, TV music
+The 13 ⚠️ rows in §2 are either cosmetic (skins, scroll animation, TV music
 styling, help text), source-level instead of item-level (NSFW gate, home
 dedupe), or deliberately different (TDLib unavailable until linked, load
 slots replaced by per-host in-flight dedupe, no in-player slow-net tip,
@@ -363,8 +361,8 @@ run per area and pass.
 ## 6. Bottom line
 
 - The migration's ledger is complete: **33/33 ✅**, verified by path.
-- Against the whole reference app, Zangetsu is at **100 ✅ / 140 units (71 %)**,
-  or **115/140 (82 %)** counting the partial rows as usable.
+- Against the whole reference app, Zangetsu is at **104 ✅ / 140 units (74 %)**,
+  or **117/140 (84 %)** counting the partial rows as usable.
 - The remaining ❌ set is dominated by native seams and account-gated
   trackers; the largest pure-Dart items are Nuvio import, the scraper reader,
   novel chapter translation, and episode-level dub/sub merging.

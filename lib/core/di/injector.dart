@@ -59,6 +59,7 @@ import '../../features/player/mpv_player_pool.dart';
 import '../schedule/airing_service.dart';
 import '../schedule/coming_soon_service.dart';
 import '../privacy/app_lock.dart';
+import '../privacy/nsfw_gate.dart';
 import '../privacy/incognito_mode.dart';
 import '../profiles/viewer_profile.dart';
 import '../profiles/profile_lock_store.dart';
@@ -543,6 +544,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   await HomeCache.init();
   await PlaybackPrefs.init();
   sl.registerSingleton<PlaybackPrefs>(PlaybackPrefs());
+  NsfwGate.setHideAdult(!sl<PlaybackPrefs>().nsfwSources);
   final dubPrefs = await DubPrefs.open();
   sl.registerSingleton<DubPrefs>(dubPrefs);
   sl.registerSingleton<DubEngine>(

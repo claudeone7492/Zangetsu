@@ -54,6 +54,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
       await prefs.setNsfwSources(false);
       _demoteNsfwActiveSource();
     }
+    NsfwGate.setHideAdult(!value);
     if (mounted) setState(() {});
   }
 

@@ -7,6 +7,9 @@ import '../../core/stremio/stremio_manager.dart';
 import '../../core/mode/content_mode.dart';
 import '../../core/mode/content_mode_cubit.dart';
 import '../../core/models/home_section.dart';
+import '../../core/metadata/home_dedupe.dart';
+import '../../core/metadata/title_quality.dart';
+import '../../core/privacy/nsfw_gate.dart';
 import '../../core/models/media_item.dart';
 import '../../core/collections/collection_store.dart';
 import '../../core/repository/source_repository.dart';
@@ -213,11 +216,12 @@ class SourceCatalogueHomeContentState
       if (!mounted || generation != _generation) return;
       final withCollections = await _withCollections(sections);
       if (!mounted || generation != _generation) return;
+      final visible = _sanitize(withCollections);
       setState(() {
-        _sections = withCollections;
+        _sections = visible;
         _loading = false;
       });
-      _notifySections(withCollections);
+      _notifySections(visible);
     } catch (_) {
       if (!mounted || generation != _generation) return;
       setState(() {
@@ -273,6 +277,31 @@ class SourceCatalogueHomeContentState
     } finally {
       _openingItem = false;
     }
+  }
+
+  /// Drops adult titles when the NSFW switch is off, and collapses the same
+  /// title arriving from two engines. Rows left empty disappear with them.
+  List<HomeSection> _sanitize(List<HomeSection> sections) {
+    final out = <HomeSection>[];
+    for (final section in sections) {
+      final items = HomeDedupe.dedupe(
+        NsfwGate.filter(
+          section.items,
+          title: (i) => i.title,
+          flagged: (i) => i.isAdult,
+        ),
+        key: (i) => HomeDedupe.keyFor(
+          id: i.id,
+          type: i.type.name,
+          year: i.year,
+          title: i.title,
+        ),
+      );
+      if (items.isNotEmpty) {
+        out.add(HomeSection(title: section.title, items: items, more: section.more));
+      }
+    }
+    return out;
   }
 
   void _openSection(HomeSection section) {
@@ -451,7 +480,7 @@ class SourceCatalogueHomeContentState
         wideImageUrl: item.banner,
         genres: item.genres,
         isAdult: item.isAdult,
-        qualityBadge: item.quality,
+        qualityBadge: item.quality ?? TitleQualityParser.badge(item.title),
         scoreBadge: item.score,
         dubBadge: item.dubBadge,
         liveBadge: item.liveBadge,
