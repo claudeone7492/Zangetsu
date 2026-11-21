@@ -92,7 +92,6 @@ void main() {
   ) async {
     final api = FakeSubscriptionApi(
       plansResult: samplePlans(),
-      configResult: const SubscriptionConfig(launchDiscountPct: 15),
     );
     final cubit = await loaded(api, t);
 
@@ -185,7 +184,6 @@ void main() {
   ) async {
     final api = FakeSubscriptionApi(
       plansResult: samplePlans(),
-      configResult: const SubscriptionConfig(launchDiscountPct: 15),
     );
     final cubit = await loaded(api, t);
     cubit.emit(

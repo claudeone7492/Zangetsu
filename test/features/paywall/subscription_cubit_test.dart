@@ -303,9 +303,11 @@ void main() {
       expect(api.redemptions, hasLength(1));
       expect(api.redemptions.single['code'], 'PRIME85!');
       expect(api.redemptions.single['planKey'], 'stream_standard');
-      // No launch discount: 349c list, 85% off -> 52c.
+      // List 349c, 15% launch offer -> 297c, then 85% off -> 45c. The recorded
+      // pair is what the redemption is checked against, so it has to be the
+      // same chain the server charges.
       expect(api.redemptions.single['before'], 349);
-      expect(api.redemptions.single['after'], 52);
+      expect(api.redemptions.single['after'], 45);
     });
   });
 
