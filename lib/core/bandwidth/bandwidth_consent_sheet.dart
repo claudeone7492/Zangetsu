@@ -67,33 +67,52 @@ class _CookiesConsentCardState extends State<_CookiesConsentCard> {
   bool _showPrefs = false;
   bool _performance = true;
   bool _busy = false;
+  bool _failed = false;
 
+  /// Accepts, then closes only once the SDK has come up.
+  ///
+  /// The sheet is the user's one chance to answer, so it stays put while the
+  /// peer registers: the Accept button spins, and a refused key or relay keeps
+  /// the card open with the failure named instead of dismissing into a switch
+  /// that reads off. Nothing is lost by retrying — the answer is already saved.
   Future<void> _accept() async {
     if (_busy) return;
-    setState(() => _busy = true);
-    final nav = Navigator.of(context);
-    try {
-      await widget.share.accept();
-    } finally {
-      if (nav.mounted) nav.pop();
-      if (mounted) setState(() => _busy = false);
+    setState(() {
+      _busy = true;
+      _failed = false;
+    });
+    await widget.share.accept();
+    if (!mounted) return;
+    if (widget.share.status == BandwidthShareStatus.error) {
+      setState(() {
+        _busy = false;
+        _failed = true;
+      });
+      return;
     }
+    Navigator.of(context).pop();
   }
 
   Future<void> _savePrefs() async {
     if (_busy) return;
-    setState(() => _busy = true);
-    final nav = Navigator.of(context);
-    try {
-      if (_performance) {
-        await widget.share.accept();
-      } else {
-        await widget.share.decline();
+    setState(() {
+      _busy = true;
+      _failed = false;
+    });
+    if (_performance) {
+      await widget.share.accept();
+      if (!mounted) return;
+      if (widget.share.status == BandwidthShareStatus.error) {
+        setState(() {
+          _busy = false;
+          _failed = true;
+        });
+        return;
       }
-    } finally {
-      if (nav.mounted) nav.pop();
-      if (mounted) setState(() => _busy = false);
+    } else {
+      await widget.share.decline();
     }
+    if (mounted) Navigator.of(context).pop();
   }
 
   @override
@@ -161,12 +180,17 @@ class _CookiesConsentCardState extends State<_CookiesConsentCard> {
         height: 1.45,
       ),
     ),
+    if (_failed) ...[
+      const SizedBox(height: 12),
+      _FailureNote(text: l.bandwidthStatusError),
+    ],
     const SizedBox(height: 18),
     SizedBox(
       width: double.infinity,
       child: PrimaryButton(
         label: l.cookiesSheetAccept,
         icon: Icons.check_rounded,
+        loading: _busy,
         onPressed: _busy ? null : _accept,
       ),
     ),
@@ -201,16 +225,44 @@ class _CookiesConsentCardState extends State<_CookiesConsentCard> {
         onChanged: _busy ? null : (v) => setState(() => _performance = v),
       ),
     ),
+    if (_failed) ...[
+      const SizedBox(height: 12),
+      _FailureNote(text: l.bandwidthStatusError),
+    ],
     const SizedBox(height: 18),
     SizedBox(
       width: double.infinity,
       child: PrimaryButton(
         label: l.cookiesPrefsSave,
         icon: Icons.check_rounded,
+        loading: _busy && _performance,
         onPressed: _busy ? null : _savePrefs,
       ),
     ),
   ];
+}
+
+/// One line under the buttons when the peer refused to come up.
+class _FailureNote extends StatelessWidget {
+  const _FailureNote({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(Icons.error_outline, size: 16, color: AppColors.textSecondary),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            style: AppText.caption.copyWith(color: AppColors.textSecondary),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _PrefRow extends StatelessWidget {

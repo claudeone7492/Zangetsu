@@ -9,10 +9,15 @@ class PrimaryButton extends StatefulWidget {
     required this.label,
     this.icon,
     this.onPressed,
+    this.loading = false,
   });
   final String label;
   final IconData? icon;
   final VoidCallback? onPressed;
+
+  /// Replaces the icon with a spinner and keeps the button's full colour: the
+  /// action is in flight, not unavailable, so it must not fade out.
+  final bool loading;
 
   @override
   State<PrimaryButton> createState() => _PrimaryButtonState();
@@ -27,12 +32,12 @@ class _PrimaryButtonState extends State<PrimaryButton> {
 
   @override
   Widget build(BuildContext context) {
-    final enabled = widget.onPressed != null;
+    final enabled = widget.onPressed != null && !widget.loading;
     return AnimatedOpacity(
-      opacity: enabled ? 1.0 : 0.38,
+      opacity: enabled || widget.loading ? 1.0 : 0.38,
       duration: const Duration(milliseconds: 150),
       child: GestureDetector(
-        onTap: widget.onPressed,
+        onTap: enabled ? widget.onPressed : null,
         onTapDown: enabled ? _down : null,
         onTapUp: enabled ? _up : null,
         onTapCancel: enabled ? _cancel : null,
@@ -51,7 +56,17 @@ class _PrimaryButtonState extends State<PrimaryButton> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (widget.icon != null) ...[
+                    if (widget.loading) ...[
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ] else if (widget.icon != null) ...[
                       Icon(widget.icon, color: Colors.black, size: 20),
                       const SizedBox(width: 8),
                     ],
