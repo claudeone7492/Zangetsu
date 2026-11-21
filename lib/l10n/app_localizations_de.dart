@@ -7864,4 +7864,14 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get slowConnectionBody =>
       'Verdopple die Netzwerk-Zeitlimits, wenn Streams lange zum Starten brauchen.';
+
+  @override
+  String get performanceMode => 'Leistungsmodus';
+
+  @override
+  String get performanceModeBody =>
+      'Bild-Cache und Hintergrundarbeit auf Geräten mit wenig Speicher reduzieren.';
+
+  @override
+  String get memoryReport => 'Speicherbericht';
 }

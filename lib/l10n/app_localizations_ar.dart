@@ -7841,4 +7841,14 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get slowConnectionBody =>
       'ضاعف مهلات الشبكة عندما تستغرق البثوث وقتًا طويلًا للبدء.';
+
+  @override
+  String get performanceMode => 'وضع الأداء';
+
+  @override
+  String get performanceModeBody =>
+      'قلّل التخزين المؤقت للصور والعمل الخلفي على الأجهزة منخفضة الذاكرة.';
+
+  @override
+  String get memoryReport => 'تقرير الذاكرة';
 }

@@ -3740,5 +3740,8 @@
   "userscriptAdded": "已新增使用者腳本",
   "userscriptInvalid": "貼上帶有 @name 或 @match 標頭的使用者腳本",
   "slowConnection": "慢速連線模式",
-  "slowConnectionBody": "當串流啟動較慢時，將網路逾時加倍。"
+  "slowConnectionBody": "當串流啟動較慢時，將網路逾時加倍。",
+  "performanceMode": "效能模式",
+  "performanceModeBody": "在低記憶體裝置上減少圖片快取和背景工作。",
+  "memoryReport": "記憶體報告"
 }

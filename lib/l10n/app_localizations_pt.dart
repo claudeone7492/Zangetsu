@@ -7864,4 +7864,14 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get slowConnectionBody =>
       'Duplica os tempos limite quando os streams demoram a iniciar.';
+
+  @override
+  String get performanceMode => 'Modo de desempenho';
+
+  @override
+  String get performanceModeBody =>
+      'Reduz o cache de imagens e o trabalho em segundo plano em dispositivos com pouca memória.';
+
+  @override
+  String get memoryReport => 'Relatório de memória';
 }

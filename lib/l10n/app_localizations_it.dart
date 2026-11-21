@@ -7855,4 +7855,14 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get slowConnectionBody =>
       'Raddoppia i timeout di rete quando gli stream impiegano a partire.';
+
+  @override
+  String get performanceMode => 'Modalità prestazioni';
+
+  @override
+  String get performanceModeBody =>
+      'Riduci la cache delle immagini e il lavoro in background sui dispositivi con poca memoria.';
+
+  @override
+  String get memoryReport => 'Report memoria';
 }

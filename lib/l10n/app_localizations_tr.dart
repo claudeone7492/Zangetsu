@@ -7807,4 +7807,14 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get slowConnectionBody =>
       'Yayınlar başlamakta uzun sürdüğünde ağ zaman aşımlarını ikiye katla.';
+
+  @override
+  String get performanceMode => 'Performans modu';
+
+  @override
+  String get performanceModeBody =>
+      'Düşük bellekli cihazlarda görsel önbelleğini ve arka plan işlerini azalt.';
+
+  @override
+  String get memoryReport => 'Bellek raporu';
 }

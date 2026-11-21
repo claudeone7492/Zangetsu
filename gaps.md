@@ -205,8 +205,8 @@ still have no Zangetsu counterpart, verified by file/symbol search at
 | Nuvio catalog/collections import | `data/NuvioCatalogImport.kt`, `NuvioCollectionsImport.kt` | ❌ | No Nuvio export import. |
 | Bangumi metadata | `nuvio/BangumiMeta.kt` | ❌ | No Bangumi fallback. |
 | TheTVDB artwork | `data/TvdbArt.kt` | ❌ | TMDB/AniList only. |
-| Performance mode | `data/PerfMode.kt` | ❌ | No TV memory ceiling / booster. |
-| Memory report | `data/MemoryReport.kt` | ❌ | No memory diagnostics. |
+| Performance mode | `data/PerfMode.kt` | ✅ | Landed: `core/performance/perf_mode.dart` — image cache 1000/100 MB → 200/64 MB while active, automatic on TV, Playback settings toggle. |
+| Memory report | `data/MemoryReport.kt` | ✅ | Landed: `core/diagnostics/memory_report.dart` (RSS + peak, platform-safe) behind a Logs & diagnostics action. |
 | Tag translator | `i18n/TagTranslator.kt` | ❌ | Tags stay in the source language. |
 | Donghua details | `data/DonghuaDetails.kt` | ⚠️ | Only an ISO country field. |
 | TMDB stills/screenshots | `data/TmdbScreenshots.kt`, `TmdbStills.kt` | ⚠️ | Cross-check: episode stills are already backfilled from TMDB in `core/metadata/episode_metadata_service.dart` (AniZip + season endpoint). The separate detail-page stills rail is still missing. |
@@ -217,9 +217,9 @@ still have no Zangetsu counterpart, verified by file/symbol search at
 |---|---|---|---|
 | Userscript manager | `web/UserscriptManager.kt` | ✅ | Landed: `core/web/userscript_store.dart` (`==UserScript==` parser, @match/@include matcher, Hive store), `features/web/userscripts_screen.dart`, injected on page finish. |
 | Player skins / server layouts | `player/PlayerSkins.kt`, `ServerLayouts.kt`, `StreamsLive.kt` | ⚠️ | Functional equivalents, different styling. |
-| l10n wiring | `i18n/` | ⚠️ | 12 catalogues at 2266 keys; the new surfaces are translated, the older ~120-literal wiring backlog remains. |
+| l10n wiring | `i18n/` | ⚠️ | 12 catalogues at 2269 keys; the new surfaces are translated, the older ~120-literal wiring backlog remains. |
 
-**Count:** 33/33 ledger rows ✅; **19 ❌ and 8 ⚠️** above. The high-impact
+**Count:** 33/33 ledger rows ✅; **17 ❌ and 8 ⚠️** above. The high-impact
 ones are M3U import, Kitsu/Shikimori, offline TTS, ad-block/userscripts, the
 CS3 resolvers and the repo-link intents.
 

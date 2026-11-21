@@ -13718,6 +13718,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Double network timeouts when streams take long to start.'**
   String get slowConnectionBody;
+
+  /// No description provided for @performanceMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance mode'**
+  String get performanceMode;
+
+  /// No description provided for @performanceModeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Trim image caching and background work on low-memory devices.'**
+  String get performanceModeBody;
+
+  /// No description provided for @memoryReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory report'**
+  String get memoryReport;
 }
 
 class _AppLocalizationsDelegate

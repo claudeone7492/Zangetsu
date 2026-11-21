@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/di/injector.dart';
+import '../../core/diagnostics/memory_report.dart';
 import '../../core/logging/app_logger.dart';
 import '../../core/logging/log_report_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -119,6 +120,23 @@ class _LogsScreenState extends State<LogsScreen> {
       appBar: settingsAppBar(
         l10n.logsAndDiagnostics,
         actions: [
+          IconButton(
+            tooltip: l10n.memoryReport,
+            onPressed: () => showDialog<void>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: Text(l10n.memoryReport),
+                content: Text(MemoryReport.short),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: Text(l10n.close),
+                  ),
+                ],
+              ),
+            ),
+            icon: const Icon(Icons.memory_outlined),
+          ),
           IconButton(
             tooltip: l10n.sendReport,
             onPressed: _text.trim().isEmpty ? null : _sendReport,

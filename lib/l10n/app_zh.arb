@@ -3739,5 +3739,8 @@
   "userscriptAdded": "已添加用户脚本",
   "userscriptInvalid": "粘贴带有 @name 或 @match 头的用户脚本",
   "slowConnection": "慢速连接模式",
-  "slowConnectionBody": "当流媒体启动较慢时，将网络超时加倍。"
+  "slowConnectionBody": "当流媒体启动较慢时，将网络超时加倍。",
+  "performanceMode": "性能模式",
+  "performanceModeBody": "在低内存设备上减少图片缓存和后台工作。",
+  "memoryReport": "内存报告"
 }

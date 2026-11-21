@@ -7510,6 +7510,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get slowConnectionBody => '当流媒体启动较慢时，将网络超时加倍。';
+
+  @override
+  String get performanceMode => '性能模式';
+
+  @override
+  String get performanceModeBody => '在低内存设备上减少图片缓存和后台工作。';
+
+  @override
+  String get memoryReport => '内存报告';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -15018,4 +15027,13 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get slowConnectionBody => '當串流啟動較慢時，將網路逾時加倍。';
+
+  @override
+  String get performanceMode => '效能模式';
+
+  @override
+  String get performanceModeBody => '在低記憶體裝置上減少圖片快取和背景工作。';
+
+  @override
+  String get memoryReport => '記憶體報告';
 }

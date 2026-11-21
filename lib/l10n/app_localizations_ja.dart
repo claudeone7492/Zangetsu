@@ -7569,4 +7569,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get slowConnectionBody => 'ストリームの開始に時間がかかるとき、ネットワークのタイムアウトを 2 倍にします。';
+
+  @override
+  String get performanceMode => 'パフォーマンスモード';
+
+  @override
+  String get performanceModeBody => 'メモリの少ない端末で画像キャッシュとバックグラウンド処理を抑えます。';
+
+  @override
+  String get memoryReport => 'メモリレポート';
 }

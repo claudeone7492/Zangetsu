@@ -3779,5 +3779,8 @@
   "userscriptAdded": "Script de usuário adicionado",
   "userscriptInvalid": "Cole um script de usuário com um cabeçalho @name ou @match",
   "slowConnection": "Modo de conexão lenta",
-  "slowConnectionBody": "Duplica os tempos limite quando os streams demoram a iniciar."
+  "slowConnectionBody": "Duplica os tempos limite quando os streams demoram a iniciar.",
+  "performanceMode": "Modo de desempenho",
+  "performanceModeBody": "Reduz o cache de imagens e o trabalho em segundo plano em dispositivos com pouca memória.",
+  "memoryReport": "Relatório de memória"
 }

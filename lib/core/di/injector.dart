@@ -32,6 +32,7 @@ import '../playback/category_store.dart';
 import '../playback/list_status_store.dart';
 import '../collections/collection_store.dart';
 import '../playback/my_list.dart';
+import '../performance/perf_mode.dart';
 import '../playback/net_tuning.dart';
 import '../dub/dub_engine.dart';
 import '../dub/dub_prefs.dart';
@@ -555,6 +556,8 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   await RedirectAllow.instance.init();
   await UserscriptStore.instance.init();
   await NetTuning.init();
+  await PerfMode.init();
+  PerfMode.setTvDevice(sl<AppMode>().isTv);
   sl.registerLazySingleton<MpvPlayerPool>(
     MpvPlayerPool.new,
     dispose: (pool) => pool.clear(),

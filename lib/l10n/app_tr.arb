@@ -3778,5 +3778,8 @@
   "userscriptAdded": "Kullanıcı betiği eklendi",
   "userscriptInvalid": "@name veya @match başlığı olan bir kullanıcı betiği yapıştırın",
   "slowConnection": "Yavaş bağlantı modu",
-  "slowConnectionBody": "Yayınlar başlamakta uzun sürdüğünde ağ zaman aşımlarını ikiye katla."
+  "slowConnectionBody": "Yayınlar başlamakta uzun sürdüğünde ağ zaman aşımlarını ikiye katla.",
+  "performanceMode": "Performans modu",
+  "performanceModeBody": "Düşük bellekli cihazlarda görsel önbelleğini ve arka plan işlerini azalt.",
+  "memoryReport": "Bellek raporu"
 }

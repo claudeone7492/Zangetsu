@@ -3739,5 +3739,8 @@
   "userscriptAdded": "Benutzerskript hinzugefügt",
   "userscriptInvalid": "Füge ein Benutzerskript mit @name- oder @match-Kopf ein",
   "slowConnection": "Langsame Verbindung",
-  "slowConnectionBody": "Verdopple die Netzwerk-Zeitlimits, wenn Streams lange zum Starten brauchen."
+  "slowConnectionBody": "Verdopple die Netzwerk-Zeitlimits, wenn Streams lange zum Starten brauchen.",
+  "performanceMode": "Leistungsmodus",
+  "performanceModeBody": "Bild-Cache und Hintergrundarbeit auf Geräten mit wenig Speicher reduzieren.",
+  "memoryReport": "Speicherbericht"
 }

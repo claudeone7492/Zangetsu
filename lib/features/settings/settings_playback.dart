@@ -24,10 +24,16 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
   bool _shaderDownloading = false;
   double _shaderProgress = 0;
   bool _slow = NetTuning.slow;
+  bool _perf = PerfMode.on;
 
   Future<void> _setSlow(bool value) async {
     await NetTuning.setSlow(value);
     if (mounted) setState(() => _slow = value);
+  }
+
+  Future<void> _setPerf(bool value) async {
+    await PerfMode.set(value);
+    if (mounted) setState(() => _perf = value);
   }
 
   // The main picker: Off + the three filters. The GPU tier (Mid/High) is a
@@ -681,6 +687,17 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
                   value: _slow,
                   activeThumbColor: AppColors.accent,
                   onChanged: _setSlow,
+                ),
+              ),
+              SettingsTile(
+                icon: Icons.bolt_outlined,
+                title: context.l10n.performanceMode,
+                subtitle: context.l10n.performanceModeBody,
+                onTap: () => _setPerf(!_perf),
+                trailing: Switch.adaptive(
+                  value: _perf,
+                  activeThumbColor: AppColors.accent,
+                  onChanged: _setPerf,
                 ),
               ),
               // Video decoder + Anime4K are mpv-renderer-only — the native TV

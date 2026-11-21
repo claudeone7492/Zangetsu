@@ -7865,4 +7865,14 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get slowConnectionBody =>
       'Double les délais réseau lorsque les flux mettent du temps à démarrer.';
+
+  @override
+  String get performanceMode => 'Mode performance';
+
+  @override
+  String get performanceModeBody =>
+      'Réduit le cache d\'images et le travail en arrière-plan sur les appareils à faible mémoire.';
+
+  @override
+  String get memoryReport => 'Rapport mémoire';
 }

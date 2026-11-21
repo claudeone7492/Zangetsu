@@ -7813,4 +7813,14 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get slowConnectionBody =>
       'Gandakan batas waktu jaringan saat streaming lama dimulai.';
+
+  @override
+  String get performanceMode => 'Mode performa';
+
+  @override
+  String get performanceModeBody =>
+      'Kurangi cache gambar dan kerja latar pada perangkat memori rendah.';
+
+  @override
+  String get memoryReport => 'Laporan memori';
 }

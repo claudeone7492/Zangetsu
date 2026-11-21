@@ -3739,5 +3739,8 @@
   "userscriptAdded": "Script utente aggiunto",
   "userscriptInvalid": "Incolla uno script utente con un'intestazione @name o @match",
   "slowConnection": "Modalità connessione lenta",
-  "slowConnectionBody": "Raddoppia i timeout di rete quando gli stream impiegano a partire."
+  "slowConnectionBody": "Raddoppia i timeout di rete quando gli stream impiegano a partire.",
+  "performanceMode": "Modalità prestazioni",
+  "performanceModeBody": "Riduci la cache delle immagini e il lavoro in background sui dispositivi con poca memoria.",
+  "memoryReport": "Report memoria"
 }

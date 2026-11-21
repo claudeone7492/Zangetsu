@@ -3999,5 +3999,8 @@
   "userscriptInvalid": "Paste a userscript with an @name or @match header",
   "@adListUpdated": {"description": "Number of ad-block hosts loaded.", "placeholders": {"count": {"type": "int"}}},
   "slowConnection": "Slow connection mode",
-  "slowConnectionBody": "Double network timeouts when streams take long to start."
+  "slowConnectionBody": "Double network timeouts when streams take long to start.",
+  "performanceMode": "Performance mode",
+  "performanceModeBody": "Trim image caching and background work on low-memory devices.",
+  "memoryReport": "Memory report"
 }

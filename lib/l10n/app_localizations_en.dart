@@ -7776,4 +7776,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get slowConnectionBody =>
       'Double network timeouts when streams take long to start.';
+
+  @override
+  String get performanceMode => 'Performance mode';
+
+  @override
+  String get performanceModeBody =>
+      'Trim image caching and background work on low-memory devices.';
+
+  @override
+  String get memoryReport => 'Memory report';
 }

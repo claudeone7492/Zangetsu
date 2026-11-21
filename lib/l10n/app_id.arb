@@ -3779,5 +3779,8 @@
   "userscriptAdded": "Skrip pengguna ditambahkan",
   "userscriptInvalid": "Tempel skrip pengguna dengan header @name atau @match",
   "slowConnection": "Mode koneksi lambat",
-  "slowConnectionBody": "Gandakan batas waktu jaringan saat streaming lama dimulai."
+  "slowConnectionBody": "Gandakan batas waktu jaringan saat streaming lama dimulai.",
+  "performanceMode": "Mode performa",
+  "performanceModeBody": "Kurangi cache gambar dan kerja latar pada perangkat memori rendah.",
+  "memoryReport": "Laporan memori"
 }
