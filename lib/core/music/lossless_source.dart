@@ -7,12 +7,20 @@ import 'music_source.dart';
 /// Ships unconfigured because no public lossless catalogue is keyless.
 class LosslessSource implements MusicSource {
   LosslessSource(this._dio, {String? baseUrl, String? apiKey})
-    : _baseUrl = baseUrl ?? '',
-      _apiKey = apiKey ?? '';
+    : _baseUrl = (baseUrl ?? _staticBase),
+      _apiKey = (apiKey ?? _staticKey);
 
   final Dio _dio;
   String _baseUrl;
   String _apiKey;
+
+  static String _staticBase = '';
+  static String _staticKey = '';
+
+  static void configureStatic({required String baseUrl, String? apiKey}) {
+    _staticBase = baseUrl.trim();
+    _staticKey = apiKey?.trim() ?? '';
+  }
 
   void configure({required String baseUrl, String? apiKey}) {
     _baseUrl = baseUrl.trim();
