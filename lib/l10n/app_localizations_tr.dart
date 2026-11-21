@@ -7735,4 +7735,69 @@ class AppLocalizationsTr extends AppLocalizations {
   String playlistCount(int count) {
     return '$count oynatma listesi';
   }
+
+  @override
+  String get webProtections => 'Web korumaları';
+
+  @override
+  String get blockAds => 'Reklamları engelle';
+
+  @override
+  String get blockAdsBody =>
+      'Uygulama içi tarayıcıda bilinen reklam ve izleme ana makinelerini gizle.';
+
+  @override
+  String get updateAdList => 'Listeyi güncelle';
+
+  @override
+  String adListUpdated(int count) {
+    return '$count ana makine yüklendi';
+  }
+
+  @override
+  String get adListFailed => 'Reklam listesi güncellenemedi';
+
+  @override
+  String get blockPromos => 'Promosyon yönlendirmelerini engelle';
+
+  @override
+  String get blockPromosBody =>
+      'Bahşiş ve üyelik bağlantılarının açılmasını durdur.';
+
+  @override
+  String get allowedHosts => 'İzin verilen ana makineler';
+
+  @override
+  String get allowedHostsBody =>
+      'Satır başına bir ana makine veya sözcük. Eşleşen bağlantılar reklam engelleyiciyi atlar.';
+
+  @override
+  String get userscripts => 'Kullanıcı betikleri';
+
+  @override
+  String get userscriptsBody =>
+      'Kayıtlı sitelerde kendi betiklerinizi çalıştırın.';
+
+  @override
+  String get userscriptsEmpty =>
+      'Henüz kullanıcı betiği yok.\nKayıtlı bir sitenin davranışını değiştirmek için bir tane ekleyin.';
+
+  @override
+  String get addUserscript => 'Kullanıcı betiği ekle';
+
+  @override
+  String get userscriptName => 'Ad';
+
+  @override
+  String get userscriptMatches => 'Eşleşmeler, satır başına bir tane';
+
+  @override
+  String get userscriptCode => 'Kullanıcı betiği kodu';
+
+  @override
+  String get userscriptAdded => 'Kullanıcı betiği eklendi';
+
+  @override
+  String get userscriptInvalid =>
+      '@name veya @match başlığı olan bir kullanıcı betiği yapıştırın';
 }

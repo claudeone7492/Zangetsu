@@ -37,6 +37,9 @@ import '../dub/dub_prefs.dart';
 import '../dub/switching_dub_engine.dart';
 import '../telegram/telegram_prefs.dart';
 import '../telegram/telegram_service.dart';
+import '../web/ad_block.dart';
+import '../web/redirect_allow.dart';
+import '../web/userscript_store.dart';
 import '../web/website_store.dart';
 import '../playback/playback_prefs.dart';
 import '../playback/pinned_sources.dart';
@@ -547,6 +550,9 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   sl.registerLazySingleton<TelegramService>(TelegramService.new);
   final websiteStore = await WebsiteStore.open();
   sl.registerSingleton<WebsiteStore>(websiteStore);
+  await AdBlock.instance.init();
+  await RedirectAllow.instance.init();
+  await UserscriptStore.instance.init();
   sl.registerLazySingleton<MpvPlayerPool>(
     MpvPlayerPool.new,
     dispose: (pool) => pool.clear(),

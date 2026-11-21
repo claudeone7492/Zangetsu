@@ -7504,4 +7504,63 @@ class AppLocalizationsJa extends AppLocalizations {
   String playlistCount(int count) {
     return '$count プレイリスト';
   }
+
+  @override
+  String get webProtections => 'Web 保護';
+
+  @override
+  String get blockAds => '広告をブロック';
+
+  @override
+  String get blockAdsBody => 'アプリ内ブラウザで既知の広告・トラッキングホストを隠します。';
+
+  @override
+  String get updateAdList => 'リストを更新';
+
+  @override
+  String adListUpdated(int count) {
+    return '$count 件のホストを読み込みました';
+  }
+
+  @override
+  String get adListFailed => '広告リストを更新できませんでした';
+
+  @override
+  String get blockPromos => 'プロモリダイレクトをブロック';
+
+  @override
+  String get blockPromosBody => 'チップやメンバーシップのリンクを開かないようにします。';
+
+  @override
+  String get allowedHosts => '許可するホスト';
+
+  @override
+  String get allowedHostsBody => '1 行に 1 つのホストまたは単語。一致するリンクは広告ブロッカーを回避します。';
+
+  @override
+  String get userscripts => 'ユーザースクリプト';
+
+  @override
+  String get userscriptsBody => '保存したサイトで独自のスクリプトを実行します。';
+
+  @override
+  String get userscriptsEmpty => 'ユーザースクリプトはまだありません。\n追加すると、保存したサイトの動作を変更できます。';
+
+  @override
+  String get addUserscript => 'ユーザースクリプトを追加';
+
+  @override
+  String get userscriptName => '名前';
+
+  @override
+  String get userscriptMatches => '一致パターン（1 行に 1 つ）';
+
+  @override
+  String get userscriptCode => 'ユーザースクリプトのコード';
+
+  @override
+  String get userscriptAdded => 'ユーザースクリプトを追加しました';
+
+  @override
+  String get userscriptInvalid => '@name または @match ヘッダー付きのユーザースクリプトを貼り付けてください';
 }

@@ -8,6 +8,7 @@ import '../../core/ui/app_dialog.dart';
 import '../../core/web/website.dart';
 import '../../core/web/website_store.dart';
 import '../../l10n/l10n.dart';
+import 'web_protections_screen.dart';
 import 'website_view_screen.dart';
 
 /// Saved sites, opened in the in-app browser.
@@ -23,7 +24,20 @@ class WebsitesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = sl<WebsiteStore>();
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.websites)),
+      appBar: AppBar(
+        title: Text(context.l10n.websites),
+        actions: [
+          IconButton(
+            tooltip: context.l10n.webProtections,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const WebProtectionsScreen(),
+              ),
+            ),
+            icon: const Icon(Icons.security_rounded),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _add(context, store),
         tooltip: context.l10n.websitesAdd,

@@ -7445,6 +7445,65 @@ class AppLocalizationsZh extends AppLocalizations {
   String playlistCount(int count) {
     return '$count 个播放列表';
   }
+
+  @override
+  String get webProtections => '网页保护';
+
+  @override
+  String get blockAds => '拦截广告';
+
+  @override
+  String get blockAdsBody => '在内置浏览器中隐藏已知的广告和跟踪主机。';
+
+  @override
+  String get updateAdList => '更新列表';
+
+  @override
+  String adListUpdated(int count) {
+    return '已加载 $count 个主机';
+  }
+
+  @override
+  String get adListFailed => '无法更新广告列表';
+
+  @override
+  String get blockPromos => '拦截推广跳转';
+
+  @override
+  String get blockPromosBody => '阻止打赏和会员链接打开。';
+
+  @override
+  String get allowedHosts => '允许的主机';
+
+  @override
+  String get allowedHostsBody => '每行一个主机或词语。匹配的链接会绕过广告拦截。';
+
+  @override
+  String get userscripts => '用户脚本';
+
+  @override
+  String get userscriptsBody => '在已保存的网站上运行你自己的脚本。';
+
+  @override
+  String get userscriptsEmpty => '还没有用户脚本。\n添加一个以改变已保存网站的行为。';
+
+  @override
+  String get addUserscript => '添加用户脚本';
+
+  @override
+  String get userscriptName => '名称';
+
+  @override
+  String get userscriptMatches => '匹配规则，每行一个';
+
+  @override
+  String get userscriptCode => '用户脚本代码';
+
+  @override
+  String get userscriptAdded => '已添加用户脚本';
+
+  @override
+  String get userscriptInvalid => '粘贴带有 @name 或 @match 头的用户脚本';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -14888,4 +14947,63 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String playlistCount(int count) {
     return '$count 個播放清單';
   }
+
+  @override
+  String get webProtections => '網頁保護';
+
+  @override
+  String get blockAds => '封鎖廣告';
+
+  @override
+  String get blockAdsBody => '在內建瀏覽器中隱藏已知的廣告與追蹤主機。';
+
+  @override
+  String get updateAdList => '更新清單';
+
+  @override
+  String adListUpdated(int count) {
+    return '已載入 $count 個主機';
+  }
+
+  @override
+  String get adListFailed => '無法更新廣告清單';
+
+  @override
+  String get blockPromos => '封鎖推廣重新導向';
+
+  @override
+  String get blockPromosBody => '阻止打賞與會員連結開啟。';
+
+  @override
+  String get allowedHosts => '允許的主機';
+
+  @override
+  String get allowedHostsBody => '每行一個主機或詞語。符合的連結會略過廣告封鎖。';
+
+  @override
+  String get userscripts => '使用者腳本';
+
+  @override
+  String get userscriptsBody => '在已儲存的網站上執行你自己的腳本。';
+
+  @override
+  String get userscriptsEmpty => '尚無使用者腳本。\n新增一個以改變已儲存網站的行為。';
+
+  @override
+  String get addUserscript => '新增使用者腳本';
+
+  @override
+  String get userscriptName => '名稱';
+
+  @override
+  String get userscriptMatches => '符合規則，每行一個';
+
+  @override
+  String get userscriptCode => '使用者腳本程式碼';
+
+  @override
+  String get userscriptAdded => '已新增使用者腳本';
+
+  @override
+  String get userscriptInvalid => '貼上帶有 @name 或 @match 標頭的使用者腳本';
 }

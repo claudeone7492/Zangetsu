@@ -7771,4 +7771,67 @@ class AppLocalizationsAr extends AppLocalizations {
   String playlistCount(int count) {
     return '$count قوائم تشغيل';
   }
+
+  @override
+  String get webProtections => 'حماية الويب';
+
+  @override
+  String get blockAds => 'حظر الإعلانات';
+
+  @override
+  String get blockAdsBody =>
+      'إخفاء مضيفي الإعلانات والتتبع المعروفين في المتصفح داخل التطبيق.';
+
+  @override
+  String get updateAdList => 'تحديث القائمة';
+
+  @override
+  String adListUpdated(int count) {
+    return 'تم تحميل $count مضيف';
+  }
+
+  @override
+  String get adListFailed => 'تعذر تحديث قائمة الإعلانات';
+
+  @override
+  String get blockPromos => 'حظر روابط الترويج';
+
+  @override
+  String get blockPromosBody => 'منع فتح روابط الإكراميات والعضويات.';
+
+  @override
+  String get allowedHosts => 'المضيفون المسموحون';
+
+  @override
+  String get allowedHostsBody =>
+      'مضيف أو كلمة في كل سطر. الروابط المطابقة تتجاوز حظر الإعلانات.';
+
+  @override
+  String get userscripts => 'سكربتات المستخدم';
+
+  @override
+  String get userscriptsBody => 'شغّل سكربتاتك على المواقع المحفوظة.';
+
+  @override
+  String get userscriptsEmpty =>
+      'لا توجد سكربتات مستخدم بعد.\nأضف واحدًا لتغيير سلوك موقع محفوظ.';
+
+  @override
+  String get addUserscript => 'إضافة سكربت مستخدم';
+
+  @override
+  String get userscriptName => 'الاسم';
+
+  @override
+  String get userscriptMatches => 'المطابقات، واحدة في كل سطر';
+
+  @override
+  String get userscriptCode => 'كود سكربت المستخدم';
+
+  @override
+  String get userscriptAdded => 'تمت إضافة سكربت المستخدم';
+
+  @override
+  String get userscriptInvalid =>
+      'الصق سكربت مستخدم يحتوي على ترويسة @name أو @match';
 }

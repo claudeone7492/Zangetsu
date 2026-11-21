@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../core/web/ad_block.dart';
+import '../../core/web/promo_guard.dart';
+import '../../core/web/redirect_allow.dart';
+import '../../core/web/userscript_store.dart';
 import '../../core/web/website.dart';
 import '../../l10n/l10n.dart';
 
@@ -44,13 +48,22 @@ class _WebsiteViewScreenState extends State<WebsiteViewScreen> {
               });
             }
           },
-          onPageFinished: (_) async {
+          onPageFinished: (url) async {
             final canBack = await _controller.canGoBack();
             if (mounted) {
               setState(() {
                 _canGoBack = canBack;
                 _progress = 1;
               });
+            }
+            final uri = Uri.tryParse(url);
+            if (uri == null) return;
+            for (final script in UserscriptStore.instance.scriptsFor(uri)) {
+              try {
+                await _controller.runJavaScript(script.code);
+              } catch (_) {
+                // One broken userscript must not stop the page or the others.
+              }
             }
           },
           onWebResourceError: (error) {
@@ -62,6 +75,10 @@ class _WebsiteViewScreenState extends State<WebsiteViewScreen> {
             final uri = Uri.tryParse(request.url);
             if (uri == null) return NavigationDecision.prevent;
             if (uri.scheme == 'http' || uri.scheme == 'https') {
+              if (!RedirectAllow.instance.allows(uri) &&
+                  (PromoGuard.blocks(uri) || AdBlock.instance.blocks(uri))) {
+                return NavigationDecision.prevent;
+              }
               return NavigationDecision.navigate;
             }
             launchUrl(uri, mode: LaunchMode.externalApplication);

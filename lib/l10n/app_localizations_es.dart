@@ -7787,4 +7787,69 @@ class AppLocalizationsEs extends AppLocalizations {
   String playlistCount(int count) {
     return '$count listas';
   }
+
+  @override
+  String get webProtections => 'Protecciones web';
+
+  @override
+  String get blockAds => 'Bloquear anuncios';
+
+  @override
+  String get blockAdsBody =>
+      'Oculta hosts conocidos de anuncios y rastreo en el navegador integrado.';
+
+  @override
+  String get updateAdList => 'Actualizar lista';
+
+  @override
+  String adListUpdated(int count) {
+    return '$count hosts cargados';
+  }
+
+  @override
+  String get adListFailed => 'No se pudo actualizar la lista de anuncios';
+
+  @override
+  String get blockPromos => 'Bloquear redirecciones promocionales';
+
+  @override
+  String get blockPromosBody =>
+      'Evita que se abran enlaces de propinas y membresías.';
+
+  @override
+  String get allowedHosts => 'Hosts permitidos';
+
+  @override
+  String get allowedHostsBody =>
+      'Un host o palabra por línea. Los enlaces coincidentes omiten el bloqueador.';
+
+  @override
+  String get userscripts => 'Scripts de usuario';
+
+  @override
+  String get userscriptsBody =>
+      'Ejecuta tus propios scripts en sitios guardados.';
+
+  @override
+  String get userscriptsEmpty =>
+      'Aún no hay scripts de usuario.\nAñade uno para cambiar el comportamiento de un sitio guardado.';
+
+  @override
+  String get addUserscript => 'Añadir script de usuario';
+
+  @override
+  String get userscriptName => 'Nombre';
+
+  @override
+  String get userscriptMatches => 'Coincidencias, una por línea';
+
+  @override
+  String get userscriptCode => 'Código del script de usuario';
+
+  @override
+  String get userscriptAdded => 'Script de usuario añadido';
+
+  @override
+  String get userscriptInvalid =>
+      'Pega un script de usuario con una cabecera @name o @match';
 }

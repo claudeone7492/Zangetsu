@@ -7705,4 +7705,68 @@ class AppLocalizationsEn extends AppLocalizations {
   String playlistCount(int count) {
     return '$count playlists';
   }
+
+  @override
+  String get webProtections => 'Web protections';
+
+  @override
+  String get blockAds => 'Block ads';
+
+  @override
+  String get blockAdsBody =>
+      'Hide known ad and tracker hosts in the in-app browser.';
+
+  @override
+  String get updateAdList => 'Update list';
+
+  @override
+  String adListUpdated(int count) {
+    return '$count hosts loaded';
+  }
+
+  @override
+  String get adListFailed => 'Could not update the ad list';
+
+  @override
+  String get blockPromos => 'Block promo redirects';
+
+  @override
+  String get blockPromosBody =>
+      'Stop tip-jar and membership links from opening.';
+
+  @override
+  String get allowedHosts => 'Allowed hosts';
+
+  @override
+  String get allowedHostsBody =>
+      'One host or word per line. Matching links bypass the ad blocker.';
+
+  @override
+  String get userscripts => 'Userscripts';
+
+  @override
+  String get userscriptsBody => 'Run your own scripts on saved websites.';
+
+  @override
+  String get userscriptsEmpty =>
+      'No userscripts yet.\nAdd one to change how a saved site behaves.';
+
+  @override
+  String get addUserscript => 'Add userscript';
+
+  @override
+  String get userscriptName => 'Name';
+
+  @override
+  String get userscriptMatches => 'Matches, one per line';
+
+  @override
+  String get userscriptCode => 'Userscript code';
+
+  @override
+  String get userscriptAdded => 'Userscript added';
+
+  @override
+  String get userscriptInvalid =>
+      'Paste a userscript with an @name or @match header';
 }

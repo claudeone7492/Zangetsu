@@ -3977,5 +3977,25 @@
     "placeholders": {"count": {"type": "int"}}
   },
   "playlistCount": "{count} playlists",
-  "@playlistCount": {"description": "Number of saved playlists.", "placeholders": {"count": {"type": "int"}}}
+  "@playlistCount": {"description": "Number of saved playlists.", "placeholders": {"count": {"type": "int"}}},
+  "webProtections": "Web protections",
+  "blockAds": "Block ads",
+  "blockAdsBody": "Hide known ad and tracker hosts in the in-app browser.",
+  "updateAdList": "Update list",
+  "adListUpdated": "{count} hosts loaded",
+  "adListFailed": "Could not update the ad list",
+  "blockPromos": "Block promo redirects",
+  "blockPromosBody": "Stop tip-jar and membership links from opening.",
+  "allowedHosts": "Allowed hosts",
+  "allowedHostsBody": "One host or word per line. Matching links bypass the ad blocker.",
+  "userscripts": "Userscripts",
+  "userscriptsBody": "Run your own scripts on saved websites.",
+  "userscriptsEmpty": "No userscripts yet.\nAdd one to change how a saved site behaves.",
+  "addUserscript": "Add userscript",
+  "userscriptName": "Name",
+  "userscriptMatches": "Matches, one per line",
+  "userscriptCode": "Userscript code",
+  "userscriptAdded": "Userscript added",
+  "userscriptInvalid": "Paste a userscript with an @name or @match header",
+  "@adListUpdated": {"description": "Number of ad-block hosts loaded.", "placeholders": {"count": {"type": "int"}}}
 }

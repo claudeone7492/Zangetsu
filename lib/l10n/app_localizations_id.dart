@@ -7741,4 +7741,69 @@ class AppLocalizationsId extends AppLocalizations {
   String playlistCount(int count) {
     return '$count daftar putar';
   }
+
+  @override
+  String get webProtections => 'Perlindungan web';
+
+  @override
+  String get blockAds => 'Blokir iklan';
+
+  @override
+  String get blockAdsBody =>
+      'Sembunyikan host iklan dan pelacak yang dikenal di browser dalam aplikasi.';
+
+  @override
+  String get updateAdList => 'Perbarui daftar';
+
+  @override
+  String adListUpdated(int count) {
+    return '$count host dimuat';
+  }
+
+  @override
+  String get adListFailed => 'Tidak dapat memperbarui daftar iklan';
+
+  @override
+  String get blockPromos => 'Blokir pengalihan promo';
+
+  @override
+  String get blockPromosBody =>
+      'Hentikan tautan tip dan keanggotaan agar tidak terbuka.';
+
+  @override
+  String get allowedHosts => 'Host yang diizinkan';
+
+  @override
+  String get allowedHostsBody =>
+      'Satu host atau kata per baris. Tautan yang cocok melewati pemblokir iklan.';
+
+  @override
+  String get userscripts => 'Skrip pengguna';
+
+  @override
+  String get userscriptsBody =>
+      'Jalankan skrip Anda sendiri di situs tersimpan.';
+
+  @override
+  String get userscriptsEmpty =>
+      'Belum ada skrip pengguna.\nTambahkan satu untuk mengubah perilaku situs tersimpan.';
+
+  @override
+  String get addUserscript => 'Tambah skrip pengguna';
+
+  @override
+  String get userscriptName => 'Nama';
+
+  @override
+  String get userscriptMatches => 'Kecocokan, satu per baris';
+
+  @override
+  String get userscriptCode => 'Kode skrip pengguna';
+
+  @override
+  String get userscriptAdded => 'Skrip pengguna ditambahkan';
+
+  @override
+  String get userscriptInvalid =>
+      'Tempel skrip pengguna dengan header @name atau @match';
 }

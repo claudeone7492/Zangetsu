@@ -151,6 +151,20 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               style: AppText.caption,
             ),
           ),
+          SettingsCard(
+            children: [
+              SettingsTile(
+                icon: Icons.security_rounded,
+                title: context.l10n.webProtections,
+                subtitle: context.l10n.blockAdsBody,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const WebProtectionsScreen(),
+                  ),
+                ),
+              ),
+            ],
+          ),
           _BandwidthShareCard(),
           SettingsCard(
             children: [

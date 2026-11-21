@@ -24,6 +24,7 @@ import '../../core/tracker/trakt_service.dart';
 import '../../core/tracker/tracker.dart';
 import '../player/dub_sheet.dart' show showDubSheet;
 import '../telegram/telegram_screen.dart';
+import '../web/web_protections_screen.dart';
 import '../web/websites_screen.dart';
 import '../../core/dub/dub_engine.dart';
 import '../player/player_screen.dart' show openSubtitleStyleSheet;

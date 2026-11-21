@@ -13592,6 +13592,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} playlists'**
   String playlistCount(int count);
+
+  /// No description provided for @webProtections.
+  ///
+  /// In en, this message translates to:
+  /// **'Web protections'**
+  String get webProtections;
+
+  /// No description provided for @blockAds.
+  ///
+  /// In en, this message translates to:
+  /// **'Block ads'**
+  String get blockAds;
+
+  /// No description provided for @blockAdsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide known ad and tracker hosts in the in-app browser.'**
+  String get blockAdsBody;
+
+  /// No description provided for @updateAdList.
+  ///
+  /// In en, this message translates to:
+  /// **'Update list'**
+  String get updateAdList;
+
+  /// Number of ad-block hosts loaded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} hosts loaded'**
+  String adListUpdated(int count);
+
+  /// No description provided for @adListFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update the ad list'**
+  String get adListFailed;
+
+  /// No description provided for @blockPromos.
+  ///
+  /// In en, this message translates to:
+  /// **'Block promo redirects'**
+  String get blockPromos;
+
+  /// No description provided for @blockPromosBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop tip-jar and membership links from opening.'**
+  String get blockPromosBody;
+
+  /// No description provided for @allowedHosts.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed hosts'**
+  String get allowedHosts;
+
+  /// No description provided for @allowedHostsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'One host or word per line. Matching links bypass the ad blocker.'**
+  String get allowedHostsBody;
+
+  /// No description provided for @userscripts.
+  ///
+  /// In en, this message translates to:
+  /// **'Userscripts'**
+  String get userscripts;
+
+  /// No description provided for @userscriptsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Run your own scripts on saved websites.'**
+  String get userscriptsBody;
+
+  /// No description provided for @userscriptsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No userscripts yet.\nAdd one to change how a saved site behaves.'**
+  String get userscriptsEmpty;
+
+  /// No description provided for @addUserscript.
+  ///
+  /// In en, this message translates to:
+  /// **'Add userscript'**
+  String get addUserscript;
+
+  /// No description provided for @userscriptName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get userscriptName;
+
+  /// No description provided for @userscriptMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Matches, one per line'**
+  String get userscriptMatches;
+
+  /// No description provided for @userscriptCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Userscript code'**
+  String get userscriptCode;
+
+  /// No description provided for @userscriptAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Userscript added'**
+  String get userscriptAdded;
+
+  /// No description provided for @userscriptInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a userscript with an @name or @match header'**
+  String get userscriptInvalid;
 }
 
 class _AppLocalizationsDelegate

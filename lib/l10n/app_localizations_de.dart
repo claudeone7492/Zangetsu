@@ -7792,4 +7792,69 @@ class AppLocalizationsDe extends AppLocalizations {
   String playlistCount(int count) {
     return '$count Wiedergabelisten';
   }
+
+  @override
+  String get webProtections => 'Web-Schutz';
+
+  @override
+  String get blockAds => 'Werbung blockieren';
+
+  @override
+  String get blockAdsBody =>
+      'Bekannte Werbe- und Tracking-Hosts im In-App-Browser ausblenden.';
+
+  @override
+  String get updateAdList => 'Liste aktualisieren';
+
+  @override
+  String adListUpdated(int count) {
+    return '$count Hosts geladen';
+  }
+
+  @override
+  String get adListFailed => 'Werbeliste konnte nicht aktualisiert werden';
+
+  @override
+  String get blockPromos => 'Werbe-Weiterleitungen blockieren';
+
+  @override
+  String get blockPromosBody =>
+      'Trinkgeld- und Mitgliedschaftslinks nicht öffnen.';
+
+  @override
+  String get allowedHosts => 'Erlaubte Hosts';
+
+  @override
+  String get allowedHostsBody =>
+      'Ein Host oder Wort pro Zeile. Passende Links umgehen den Werbeblocker.';
+
+  @override
+  String get userscripts => 'Benutzerskripte';
+
+  @override
+  String get userscriptsBody =>
+      'Führe eigene Skripte auf gespeicherten Websites aus.';
+
+  @override
+  String get userscriptsEmpty =>
+      'Noch keine Benutzerskripte.\nFüge eins hinzu, um das Verhalten einer gespeicherten Website zu ändern.';
+
+  @override
+  String get addUserscript => 'Benutzerskript hinzufügen';
+
+  @override
+  String get userscriptName => 'Name';
+
+  @override
+  String get userscriptMatches => 'Übereinstimmungen, eine pro Zeile';
+
+  @override
+  String get userscriptCode => 'Benutzerskript-Code';
+
+  @override
+  String get userscriptAdded => 'Benutzerskript hinzugefügt';
+
+  @override
+  String get userscriptInvalid =>
+      'Füge ein Benutzerskript mit @name- oder @match-Kopf ein';
 }
