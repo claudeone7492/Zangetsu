@@ -2,6 +2,10 @@
 
 Source: `HIKARI_COMPARISON.md` (comparison against `codegeasse1/hikari`, Kotlin/Compose).
 
+> **Status superseded.** This file records the audit as it stood when it was
+> written. The live board is [`PARITY.md`](PARITY.md) and [`AUDIT.md`](AUDIT.md);
+> rows marked open here have since landed.
+
 Every item below is missing or partial in **this** repo. Each entry states what
 it is, Hikari's evidence, and the **wiring plan in our architecture** so it lands
 the way every existing engine lands: zero user input, pre-provisioned, routed

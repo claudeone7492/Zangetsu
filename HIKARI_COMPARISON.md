@@ -4,6 +4,10 @@ Comparison of **this repo** (`claudeone7492/Zangetsu`, a Flutter/Dart streaming 
 manga + novel app) against **`codegeasse1/hikari`** (a Kotlin/Compose "universal
 streaming app", 209★, inspected at `main`, pushed 2026-11-18).
 
+> **Status superseded.** This file records the audit as it stood when it was
+> written. The live board is [`PARITY.md`](PARITY.md) and [`AUDIT.md`](AUDIT.md);
+> rows marked open here have since landed.
+
 Method: both trees were read directly (Hikari cloned to `/tmp/hikari`, this repo
 at HEAD). Every row below cites a file/package that exists, not a README claim.
 Plugin counts were fetched live from each catalogue's index at comparison time.

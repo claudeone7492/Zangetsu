@@ -4,6 +4,10 @@ Repo: `claudeone7492/Zangetsu` (fork of `Spyou/Zangetsu`)
 Analyzed ref: `main` @ `7470f11b` ("feat: live Simkl tracking on TV native players", 2026-11-09)
 App version: `2.3.5+23637` · ~201k Dart LOC (excl. l10n) · 89 remote branches
 
+> **Status superseded.** This file records the audit as it stood when it was
+> written. The live board is [`PARITY.md`](PARITY.md) and [`AUDIT.md`](AUDIT.md);
+> rows marked open here have since landed.
+
 Legend: ✅ done / shipped · 🟡 partial or gated · ❌ not done / missing
 
 ---
