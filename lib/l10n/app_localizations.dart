@@ -1383,6 +1383,18 @@ abstract class AppLocalizations {
   /// **'Contributors'**
   String get contributors;
 
+  /// No description provided for @parityTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Parity tools'**
+  String get parityTools;
+
+  /// No description provided for @parityToolsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Importers, trackers, lossless audio and interface scale'**
+  String get parityToolsSubtitle;
+
   /// No description provided for @website.
   ///
   /// In en, this message translates to:
@@ -2450,6 +2462,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Crop borders'**
   String get cropBorders;
+
+  /// No description provided for @sharpenPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharpen pages'**
+  String get sharpenPages;
 
   /// No description provided for @trimNearUniformEdgeMarginsFromAPage.
   ///
@@ -3933,6 +3951,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Audio normalization'**
   String get audioNormalization;
+
+  /// No description provided for @audioFx.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound profile'**
+  String get audioFx;
+
+  /// No description provided for @audioFxNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Night'**
+  String get audioFxNight;
+
+  /// No description provided for @audioFxCinema.
+  ///
+  /// In en, this message translates to:
+  /// **'Cinema'**
+  String get audioFxCinema;
+
+  /// No description provided for @audioFxVocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice'**
+  String get audioFxVocal;
+
+  /// No description provided for @playerSkin.
+  ///
+  /// In en, this message translates to:
+  /// **'Player skin'**
+  String get playerSkin;
+
+  /// No description provided for @skinClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get skinClassic;
+
+  /// No description provided for @skinGlass.
+  ///
+  /// In en, this message translates to:
+  /// **'Glass'**
+  String get skinGlass;
+
+  /// No description provided for @skinMinimal.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimal'**
+  String get skinMinimal;
 
   /// No description provided for @searchSubtitlesOnline.
   ///

@@ -11,6 +11,20 @@ String _subtitleOutlineLabel(AppLocalizations l10n, String id) => switch (id) {
   _ => id,
 };
 
+String _skinLabel(AppLocalizations l10n, String value) =>
+    switch (PlayerSkins.parse(value)) {
+      PlayerSkin.classic => l10n.skinClassic,
+      PlayerSkin.glass => l10n.skinGlass,
+      PlayerSkin.minimal => l10n.skinMinimal,
+    };
+
+String _audioFxLabel(AppLocalizations l10n, AudioFx fx) => switch (fx) {
+  AudioFx.none => l10n.off,
+  AudioFx.night => l10n.audioFxNight,
+  AudioFx.cinema => l10n.audioFxCinema,
+  AudioFx.vocal => l10n.audioFxVocal,
+};
+
 String _subtitleColourLabel(AppLocalizations l10n, String hex) => switch (hex) {
   '#FFFFFFFF' => l10n.colourWhite,
   '#FFFF00FF' => l10n.colourYellow,
@@ -151,6 +165,35 @@ class _AudioSubsSheetState extends State<_AudioSubsSheet> {
                     active: sl<PlaybackPrefs>().audioNormalize,
                     onTap: () async {
                       await c.toggleAudioNormalize();
+                      if (mounted) setState(() {});
+                      widget.onInteract();
+                    },
+                  ),
+                  _SheetRow(
+                    label: context.l10n.audioFx,
+                    subtitle: _audioFxLabel(context.l10n, c.audioFx),
+                    active: c.audioFx != AudioFx.none,
+                    onTap: () async {
+                      await c.cycleAudioFx();
+                      if (mounted) setState(() {});
+                      widget.onInteract();
+                    },
+                  ),
+                  _SheetRow(
+                    label: context.l10n.playerSkin,
+                    subtitle: _skinLabel(
+                      context.l10n,
+                      sl<PlaybackPrefs>().playerSkin,
+                    ),
+                    active: sl<PlaybackPrefs>().playerSkin != 'classic',
+                    onTap: () async {
+                      final prefs = sl<PlaybackPrefs>();
+                      final next = switch (PlayerSkins.parse(prefs.playerSkin)) {
+                        PlayerSkin.classic => PlayerSkin.glass,
+                        PlayerSkin.glass => PlayerSkin.minimal,
+                        PlayerSkin.minimal => PlayerSkin.classic,
+                      };
+                      await prefs.setPlayerSkin(next.name);
                       if (mounted) setState(() {});
                       widget.onInteract();
                     },

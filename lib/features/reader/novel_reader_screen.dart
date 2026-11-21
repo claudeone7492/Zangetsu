@@ -5,6 +5,8 @@ import '../../core/di/injector.dart';
 import '../../core/models/episode.dart';
 import '../../core/reading/chapter_nav.dart';
 import '../../core/models/page_content.dart';
+import '../../core/reading/novel_translate.dart';
+import '../../core/translation/plain_text_translation_service.dart';
 import '../../core/models/provider_info.dart';
 import '../../core/reading/read_history.dart';
 import '../../core/reading/read_store.dart';
@@ -98,6 +100,7 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
   String _selectedText = '';
 
   bool _loading = true;
+  bool _translating = false;
   String? _error;
   ChapterText? _text;
   bool _chromeVisible = false;
@@ -1594,6 +1597,24 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
                             ),
                           ),
                         ]),
+                        readerSheetSection(context.l10n.mangaTranslationSection),
+                        readerSheetGroup([
+                          readerSheetRow(
+                            icon: Icons.translate_rounded,
+                            label: _translating
+                                ? context.l10n.mangaTranslationInProgress
+                                : context.l10n.mangaTranslationAction,
+                            trailing: Icon(
+                              Icons.chevron_right_rounded,
+                              color: AppColors.textSecondary,
+                              size: 20,
+                            ),
+                            onTap: () {
+                              Navigator.of(ctx).pop();
+                              _translateChapter();
+                            },
+                          ),
+                        ]),
                         readerSheetSection('Comfort'),
                         readerSheetGroup([
                           readerSheetRow(
@@ -1629,6 +1650,75 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
             ),
           );
         },
+      ),
+    );
+  }
+
+  /// Translates the open chapter and shows it over the page.
+  ///
+  /// Same keyless endpoint the subtitle and manga paths use; the target is the
+  /// UI language, so a reader in Japanese gets Japanese back.
+  Future<void> _translateChapter() async {
+    final html = _text?.html;
+    if (html == null || _translating) return;
+    final text = NovelTranslate.plainText(html);
+    if (text.trim().isEmpty) return;
+    final target = Localizations.localeOf(context).languageCode;
+    setState(() => _translating = true);
+    try {
+      final translated = await NovelTranslate.translate(
+        text,
+        (chunk) => PlainTextTranslationService().translate(
+          chunk,
+          sourceLanguage: 'auto',
+          targetLanguage: target,
+        ),
+      );
+      if (!mounted) return;
+      _showTranslation(translated);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.mangaTranslationError)),
+      );
+    } finally {
+      if (mounted) setState(() => _translating = false);
+    }
+  }
+
+  void _showTranslation(String translated) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) => ReaderSheetShell(
+        child: SafeArea(
+          top: false,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(sheetContext).size.height * 0.85,
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      sheetContext.l10n.translated,
+                      style: AppText.headline,
+                    ),
+                    const SizedBox(height: 12),
+                    SelectableText(
+                      translated,
+                      style: AppText.body.copyWith(height: 1.5),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

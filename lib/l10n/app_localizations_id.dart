@@ -675,6 +675,13 @@ class AppLocalizationsId extends AppLocalizations {
   String get contributors => 'Kontributor';
 
   @override
+  String get parityTools => 'Alat paritas';
+
+  @override
+  String get parityToolsSubtitle =>
+      'Pengimpor, pelacak, audio lossless, dan skala antarmuka';
+
+  @override
   String get website => 'Situs web';
 
   @override
@@ -1274,6 +1281,9 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get cropBorders => 'Potong tepi';
+
+  @override
+  String get sharpenPages => 'Pertajam halaman';
 
   @override
   String get trimNearUniformEdgeMarginsFromAPage =>
@@ -2065,6 +2075,30 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get audioNormalization => 'Normalisasi audio';
+
+  @override
+  String get audioFx => 'Profil suara';
+
+  @override
+  String get audioFxNight => 'Malam';
+
+  @override
+  String get audioFxCinema => 'Bioskop';
+
+  @override
+  String get audioFxVocal => 'Suara';
+
+  @override
+  String get playerSkin => 'Tampilan pemutar';
+
+  @override
+  String get skinClassic => 'Klasik';
+
+  @override
+  String get skinGlass => 'Kaca';
+
+  @override
+  String get skinMinimal => 'Minimal';
 
   @override
   String get searchSubtitlesOnline => 'Cari subtitle online';

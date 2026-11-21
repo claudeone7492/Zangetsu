@@ -441,6 +441,32 @@ class MetadataEnrichment {
     return null;
   }
 
+  /// Backdrop stills for the detail page. Empty for id-less titles, which is
+  /// most of a CloudStream catalogue.
+  Future<List<String>> stills(MediaDetail d) async {
+    final id = d.tmdbId;
+    if (id == null) return const [];
+    final kind = d.tmdbIsTv ? 'tv' : 'movie';
+    final json = await _get('$_tmdbBase/$kind/$id/images', {
+      'include_image_language': 'null,en',
+    });
+    final backdrops = json?['backdrops'];
+    if (backdrops is! List) return const [];
+    return [
+      for (final backdrop in backdrops.take(12))
+        if (backdrop is Map && backdrop['file_path'] is String)
+          '$_img/w780${backdrop['file_path']}',
+    ];
+  }
+
+  /// TMDB's own detail JSON for [d] — the source of the donghua-only fields.
+  /// Null on a miss, so the caller simply shows nothing extra.
+  Future<Map<String, dynamic>?> tmdbDetail(MediaDetail d) async {
+    final id = d.tmdbId;
+    if (id == null) return null;
+    return _get('$_tmdbBase/${d.tmdbIsTv ? 'tv' : 'movie'}/$id');
+  }
+
   /// Lowercase, strip non-alphanumerics — for tolerant title comparison.
   String _norm(String s) =>
       s.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), ' ').trim();

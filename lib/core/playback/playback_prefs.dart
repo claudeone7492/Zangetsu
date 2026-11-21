@@ -504,6 +504,17 @@ class PlaybackPrefs {
   Future<void> setAudioNormalize(bool value) =>
       _box.put('audioNormalize', value);
 
+  /// Player overlay skin: a `PlayerSkin` name ('classic' | 'glass' |
+  /// 'minimal').
+  String get playerSkin =>
+      _box.get('playerSkin', defaultValue: 'classic') as String;
+  Future<void> setPlayerSkin(String value) => _box.put('playerSkin', value);
+
+  /// Named audio effect applied through mpv's `af` chain. Values are
+  /// [AudioFx] names; an unknown value falls back to [AudioFx.none].
+  String get audioFx => _box.get('audioFx', defaultValue: 'none') as String;
+  Future<void> setAudioFx(String value) => _box.put('audioFx', value);
+
   /// Video decoder mode (labels match the wider ecosystem now):
   ///  • 'copy'   = Hardware+ — MediaCodec decoded into mpv's pipeline
   ///    (`mediacodec-copy`): robust A/V sync, shaders/filters work. DEFAULT.

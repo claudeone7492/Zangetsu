@@ -334,16 +334,21 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/video_paths" />
         </provider>
+        <!-- Receives repo links (https://…json, stremio:) from a browser or
+             another app and hands them to the add-repo flow. Finishes itself. -->
         <activity
             android:name=".parity.RepoLinkActivity"
             android:exported="true"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:noHistory="true"
+            android:excludeFromRecents="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="stremio" />
                 <data android:scheme="https" android:host="*" android:pathPattern=".*\\.json" />
+                <data android:scheme="http" android:host="*" android:pathPattern=".*\\.json" />
             </intent-filter>
         </activity>
         <service

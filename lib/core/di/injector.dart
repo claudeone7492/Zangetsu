@@ -180,6 +180,7 @@ import '../music/audio_output.dart';
 import '../music/music_player_controller.dart';
 import '../music/music_prefs.dart';
 import '../music/jiosaavn_source.dart';
+import '../music/lossless_source.dart';
 import '../music/music_service.dart';
 import '../supabase/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show OtpType;
@@ -1408,7 +1409,14 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   // instance would mean two Dio clients and two sets of timeouts.
   await MusicPrefs.init();
   sl.registerLazySingleton<MusicService>(
-    () => MusicService(sources: [JioSaavnSource()]),
+    () => MusicService(
+      sources: [
+        JioSaavnSource(),
+        // Ships unconfigured and the service hides it until Parity tools
+        // stores an endpoint, so music mode is unchanged out of the box.
+        LosslessSource(sl<Dio>()),
+      ],
+    ),
   );
   sl.registerLazySingleton<MusicPlayerController>(
     () => MusicPlayerController(

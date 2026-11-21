@@ -170,6 +170,12 @@ void _driftGuard() {
       'search_history': 'transient',
       'content_mode': 'restored per device',
       'home_cache': 'cache',
+      // IPTV marks point at channel ids from a playlist the restoring device
+      // may not have, so a restore would leave dangling favourites.
+      'iptv_marks': 'channel ids',
+      // Playlist URLs can embed provider credentials (Xtream-style user/pass).
+      'live_playlists': 'playlist URLs may carry credentials',
+      'trakt': 'oauth token',
     };
 
     test('every settings box is either backed up or explicitly excluded', () {

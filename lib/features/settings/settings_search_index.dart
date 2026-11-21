@@ -196,6 +196,16 @@ final settingsLeaves = <SettingsLeaf>[
   ),
   SettingsLeaf(
     LeafParent.playback,
+    (l) => l.slowConnection,
+    keywords: 'slow network buffer probe bandwidth',
+  ),
+  SettingsLeaf(
+    LeafParent.playback,
+    (l) => l.performanceMode,
+    keywords: 'perf battery low-end device',
+  ),
+  SettingsLeaf(
+    LeafParent.playback,
     (l) => l.nativeTVPlayer,
     keywords: 'exoplayer tv android',
   ),
@@ -495,6 +505,11 @@ final settingsLeaves = <SettingsLeaf>[
     LeafParent.privacy,
     (l) => l.incognitoMode,
     keywords: 'private pause history tracking',
+  ),
+  SettingsLeaf(
+    LeafParent.privacy,
+    (l) => l.webProtections,
+    keywords: 'ads tracker block popup redirect',
   ),
   SettingsLeaf(
     LeafParent.privacy,

@@ -658,6 +658,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get contributors => '貢献者';
 
   @override
+  String get parityTools => 'パリティツール';
+
+  @override
+  String get parityToolsSubtitle => 'インポート、トラッカー、ロスレス音声、UI スケール';
+
+  @override
   String get website => 'ウェブサイト';
 
   @override
@@ -1248,6 +1254,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get cropBorders => '余白をカット';
+
+  @override
+  String get sharpenPages => 'ページをシャープにする';
 
   @override
   String get trimNearUniformEdgeMarginsFromAPage => 'ページ端のほぼ均一な余白を切り落とす';
@@ -2004,6 +2013,30 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get audioNormalization => '音量の正規化';
+
+  @override
+  String get audioFx => 'サウンドプロファイル';
+
+  @override
+  String get audioFxNight => 'ナイト';
+
+  @override
+  String get audioFxCinema => 'シネマ';
+
+  @override
+  String get audioFxVocal => 'ボーカル';
+
+  @override
+  String get playerSkin => 'プレーヤーの外観';
+
+  @override
+  String get skinClassic => 'クラシック';
+
+  @override
+  String get skinGlass => 'ガラス';
+
+  @override
+  String get skinMinimal => 'ミニマル';
 
   @override
   String get searchSubtitlesOnline => '字幕をオンライン検索';

@@ -51,11 +51,22 @@ class _AboutSettingsScreenState extends State<AboutSettingsScreen> {
         children: [
           const _ProfileCard(),
           const SizedBox(height: 24),
-          // Contributors — above Social, opens the full list.
           SettingsCard(
             children: [
               SettingsTile(
                 autofocus: true,
+                icon: Icons.tune_rounded,
+                title: context.l10n.parityTools,
+                subtitle: context.l10n.parityToolsSubtitle,
+                onTap: () => _push(const ParityToolsScreen()),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Contributors — above Social, opens the full list.
+          SettingsCard(
+            children: [
+              SettingsTile(
                 icon: Icons.group_rounded,
                 title: context.l10n.contributors,
                 onTap: () => _push(const ContributorsScreen()),

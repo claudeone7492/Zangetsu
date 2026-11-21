@@ -26,6 +26,7 @@ import '../../core/tracker/simkl_playback_session.dart';
 import '../../core/models/episode.dart';
 import '../../core/models/provider_info.dart';
 import '../../core/models/video_source.dart';
+import '../../core/playback/audio_fx.dart';
 import '../../core/playback/hls.dart';
 import '../../core/playback/hls_segment_proxy.dart';
 import '../../core/playback/playback_prefs.dart';
@@ -33,6 +34,7 @@ import '../../core/playback/source_health_store.dart';
 import '../../core/playback/stream_probe.dart';
 import '../../core/playback/filler_service.dart';
 import '../../core/playback/skip_service.dart';
+import '../../core/playback/slow_net_tip.dart';
 import '../../core/playback/subtitle_language.dart';
 import '../../core/debrid/playable_torrent.dart';
 import '../../core/torrent/torrent_service.dart';
@@ -3578,7 +3580,19 @@ class PlayerCubit extends Cubit<PlayerState> {
           : await _resolveSources(epUrl);
       var refined = out;
       try {
-        refined = await StreamProbe.refine(out);
+        final sweep = await StreamProbe.refineNoted(out);
+        refined = sweep.sources;
+        // A host that took seconds to answer is the likeliest reason the
+        // stream keeps stalling; say so once per host rather than every
+        // episode.
+        if (sweep.host.isNotEmpty &&
+            SlowNetTip.shouldShow(sweep.host, slow: sweep.slow)) {
+          _toast(
+            'Slow connection to ${sweep.host} — '
+            'try another server if it keeps buffering.',
+            duration: const Duration(seconds: 4),
+          );
+        }
       } catch (_) {
         // A probe outage must never cost the user a playable link list.
       }
@@ -4317,7 +4331,15 @@ class PlayerCubit extends Cubit<PlayerState> {
   /// native `volume` property (see _configureMpv). Only dynaudnorm lives in the
   /// af chain (opt-in normalization).
   String _audioFilterChain() {
-    return sl<PlaybackPrefs>().audioNormalize ? 'dynaudnorm' : '';
+    final prefs = sl<PlaybackPrefs>();
+    final fx = AudioFx.values.firstWhere(
+      (value) => value.name == prefs.audioFx,
+      orElse: () => AudioFx.none,
+    );
+    return [
+      if (prefs.audioNormalize) 'dynaudnorm',
+      ?AudioFxChain.filterFor(fx),
+    ].join(',');
   }
 
   Future<void> _applyAudioFilters() async {
@@ -4332,6 +4354,19 @@ class PlayerCubit extends Cubit<PlayerState> {
   Future<void> toggleAudioNormalize() async {
     final prefs = sl<PlaybackPrefs>();
     await prefs.setAudioNormalize(!prefs.audioNormalize);
+    await _applyAudioFilters();
+  }
+
+  /// The named audio effect currently applied.
+  AudioFx get audioFx => AudioFx.values.firstWhere(
+    (value) => value.name == sl<PlaybackPrefs>().audioFx,
+    orElse: () => AudioFx.none,
+  );
+
+  /// Step through the named effects and apply the new chain live.
+  Future<void> cycleAudioFx() async {
+    final next = AudioFx.values[(audioFx.index + 1) % AudioFx.values.length];
+    await sl<PlaybackPrefs>().setAudioFx(next.name);
     await _applyAudioFilters();
   }
 

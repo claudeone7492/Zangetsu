@@ -6,6 +6,9 @@ import 'package:dio/dio.dart';
 import '../models/video_source.dart';
 import 'net_tuning.dart';
 
+/// A refined source list plus the slowest probe that produced it.
+typedef ProbeSweep = ({List<VideoSource> sources, bool slow, String host});
+
 /// The playable form of a URL: the direct stream and the container it uses.
 class StreamProbeResult {
   const StreamProbeResult({
@@ -13,12 +16,22 @@ class StreamProbeResult {
     required this.container,
     this.contentType,
     this.statusCode,
+    this.elapsedMs = 0,
   });
 
   final String url;
   final SourceContainer container;
   final String? contentType;
   final int? statusCode;
+
+  /// How long the probe took, including any wrapper hops.
+  final int elapsedMs;
+
+  /// True when the host answered slowly enough to explain buffering.
+  bool get slow => elapsedMs >= StreamProbe.slowThresholdMs;
+
+  /// Host that served (or wrapped) the stream.
+  String get host => Uri.tryParse(url)?.host ?? '';
 }
 
 /// Resolves a provider's wrapper page to a direct stream before playback.
@@ -34,6 +47,10 @@ class StreamProbe {
   static const int _maxDepth = 3;
   static const int _headBytes = 16 * 1024;
   static const Duration _ttl = Duration(minutes: 5);
+
+  /// A probe slower than this is worth explaining to the viewer: the host, not
+  /// their Wi-Fi, is the likeliest reason the stream keeps stalling.
+  static const int slowThresholdMs = 2500;
 
   static final Map<String, _Entry> _cache = {};
   static final Set<String> _bad = {};
@@ -89,6 +106,7 @@ class StreamProbe {
     if (knownBad(url)) return null;
     if (_cache.length > 200) _prune();
 
+    final sw = Stopwatch()..start();
     final client = dio ?? Dio();
     var current = url;
     for (var depth = 0; depth < _maxDepth; depth++) {
@@ -119,7 +137,13 @@ class StreamProbe {
       final bytes = res.data ?? const <int>[];
       final head = utf8.decode(bytes, allowMalformed: true);
       final contentType = res.headers.value(Headers.contentTypeHeader);
-      final result = _classify(current, head, contentType, status);
+      final result = _classify(
+        current,
+        head,
+        contentType,
+        status,
+        sw.elapsedMilliseconds,
+      );
       if (result != null) {
         _cache[current] = _Entry(result, DateTime.now());
         return result;
@@ -136,6 +160,7 @@ class StreamProbe {
     String head,
     String? contentType,
     int status,
+    int elapsedMs,
   ) {
     final type = (contentType ?? '').toLowerCase();
     if (head.trimLeft().startsWith('#EXTM3U') || type.contains('mpegurl')) {
@@ -144,6 +169,7 @@ class StreamProbe {
         container: SourceContainer.hls,
         contentType: contentType,
         statusCode: status,
+        elapsedMs: elapsedMs,
       );
     }
     if (head.contains('<MPD') || type.contains('dash')) {
@@ -152,6 +178,7 @@ class StreamProbe {
         container: SourceContainer.unknown,
         contentType: contentType,
         statusCode: status,
+        elapsedMs: elapsedMs,
       );
     }
     if (type.startsWith('video/') || head.contains('ftyp')) {
@@ -160,6 +187,7 @@ class StreamProbe {
         container: SourceContainer.mp4,
         contentType: contentType,
         statusCode: status,
+        elapsedMs: elapsedMs,
       );
     }
     return null;
@@ -202,31 +230,56 @@ class StreamProbe {
   static Future<List<VideoSource>> refine(
     List<VideoSource> sources, {
     Dio? dio,
+  }) async => (await refineNoted(sources, dio: dio)).sources;
+
+  /// [refine], plus the slowest host it met. A host that took seconds to answer
+  /// is the likeliest reason the stream keeps stalling, so the player can say
+  /// so once instead of leaving the viewer to guess.
+  static Future<ProbeSweep> refineNoted(
+    List<VideoSource> sources, {
+    Dio? dio,
   }) async {
-    if (sources.isEmpty) return sources;
+    if (sources.isEmpty) {
+      return (sources: sources, slow: false, host: '');
+    }
     final client = dio ?? Dio();
     final out = <VideoSource>[];
+    StreamProbeResult? slowest;
     for (var i = 0; i < sources.length; i += 4) {
       final chunk = sources.sublist(i, math.min(i + 4, sources.length));
       final resolved = await Future.wait(
         chunk.map((source) async {
           if (!needsResolve(source.url)) {
-            return knownBad(source.url) ? null : source;
+            final live = !knownBad(source.url);
+            return (live ? source : null, null as StreamProbeResult?);
           }
           final result = await resolve(
             source.url,
             dio: client,
             headers: source.headers,
           );
-          if (result == null) return null;
-          return source.withUrlAndContainer(result.url, result.container);
+          if (result == null) {
+            return (null as VideoSource?, null as StreamProbeResult?);
+          }
+          return (
+            source.withUrlAndContainer(result.url, result.container),
+            result,
+          );
         }),
       );
-      for (final source in resolved) {
+      for (final (source, probe) in resolved) {
         if (source != null) out.add(source);
+        if (probe != null &&
+            (slowest == null || probe.elapsedMs > slowest.elapsedMs)) {
+          slowest = probe;
+        }
       }
     }
-    return out.isEmpty ? sources : out;
+    return (
+      sources: out.isEmpty ? sources : out,
+      slow: slowest?.slow ?? false,
+      host: slowest?.host ?? '',
+    );
   }
 
   static void _prune() {

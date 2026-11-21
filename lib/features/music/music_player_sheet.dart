@@ -1,10 +1,16 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
+import '../../core/music/music_download.dart';
 import '../../core/music/music_models.dart';
 import '../../core/music/music_player_controller.dart';
 import '../../core/music/music_queue.dart';
+import '../../core/music/music_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/tv/tv_focusable.dart';
@@ -213,6 +219,13 @@ class MusicPlayerSheet extends StatelessWidget {
                                 MusicRepeat.one => l10n.musicRepeatOne,
                               },
                               onTap: player.cycleRepeat,
+                              tv: leanback,
+                            ),
+                            _Toggle(
+                              icon: Icons.download_rounded,
+                              active: false,
+                              tooltip: l10n.download,
+                              onTap: () => _downloadTrack(context, track),
                               tv: leanback,
                             ),
                           ],
@@ -431,5 +444,28 @@ class _Queue extends StatelessWidget {
             child: tile,
           )
         : tile;
+  }
+}
+
+/// Saves the playing track to the app's music folder.
+///
+/// The source's URL is resolved fresh rather than reused from playback: signed
+/// links expire, and a download that starts minutes into a song needs one that
+/// has not.
+Future<void> _downloadTrack(BuildContext context, MusicTrack track) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final failed = context.l10n.musicCantPlayBody;
+  final done = context.l10n.downloaded;
+  try {
+    final url = await sl<MusicService>().streamFor(track);
+    if (url == null || url.isEmpty) throw StateError('no stream');
+    final docs = await getApplicationDocumentsDirectory();
+    await MusicDownload(
+      sl<Dio>(),
+      directory: Directory('${docs.path}/music'),
+    ).save(track, url);
+    messenger.showSnackBar(SnackBar(content: Text(done)));
+  } catch (_) {
+    messenger.showSnackBar(SnackBar(content: Text(failed)));
   }
 }

@@ -101,6 +101,7 @@ import 'tracker_settings_screen.dart';
 import '../sources/source_health_screen.dart';
 import '../sources/sources_screen.dart';
 import 'source_priority_screen.dart';
+import 'parity_tools_screen.dart';
 import 'player_controls_screen.dart';
 import 'native_player_cache_screen.dart';
 import 'connections_screen_tv.dart';

@@ -22,6 +22,7 @@ import '../../core/ui/poster_card.dart';
 import '../../core/ui/detail_prefs.dart';
 import '../../core/ui/poster_palette.dart';
 import '../../core/ui/mobile_hero_art.dart';
+import '../../core/metadata/donghua_details.dart';
 import '../../core/metadata/synopsis.dart';
 import '../../core/models/film.dart';
 import '../../core/mode/content_mode_cubit.dart';
@@ -88,6 +89,7 @@ import '../../core/privacy/incognito_mode.dart';
 import '../../core/playback/my_list.dart';
 import '../../core/ui/episode_player_sheet.dart';
 import '../../core/ui/list_status_sheet.dart';
+import '../../core/ui/stills_rail.dart';
 import '../../core/ui/tracker_list_sheet.dart';
 import '../../core/ui/tracker_sync_sheet.dart';
 import '../../core/tracker/airing_countdown.dart';
@@ -2813,6 +2815,28 @@ class _DetailViewState extends State<_DetailView>
                     ),
                   )
                 : const SizedBox.shrink(),
+          ),
+        ),
+
+        // ── 4b. Stills rail + donghua-only facts ────────────────────────────
+        SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (state.stills.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: StillsRail(
+                    urls: state.stills,
+                    headers: detail.coverHeaders,
+                  ),
+                ),
+              if (state.donghua case final donghua?)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  child: _DonghuaFacts(details: donghua),
+                ),
+            ],
           ),
         ),
 

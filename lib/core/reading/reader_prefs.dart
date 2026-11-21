@@ -67,6 +67,11 @@ class ReaderPrefs {
   Future<void> setShowPageNumber(bool value) =>
       _box.put('showPageNumber', value);
 
+  /// Sharpen pages as they decode. Off by default: the convolution costs a
+  /// few milliseconds per page and only helps soft scans.
+  bool get sharpen => _box.get('sharpen', defaultValue: false) as bool;
+  Future<void> setSharpen(bool value) => _box.put('sharpen', value);
+
   /// Whether to keep the screen awake while reading. Shared by both readers
   /// via `ReaderComfortMixin`.
   bool get keepScreenOn => _box.get('keepScreenOn', defaultValue: true) as bool;

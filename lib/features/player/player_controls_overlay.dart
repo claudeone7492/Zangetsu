@@ -457,6 +457,11 @@ class _ControlsOverlay extends StatelessWidget {
     // next episode. Shared with the outro pill, the Up-next card and autoplay
     // so every Next affordance agrees.
     final hasNext = c.hasPlayableNext;
+    // Chosen in Settings → Playback. Drives the scrim weight and whether the
+    // title block shows at all; the layout below is shared by every skin.
+    final skin = PlayerSkins.of(
+      PlayerSkins.parse(sl<PlaybackPrefs>().playerSkin),
+    );
     // Movies and one-off items have nowhere to step, so they get a lone play
     // button rather than two arrows that can never do anything.
     final multiEpisode = c.episodes.length > 1;
@@ -464,8 +469,9 @@ class _ControlsOverlay extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Top scrim.
-        const Positioned(
+        // Top scrim. 0.64 of the skin's scrim weight keeps Classic on the
+        // 0x59 this used to hard-code, and lets Glass/Minimal breathe.
+        Positioned(
           top: 0,
           left: 0,
           right: 0,
@@ -476,7 +482,10 @@ class _ControlsOverlay extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Color(0x59000000), Color(0x00000000)],
+                  colors: [
+                    Colors.black.withValues(alpha: skin.scrimOpacity * 0.64),
+                    Colors.black.withValues(alpha: 0),
+                  ],
                 ),
               ),
             ),
@@ -486,7 +495,7 @@ class _ControlsOverlay extends StatelessWidget {
         // 0x99 up top, 0xE6 over 0xB3 down here — which is why showing the
         // controls dropped a heavy curtain over the video. One gentle pass each
         // way is plenty to keep white text legible on a bright frame.
-        const Positioned(
+        Positioned(
           bottom: 0,
           left: 0,
           right: 0,
@@ -497,7 +506,10 @@ class _ControlsOverlay extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
-                  colors: [Color(0x8C000000), Color(0x00000000)],
+                  colors: [
+                    Colors.black.withValues(alpha: skin.scrimOpacity),
+                    Colors.black.withValues(alpha: 0),
+                  ],
                 ),
               ),
             ),
@@ -543,54 +555,59 @@ class _ControlsOverlay extends StatelessWidget {
                   // zones below and toggle the controls like anywhere else.
                   Expanded(
                     child: IgnorePointer(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            children: [
-                              Flexible(
+                      child: Visibility(
+                        visible: skin.showTitle,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    primaryTitle,
+                                    style: AppText.headline.copyWith(
+                                      color: Colors.white,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                // Filler comes from the Jikan lookup, not the
+                                // source — Episode.filler is always false here.
+                                // Listened to because that lookup lands long
+                                // after this is first built.
+                                ValueListenableBuilder<Set<int>>(
+                                  valueListenable: c.fillerEpisodes,
+                                  builder: (context, _, _) =>
+                                      c.isFillerAt(state.currentIndex)
+                                      ? const Padding(
+                                          padding: EdgeInsetsDirectional.only(
+                                            start: 8,
+                                          ),
+                                          // No colour passed: TagBadge falls back
+                                          // to the app accent, so the badge
+                                          // follows the user's theme colour.
+                                          child: TagBadge(text: 'FILLER'),
+                                        )
+                                      : const SizedBox.shrink(),
+                                ),
+                              ],
+                            ),
+                            if (secondaryLine != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 1),
                                 child: Text(
-                                  primaryTitle,
-                                  style: AppText.headline.copyWith(
-                                    color: Colors.white,
+                                  secondaryLine,
+                                  style: AppText.caption.copyWith(
+                                    color: Colors.white70,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              // Filler comes from the Jikan lookup, not the
-                              // source — Episode.filler is always false here.
-                              // Listened to because that lookup lands long
-                              // after this is first built.
-                              ValueListenableBuilder<Set<int>>(
-                                valueListenable: c.fillerEpisodes,
-                                builder: (context, _, _) =>
-                                    c.isFillerAt(state.currentIndex)
-                                    ? const Padding(
-                                        padding: EdgeInsetsDirectional.only(start: 8),
-                                        // No colour passed: TagBadge falls back
-                                        // to the app accent, so the badge
-                                        // follows the user's theme colour.
-                                        child: TagBadge(text: 'FILLER'),
-                                      )
-                                    : const SizedBox.shrink(),
-                              ),
-                            ],
-                          ),
-                          if (secondaryLine != null)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 1),
-                              child: Text(
-                                secondaryLine,
-                                style: AppText.caption.copyWith(
-                                  color: Colors.white70,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),

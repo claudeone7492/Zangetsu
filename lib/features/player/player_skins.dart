@@ -41,4 +41,11 @@ class PlayerSkins {
   };
 
   static PlayerSkinSpec of(PlayerSkin skin) => specs[skin]!;
+
+  /// The skin a stored name refers to, falling back to [PlayerSkin.classic] so
+  /// a value written by a future build cannot break the overlay.
+  static PlayerSkin parse(String? value) => PlayerSkin.values.firstWhere(
+    (skin) => skin.name == value,
+    orElse: () => PlayerSkin.classic,
+  );
 }

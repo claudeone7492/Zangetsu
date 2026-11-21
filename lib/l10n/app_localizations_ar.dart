@@ -670,6 +670,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get contributors => 'المساهمون';
 
   @override
+  String get parityTools => 'أدوات التكافؤ';
+
+  @override
+  String get parityToolsSubtitle =>
+      'أدوات الاستيراد والتتبّع والصوت بلا فقدان ومقياس الواجهة';
+
+  @override
   String get website => 'الموقع الإلكتروني';
 
   @override
@@ -1281,6 +1288,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get cropBorders => 'قصّ الحدود';
+
+  @override
+  String get sharpenPages => 'تحسين حدة الصفحات';
 
   @override
   String get trimNearUniformEdgeMarginsFromAPage =>
@@ -2065,6 +2075,30 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get audioNormalization => 'تطبيع الصوت';
+
+  @override
+  String get audioFx => 'ملف الصوت';
+
+  @override
+  String get audioFxNight => 'ليلي';
+
+  @override
+  String get audioFxCinema => 'سينما';
+
+  @override
+  String get audioFxVocal => 'صوت';
+
+  @override
+  String get playerSkin => 'مظهر المشغل';
+
+  @override
+  String get skinClassic => 'كلاسيكي';
+
+  @override
+  String get skinGlass => 'زجاجي';
+
+  @override
+  String get skinMinimal => 'بسيط';
 
   @override
   String get searchSubtitlesOnline => 'ابحث عن ترجمة عبر الإنترنت';

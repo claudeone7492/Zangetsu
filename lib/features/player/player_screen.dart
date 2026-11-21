@@ -16,6 +16,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../core/cache/app_image_cache.dart';
 import '../../core/di/injector.dart';
+import '../../core/playback/audio_fx.dart';
 import '../../core/playback/filler_service.dart';
 import '../../core/repository/catalogue_repository.dart';
 import '../../core/repository/source_repository.dart';
@@ -59,6 +60,7 @@ import '../../core/playback/source_selection.dart';
 import '../../core/playback/online_subtitle_search.dart';
 import '../../core/playback/subtitle_language.dart';
 import '../../core/playback/watch_history.dart';
+import 'server_streams_page.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/ui/app_dialog.dart';
@@ -89,6 +91,7 @@ import 'color_profiles.dart';
 import 'shader_presets.dart';
 import 'drm_player_screen.dart';
 import '../../l10n/l10n.dart';
+import 'player_skins.dart';
 
 part 'player_cast_panel.dart';
 part 'player_overlays.dart';
@@ -3690,7 +3693,56 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   _bumpControls();
                 },
               ),
+          if (_c.state.sources.length > 1)
+            _SheetRow(
+              label: context.l10n.browseSources,
+              active: false,
+              onTap: () {
+                Navigator.pop(context);
+                _openServerStreamsPage();
+              },
+            ),
         ],
+      ),
+    );
+  }
+
+  /// The full-screen server list, for the cases the sheet's short rows make
+  /// awkward: many mirrors, long provider names, or a cast session where the
+  /// sheet is too small to read.
+  void _openServerStreamsPage() {
+    final streams = <StreamChoice>[
+      for (final s in _c.state.sources)
+        StreamChoice(
+          label: s.label?.isNotEmpty == true
+              ? _sourceLabelWithQuality(s.label!, s.quality)
+              : (s.quality?.isNotEmpty == true
+                    ? s.quality!
+                    : s.container.name),
+          url: s.url,
+          quality: s.quality,
+        ),
+    ];
+    if (streams.isEmpty) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ServerStreamsPage(
+          title: context.l10n.sources,
+          currentUrl: _c.state.active?.url,
+          streams: streams,
+          onPick: (choice) {
+            for (final source in _c.state.sources) {
+              if (source.url != choice.url) continue;
+              unawaited(
+                _c
+                    .selectSource(source)
+                    .then((_) => _maybeRecast())
+                    .whenComplete(_bumpControls),
+              );
+              return;
+            }
+          },
+        ),
       ),
     );
   }

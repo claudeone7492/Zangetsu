@@ -9,6 +9,7 @@ import '../../../core/anilist/anilist_network_policy.dart';
 import '../../../core/error/network_failure.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../core/lnreader/novel_cloudflare.dart';
+import '../../../core/metadata/donghua_details.dart';
 import '../../../core/metadata/episode_metadata_service.dart';
 import '../../../core/metadata/metadata_enrichment.dart';
 import '../../../core/metadata/tvdb_art.dart';
@@ -52,6 +53,8 @@ class DetailState extends Equatable {
     this.cloudflareUrl,
     this.episodesLoading = false,
     this.extrasLoading = false,
+    this.stills = const [],
+    this.donghua,
   });
 
   final DetailStatus status;
@@ -67,6 +70,14 @@ class DetailState extends Equatable {
   /// draw no Seasons section at all. See [SeasonChain].
   final List<SeasonEntry> seasons;
   final bool extrasLoading;
+
+  /// Backdrop stills for the header rail. Empty until (and unless) TMDB
+  /// answers — most titles have none.
+  final List<String> stills;
+
+  /// Extra fields a Chinese animation's page shows beyond a western series.
+  /// Null for everything else.
+  final DonghuaDetails? donghua;
 
   /// 'sub' | 'dub'. Drives the Sub/Dub toggle and the player `category`.
   final String category;
@@ -100,6 +111,8 @@ class DetailState extends Equatable {
     bool clearCloudflareUrl = false,
     bool? episodesLoading,
     bool? extrasLoading,
+    List<String>? stills,
+    DonghuaDetails? donghua,
   }) => DetailState(
     status: status ?? this.status,
     detail: detail ?? this.detail,
@@ -115,6 +128,8 @@ class DetailState extends Equatable {
         : (cloudflareUrl ?? this.cloudflareUrl),
     episodesLoading: episodesLoading ?? this.episodesLoading,
     extrasLoading: extrasLoading ?? this.extrasLoading,
+    stills: stills ?? this.stills,
+    donghua: donghua ?? this.donghua,
   );
 
   @override
@@ -684,6 +699,7 @@ class DetailCubit extends Cubit<DetailState> {
           // After the tab has something to show, not before: the walk costs a
           // request per hop and nobody is waiting on it.
           unawaited(_loadSeasons(d));
+          unawaited(_loadStills(d));
           return;
         }
       } catch (_) {/* fall through to source-supplied extras */}
@@ -697,6 +713,24 @@ class DetailCubit extends Cubit<DetailState> {
       );
     }
     _log('enrich done ${sw.elapsedMilliseconds}ms');
+  }
+
+  /// Header stills, plus the donghua-only fields when the title is Chinese.
+  /// Both are decoration: a miss leaves the page exactly as it was.
+  Future<void> _loadStills(MediaDetail d) async {
+    try {
+      final enrichment = sl<MetadataEnrichment>();
+      final stills = await enrichment.stills(d);
+      if (isClosed || state.detail?.url != d.url) return;
+      if (stills.isNotEmpty) emit(state.copyWith(stills: stills));
+      if (d.country != 'CN') return;
+      final json = await enrichment.tmdbDetail(d);
+      if (isClosed || state.detail?.url != d.url || json == null) return;
+      final donghua = DonghuaDetails.fromTmdb(json);
+      if (!donghua.isEmpty) emit(state.copyWith(donghua: donghua));
+    } catch (e) {
+      _log('stills failed: $e', level: 'W');
+    }
   }
 
   /// Walks the franchise so the Relations tab can show its seasons in order.

@@ -31,6 +31,44 @@ class NovelTranslate {
     return out;
   }
 
+  /// The readable text of an HTML chapter, ready for [translate].
+  ///
+  /// Only text is kept: scripts, styles, tags and entities go, while paragraph
+  /// and line breaks survive so the translation still reads as prose.
+  static String plainText(String html) {
+    var text = html
+        .replaceAll(
+          RegExp(
+            r'<(script|style)\b[^>]*>[\s\S]*?</\1>',
+            caseSensitive: false,
+          ),
+          ' ',
+        )
+        .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+        .replaceAll(
+          RegExp(r'</(p|div|h[1-6]|li|blockquote)>', caseSensitive: false),
+          '\n\n',
+        )
+        .replaceAll(RegExp(r'<[^>]+>'), '');
+    const entities = {
+      '&nbsp;': ' ',
+      '&amp;': '&',
+      '&lt;': '<',
+      '&gt;': '>',
+      '&quot;': '"',
+      '&#39;': "'",
+      '&apos;': "'",
+      '&hellip;': '…',
+      '&mdash;': '—',
+      '&ndash;': '–',
+    };
+    entities.forEach((entity, value) => text = text.replaceAll(entity, value));
+    return text
+        .replaceAll(RegExp(r'[ \t]+'), ' ')
+        .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+        .trim();
+  }
+
   static Future<String> translate(String text, TranslateFn translate) async {
     final parts = chunks(text);
     if (parts.isEmpty) return text;

@@ -39,6 +39,7 @@ import '../../core/ui/app_toast.dart';
 import '../../core/repository/source_actions.dart' as source_actions;
 import '../../core/reading/reader_overrides.dart';
 import '../../core/reading/reader_prefs.dart';
+import '../../core/reading/sharpen_provider.dart';
 import '../../core/reading/tap_zones.dart';
 import '../../core/reading/reader_settings.dart';
 import '../../core/reading/tiles/tile_decoder.dart';
@@ -3916,12 +3917,13 @@ class _MangaReaderScreenState extends State<MangaReaderScreen>
         (_isLocal(page.url) ? FileImage(File(page.url)) : native) ??
         CachedNetworkImageProvider(page.url, headers: page.headers);
     // Bound both dimensions before GPU upload; width-only decoding squashes tall strips.
-    return ResizeImage(
+    final sized = ResizeImage(
       provider,
       width: width,
       height: 8192,
       policy: ResizeImagePolicy.fit,
     );
+    return sl<ReaderPrefs>().sharpen ? SharpenImageProvider(sized) : sized;
   }
 
   /// Direction/Fit/Background/Filter/Comfort, live-applied — mirrors the
@@ -4339,6 +4341,16 @@ class _MangaReaderScreenState extends State<MangaReaderScreen>
                               activeThumbColor: AppColors.accent,
                               onChanged: (v) =>
                                   apply(() => prefs.setCropBorders(v)),
+                            ),
+                          ),
+                          readerSheetRow(
+                            icon: Icons.auto_fix_high_rounded,
+                            label: context.l10n.sharpenPages,
+                            trailing: Switch(
+                              value: prefs.sharpen,
+                              activeThumbColor: AppColors.accent,
+                              onChanged: (v) =>
+                                  apply(() => prefs.setSharpen(v)),
                             ),
                           ),
                         ]),

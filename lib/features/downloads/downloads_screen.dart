@@ -14,6 +14,7 @@ import '../../core/download/chapter_download_store.dart';
 import '../../core/download/download_manager.dart';
 import '../../core/download/download_prefs.dart';
 import '../../core/download/download_record.dart';
+import '../../core/platform/media_export.dart';
 import '../../core/mode/content_mode.dart';
 import '../../core/models/episode.dart';
 import '../../core/models/video_source.dart';
@@ -1657,6 +1658,29 @@ class _StatusGlyph extends StatelessWidget {
   }
 }
 
+/// Copies a finished download into the public Downloads/Zangetsu folder.
+/// Android 10+ needs no permission for this; older releases keep the file
+/// where it already is and get a failure message.
+Future<void> _export(BuildContext context, DownloadRecord r) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final path = r.filePath;
+  if (path == null) return;
+  final exported = await MediaExport.save(
+    path: path,
+    displayName: path.split('/').last,
+    mime: 'video/mp4',
+  );
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(
+        exported == null
+            ? context.l10n.somethingWentWrong
+            : context.l10n.exportedToFolder(exported),
+      ),
+    ),
+  );
+}
+
 class _TileMenu extends StatelessWidget {
   const _TileMenu({required this.record, required this.manager});
   final DownloadRecord record;
@@ -1682,6 +1706,8 @@ class _TileMenu extends StatelessWidget {
           case 'cancel':
           case 'delete':
             unawaited(manager.delete(r));
+          case 'export':
+            unawaited(_export(context, r));
         }
       },
       itemBuilder: (context) => [
@@ -1692,6 +1718,8 @@ class _TileMenu extends StatelessWidget {
         if (r.status == DownloadStatus.failed && !r.isTorrent)
           _item('retry', Icons.refresh_rounded, l10n.retry),
         if (r.isActive) _item('cancel', Icons.close_rounded, l10n.cancel),
+        if (r.status == DownloadStatus.done && r.filePath != null)
+          _item('export', Icons.save_alt_rounded, l10n.export),
         _item('delete', Icons.delete_outline_rounded, l10n.delete),
       ],
     );

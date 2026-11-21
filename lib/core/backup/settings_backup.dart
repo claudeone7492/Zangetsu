@@ -52,6 +52,15 @@ class SettingsBackup {
     'daily_picks_prefs', // the daily-picks digest switch
     'dub_prefs', // AI Dub voice, rate, pitch, volume
     'music_prefs', // music streaming quality ceiling
+    // Added 2026-11-21 — the same drift again: these landed with the parity
+    // work and a restore silently dropped them.
+    'ad_block', // ad-block switch + blocklists
+    'net_tuning', // per-network connection tuning
+    'perf_mode', // performance-mode switch
+    'redirect_allow', // redirects the user chose to allow
+    'userscripts', // the user's own scripts
+    'websites', // the user's web sources
+    'telegram_prefs', // Telegram channels the viewer added
   ];
 
   /// Returns a map of `{boxName: {key: value, ...}}` for every open box.

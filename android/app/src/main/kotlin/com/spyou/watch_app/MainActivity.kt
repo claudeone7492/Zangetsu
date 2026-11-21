@@ -34,6 +34,8 @@ import com.spyou.watch_app.cloudstream.PluginHost
 import com.spyou.watch_app.cloudstream.RepoManager
 import com.spyou.watch_app.cloudstream.SubscriptionWorker
 import com.spyou.watch_app.mihon.MihonBridge
+import com.spyou.watch_app.parity.MediaExporter
+import com.spyou.watch_app.parity.RepoLinkActivity
 import com.spyou.watch_app.tiles.TileBridge
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -50,6 +52,7 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.util.concurrent.Executors
 
 /// Hosts the "zangetsu/seek_preview" channel, which decodes a single video
@@ -219,6 +222,7 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
         super.onCreate(savedInstanceState)
         reconcileIconAliases()
         setContentView(R.layout.activity_main)
+        handRepoLink(intent)
         // Survives configuration changes / process death: re-attaching a second
         // fragment would spin up a second FlutterEngine and run the app twice.
         val existing =
@@ -341,9 +345,23 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
         super.onNewIntent(intent)
         flutterFragment.onNewIntent(intent)
         setIntent(intent)
+        handRepoLink(intent)
         intent.getStringExtra("notif_payload")?.let { payload ->
             notifChannel?.invokeMethod("openShow", payload)
             intent.removeExtra("notif_payload")
+        }
+    }
+
+    /** A `http(s)://…json` or `stremio:` link handed over by [RepoLinkActivity],
+     *  routed into the same add-repo path a pasted URL takes. */
+    private fun handRepoLink(intent: Intent?) {
+        val url = intent?.getStringExtra(RepoLinkActivity.EXTRA_REPO_URL) ?: return
+        intent.removeExtra(RepoLinkActivity.EXTRA_REPO_URL)
+        val channel = csChannel
+        if (channel == null) {
+            pendingRepoLink = url
+        } else {
+            channel.invokeMethod("onRepoAdded", url)
         }
     }
 
@@ -384,6 +402,10 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
     // Stored so RepositoryManager (mega-repo plugins) can push added repos to
     // Dart. Set in configureFlutterEngine.
     private var csChannel: MethodChannel? = null
+
+    // A repo URL that arrived from a link (RepoLinkActivity) before the
+    // CloudStream channel existed. Flushed once the channel is wired.
+    private var pendingRepoLink: String? = null
 
     /**
      * Scope for an extension bridge: a failure inside third-party extension code
@@ -487,6 +509,43 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
                         }
                     }
                     else -> result.notImplemented()
+                }
+            }
+
+        // Gallery export: copies a finished download into public
+        // Downloads/Zangetsu through MediaStore (no permission on 10+).
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "zangetsu/media_export")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "save") {
+                    result.notImplemented()
+                    return@setMethodCallHandler
+                }
+                val path = call.argument<String>("path")
+                val name = call.argument<String>("name")
+                val mime = call.argument<String>("mime") ?: "application/octet-stream"
+                if (path.isNullOrBlank() || name.isNullOrBlank()) {
+                    result.error("bad_args", "path and name are required", null)
+                    return@setMethodCallHandler
+                }
+                executor.execute {
+                    val outcome = MediaExporter.save(
+                        applicationContext,
+                        File(path),
+                        name,
+                        mime,
+                    )
+                    runOnUiThread {
+                        outcome.fold(
+                            { exported -> result.success(exported) },
+                            { error ->
+                                result.error(
+                                    "export_failed",
+                                    error.message ?: "could not export",
+                                    null,
+                                )
+                            },
+                        )
+                    }
                 }
             }
 
@@ -817,7 +876,14 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
         // work is blocking) and post back via runOnUiThread; any failure is
         // surfaced to Dart as a "cs_error".
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "zangetsu/cloudstream")
-            .also { csChannel = it }
+            .also { channel ->
+                csChannel = channel
+                // A repo link that arrived before this channel existed.
+                pendingRepoLink?.let { url ->
+                    pendingRepoLink = null
+                    channel.invokeMethod("onRepoAdded", url)
+                }
+            }
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     // Solve Cloudflare for [url] in the WebView solver and hand back

@@ -65,6 +65,31 @@ class _CreditLine extends StatelessWidget {
 // Details tab (which shows the full synopsis). No inline expand.
 // ─────────────────────────────────────────────────────────────────────────────
 
+/// The extra facts a donghua page carries: studio, year, airing status,
+/// episode count and origin, in one muted badge line under the stills.
+class _DonghuaFacts extends StatelessWidget {
+  const _DonghuaFacts({required this.details});
+
+  final DonghuaDetails details;
+
+  @override
+  Widget build(BuildContext context) {
+    final parts = <String>[
+      ?details.studio,
+      if (details.year != null) '${details.year}',
+      ?details.status,
+      if (details.episodeCount != null) '${details.episodeCount} EP',
+      ?details.country,
+    ];
+    if (parts.isEmpty) return const SizedBox.shrink();
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [for (final part in parts) _MetaBadge(part)],
+    );
+  }
+}
+
 class _Description extends StatelessWidget {
   const _Description({required this.text, required this.onReadMore});
 

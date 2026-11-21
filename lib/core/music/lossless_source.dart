@@ -33,18 +33,23 @@ class LosslessSource implements MusicSource {
   @override
   String get displayName => 'Lossless';
 
+  // Falls back to the static endpoint so the singleton the injector builds at
+  // startup still works after the user configures one in Parity tools.
+  String get _base => _baseUrl.isNotEmpty ? _baseUrl : _staticBase;
+  String get _key => _apiKey.isNotEmpty ? _apiKey : _staticKey;
+
   @override
-  bool get isConfigured => _baseUrl.isNotEmpty;
+  bool get isConfigured => _base.isNotEmpty;
 
   Map<String, String> get _headers => {
-    if (_apiKey.isNotEmpty) 'Authorization': 'Bearer $_apiKey',
+    if (_key.isNotEmpty) 'Authorization': 'Bearer $_key',
   };
 
   @override
   Future<List<MusicSection>> home() async {
     if (!isConfigured) return const [];
     final response = await _dio.get<Map<String, dynamic>>(
-      '$_baseUrl/api/home',
+      '$_base/api/home',
       options: Options(headers: _headers),
     );
     final rows = response.data?['rows'];
@@ -63,7 +68,7 @@ class LosslessSource implements MusicSource {
   Future<List<MusicTrack>> search(String query, {int page = 1}) async {
     if (!isConfigured) return const [];
     final response = await _dio.get<Map<String, dynamic>>(
-      '$_baseUrl/api/search',
+      '$_base/api/search',
       queryParameters: {'q': query, 'page': page},
       options: Options(headers: _headers),
     );
@@ -74,7 +79,7 @@ class LosslessSource implements MusicSource {
   Future<String?> streamFor(MusicTrack track) async {
     if (!isConfigured) return null;
     final response = await _dio.get<Map<String, dynamic>>(
-      '$_baseUrl/api/stream/${Uri.encodeComponent(track.id)}',
+      '$_base/api/stream/${Uri.encodeComponent(track.id)}',
       options: Options(headers: _headers),
     );
     return response.data?['url'] as String?;

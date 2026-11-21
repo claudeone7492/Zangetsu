@@ -682,6 +682,13 @@ class AppLocalizationsPt extends AppLocalizations {
   String get contributors => 'Colaboradores';
 
   @override
+  String get parityTools => 'Ferramentas de paridade';
+
+  @override
+  String get parityToolsSubtitle =>
+      'Importadores, rastreadores, áudio sem perdas e escala da interface';
+
+  @override
   String get website => 'Site';
 
   @override
@@ -1283,6 +1290,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get cropBorders => 'Cortar bordas';
+
+  @override
+  String get sharpenPages => 'Aumentar nitidez das páginas';
 
   @override
   String get trimNearUniformEdgeMarginsFromAPage =>
@@ -2080,6 +2090,30 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get audioNormalization => 'Normalização de áudio';
+
+  @override
+  String get audioFx => 'Perfil de áudio';
+
+  @override
+  String get audioFxNight => 'Noite';
+
+  @override
+  String get audioFxCinema => 'Cinema';
+
+  @override
+  String get audioFxVocal => 'Voz';
+
+  @override
+  String get playerSkin => 'Aparência do reprodutor';
+
+  @override
+  String get skinClassic => 'Clássico';
+
+  @override
+  String get skinGlass => 'Vidro';
+
+  @override
+  String get skinMinimal => 'Mínimo';
 
   @override
   String get searchSubtitlesOnline => 'Pesquisar legendas online';

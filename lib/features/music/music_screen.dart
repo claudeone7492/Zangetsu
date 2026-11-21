@@ -13,6 +13,7 @@ import '../../core/tv/tv_action_chip.dart';
 import '../../core/tv/tv_focusable.dart';
 import '../../core/tv/tv_text_field.dart';
 import '../../l10n/l10n.dart';
+import 'music_screen_tv.dart';
 import 'music_player_sheet.dart';
 
 /// Music mode's Home.
@@ -238,6 +239,16 @@ class _MusicScreenState extends State<MusicScreen> {
         action: context.l10n.retry,
         onAction: _loadHome,
         tv: _tv,
+      );
+    }
+    if (_tv) {
+      return MusicScreenTv(
+        sections: sections,
+        onPlay: (track, queue) => _playTrack(queue, track),
+        onOpenTrack: (track) => _playTrack(
+          [for (final section in sections) ...section.tracks],
+          track,
+        ),
       );
     }
     return RefreshIndicator(

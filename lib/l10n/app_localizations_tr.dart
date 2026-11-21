@@ -677,6 +677,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get contributors => 'Katkıda bulunanlar';
 
   @override
+  String get parityTools => 'Eşlik araçları';
+
+  @override
+  String get parityToolsSubtitle =>
+      'İçe aktarıcılar, izleyiciler, kayıpsız ses ve arayüz ölçeği';
+
+  @override
   String get website => 'Web sitesi';
 
   @override
@@ -1277,6 +1284,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get cropBorders => 'Kenarları kırp';
+
+  @override
+  String get sharpenPages => 'Sayfaları keskinleştir';
 
   @override
   String get trimNearUniformEdgeMarginsFromAPage =>
@@ -2066,6 +2076,30 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get audioNormalization => 'Ses normalleştirme';
+
+  @override
+  String get audioFx => 'Ses profili';
+
+  @override
+  String get audioFxNight => 'Gece';
+
+  @override
+  String get audioFxCinema => 'Sinema';
+
+  @override
+  String get audioFxVocal => 'Vokal';
+
+  @override
+  String get playerSkin => 'Oynatıcı görünümü';
+
+  @override
+  String get skinClassic => 'Klasik';
+
+  @override
+  String get skinGlass => 'Cam';
+
+  @override
+  String get skinMinimal => 'Minimal';
 
   @override
   String get searchSubtitlesOnline => 'Altyazıları çevrimiçi ara';

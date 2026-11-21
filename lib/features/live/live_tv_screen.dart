@@ -33,6 +33,8 @@ import '../../core/ui/row_skeleton.dart';
 import '../../core/ui/states.dart';
 import '../../l10n/l10n.dart';
 import '../detail/detail_screen.dart';
+import '../../core/live/iptv_mark_store.dart';
+import 'live_manage_screens.dart';
 import 'live_tv_guide_screen.dart';
 import 'live_playlists_screen.dart';
 import 'live_parental_screen.dart';
@@ -85,6 +87,10 @@ enum LiveSort {
 ///
 /// Phone and TV share this one screen (and its state), so a search typed on
 /// one layout is preserved on the other; only the chrome and grid differ.
+/// Entries in the Live TV overflow: the secondary pages that used to be
+/// reachable only by knowing where they lived.
+enum _LiveMenu { manage, onDemand, sports }
+
 class LiveTvScreen extends StatefulWidget {
   const LiveTvScreen({super.key, this.showBack = true});
 
@@ -675,6 +681,113 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
 
   // ── Phone layout ──────────────────────────────────────────────────────────
 
+  /// Catch-up / VOD entries, recognised by the source's category name — the
+  /// catalogue carries no VOD marker, so a name match is the only signal.
+  List<MediaItem> get _vodItems => [
+    for (final section in _sections)
+      if (RegExp(
+        r'vod|movie|film|on\s*demand|catch',
+        caseSensitive: false,
+      ).hasMatch(section.title))
+        ...section.items,
+  ];
+
+  Future<void> _onMenuSelected(_LiveMenu value) async {
+    switch (value) {
+      case _LiveMenu.manage:
+        final playlists = sl.isRegistered<LivePlaylistStore>()
+            ? sl<LivePlaylistStore>().entries.length
+            : 0;
+        final accounts = sl.isRegistered<XtreamAccountStore>()
+            ? sl<XtreamAccountStore>()
+            : null;
+        await accounts?.ensureLoaded();
+        if (!mounted) return;
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => LiveManageScreen(
+              playlistCount: playlists,
+              accountCount: accounts?.accounts.length ?? 0,
+              onOpenPlaylists: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const LivePlaylistsScreen(),
+                ),
+              ),
+              onOpenAccounts: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const XtreamAccountsScreen(),
+                ),
+              ),
+              onOpenGuide: _openGuide,
+              onOpenParental: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const LiveParentalScreen(),
+                ),
+              ),
+            ),
+          ),
+        );
+      case _LiveMenu.onDemand:
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => LiveOnDemandScreen(
+              items: [
+                for (final item in _vodItems)
+                  LiveVodItem(
+                    title: item.title,
+                    poster: item.cover,
+                    onPlay: () => _open(item),
+                  ),
+              ],
+              onRefresh: _load,
+            ),
+          ),
+        );
+      case _LiveMenu.sports:
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => LiveSportsScreen(
+              fixtures: [
+                for (final item in _sports)
+                  LiveFixture(
+                    title: item.title,
+                    time: item.liveInfo ?? item.liveBadge ?? '',
+                    onPlay: () => _open(item),
+                  ),
+              ],
+            ),
+          ),
+        );
+    }
+  }
+
+  /// A channel card with its star. The mark lives in [IptvMarkStore], so a
+  /// playlist refresh never loses it.
+  Widget _markable(MediaItem item, Widget card) {
+    final marked = IptvMarkStore.isMarked(item.id);
+    return Stack(
+      children: [
+        card,
+        Positioned(
+          top: 2,
+          right: 2,
+          child: IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 20,
+            onPressed: () async {
+              await IptvMarkStore.toggle(item.id);
+              if (mounted) setState(() {});
+            },
+            icon: Icon(
+              marked ? Icons.star_rounded : Icons.star_border_rounded,
+              color: marked ? AppColors.accent : Colors.white70,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildPhone(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -741,6 +854,27 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
               onPressed: _openGuide,
               icon: const Icon(Icons.calendar_month_rounded),
             ),
+          PopupMenuButton<_LiveMenu>(
+            tooltip: context.l10n.more,
+            icon: const Icon(Icons.more_vert_rounded),
+            onSelected: _onMenuSelected,
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: _LiveMenu.manage,
+                child: Text('Manage Live TV'),
+              ),
+              if (_vodItems.isNotEmpty)
+                const PopupMenuItem(
+                  value: _LiveMenu.onDemand,
+                  child: Text('On demand'),
+                ),
+              if (_sports.isNotEmpty)
+                const PopupMenuItem(
+                  value: _LiveMenu.sports,
+                  child: Text('Sports'),
+                ),
+            ],
+          ),
           IconButton(
             tooltip: context.l10n.retry,
             onPressed: _loading ? null : _load,
@@ -919,22 +1053,25 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
             itemHeight: _phoneCardHeight,
             itemBuilder: (context, j) {
               final item = section.items[j];
-              return PosterCard(
-                title: item.title,
-                logoItem: item,
-                imageUrl: item.cover,
-                headers: item.coverHeaders,
-                genres: item.genres,
-                // A live-sports match carries its status chip ("LIVE", a
-                // countdown, "FT") and its competition/clock line. Both are
-                // computed by the source and refined by `_enrichSports` /
-                // `_tickCountdowns`; without passing them here the rail showed
-                // bare posters and the enrichment had nowhere to land.
-                liveBadge: item.liveBadge,
-                liveInfo: item.liveInfo,
-                liveUnplayable: item.liveUnplayable,
-                onTap: () => _open(item),
-                cellWidth: _phoneCardWidth,
+              return _markable(
+                item,
+                PosterCard(
+                  title: item.title,
+                  logoItem: item,
+                  imageUrl: item.cover,
+                  headers: item.coverHeaders,
+                  genres: item.genres,
+                  // A live-sports match carries its status chip ("LIVE", a
+                  // countdown, "FT") and its competition/clock line. Both are
+                  // computed by the source and refined by `_enrichSports` /
+                  // `_tickCountdowns`; without passing them here the rail showed
+                  // bare posters and the enrichment had nowhere to land.
+                  liveBadge: item.liveBadge,
+                  liveInfo: item.liveInfo,
+                  liveUnplayable: item.liveUnplayable,
+                  onTap: () => _open(item),
+                  cellWidth: _phoneCardWidth,
+                ),
               );
             },
           ),
@@ -981,16 +1118,19 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
       itemCount: results.length,
       itemBuilder: (context, i) {
         final item = results[i];
-        return PosterCard(
-          title: item.title,
-          logoItem: item,
-          imageUrl: item.cover,
-          headers: item.coverHeaders,
-          genres: item.genres,
-          liveBadge: item.liveBadge,
-          liveInfo: item.liveInfo,
-          liveUnplayable: item.liveUnplayable,
-          onTap: () => _open(item),
+        return _markable(
+          item,
+          PosterCard(
+            title: item.title,
+            logoItem: item,
+            imageUrl: item.cover,
+            headers: item.coverHeaders,
+            genres: item.genres,
+            liveBadge: item.liveBadge,
+            liveInfo: item.liveInfo,
+            liveUnplayable: item.liveUnplayable,
+            onTap: () => _open(item),
+          ),
         );
       },
     );

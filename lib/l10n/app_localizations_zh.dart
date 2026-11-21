@@ -655,6 +655,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get contributors => '贡献者';
 
   @override
+  String get parityTools => '对齐工具';
+
+  @override
+  String get parityToolsSubtitle => '导入、追踪、无损音频与界面缩放';
+
+  @override
   String get website => '网站';
 
   @override
@@ -1241,6 +1247,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cropBorders => '裁剪边距';
+
+  @override
+  String get sharpenPages => '增强页面锐度';
 
   @override
   String get trimNearUniformEdgeMarginsFromAPage => '裁掉页面边缘接近均匀的空白';
@@ -1992,6 +2001,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get audioNormalization => '音频响度均衡';
+
+  @override
+  String get audioFx => '声音配置';
+
+  @override
+  String get audioFxNight => '夜间';
+
+  @override
+  String get audioFxCinema => '影院';
+
+  @override
+  String get audioFxVocal => '人声';
+
+  @override
+  String get playerSkin => '播放器外观';
+
+  @override
+  String get skinClassic => '经典';
+
+  @override
+  String get skinGlass => '玻璃';
+
+  @override
+  String get skinMinimal => '极简';
 
   @override
   String get searchSubtitlesOnline => '在线搜索字幕';
@@ -8172,6 +8205,12 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get contributors => '貢獻者';
 
   @override
+  String get parityTools => '對齊工具';
+
+  @override
+  String get parityToolsSubtitle => '匯入、追蹤、無損音訊與介面縮放';
+
+  @override
   String get website => '網站';
 
   @override
@@ -8758,6 +8797,9 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get cropBorders => '裁切邊距';
+
+  @override
+  String get sharpenPages => '增強頁面銳度';
 
   @override
   String get trimNearUniformEdgeMarginsFromAPage => '裁掉頁面邊緣接近均勻的空白';
@@ -9509,6 +9551,30 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get audioNormalization => '音訊響度均衡';
+
+  @override
+  String get audioFx => '聲音設定';
+
+  @override
+  String get audioFxNight => '夜間';
+
+  @override
+  String get audioFxCinema => '影院';
+
+  @override
+  String get audioFxVocal => '人聲';
+
+  @override
+  String get playerSkin => '播放器外觀';
+
+  @override
+  String get skinClassic => '經典';
+
+  @override
+  String get skinGlass => '玻璃';
+
+  @override
+  String get skinMinimal => '極簡';
 
   @override
   String get searchSubtitlesOnline => '線上搜尋字幕';

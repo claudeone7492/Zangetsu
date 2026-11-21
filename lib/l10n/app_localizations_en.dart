@@ -667,6 +667,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get contributors => 'Contributors';
 
   @override
+  String get parityTools => 'Parity tools';
+
+  @override
+  String get parityToolsSubtitle =>
+      'Importers, trackers, lossless audio and interface scale';
+
+  @override
   String get website => 'Website';
 
   @override
@@ -1262,6 +1269,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cropBorders => 'Crop borders';
+
+  @override
+  String get sharpenPages => 'Sharpen pages';
 
   @override
   String get trimNearUniformEdgeMarginsFromAPage =>
@@ -2050,6 +2060,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get audioNormalization => 'Audio normalization';
+
+  @override
+  String get audioFx => 'Sound profile';
+
+  @override
+  String get audioFxNight => 'Night';
+
+  @override
+  String get audioFxCinema => 'Cinema';
+
+  @override
+  String get audioFxVocal => 'Voice';
+
+  @override
+  String get playerSkin => 'Player skin';
+
+  @override
+  String get skinClassic => 'Classic';
+
+  @override
+  String get skinGlass => 'Glass';
+
+  @override
+  String get skinMinimal => 'Minimal';
 
   @override
   String get searchSubtitlesOnline => 'Search subtitles online';
