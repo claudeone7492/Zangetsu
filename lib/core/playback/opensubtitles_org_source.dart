@@ -125,7 +125,7 @@ class OpenSubtitlesOrgSource {
           language: code.isNotEmpty
               ? code
               : (subLang.isNotEmpty ? subLang : langName),
-          format: format.isNotEmpty ? format : _extension(fileName),
+          format: _format(format, fileName),
           downloadUrl: '$_files$id',
         ),
       );
@@ -146,6 +146,18 @@ class OpenSubtitlesOrgSource {
     await file.writeAsBytes(bytes, flush: true);
     return file.path;
   }
+
+  /// The mirror transcodes every file to UTF-8 SRT, so an original `.sub`
+  /// (MicroDVD) label would make the player pick the wrong decoder.
+  static String _format(String raw, String fileName) {
+    final reported = raw.trim().toLowerCase();
+    if (_isTextFormat(reported)) return reported;
+    final fromName = _extension(fileName);
+    return _isTextFormat(fromName) ? fromName : 'srt';
+  }
+
+  static bool _isTextFormat(String ext) =>
+      ext == 'srt' || ext == 'vtt' || ext == 'ass' || ext == 'ssa';
 
   static String _extension(String name) {
     final dot = name.lastIndexOf('.');

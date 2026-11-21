@@ -1,6 +1,7 @@
 import 'framex_subtitle_source.dart';
 import 'opensubtitles_org_source.dart';
 import 'subtitle_search_service.dart';
+import 'subtitlecat_source.dart';
 
 /// One subtitle offered by any online source, with the work of fetching it
 /// attached.
@@ -44,13 +45,16 @@ class OnlineSubtitleSearch {
     SubtitleSearchService? openSubtitles,
     FrameXSubtitleSource? framex,
     OpenSubtitlesOrgSource? openSubtitlesOrg,
+    SubtitleCatSource? subtitleCat,
   }) : _openSubtitles = openSubtitles ?? SubtitleSearchService(),
        _framex = framex ?? FrameXSubtitleSource(),
-       _openSubtitlesOrg = openSubtitlesOrg ?? OpenSubtitlesOrgSource();
+       _openSubtitlesOrg = openSubtitlesOrg ?? OpenSubtitlesOrgSource(),
+       _subtitleCat = subtitleCat ?? SubtitleCatSource();
 
   final SubtitleSearchService _openSubtitles;
   final FrameXSubtitleSource _framex;
   final OpenSubtitlesOrgSource _openSubtitlesOrg;
+  final SubtitleCatSource _subtitleCat;
 
   /// Whether an OpenSubtitles search is possible (an API key is set).
   bool get hasOpenSubtitlesKey => _openSubtitles.hasApiKey;
@@ -127,6 +131,26 @@ class OnlineSubtitleSearch {
       }
     } catch (e) {
       error ??= 'OpenSubtitles.org search failed: $e';
+    }
+
+    try {
+      final cat = await _subtitleCat.search(q);
+      final want = language.trim().toLowerCase();
+      for (final r in cat) {
+        if (want.isNotEmpty && !r.language.toLowerCase().startsWith(want)) {
+          continue;
+        }
+        hits.add(
+          OnlineSubtitleHit(
+            label: r.label,
+            language: r.language,
+            source: 'SubtitleCat',
+            download: () => _subtitleCat.download(r),
+          ),
+        );
+      }
+    } catch (e) {
+      error ??= 'SubtitleCat search failed: $e';
     }
 
     if (hasOpenSubtitlesKey) {

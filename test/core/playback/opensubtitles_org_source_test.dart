@@ -82,6 +82,18 @@ void main() {
       expect(hits.last.format, 'srt');
     });
 
+    test('normalises a non-text format to srt', () {
+      final hits = OpenSubtitlesOrgSource.parseRows([
+        {
+          'IDSubtitleFile': '9',
+          'SubFileName': 'Movie.spa.sub',
+          'SubFormat': 'sub',
+          'ISO639': 'es',
+        },
+      ]);
+      expect(hits.single.format, 'srt');
+    });
+
     test('falls back to the release name when the file name is blank', () {
       final hits = OpenSubtitlesOrgSource.parseRows([
         {

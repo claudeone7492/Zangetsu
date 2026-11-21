@@ -3,6 +3,7 @@ import 'package:watch_app/core/playback/framex_subtitle_source.dart';
 import 'package:watch_app/core/playback/online_subtitle_search.dart';
 import 'package:watch_app/core/playback/opensubtitles_org_source.dart';
 import 'package:watch_app/core/playback/subtitle_search_service.dart';
+import 'package:watch_app/core/playback/subtitlecat_source.dart';
 
 /// Stands in for OpenSubtitles: returns whatever it was given and records that
 /// it was asked, so a test can assert a keyless install never calls it.
@@ -79,15 +80,34 @@ class _FakeOrg extends OpenSubtitlesOrgSource {
   Future<String?> download(OpenSubtitlesOrgHit hit) async => '/tmp/org.srt';
 }
 
-/// Every test gets the keyless fake, so a real network call never happens.
+/// Stands in for SubtitleCat: no HTTP, no HTML.
+class _FakeCat extends SubtitleCatSource {
+  _FakeCat({this.hits = const []});
+
+  List<SubtitleCatHit> hits;
+  int searches = 0;
+
+  @override
+  Future<List<SubtitleCatHit>> search(String query) async {
+    searches++;
+    return hits;
+  }
+
+  @override
+  Future<String?> download(SubtitleCatHit hit) async => '/tmp/cat.srt';
+}
+
+/// Every test gets the keyless fakes, so a real network call never happens.
 OnlineSubtitleSearch _search({
   SubtitleSearchService? openSubtitles,
   FrameXSubtitleSource? framex,
   OpenSubtitlesOrgSource? org,
+  SubtitleCatSource? cat,
 }) => OnlineSubtitleSearch(
   openSubtitles: openSubtitles,
   framex: framex,
   openSubtitlesOrg: org ?? _FakeOrg(),
+  subtitleCat: cat ?? _FakeCat(),
 );
 
 SubtitleSearchResult _openSubResult(String id, String name, String lang) =>
@@ -236,6 +256,40 @@ void main() {
       expect(hits, hasLength(1));
       expect(hits.single.source, 'OpenSubtitles.org');
       expect(hits.single.label, 'EN release');
+    });
+
+    test('adds keyless SubtitleCat rows and filters by language', () async {
+      final cat = _FakeCat(
+        hits: const [
+          SubtitleCatHit(
+            label: 'Release',
+            language: 'en',
+            format: 'srt',
+            url: 'https://x/en.srt',
+            referer: 'https://x',
+            downloads: 5,
+          ),
+          SubtitleCatHit(
+            label: 'Release',
+            language: 'fr',
+            format: 'srt',
+            url: 'https://x/fr.srt',
+            referer: 'https://x',
+            downloads: 4,
+          ),
+        ],
+      );
+      final search = _search(
+        openSubtitles: _FakeOpenSubtitles(keyed: false),
+        framex: _FakeFrameX(),
+        cat: cat,
+      );
+
+      final hits = await search.search('Dune', language: 'en');
+
+      expect(cat.searches, 1);
+      expect(hits, hasLength(1));
+      expect(hits.single.source, 'SubtitleCat');
     });
   });
 
