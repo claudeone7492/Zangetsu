@@ -6,6 +6,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../models/episode.dart';
 import '../models/provider_info.dart';
+import 'bangumi.dart';
 
 /// One episode's fetched extras. Any field may be null (source lacked it).
 typedef EpisodeMeta = ({
@@ -27,9 +28,10 @@ typedef EpisodeMeta = ({
 /// on disk (Hive) so a re-opened title fills in instantly instead of popping
 /// in again.
 class EpisodeMetadataService {
-  EpisodeMetadataService(this._dio);
+  EpisodeMetadataService(this._dio) : _bangumi = Bangumi(_dio);
 
   final Dio _dio;
+  final Bangumi _bangumi;
   static const String _tmdbBase = 'https://api.themoviedb.org/3';
   static const String _tmdbImg = 'https://image.tmdb.org/t/p/w300';
   static const String boxName = 'episode_meta';
@@ -240,6 +242,8 @@ class EpisodeMetadataService {
     int? malId,
     int? tmdbId,
     bool tmdbIsTv = false,
+    String? title,
+    String? originalTitle,
   }) async {
     if (episodes.isEmpty) return episodes;
 
@@ -251,6 +255,41 @@ class EpisodeMetadataService {
 
     if (tmdbId != null && tmdbIsTv) {
       out = await _enrichFromTmdbTv(out, tmdbId);
+    }
+
+    if (type == ProviderType.anime && title != null && title.trim().isNotEmpty) {
+      final bangumi = await _bangumi.episodes(
+        title: title,
+        originalTitle: originalTitle,
+      );
+      if (bangumi != null && bangumi.isNotEmpty) {
+        out = mergeMeta(out, (e) {
+          final number = _intNumber(e);
+          if (number == null) return null;
+          BangumiEpisode? hit;
+          for (final episode in bangumi) {
+            if (episode.number == number) {
+              hit = episode;
+              break;
+            }
+          }
+          if (hit == null || (hit.name?.isEmpty ?? true)) return null;
+          final existing = e.metaTitle;
+          if (existing != null &&
+              existing.isNotEmpty &&
+              !Bangumi.isGenericName(existing)) {
+            return null;
+          }
+          return (
+            title: hit.name,
+            overview: null,
+            image: null,
+            rating: null,
+            runtime: null,
+            airDate: hit.airDate,
+          );
+        });
+      }
     }
     return out;
   }

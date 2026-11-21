@@ -219,6 +219,8 @@ class _FakeEpisodeMeta extends EpisodeMetadataService {
     int? malId,
     int? tmdbId,
     bool tmdbIsTv = false,
+    String? title,
+    String? originalTitle,
   }) async {
     if (!started.isCompleted) started.complete();
     await release.future;

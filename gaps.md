@@ -203,8 +203,8 @@ still have no Zangetsu counterpart, verified by file/symbol search at
 | Feature | Hikari | Status | Note |
 |---|---|---|---|
 | Nuvio catalog/collections import | `data/NuvioCatalogImport.kt`, `NuvioCollectionsImport.kt` | ❌ | No Nuvio export import. |
-| Bangumi metadata | `nuvio/BangumiMeta.kt` | ❌ | No Bangumi fallback. |
-| TheTVDB artwork | `data/TvdbArt.kt` | ❌ | TMDB/AniList only. |
+| Bangumi metadata | `nuvio/BangumiMeta.kt` | ✅ | Landed: `core/metadata/bangumi.dart` — subject search, movie/special filtering, absolute episode titles + air dates, merged only where the title is generic. |
+| TheTVDB artwork | `data/TvdbArt.kt` | ✅ | Landed: `core/metadata/tvdb_art.dart` — keyless website search, poster/banner/overview, TMDB/IMDb cross-ids, detail-page fallback when the source has no cover. |
 | Performance mode | `data/PerfMode.kt` | ✅ | Landed: `core/performance/perf_mode.dart` — image cache 1000/100 MB → 200/64 MB while active, automatic on TV, Playback settings toggle. |
 | Memory report | `data/MemoryReport.kt` | ✅ | Landed: `core/diagnostics/memory_report.dart` (RSS + peak, platform-safe) behind a Logs & diagnostics action. |
 | Tag translator | `i18n/TagTranslator.kt` | ❌ | Tags stay in the source language. |
@@ -219,7 +219,7 @@ still have no Zangetsu counterpart, verified by file/symbol search at
 | Player skins / server layouts | `player/PlayerSkins.kt`, `ServerLayouts.kt`, `StreamsLive.kt` | ⚠️ | Functional equivalents, different styling. |
 | l10n wiring | `i18n/` | ⚠️ | 12 catalogues at 2269 keys; the new surfaces are translated, the older ~120-literal wiring backlog remains. |
 
-**Count:** 33/33 ledger rows ✅; **17 ❌ and 8 ⚠️** above. The high-impact
+**Count:** 33/33 ledger rows ✅; **15 ❌ and 8 ⚠️** above. The high-impact
 ones are M3U import, Kitsu/Shikimori, offline TTS, ad-block/userscripts, the
 CS3 resolvers and the repo-link intents.
 

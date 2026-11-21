@@ -11,6 +11,7 @@ import '../../../core/logging/app_logger.dart';
 import '../../../core/lnreader/novel_cloudflare.dart';
 import '../../../core/metadata/episode_metadata_service.dart';
 import '../../../core/metadata/metadata_enrichment.dart';
+import '../../../core/metadata/tvdb_art.dart';
 import '../../../core/models/episode.dart';
 import '../../../core/models/episode_title.dart';
 import '../../../core/models/media_detail.dart';
@@ -510,6 +511,8 @@ class DetailCubit extends Cubit<DetailState> {
         malId: detail.malId,
         tmdbId: detail.tmdbId,
         tmdbIsTv: detail.tmdbIsTv,
+        title: detail.title,
+        originalTitle: detail.englishTitle,
       );
       if (isClosed) return;
       final onScreen = state.detail?.episodes;
@@ -523,11 +526,33 @@ class DetailCubit extends Cubit<DetailState> {
 
   Future<void> _enrichOnce(MediaDetail detail, {required bool force}) async {
     emit(state.copyWith(extrasLoading: true));
+    unawaited(_tvdbArt(detail));
     try {
       await _enrichInner(detail, force: force);
     } finally {
       if (!isClosed) emit(state.copyWith(extrasLoading: false));
     }
+  }
+
+  /// Fills a missing poster/banner from TheTVDB when the source shipped none.
+  /// Runs beside the episode enrichment so it never delays the page.
+  Future<void> _tvdbArt(MediaDetail detail) async {
+    if (detail.cover != null && detail.cover!.isNotEmpty) return;
+    if (detail.title.trim().isEmpty || !sl.isRegistered<TvdbArt>()) return;
+    try {
+      final art = await sl<TvdbArt>().lookup(
+        title: detail.title,
+        originalTitle: detail.englishTitle,
+        isMovie: detail.type == ProviderType.movie,
+      );
+      if (art == null || isClosed) return;
+      _patchDetail(
+        (cur) => cur.copyWith(
+          cover: art.poster ?? cur.cover,
+          banner: art.banner ?? cur.banner,
+        ),
+      );
+    } catch (_) {/* art is a bonus, never a blocker */}
   }
 
   /// Applies one enrichment result to whatever detail is on screen RIGHT NOW.
@@ -622,6 +647,8 @@ class DetailCubit extends Cubit<DetailState> {
           malId: d.malId,
           tmdbId: d.tmdbId,
           tmdbIsTv: d.tmdbIsTv,
+          title: d.title,
+          originalTitle: d.englishTitle,
         );
         if (isClosed) return;
         // Episode descriptions are the one result tied to a SPECIFIC list.

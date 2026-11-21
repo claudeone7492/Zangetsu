@@ -102,6 +102,7 @@ import '../zmode/zmode_prefs.dart';
 import '../theme/app_font_prefs.dart';
 import '../theme/theme_controller.dart';
 import '../metadata/episode_metadata_service.dart';
+import '../metadata/tvdb_art.dart';
 import '../metadata/metadata_enrichment.dart';
 import '../metadata/people_service.dart';
 import '../app_config.dart';
@@ -705,6 +706,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   // Per-episode descriptions for the episode list (AniZip for anime, TMDB
   // season for movie-source TV series). Best-effort; shares the TMDB-keyed dio.
   sl.registerSingleton<EpisodeMetadataService>(EpisodeMetadataService(dio));
+  sl.registerSingleton<TvdbArt>(TvdbArt(dio));
 
   // Person pages (characters + voice actors/staff from AniList, movie/TV people
   // from TMDB), opened from the Detail screen's Cast tab.
