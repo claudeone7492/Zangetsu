@@ -53,6 +53,14 @@ class _KoraPayCheckoutState extends State<KoraPayCheckout> {
               Navigator.of(context).pop(false);
               return NavigationDecision.prevent;
             }
+            // Stay embedded: a scheme handoff (intent://, a bank app, tel:)
+            // leaves the payment sheet with the callback lost, which is exactly
+            // the "did my card go through?" dead end this screen exists to
+            // avoid. Only ordinary web navigation is followed.
+            final uri = Uri.tryParse(url);
+            if (uri == null || !(uri.isScheme('https') || uri.isScheme('http'))) {
+              return NavigationDecision.prevent;
+            }
             return NavigationDecision.navigate;
           },
         ),

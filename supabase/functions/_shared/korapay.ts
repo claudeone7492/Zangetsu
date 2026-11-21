@@ -51,7 +51,6 @@ export interface ChargeInit {
   customerName: string;
   customerEmail: string;
   notificationUrl: string;
-  redirectUrl?: string;
 }
 
 export interface ChargeResult {
@@ -71,7 +70,9 @@ export async function initializeCharge(input: ChargeInit): Promise<ChargeResult>
     reference: input.reference,
     customer: { name: input.customerName, email: input.customerEmail },
     notification_url: input.notificationUrl,
-    ...(input.redirectUrl ? { redirect_url: input.redirectUrl } : {}),
+    // No redirect_url: checkout runs in the app's embedded WebView and the
+    // result comes back through the webhook, so a post-payment bounce would
+    // only take the user somewhere we cannot read.
   };
 
   const res = await fetch(`${baseUrl()}/charges/initialize`, {
@@ -81,6 +82,10 @@ export async function initializeCharge(input: ChargeInit): Promise<ChargeResult>
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
+    // The bearer key rides on this request: a redirect means a wrong
+    // KORAPAY_BASE_URL, and following it would hand the key to wherever it
+    // points. The API answers in place, so refuse rather than follow.
+    redirect: "error",
   });
 
   const raw = await res.json().catch(() => ({}));
@@ -128,6 +133,7 @@ export async function disburse(input: DisburseInit): Promise<ChargeResult> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
+    redirect: "error",
   });
   const raw = await res.json().catch(() => ({}));
   if (!res.ok || (raw as { status?: boolean }).status === false) {
