@@ -7682,4 +7682,43 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get telegramVideoFallback => 'فيديو تيليجرام';
+
+  @override
+  String get websites => 'المواقع';
+
+  @override
+  String get websitesSubtitle =>
+      'تُفتح المواقع المحفوظة في المتصفح داخل التطبيق';
+
+  @override
+  String get websitesAdd => 'إضافة موقع';
+
+  @override
+  String get websitesNameHint => 'الاسم (اختياري)';
+
+  @override
+  String get websitesUrlHint => 'https://example.com';
+
+  @override
+  String get websitesEmpty => 'لا توجد مواقع محفوظة بعد';
+
+  @override
+  String get websitesEmptyBody => 'أضف موقعًا لفتحه هنا دون مغادرة التطبيق.';
+
+  @override
+  String get websitesInvalidUrl => 'أدخل رابطًا صالحًا';
+
+  @override
+  String get websitesRemoveTitle => 'إزالة الموقع؟';
+
+  @override
+  String websitesRemoveBody(String name) {
+    return 'إزالة $name من مواقعك المحفوظة؟';
+  }
+
+  @override
+  String get websitesOpenExternal => 'فتح في المتصفح';
+
+  @override
+  String get websitesLoadFailed => 'تعذّر تحميل هذه الصفحة';
 }

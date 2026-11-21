@@ -3691,5 +3691,17 @@
   "telegramInvalidChannel": "Ce n'est pas un canal Telegram",
   "telegramFailed": "Impossible de charger ce canal",
   "telegramPrivateHint": "Les canaux privés nécessitent la version native de Telegram.",
-  "telegramVideoFallback": "Vidéo Telegram"
+  "telegramVideoFallback": "Vidéo Telegram",
+  "websites": "Sites web",
+  "websitesSubtitle": "Les sites enregistrés s'ouvrent dans le navigateur intégré",
+  "websitesAdd": "Ajouter un site",
+  "websitesNameHint": "Nom (facultatif)",
+  "websitesUrlHint": "https://example.com",
+  "websitesEmpty": "Aucun site enregistré pour l'instant",
+  "websitesEmptyBody": "Ajoutez un site pour l'ouvrir ici, sans quitter l'application.",
+  "websitesInvalidUrl": "Saisissez une URL valide",
+  "websitesRemoveTitle": "Supprimer le site ?",
+  "websitesRemoveBody": "Supprimer {name} de vos sites enregistrés ?",
+  "websitesOpenExternal": "Ouvrir dans le navigateur",
+  "websitesLoadFailed": "Impossible de charger cette page"
 }

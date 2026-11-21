@@ -7696,4 +7696,44 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get telegramVideoFallback => 'Vídeo de Telegram';
+
+  @override
+  String get websites => 'Sitios web';
+
+  @override
+  String get websitesSubtitle =>
+      'Los sitios guardados se abren en el navegador integrado';
+
+  @override
+  String get websitesAdd => 'Añadir sitio web';
+
+  @override
+  String get websitesNameHint => 'Nombre (opcional)';
+
+  @override
+  String get websitesUrlHint => 'https://example.com';
+
+  @override
+  String get websitesEmpty => 'Aún no hay sitios guardados';
+
+  @override
+  String get websitesEmptyBody =>
+      'Añade un sitio para abrirlo aquí, sin salir de la app.';
+
+  @override
+  String get websitesInvalidUrl => 'Introduce una URL válida';
+
+  @override
+  String get websitesRemoveTitle => '¿Eliminar sitio web?';
+
+  @override
+  String websitesRemoveBody(String name) {
+    return '¿Eliminar $name de tus sitios guardados?';
+  }
+
+  @override
+  String get websitesOpenExternal => 'Abrir en el navegador';
+
+  @override
+  String get websitesLoadFailed => 'No se pudo cargar esta página';
 }

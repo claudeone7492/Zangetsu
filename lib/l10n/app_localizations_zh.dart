@@ -7358,6 +7358,44 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get telegramVideoFallback => 'Telegram 视频';
+
+  @override
+  String get websites => '网站';
+
+  @override
+  String get websitesSubtitle => '已保存的网站会在应用内浏览器中打开';
+
+  @override
+  String get websitesAdd => '添加网站';
+
+  @override
+  String get websitesNameHint => '名称（可选）';
+
+  @override
+  String get websitesUrlHint => 'https://example.com';
+
+  @override
+  String get websitesEmpty => '尚未保存网站';
+
+  @override
+  String get websitesEmptyBody => '添加网站即可在此打开，无需离开应用。';
+
+  @override
+  String get websitesInvalidUrl => '请输入有效的网址';
+
+  @override
+  String get websitesRemoveTitle => '移除网站？';
+
+  @override
+  String websitesRemoveBody(String name) {
+    return '从已保存网站中移除 $name？';
+  }
+
+  @override
+  String get websitesOpenExternal => '在浏览器中打开';
+
+  @override
+  String get websitesLoadFailed => '无法加载此页面';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -14714,4 +14752,42 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get telegramVideoFallback => 'Telegram 影片';
+
+  @override
+  String get websites => '網站';
+
+  @override
+  String get websitesSubtitle => '已儲存的網站會在應用程式內瀏覽器中開啟';
+
+  @override
+  String get websitesAdd => '新增網站';
+
+  @override
+  String get websitesNameHint => '名稱（選填）';
+
+  @override
+  String get websitesUrlHint => 'https://example.com';
+
+  @override
+  String get websitesEmpty => '尚未儲存網站';
+
+  @override
+  String get websitesEmptyBody => '新增網站即可在此開啟，無需離開應用程式。';
+
+  @override
+  String get websitesInvalidUrl => '請輸入有效的網址';
+
+  @override
+  String get websitesRemoveTitle => '移除網站？';
+
+  @override
+  String websitesRemoveBody(String name) {
+    return '從已儲存網站中移除 $name？';
+  }
+
+  @override
+  String get websitesOpenExternal => '在瀏覽器中開啟';
+
+  @override
+  String get websitesLoadFailed => '無法載入此頁面';
 }

@@ -3691,5 +3691,17 @@
   "telegramInvalidChannel": "Das ist kein Telegram-Kanal",
   "telegramFailed": "Dieser Kanal konnte nicht geladen werden",
   "telegramPrivateHint": "Private Kanäle brauchen die native Telegram-Version.",
-  "telegramVideoFallback": "Telegram-Video"
+  "telegramVideoFallback": "Telegram-Video",
+  "websites": "Websites",
+  "websitesSubtitle": "Gespeicherte Seiten öffnen im In-App-Browser",
+  "websitesAdd": "Website hinzufügen",
+  "websitesNameHint": "Bezeichnung (optional)",
+  "websitesUrlHint": "https://example.com",
+  "websitesEmpty": "Noch keine Websites gespeichert",
+  "websitesEmptyBody": "Füge eine Seite hinzu, um sie hier zu öffnen, ohne die App zu verlassen.",
+  "websitesInvalidUrl": "Gib eine gültige URL ein",
+  "websitesRemoveTitle": "Website entfernen?",
+  "websitesRemoveBody": "{name} aus deinen gespeicherten Websites entfernen?",
+  "websitesOpenExternal": "Im Browser öffnen",
+  "websitesLoadFailed": "Diese Seite konnte nicht geladen werden"
 }

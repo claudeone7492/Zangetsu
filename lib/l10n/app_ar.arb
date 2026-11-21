@@ -3731,5 +3731,17 @@
   "telegramInvalidChannel": "هذه ليست قناة تيليجرام",
   "telegramFailed": "تعذّر تحميل هذه القناة",
   "telegramPrivateHint": "القنوات الخاصة تحتاج إلى نسخة تيليجرام الأصلية.",
-  "telegramVideoFallback": "فيديو تيليجرام"
+  "telegramVideoFallback": "فيديو تيليجرام",
+  "websites": "المواقع",
+  "websitesSubtitle": "تُفتح المواقع المحفوظة في المتصفح داخل التطبيق",
+  "websitesAdd": "إضافة موقع",
+  "websitesNameHint": "الاسم (اختياري)",
+  "websitesUrlHint": "https://example.com",
+  "websitesEmpty": "لا توجد مواقع محفوظة بعد",
+  "websitesEmptyBody": "أضف موقعًا لفتحه هنا دون مغادرة التطبيق.",
+  "websitesInvalidUrl": "أدخل رابطًا صالحًا",
+  "websitesRemoveTitle": "إزالة الموقع؟",
+  "websitesRemoveBody": "إزالة {name} من مواقعك المحفوظة؟",
+  "websitesOpenExternal": "فتح في المتصفح",
+  "websitesLoadFailed": "تعذّر تحميل هذه الصفحة"
 }

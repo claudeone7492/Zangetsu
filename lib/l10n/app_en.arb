@@ -3941,5 +3941,21 @@
   "telegramInvalidChannel": "That is not a Telegram channel",
   "telegramFailed": "Couldn't load this channel",
   "telegramPrivateHint": "Private channels need the native Telegram build.",
-  "telegramVideoFallback": "Telegram video"
+  "telegramVideoFallback": "Telegram video",
+  "websites": "Websites",
+  "websitesSubtitle": "Saved sites open in the in-app browser",
+  "websitesAdd": "Add website",
+  "websitesNameHint": "Name (optional)",
+  "websitesUrlHint": "https://example.com",
+  "websitesEmpty": "No websites saved yet",
+  "websitesEmptyBody": "Add a site to open it here, without leaving the app.",
+  "websitesInvalidUrl": "Enter a valid URL",
+  "websitesRemoveTitle": "Remove website?",
+  "websitesRemoveBody": "Remove {name} from your saved sites?",
+  "websitesOpenExternal": "Open in browser",
+  "websitesLoadFailed": "This page could not be loaded",
+  "@websitesRemoveBody": {
+    "description": "Confirmation body; {name} is the saved site's name.",
+    "placeholders": {"name": {"type": "String"}}
+  }
 }

@@ -7703,4 +7703,43 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get telegramVideoFallback => 'Telegram-Video';
+
+  @override
+  String get websites => 'Websites';
+
+  @override
+  String get websitesSubtitle => 'Gespeicherte Seiten öffnen im In-App-Browser';
+
+  @override
+  String get websitesAdd => 'Website hinzufügen';
+
+  @override
+  String get websitesNameHint => 'Bezeichnung (optional)';
+
+  @override
+  String get websitesUrlHint => 'https://example.com';
+
+  @override
+  String get websitesEmpty => 'Noch keine Websites gespeichert';
+
+  @override
+  String get websitesEmptyBody =>
+      'Füge eine Seite hinzu, um sie hier zu öffnen, ohne die App zu verlassen.';
+
+  @override
+  String get websitesInvalidUrl => 'Gib eine gültige URL ein';
+
+  @override
+  String get websitesRemoveTitle => 'Website entfernen?';
+
+  @override
+  String websitesRemoveBody(String name) {
+    return '$name aus deinen gespeicherten Websites entfernen?';
+  }
+
+  @override
+  String get websitesOpenExternal => 'Im Browser öffnen';
+
+  @override
+  String get websitesLoadFailed => 'Diese Seite konnte nicht geladen werden';
 }

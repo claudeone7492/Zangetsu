@@ -7416,4 +7416,42 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get telegramVideoFallback => 'Telegramの動画';
+
+  @override
+  String get websites => 'ウェブサイト';
+
+  @override
+  String get websitesSubtitle => '保存したサイトはアプリ内ブラウザで開きます';
+
+  @override
+  String get websitesAdd => 'ウェブサイトを追加';
+
+  @override
+  String get websitesNameHint => '名前（任意）';
+
+  @override
+  String get websitesUrlHint => 'https://example.com';
+
+  @override
+  String get websitesEmpty => '保存されたウェブサイトはまだありません';
+
+  @override
+  String get websitesEmptyBody => 'アプリを離れずにここで開くサイトを追加します。';
+
+  @override
+  String get websitesInvalidUrl => '有効なURLを入力してください';
+
+  @override
+  String get websitesRemoveTitle => 'ウェブサイトを削除しますか？';
+
+  @override
+  String websitesRemoveBody(String name) {
+    return '$name を保存済みウェブサイトから削除しますか？';
+  }
+
+  @override
+  String get websitesOpenExternal => 'ブラウザで開く';
+
+  @override
+  String get websitesLoadFailed => 'このページを読み込めませんでした';
 }

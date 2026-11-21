@@ -3691,5 +3691,17 @@
   "telegramInvalidChannel": "这不是 Telegram 频道",
   "telegramFailed": "无法加载此频道",
   "telegramPrivateHint": "私密频道需要原生 Telegram 版本。",
-  "telegramVideoFallback": "Telegram 视频"
+  "telegramVideoFallback": "Telegram 视频",
+  "websites": "网站",
+  "websitesSubtitle": "已保存的网站会在应用内浏览器中打开",
+  "websitesAdd": "添加网站",
+  "websitesNameHint": "名称（可选）",
+  "websitesUrlHint": "https://example.com",
+  "websitesEmpty": "尚未保存网站",
+  "websitesEmptyBody": "添加网站即可在此打开，无需离开应用。",
+  "websitesInvalidUrl": "请输入有效的网址",
+  "websitesRemoveTitle": "移除网站？",
+  "websitesRemoveBody": "从已保存网站中移除 {name}？",
+  "websitesOpenExternal": "在浏览器中打开",
+  "websitesLoadFailed": "无法加载此页面"
 }

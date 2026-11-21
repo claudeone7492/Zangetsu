@@ -3730,5 +3730,17 @@
   "telegramInvalidChannel": "Bu bir Telegram kanalı değil",
   "telegramFailed": "Bu kanal yüklenemedi",
   "telegramPrivateHint": "Özel kanallar yerel Telegram sürümünü gerektirir.",
-  "telegramVideoFallback": "Telegram videosu"
+  "telegramVideoFallback": "Telegram videosu",
+  "websites": "Web siteleri",
+  "websitesSubtitle": "Kaydedilen siteler uygulama içi tarayıcıda açılır",
+  "websitesAdd": "Site ekle",
+  "websitesNameHint": "Ad (isteğe bağlı)",
+  "websitesUrlHint": "https://example.com",
+  "websitesEmpty": "Henüz kaydedilmiş site yok",
+  "websitesEmptyBody": "Uygulamadan çıkmadan burada açmak için bir site ekle.",
+  "websitesInvalidUrl": "Geçerli bir URL girin",
+  "websitesRemoveTitle": "Site kaldırılsın mı?",
+  "websitesRemoveBody": "{name} kaydedilen sitelerden kaldırılsın mı?",
+  "websitesOpenExternal": "Tarayıcıda aç",
+  "websitesLoadFailed": "Bu sayfa yüklenemedi"
 }

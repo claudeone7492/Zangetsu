@@ -13430,6 +13430,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Telegram video'**
   String get telegramVideoFallback;
+
+  /// No description provided for @websites.
+  ///
+  /// In en, this message translates to:
+  /// **'Websites'**
+  String get websites;
+
+  /// No description provided for @websitesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved sites open in the in-app browser'**
+  String get websitesSubtitle;
+
+  /// No description provided for @websitesAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add website'**
+  String get websitesAdd;
+
+  /// No description provided for @websitesNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (optional)'**
+  String get websitesNameHint;
+
+  /// No description provided for @websitesUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://example.com'**
+  String get websitesUrlHint;
+
+  /// No description provided for @websitesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No websites saved yet'**
+  String get websitesEmpty;
+
+  /// No description provided for @websitesEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a site to open it here, without leaving the app.'**
+  String get websitesEmptyBody;
+
+  /// No description provided for @websitesInvalidUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid URL'**
+  String get websitesInvalidUrl;
+
+  /// No description provided for @websitesRemoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove website?'**
+  String get websitesRemoveTitle;
+
+  /// Confirmation body; {name} is the saved site's name.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} from your saved sites?'**
+  String websitesRemoveBody(String name);
+
+  /// No description provided for @websitesOpenExternal.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in browser'**
+  String get websitesOpenExternal;
+
+  /// No description provided for @websitesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'This page could not be loaded'**
+  String get websitesLoadFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -3691,5 +3691,17 @@
   "telegramInvalidChannel": "Telegramチャンネルではありません",
   "telegramFailed": "このチャンネルを読み込めませんでした",
   "telegramPrivateHint": "非公開チャンネルにはネイティブ版Telegramが必要です。",
-  "telegramVideoFallback": "Telegramの動画"
+  "telegramVideoFallback": "Telegramの動画",
+  "websites": "ウェブサイト",
+  "websitesSubtitle": "保存したサイトはアプリ内ブラウザで開きます",
+  "websitesAdd": "ウェブサイトを追加",
+  "websitesNameHint": "名前（任意）",
+  "websitesUrlHint": "https://example.com",
+  "websitesEmpty": "保存されたウェブサイトはまだありません",
+  "websitesEmptyBody": "アプリを離れずにここで開くサイトを追加します。",
+  "websitesInvalidUrl": "有効なURLを入力してください",
+  "websitesRemoveTitle": "ウェブサイトを削除しますか？",
+  "websitesRemoveBody": "{name} を保存済みウェブサイトから削除しますか？",
+  "websitesOpenExternal": "ブラウザで開く",
+  "websitesLoadFailed": "このページを読み込めませんでした"
 }

@@ -282,6 +282,20 @@ const _strings = <String, String>{
   'telegramFailed': "Couldn't load this channel",
   'telegramPrivateHint': 'Private channels need the native Telegram build.',
   'telegramVideoFallback': 'Telegram video',
+  // websites surface
+  'websites': 'Websites',
+  'websitesSubtitle': 'Saved sites open in the in-app browser',
+  'websitesAdd': 'Add website',
+  'websitesNameHint': 'Name (optional)',
+  'websitesUrlHint': 'https://example.com',
+  'websitesEmpty': 'No websites saved yet',
+  'websitesEmptyBody':
+      'Add a site to open it here, without leaving the app.',
+  'websitesInvalidUrl': 'Enter a valid URL',
+  'websitesRemoveTitle': 'Remove website?',
+  'websitesRemoveBody': 'Remove {name} from your saved sites?',
+  'websitesOpenExternal': 'Open in browser',
+  'websitesLoadFailed': 'This page could not be loaded',
 };
 
 /// Words that are genuinely spelled the same in the target language, so the
@@ -289,6 +303,7 @@ const _strings = <String, String>{
 const _legitCognates = <String, Set<String>>{
   'de': {
     'adminTitle', // German UIs say "Admin", not "Administrator"
+    'websites', // German uses "Websites"
     'settingsGroupLayout', // "Layout" is the standard German UI word
     'profileBio', // "Bio" is the standard German abbreviation
   },
@@ -333,6 +348,7 @@ const _universalTokens = <String>{
   'settingsDebrid', // "Debrid" is the Real-Debrid brand, kept as-is everywhere
   'adminMrr', // MRR is a finance acronym, kept as-is everywhere
   'pairCodeExample', // A sample numeric code, not prose
+  'websitesUrlHint', // A URL example, identical in every language
 };
 
 /// Pulls one key's value out of a catalogue.
@@ -595,6 +611,19 @@ String _value(AppLocalizations l, String key) => switch (key) {
   'telegramFailed' => l.telegramFailed,
   'telegramPrivateHint' => l.telegramPrivateHint,
   'telegramVideoFallback' => l.telegramVideoFallback,
+
+  'websites' => l.websites,
+  'websitesSubtitle' => l.websitesSubtitle,
+  'websitesAdd' => l.websitesAdd,
+  'websitesNameHint' => l.websitesNameHint,
+  'websitesUrlHint' => l.websitesUrlHint,
+  'websitesEmpty' => l.websitesEmpty,
+  'websitesEmptyBody' => l.websitesEmptyBody,
+  'websitesInvalidUrl' => l.websitesInvalidUrl,
+  'websitesRemoveTitle' => l.websitesRemoveTitle,
+  'websitesRemoveBody' => l.websitesRemoveBody('X'),
+  'websitesOpenExternal' => l.websitesOpenExternal,
+  'websitesLoadFailed' => l.websitesLoadFailed,
   _ => throw ArgumentError('key $key is registered but not mapped in _value'),
 };
 

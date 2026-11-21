@@ -3692,5 +3692,17 @@
   "telegramInvalidChannel": "這不是 Telegram 頻道",
   "telegramFailed": "無法載入此頻道",
   "telegramPrivateHint": "私密頻道需要原生 Telegram 版本。",
-  "telegramVideoFallback": "Telegram 影片"
+  "telegramVideoFallback": "Telegram 影片",
+  "websites": "網站",
+  "websitesSubtitle": "已儲存的網站會在應用程式內瀏覽器中開啟",
+  "websitesAdd": "新增網站",
+  "websitesNameHint": "名稱（選填）",
+  "websitesUrlHint": "https://example.com",
+  "websitesEmpty": "尚未儲存網站",
+  "websitesEmptyBody": "新增網站即可在此開啟，無需離開應用程式。",
+  "websitesInvalidUrl": "請輸入有效的網址",
+  "websitesRemoveTitle": "移除網站？",
+  "websitesRemoveBody": "從已儲存網站中移除 {name}？",
+  "websitesOpenExternal": "在瀏覽器中開啟",
+  "websitesLoadFailed": "無法載入此頁面"
 }

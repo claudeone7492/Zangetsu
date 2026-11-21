@@ -3731,5 +3731,17 @@
   "telegramInvalidChannel": "Itu bukan kanal Telegram",
   "telegramFailed": "Gagal memuat kanal ini",
   "telegramPrivateHint": "Kanal privat memerlukan versi native Telegram.",
-  "telegramVideoFallback": "Video Telegram"
+  "telegramVideoFallback": "Video Telegram",
+  "websites": "Situs web",
+  "websitesSubtitle": "Situs tersimpan dibuka di browser dalam aplikasi",
+  "websitesAdd": "Tambah situs",
+  "websitesNameHint": "Nama (opsional)",
+  "websitesUrlHint": "https://example.com",
+  "websitesEmpty": "Belum ada situs tersimpan",
+  "websitesEmptyBody": "Tambahkan situs untuk membukanya di sini, tanpa keluar dari aplikasi.",
+  "websitesInvalidUrl": "Masukkan URL yang valid",
+  "websitesRemoveTitle": "Hapus situs?",
+  "websitesRemoveBody": "Hapus {name} dari situs tersimpan?",
+  "websitesOpenExternal": "Buka di browser",
+  "websitesLoadFailed": "Halaman ini tidak dapat dimuat"
 }

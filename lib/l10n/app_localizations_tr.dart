@@ -7645,4 +7645,44 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get telegramVideoFallback => 'Telegram videosu';
+
+  @override
+  String get websites => 'Web siteleri';
+
+  @override
+  String get websitesSubtitle =>
+      'Kaydedilen siteler uygulama içi tarayıcıda açılır';
+
+  @override
+  String get websitesAdd => 'Site ekle';
+
+  @override
+  String get websitesNameHint => 'Ad (isteğe bağlı)';
+
+  @override
+  String get websitesUrlHint => 'https://example.com';
+
+  @override
+  String get websitesEmpty => 'Henüz kaydedilmiş site yok';
+
+  @override
+  String get websitesEmptyBody =>
+      'Uygulamadan çıkmadan burada açmak için bir site ekle.';
+
+  @override
+  String get websitesInvalidUrl => 'Geçerli bir URL girin';
+
+  @override
+  String get websitesRemoveTitle => 'Site kaldırılsın mı?';
+
+  @override
+  String websitesRemoveBody(String name) {
+    return '$name kaydedilen sitelerden kaldırılsın mı?';
+  }
+
+  @override
+  String get websitesOpenExternal => 'Tarayıcıda aç';
+
+  @override
+  String get websitesLoadFailed => 'Bu sayfa yüklenemedi';
 }

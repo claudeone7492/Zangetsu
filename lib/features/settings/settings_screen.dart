@@ -23,6 +23,7 @@ import '../../core/tracker/simkl_service.dart';
 import '../../core/tracker/tracker.dart';
 import '../player/dub_sheet.dart' show showDubSheet;
 import '../telegram/telegram_screen.dart';
+import '../web/websites_screen.dart';
 import '../../core/dub/dub_engine.dart';
 import '../player/player_screen.dart' show openSubtitleStyleSheet;
 import '../player/shader_presets.dart';
@@ -999,6 +1000,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await _push(const SourcesScreen());
         if (mounted) setState(() {});
       },
+    ),
+    _SettingsEntry(
+      section: SettingsSection.sources,
+      icon: Icons.public_rounded,
+      title: l10n.websites,
+      subtitle: l10n.websitesSubtitle,
+      keywords: 'websites web browser sites saved bookmarks webview',
+      onTap: () => _push(const WebsitesScreen()),
     ),
     _SettingsEntry(
       section: SettingsSection.sources,

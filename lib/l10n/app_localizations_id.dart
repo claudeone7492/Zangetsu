@@ -7651,4 +7651,44 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get telegramVideoFallback => 'Video Telegram';
+
+  @override
+  String get websites => 'Situs web';
+
+  @override
+  String get websitesSubtitle =>
+      'Situs tersimpan dibuka di browser dalam aplikasi';
+
+  @override
+  String get websitesAdd => 'Tambah situs';
+
+  @override
+  String get websitesNameHint => 'Nama (opsional)';
+
+  @override
+  String get websitesUrlHint => 'https://example.com';
+
+  @override
+  String get websitesEmpty => 'Belum ada situs tersimpan';
+
+  @override
+  String get websitesEmptyBody =>
+      'Tambahkan situs untuk membukanya di sini, tanpa keluar dari aplikasi.';
+
+  @override
+  String get websitesInvalidUrl => 'Masukkan URL yang valid';
+
+  @override
+  String get websitesRemoveTitle => 'Hapus situs?';
+
+  @override
+  String websitesRemoveBody(String name) {
+    return 'Hapus $name dari situs tersimpan?';
+  }
+
+  @override
+  String get websitesOpenExternal => 'Buka di browser';
+
+  @override
+  String get websitesLoadFailed => 'Halaman ini tidak dapat dimuat';
 }
