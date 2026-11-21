@@ -132,6 +132,22 @@ Watch Together (built, owner-disabled).
 
 ---
 
+## Beyond the 32-row ledger — audit (2026-11-21)
+
+The ledger above is closed. These are the Hikari surfaces that do not have a
+row yet, checked against the tree at this commit:
+
+| Surface | Hikari | Status here | Why / next step |
+|---|---|---|---|
+| Trakt + Kitsu trackers | `tracker/TrackerApi.kt`, `TrackerSync.kt` | AniList, MyAnimeList, Simkl and MangaBaka only | Trakt needs a user-supplied API client ID (Hikari stores one per client) and a full `Tracker` implementation — device-code OAuth, refresh, history, `/sync/playback`, search — about the size of `simkl_service.dart`. Kitsu signs in with the account's own credentials. Recommend Trakt first; it needs a client ID before the connect flow can be verified. |
+| Repo-link intents | `deeplink/RepoLinkActivity.kt` — `http(s)://*.json`, `stremio:` | Add-repo screens take a pasted URL; no system chooser entry | Native manifest + translucent activity, so it cannot be built or verified in this sandbox. A Dart-only alternative is a `zangetsu://repo?url=…` host, which needs one manifest line and no new activity. |
+| Foreground work service | `work/BackgroundWork.kt`, `WorkService.kt` (wake lock, ongoing notification, 60-minute sweep) | Downloads/notifications use the Dart/WorkManager paths where available | Native Android service; unverifiable here. Only worth porting if downloads are seen dying when the app is backgrounded. |
+| l10n wiring | Hikari i18n | 12 catalogues, 2124 keys, exact set equality | `.agent_logs/remaining_l10n.txt` is stale — the admin and paywall rows now use `context.l10n`. A fresh scan still finds ~180 candidate literals, many of them data (URLs, brand names, ISO codes). Regenerate the inventory, then batch by screen with `l10n_add.py`. |
+
+None of these is a silently open ledger row: each has a reason and a next
+step. Trakt is the largest user-visible gap; the repo-link intent is the
+smallest.
+
 ## Priority & sequencing
 
 1. **A1 universal scrapers** ✅ *done* — pure Dart, no native, biggest reach, fits the
