@@ -70,11 +70,17 @@ class SubtitleCatSource {
     );
     if (searchBody == null) return const [];
 
+    final releases = parseReleases(searchBody).take(3).toList();
+    // The three release pages are independent; fetching them in parallel keeps
+    // a slow page from adding its full timeout to the search.
+    final pages = await Future.wait(
+      releases.map((release) => _get(resolveUrl(_base, release.href))),
+    );
     final out = <SubtitleCatHit>[];
-    for (final release in parseReleases(searchBody).take(3)) {
-      final page = await _get(resolveUrl(_base, release.href));
+    for (var i = 0; i < releases.length; i++) {
+      final page = pages[i];
       if (page == null) continue;
-      out.addAll(parseDownloads(page, release: release));
+      out.addAll(parseDownloads(page, release: releases[i]));
     }
 
     out.sort((a, b) => b.downloads.compareTo(a.downloads));
