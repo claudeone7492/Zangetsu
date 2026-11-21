@@ -286,6 +286,11 @@ final settingsLeaves = <SettingsLeaf>[
   ),
   SettingsLeaf(
     LeafParent.playback,
+    (l) => l.telegram,
+    keywords: 'telegram channels tg public streams video',
+  ),
+  SettingsLeaf(
+    LeafParent.playback,
     (l) => l.opensubtitlesAPIKey,
     keywords: 'subs download account opensubtitles',
   ),

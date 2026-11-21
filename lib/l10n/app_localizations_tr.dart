@@ -7619,4 +7619,30 @@ class AppLocalizationsTr extends AppLocalizations {
   String voiceCharacterLabel(int n) {
     return 'Karakter $n';
   }
+
+  @override
+  String get telegramSubtitle =>
+      'Herkese açık Telegram kanallarına göz atın. Giriş gerekmez.';
+
+  @override
+  String get telegramChannelHint => '@channel veya t.me/channel';
+
+  @override
+  String get telegramAddChannel => 'Ekle';
+
+  @override
+  String get telegramNoStreams => 'Bu sayfada video yok';
+
+  @override
+  String get telegramInvalidChannel => 'Bu bir Telegram kanalı değil';
+
+  @override
+  String get telegramFailed => 'Bu kanal yüklenemedi';
+
+  @override
+  String get telegramPrivateHint =>
+      'Özel kanallar yerel Telegram sürümünü gerektirir.';
+
+  @override
+  String get telegramVideoFallback => 'Telegram videosu';
 }

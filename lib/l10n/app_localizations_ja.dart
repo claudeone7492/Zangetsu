@@ -3989,7 +3989,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get github => 'GitHub';
 
   @override
-  String get telegram => '電報';
+  String get telegram => 'Telegram';
 
   @override
   String get accentColourBlurb => 'ボタン、チップ、進行状況、選択されたアイテム全体で使用されるハイライトカラー。';
@@ -7392,4 +7392,28 @@ class AppLocalizationsJa extends AppLocalizations {
   String voiceCharacterLabel(int n) {
     return 'キャラクター $n';
   }
+
+  @override
+  String get telegramSubtitle => '公開Telegramチャンネルを閲覧します。ログインは不要です。';
+
+  @override
+  String get telegramChannelHint => '@channel または t.me/channel';
+
+  @override
+  String get telegramAddChannel => '追加';
+
+  @override
+  String get telegramNoStreams => 'このページに動画はありません';
+
+  @override
+  String get telegramInvalidChannel => 'Telegramチャンネルではありません';
+
+  @override
+  String get telegramFailed => 'このチャンネルを読み込めませんでした';
+
+  @override
+  String get telegramPrivateHint => '非公開チャンネルにはネイティブ版Telegramが必要です。';
+
+  @override
+  String get telegramVideoFallback => 'Telegramの動画';
 }

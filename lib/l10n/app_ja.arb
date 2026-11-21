@@ -1690,7 +1690,7 @@
 	"disconnectDiscordBody": "Rich Presenceは停止し、このデバイスからトークンが削除されます。Discordアカウントは変更されません。いつでも再接続できます。",
 	"discordPresenceBlurb": "アプリを開いている間、Discordプロフィールに「視聴中： <title> • エピソードN」（および閲覧中のコンテンツ）を表示します。Discordのログイン情報を使用し、このデバイスにのみ保存されます。いつでもオフにできます。",
 	"github": "GitHub",
-	"telegram": "電報",
+	"telegram": "Telegram",
 	"accentColourBlurb": "ボタン、チップ、進行状況、選択されたアイテム全体で使用されるハイライトカラー。",
 	"appIconBlurb": "ホーム画面上のアイコンです。アイコンを変更するとZangetsuが閉じます。Androidがランチャーのエントリを切り替える必要があるためです。",
 	"useTheIcon": " {label} アイコンを使用しますか？",
@@ -3683,5 +3683,13 @@
   "voiceScanSubtitle": "誰が話しているかを検出し、キャラクターごとに声を割り当てます。",
   "voiceCharactersTitle": "キャラクターの声",
   "voiceCharactersSubtitle": "検出したキャラクターごとに別のインストール済み音声を使えます。ニューラル音声は話す言語に従います。",
-  "voiceCharacterLabel": "キャラクター {n}"
+  "voiceCharacterLabel": "キャラクター {n}",
+  "telegramSubtitle": "公開Telegramチャンネルを閲覧します。ログインは不要です。",
+  "telegramChannelHint": "@channel または t.me/channel",
+  "telegramAddChannel": "追加",
+  "telegramNoStreams": "このページに動画はありません",
+  "telegramInvalidChannel": "Telegramチャンネルではありません",
+  "telegramFailed": "このチャンネルを読み込めませんでした",
+  "telegramPrivateHint": "非公開チャンネルにはネイティブ版Telegramが必要です。",
+  "telegramVideoFallback": "Telegramの動画"
 }

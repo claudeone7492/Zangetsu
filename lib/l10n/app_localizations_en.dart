@@ -7590,4 +7590,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String voiceCharacterLabel(int n) {
     return 'Character $n';
   }
+
+  @override
+  String get telegramSubtitle =>
+      'Browse public Telegram channels. No login needed.';
+
+  @override
+  String get telegramChannelHint => '@channel or t.me/channel';
+
+  @override
+  String get telegramAddChannel => 'Add';
+
+  @override
+  String get telegramNoStreams => 'No videos on this page';
+
+  @override
+  String get telegramInvalidChannel => 'That is not a Telegram channel';
+
+  @override
+  String get telegramFailed => 'Couldn\'t load this channel';
+
+  @override
+  String get telegramPrivateHint =>
+      'Private channels need the native Telegram build.';
+
+  @override
+  String get telegramVideoFallback => 'Telegram video';
 }

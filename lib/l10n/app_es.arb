@@ -1690,7 +1690,7 @@
 	"disconnectDiscordBody": "Rich Presence se desactiva y tu token se elimina de este dispositivo. Tu cuenta de Discord no se modifica; puedes volver a conectarte cuando quieras.",
 	"discordPresenceBlurb": "Muestra \"Viendo <title> • Episodio N\" (y lo que estás viendo) en tu perfil de Discord mientras la aplicación está abierta. Usa tu contraseña de Discord, que se guarda solo en este dispositivo. Puedes desactivarlo cuando quieras.",
 	"github": "GitHub",
-	"telegram": "Telegrama",
+	"telegram": "Telegram",
 	"accentColourBlurb": "El color de resaltado utilizado en botones, chips, progreso y elementos seleccionados.",
 	"appIconBlurb": "El icono en tu pantalla de inicio. Zangetsu se cierra cuando lo cambias: Android tiene que cambiar la entrada del lanzador.",
 	"useTheIcon": "¿Usar el icono {label} ?",
@@ -3683,5 +3683,13 @@
   "voiceScanSubtitle": "Detecta quién habla para que cada personaje use su propia voz.",
   "voiceCharactersTitle": "Voces de personajes",
   "voiceCharactersSubtitle": "Cada personaje detectado puede usar una voz instalada distinta. Las voces neuronales siguen el idioma hablado.",
-  "voiceCharacterLabel": "Personaje {n}"
+  "voiceCharacterLabel": "Personaje {n}",
+  "telegramSubtitle": "Explora canales públicos de Telegram. No hace falta iniciar sesión.",
+  "telegramChannelHint": "@channel o t.me/channel",
+  "telegramAddChannel": "Añadir",
+  "telegramNoStreams": "No hay vídeos en esta página",
+  "telegramInvalidChannel": "Eso no es un canal de Telegram",
+  "telegramFailed": "No se pudo cargar este canal",
+  "telegramPrivateHint": "Los canales privados necesitan la versión nativa de Telegram.",
+  "telegramVideoFallback": "Vídeo de Telegram"
 }

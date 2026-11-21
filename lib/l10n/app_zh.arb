@@ -1690,7 +1690,7 @@
 	"disconnectDiscordBody": "Rich Presence 功能已停止，您的令牌已从此设备中移除。您的 Discord 帐户不会更改，您可以随时重新连接。",
 	"discordPresenceBlurb": "应用开启时，会在你的 Discord 个人资料页面显示“正在观看 <title> • 第 N 集”（以及你正在浏览的内容）。使用你的 Discord 登录信息，仅存储在此设备上。可随时关闭此功能。",
 	"github": "GitHub",
-	"telegram": "电报",
+	"telegram": "Telegram",
 	"accentColourBlurb": "用于按钮、芯片、进度和选定项目的突出显示颜色。",
 	"appIconBlurb": "主屏幕上的图标。更改图标时，Zangetsu 会关闭——Android 需要切换启动器条目。",
 	"useTheIcon": "使用 {label} 图标？",
@@ -3683,5 +3683,13 @@
   "voiceScanSubtitle": "识别谁在说话，让每个角色使用自己的声音。",
   "voiceCharactersTitle": "角色声音",
   "voiceCharactersSubtitle": "检测到的每个角色可以使用不同的已安装声音。神经声音则跟随朗读语言。",
-  "voiceCharacterLabel": "角色 {n}"
+  "voiceCharacterLabel": "角色 {n}",
+  "telegramSubtitle": "浏览公开的 Telegram 频道，无需登录。",
+  "telegramChannelHint": "@channel 或 t.me/channel",
+  "telegramAddChannel": "添加",
+  "telegramNoStreams": "此页面没有视频",
+  "telegramInvalidChannel": "这不是 Telegram 频道",
+  "telegramFailed": "无法加载此频道",
+  "telegramPrivateHint": "私密频道需要原生 Telegram 版本。",
+  "telegramVideoFallback": "Telegram 视频"
 }

@@ -3722,5 +3722,13 @@
   "voiceScanSubtitle": "Kimin konuştuğunu bul, böylece her karakter kendi sesini kullansın.",
   "voiceCharactersTitle": "Karakter sesleri",
   "voiceCharactersSubtitle": "Algılanan her karakter farklı bir yüklü ses kullanabilir. Sinirsel sesler bunun yerine konuşulan dili izler.",
-  "voiceCharacterLabel": "Karakter {n}"
+  "voiceCharacterLabel": "Karakter {n}",
+  "telegramSubtitle": "Herkese açık Telegram kanallarına göz atın. Giriş gerekmez.",
+  "telegramChannelHint": "@channel veya t.me/channel",
+  "telegramAddChannel": "Ekle",
+  "telegramNoStreams": "Bu sayfada video yok",
+  "telegramInvalidChannel": "Bu bir Telegram kanalı değil",
+  "telegramFailed": "Bu kanal yüklenemedi",
+  "telegramPrivateHint": "Özel kanallar yerel Telegram sürümünü gerektirir.",
+  "telegramVideoFallback": "Telegram videosu"
 }

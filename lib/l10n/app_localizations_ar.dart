@@ -4127,7 +4127,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get github => 'GitHub';
 
   @override
-  String get telegram => 'Telegram';
+  String get telegram => 'تيليجرام';
 
   @override
   String get accentColourBlurb =>
@@ -7656,4 +7656,30 @@ class AppLocalizationsAr extends AppLocalizations {
   String voiceCharacterLabel(int n) {
     return 'الشخصية $n';
   }
+
+  @override
+  String get telegramSubtitle =>
+      'تصفح قنوات تيليجرام العامة. لا حاجة لتسجيل الدخول.';
+
+  @override
+  String get telegramChannelHint => '@channel أو t.me/channel';
+
+  @override
+  String get telegramAddChannel => 'إضافة';
+
+  @override
+  String get telegramNoStreams => 'لا توجد فيديوهات في هذه الصفحة';
+
+  @override
+  String get telegramInvalidChannel => 'هذه ليست قناة تيليجرام';
+
+  @override
+  String get telegramFailed => 'تعذّر تحميل هذه القناة';
+
+  @override
+  String get telegramPrivateHint =>
+      'القنوات الخاصة تحتاج إلى نسخة تيليجرام الأصلية.';
+
+  @override
+  String get telegramVideoFallback => 'فيديو تيليجرام';
 }

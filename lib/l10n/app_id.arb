@@ -3723,5 +3723,13 @@
   "voiceScanSubtitle": "Temukan siapa yang berbicara agar setiap karakter memakai suaranya sendiri.",
   "voiceCharactersTitle": "Suara karakter",
   "voiceCharactersSubtitle": "Setiap karakter yang terdeteksi dapat memakai suara terpasang yang berbeda. Suara neural mengikuti bahasa lisan.",
-  "voiceCharacterLabel": "Karakter {n}"
+  "voiceCharacterLabel": "Karakter {n}",
+  "telegramSubtitle": "Jelajahi kanal Telegram publik. Tanpa perlu masuk.",
+  "telegramChannelHint": "@channel atau t.me/channel",
+  "telegramAddChannel": "Tambah",
+  "telegramNoStreams": "Tidak ada video di halaman ini",
+  "telegramInvalidChannel": "Itu bukan kanal Telegram",
+  "telegramFailed": "Gagal memuat kanal ini",
+  "telegramPrivateHint": "Kanal privat memerlukan versi native Telegram.",
+  "telegramVideoFallback": "Video Telegram"
 }

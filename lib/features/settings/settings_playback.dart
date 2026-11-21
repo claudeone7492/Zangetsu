@@ -1140,6 +1140,16 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
                 onTap: _openDubSettings,
               ),
               SettingsTile(
+                icon: Icons.send_rounded,
+                title: context.l10n.telegram,
+                subtitle: context.l10n.telegramSubtitle,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const TelegramScreen(),
+                  ),
+                ),
+              ),
+              SettingsTile(
                 icon: Icons.vpn_key_outlined,
                 title: context.l10n.opensubtitlesAPIKey,
                 subtitle: _prefs.subtitleApiKey.trim().isEmpty

@@ -7625,4 +7625,30 @@ class AppLocalizationsId extends AppLocalizations {
   String voiceCharacterLabel(int n) {
     return 'Karakter $n';
   }
+
+  @override
+  String get telegramSubtitle =>
+      'Jelajahi kanal Telegram publik. Tanpa perlu masuk.';
+
+  @override
+  String get telegramChannelHint => '@channel atau t.me/channel';
+
+  @override
+  String get telegramAddChannel => 'Tambah';
+
+  @override
+  String get telegramNoStreams => 'Tidak ada video di halaman ini';
+
+  @override
+  String get telegramInvalidChannel => 'Itu bukan kanal Telegram';
+
+  @override
+  String get telegramFailed => 'Gagal memuat kanal ini';
+
+  @override
+  String get telegramPrivateHint =>
+      'Kanal privat memerlukan versi native Telegram.';
+
+  @override
+  String get telegramVideoFallback => 'Video Telegram';
 }

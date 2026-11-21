@@ -3723,5 +3723,13 @@
   "voiceScanSubtitle": "Deteta quem fala para que cada personagem use a própria voz.",
   "voiceCharactersTitle": "Vozes das personagens",
   "voiceCharactersSubtitle": "Cada personagem detetada pode usar uma voz instalada diferente. As vozes neurais seguem antes o idioma falado.",
-  "voiceCharacterLabel": "Personagem {n}"
+  "voiceCharacterLabel": "Personagem {n}",
+  "telegramSubtitle": "Explore canais públicos do Telegram. Não precisa de login.",
+  "telegramChannelHint": "@channel ou t.me/channel",
+  "telegramAddChannel": "Adicionar",
+  "telegramNoStreams": "Nenhum vídeo nesta página",
+  "telegramInvalidChannel": "Isso não é um canal do Telegram",
+  "telegramFailed": "Não foi possível carregar este canal",
+  "telegramPrivateHint": "Canais privados exigem a versão nativa do Telegram.",
+  "telegramVideoFallback": "Vídeo do Telegram"
 }

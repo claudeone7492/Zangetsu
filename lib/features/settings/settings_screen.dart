@@ -22,6 +22,7 @@ import '../../core/tracker/mangabaka_service.dart';
 import '../../core/tracker/simkl_service.dart';
 import '../../core/tracker/tracker.dart';
 import '../player/dub_sheet.dart' show showDubSheet;
+import '../telegram/telegram_screen.dart';
 import '../../core/dub/dub_engine.dart';
 import '../player/player_screen.dart' show openSubtitleStyleSheet;
 import '../player/shader_presets.dart';

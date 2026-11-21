@@ -6,6 +6,7 @@ import UIKit
   private var mangayomiCloudflareBridge: MangayomiCloudflareBridge?
   private var phoneVoiceSearchBridge: PhoneVoiceSearchBridge?
   private var dubTtsBridge: DubTtsBridge?
+  private var telegramBridge: TelegramBridge?
 
   override func application(
     _ application: UIApplication,
@@ -28,6 +29,22 @@ import UIKit
       )
       let bridge = DubTtsBridge()
       dubTtsBridge = bridge
+      channel.setMethodCallHandler { [weak bridge] call, result in
+        guard let bridge else {
+          result(FlutterMethodNotImplemented)
+          return
+        }
+        bridge.handle(call, result: result)
+      }
+    }
+
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "TelegramBridge") {
+      let channel = FlutterMethodChannel(
+        name: "zangetsu/telegram",
+        binaryMessenger: registrar.messenger()
+      )
+      let bridge = TelegramBridge()
+      telegramBridge = bridge
       channel.setMethodCallHandler { [weak bridge] call, result in
         guard let bridge else {
           result(FlutterMethodNotImplemented)

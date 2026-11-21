@@ -359,6 +359,7 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
     private var pendingVoiceResult: MethodChannel.Result? = null
     private var phoneVoiceSearch: PhoneVoiceSearchBridge? = null
     private var dubTts: DubTtsBridge? = null
+    private var telegram: TelegramBridge? = null
 
     // Cached retriever so rapid scrubbing on one title doesn't re-open the
     // source for every frame (setDataSource is expensive, esp. over network).
@@ -758,6 +759,11 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
         // AI Dub narration. Re-created with the engine like the bridge above.
         dubTts?.dispose()
         dubTts = DubTtsBridge(this, flutterEngine.dartExecutor.binaryMessenger)
+
+        // Telegram streaming seam. Public channels use the Dart web preview;
+        // this is where a TDLib client will be attached.
+        telegram?.dispose()
+        telegram = TelegramBridge(flutterEngine.dartExecutor.binaryMessenger)
 
         // Voice search (TV): open the system speech dialog and hand the
         // recognised phrase back to Dart. Uses ACTION_RECOGNIZE_SPEECH so no
@@ -2060,6 +2066,8 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
         phoneVoiceSearch?.dispose()
         dubTts?.dispose()
         dubTts = null
+        telegram?.dispose()
+        telegram = null
         phoneVoiceSearch = null
         pip.unregister()
         releaseRetriever()

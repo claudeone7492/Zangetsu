@@ -1763,7 +1763,7 @@
 	"disconnectDiscordBody": "يتوقف الحضور الغني ويُزال رمزك من هذا الجهاز. ولن يتغيّر حسابك في Discord — ويمكنك إعادة الاتصال في أي وقت.",
 	"discordPresenceBlurb": "يعرض «تشاهد <title> • الحلقة N» (وما تتصفّحه) في ملف Discord الخاص بك أثناء فتح التطبيق. ويستخدم تسجيل دخول Discord، ويُخزَّن على هذا الجهاز فقط. ويمكنك إيقافه في أي وقت.",
 	"github": "GitHub",
-	"telegram": "Telegram",
+	"telegram": "تيليجرام",
 	"accentColourBlurb": "لون التمييز المستخدم في الأزرار والرقائق وأشرطة التقدّم والعناصر المحدّدة.",
 	"appIconBlurb": "الأيقونة على شاشتك الرئيسية. يُغلق Zangetsu عند تغييرها — لأن Android يحتاج إلى تبديل مُشغّل التطبيقات.",
 	"useTheIcon": "استخدام أيقونة {label}؟",
@@ -3723,5 +3723,13 @@
   "voiceScanSubtitle": "اكتشف من يتحدث ليستخدم كل شخصية صوته الخاص.",
   "voiceCharactersTitle": "أصوات الشخصيات",
   "voiceCharactersSubtitle": "يمكن لكل شخصية مكتشفة استخدام صوت مثبّت مختلف. أما الأصوات العصبية فتتبع لغة النطق بدلاً من ذلك.",
-  "voiceCharacterLabel": "الشخصية {n}"
+  "voiceCharacterLabel": "الشخصية {n}",
+  "telegramSubtitle": "تصفح قنوات تيليجرام العامة. لا حاجة لتسجيل الدخول.",
+  "telegramChannelHint": "@channel أو t.me/channel",
+  "telegramAddChannel": "إضافة",
+  "telegramNoStreams": "لا توجد فيديوهات في هذه الصفحة",
+  "telegramInvalidChannel": "هذه ليست قناة تيليجرام",
+  "telegramFailed": "تعذّر تحميل هذه القناة",
+  "telegramPrivateHint": "القنوات الخاصة تحتاج إلى نسخة تيليجرام الأصلية.",
+  "telegramVideoFallback": "فيديو تيليجرام"
 }

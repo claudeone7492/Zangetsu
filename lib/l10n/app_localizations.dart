@@ -13382,6 +13382,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Character {n}'**
   String voiceCharacterLabel(int n);
+
+  /// No description provided for @telegramSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse public Telegram channels. No login needed.'**
+  String get telegramSubtitle;
+
+  /// No description provided for @telegramChannelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'@channel or t.me/channel'**
+  String get telegramChannelHint;
+
+  /// No description provided for @telegramAddChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get telegramAddChannel;
+
+  /// No description provided for @telegramNoStreams.
+  ///
+  /// In en, this message translates to:
+  /// **'No videos on this page'**
+  String get telegramNoStreams;
+
+  /// No description provided for @telegramInvalidChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'That is not a Telegram channel'**
+  String get telegramInvalidChannel;
+
+  /// No description provided for @telegramFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load this channel'**
+  String get telegramFailed;
+
+  /// No description provided for @telegramPrivateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Private channels need the native Telegram build.'**
+  String get telegramPrivateHint;
+
+  /// No description provided for @telegramVideoFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Telegram video'**
+  String get telegramVideoFallback;
 }
 
 class _AppLocalizationsDelegate

@@ -3962,7 +3962,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get github => 'GitHub';
 
   @override
-  String get telegram => '电报';
+  String get telegram => 'Telegram';
 
   @override
   String get accentColourBlurb => '用于按钮、芯片、进度和选定项目的突出显示颜色。';
@@ -7334,6 +7334,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String voiceCharacterLabel(int n) {
     return '角色 $n';
   }
+
+  @override
+  String get telegramSubtitle => '浏览公开的 Telegram 频道，无需登录。';
+
+  @override
+  String get telegramChannelHint => '@channel 或 t.me/channel';
+
+  @override
+  String get telegramAddChannel => '添加';
+
+  @override
+  String get telegramNoStreams => '此页面没有视频';
+
+  @override
+  String get telegramInvalidChannel => '这不是 Telegram 频道';
+
+  @override
+  String get telegramFailed => '无法加载此频道';
+
+  @override
+  String get telegramPrivateHint => '私密频道需要原生 Telegram 版本。';
+
+  @override
+  String get telegramVideoFallback => 'Telegram 视频';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -11294,7 +11318,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get github => 'GitHub';
 
   @override
-  String get telegram => '電報';
+  String get telegram => 'Telegram';
 
   @override
   String get accentColourBlurb => '用於按鈕、晶片、進度和選定項目的突出顯示顏色。';
@@ -14666,4 +14690,28 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String voiceCharacterLabel(int n) {
     return '角色 $n';
   }
+
+  @override
+  String get telegramSubtitle => '瀏覽公開的 Telegram 頻道，無需登入。';
+
+  @override
+  String get telegramChannelHint => '@channel 或 t.me/channel';
+
+  @override
+  String get telegramAddChannel => '新增';
+
+  @override
+  String get telegramNoStreams => '此頁面沒有影片';
+
+  @override
+  String get telegramInvalidChannel => '這不是 Telegram 頻道';
+
+  @override
+  String get telegramFailed => '無法載入此頻道';
+
+  @override
+  String get telegramPrivateHint => '私密頻道需要原生 Telegram 版本。';
+
+  @override
+  String get telegramVideoFallback => 'Telegram 影片';
 }

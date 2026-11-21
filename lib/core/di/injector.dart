@@ -35,6 +35,8 @@ import '../playback/my_list.dart';
 import '../dub/dub_engine.dart';
 import '../dub/dub_prefs.dart';
 import '../dub/switching_dub_engine.dart';
+import '../telegram/telegram_prefs.dart';
+import '../telegram/telegram_service.dart';
 import '../playback/playback_prefs.dart';
 import '../playback/pinned_sources.dart';
 import '../playback/search_history.dart';
@@ -537,6 +539,9 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   sl.registerSingleton<DubEngine>(
     SwitchingDubEngine(prefs: dubPrefs),
   );
+  final telegramPrefs = await TelegramPrefs.open();
+  sl.registerSingleton<TelegramPrefs>(telegramPrefs);
+  sl.registerLazySingleton<TelegramService>(TelegramService.new);
   sl.registerLazySingleton<MpvPlayerPool>(
     MpvPlayerPool.new,
     dispose: (pool) => pool.clear(),

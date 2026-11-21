@@ -4126,7 +4126,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get github => 'GitHub';
 
   @override
-  String get telegram => 'Telegramm';
+  String get telegram => 'Telegram';
 
   @override
   String get accentColourBlurb =>
@@ -7677,4 +7677,30 @@ class AppLocalizationsDe extends AppLocalizations {
   String voiceCharacterLabel(int n) {
     return 'Figur $n';
   }
+
+  @override
+  String get telegramSubtitle =>
+      'Öffentliche Telegram-Kanäle durchsuchen. Keine Anmeldung nötig.';
+
+  @override
+  String get telegramChannelHint => '@channel oder t.me/channel';
+
+  @override
+  String get telegramAddChannel => 'Hinzufügen';
+
+  @override
+  String get telegramNoStreams => 'Keine Videos auf dieser Seite';
+
+  @override
+  String get telegramInvalidChannel => 'Das ist kein Telegram-Kanal';
+
+  @override
+  String get telegramFailed => 'Dieser Kanal konnte nicht geladen werden';
+
+  @override
+  String get telegramPrivateHint =>
+      'Private Kanäle brauchen die native Telegram-Version.';
+
+  @override
+  String get telegramVideoFallback => 'Telegram-Video';
 }

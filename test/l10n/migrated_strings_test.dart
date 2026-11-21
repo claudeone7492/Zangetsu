@@ -273,6 +273,15 @@ const _strings = <String, String>{
   'voiceCharactersTitle': 'Character voices',
   'voiceCharactersSubtitle': 'Each detected character can use a different installed voice. Neural voices follow the spoken language instead.',
   'voiceCharacterLabel': 'Character {n}',
+  // telegram surface
+  'telegramSubtitle': 'Browse public Telegram channels. No login needed.',
+  'telegramChannelHint': '@channel or t.me/channel',
+  'telegramAddChannel': 'Add',
+  'telegramNoStreams': 'No videos on this page',
+  'telegramInvalidChannel': 'That is not a Telegram channel',
+  'telegramFailed': "Couldn't load this channel",
+  'telegramPrivateHint': 'Private channels need the native Telegram build.',
+  'telegramVideoFallback': 'Telegram video',
 };
 
 /// Words that are genuinely spelled the same in the target language, so the
@@ -577,6 +586,15 @@ String _value(AppLocalizations l, String key) => switch (key) {
   'voiceCharactersTitle' => l.voiceCharactersTitle,
   'voiceCharactersSubtitle' => l.voiceCharactersSubtitle,
   'voiceCharacterLabel' => l.voiceCharacterLabel(1),
+
+  'telegramSubtitle' => l.telegramSubtitle,
+  'telegramChannelHint' => l.telegramChannelHint,
+  'telegramAddChannel' => l.telegramAddChannel,
+  'telegramNoStreams' => l.telegramNoStreams,
+  'telegramInvalidChannel' => l.telegramInvalidChannel,
+  'telegramFailed' => l.telegramFailed,
+  'telegramPrivateHint' => l.telegramPrivateHint,
+  'telegramVideoFallback' => l.telegramVideoFallback,
   _ => throw ArgumentError('key $key is registered but not mapped in _value'),
 };
 
