@@ -761,31 +761,29 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
 
   Widget _buildShellHome() {
     final onboarded = _onboardedOverride ?? isOnboarded();
-    return onboarded
-        ? _gatedShell()
-        : OnboardingScreen(
-            onDone: () {
-              setState(() => _onboardedOverride = true);
-              if (isAppleTv) {
-                // The Navigator retains its initial _TvBootGate route. Its
-                // boolean is already true, so parent setState alone cannot
-                // replace the Onboarding child; notify the mounted gate again.
-                _tvShellGate
-                  ..value = false
-                  ..value = true;
-              } else {
-                _swapToShell();
-              }
-            },
-          );
+    // The gate wraps onboarding as well as the shell, so the subscription card
+    // is the first thing after the splash: an unentitled device reaches
+    // neither the profile picker, Home nor the onboarding flow behind it.
+    return SubscriptionGate(
+      child: onboarded
+          ? ProfileLaunchGate(child: RootShell())
+          : OnboardingScreen(
+              onDone: () {
+                setState(() => _onboardedOverride = true);
+                if (isAppleTv) {
+                  // The Navigator retains its initial _TvBootGate route. Its
+                  // boolean is already true, so parent setState alone cannot
+                  // replace the Onboarding child; notify the mounted gate again.
+                  _tvShellGate
+                    ..value = false
+                    ..value = true;
+                } else {
+                  _swapToShell();
+                }
+              },
+            ),
+    );
   }
-
-  /// The shell wrapped in the subscription gate, so the profile picker and
-  /// Home stay hidden until this device is entitled. Placed here (not inside
-  /// RootShell) so nothing behind the paywall — profiles included — builds
-  /// before payment or a promo is verified.
-  Widget _gatedShell() =>
-      SubscriptionGate(child: ProfileLaunchGate(child: RootShell()));
 
   /// Swaps the current route for the shell with NO transition.
   ///
@@ -798,7 +796,7 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
   void _swapToShell() {
     rootNavigatorKey.currentState?.pushReplacement(
       PageRouteBuilder<void>(
-        pageBuilder: (_, _, _) => _gatedShell(),
+        pageBuilder: (_, _, _) => _buildShellHome(),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
       ),

@@ -84,6 +84,61 @@ void main() {
     expect(find.text('HOME'), findsNothing);
     expect(find.text(kPremiumPlanLabel), findsOneWidget);
   });
+
+  testWidgets('the card comes up before onboarding, not after it', (t) async {
+    final api = FakeSubscriptionApi(
+      plansResult: samplePlans(),
+      identityResult: const DeviceIdentity(
+        sessionId: 's1',
+        isNew: true,
+        trialUsed: false,
+        showPaywall: true,
+        trialAvailable: true,
+      ),
+    );
+    sl.registerLazySingleton<SubscriptionApi>(() => api);
+
+    // The gate wraps onboarding too, so the card is the first thing after the
+    // splash on a device that has never paid.
+    await t.pumpWidget(
+      MaterialApp(
+        home: SubscriptionGate(
+          api: api,
+          child: const Scaffold(body: Text('ONBOARDING')),
+        ),
+      ),
+    );
+    await settle(t);
+
+    expect(find.text('ONBOARDING'), findsNothing);
+    expect(find.text(kPremiumPlanLabel), findsOneWidget);
+  });
+
+  testWidgets('a subscription found in the database lets a reinstall in', (
+    t,
+  ) async {
+    // What `identify_device` returns for a device whose row already exists —
+    // the reinstall case, once the fingerprint survives the uninstall.
+    final api = FakeSubscriptionApi(
+      plansResult: samplePlans(),
+      identityResult: const DeviceIdentity(
+        sessionId: 's1',
+        isNew: false,
+        trialUsed: true,
+        planKey: 'stream_standard',
+        status: 'active',
+        entitled: true,
+        showPaywall: false,
+        daysLeft: 14,
+      ),
+    );
+
+    await t.pumpWidget(host(api));
+    await settle(t);
+
+    expect(find.text('HOME'), findsOneWidget);
+    expect(find.text(kPremiumPlanLabel), findsNothing);
+  });
 }
 
 /// An api whose [identify] always fails, standing in for an offline device.

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/di/injector.dart';
+import '../../core/logging/app_logger.dart';
 import '../../core/subscription/subscription_repository.dart';
 import 'paywall_screen.dart';
 
@@ -21,8 +22,22 @@ Future<bool> deviceEntitled({SubscriptionApi? api}) async {
 
   try {
     final identity = await repo.identify();
-    if (identity == null) return true;
-    return identity.entitled || !identity.showPaywall;
+    if (identity == null) {
+      // No verdict: the device is offline, or the RPC failed (logged by the
+      // repository). Allowing access is deliberate — a paying viewer must not
+      // be locked out by a network blip.
+      AppLogger.instance.log('[paywall] no server verdict — allowing access');
+      return true;
+    }
+    final allowed = identity.entitled || !identity.showPaywall;
+    if (!allowed) {
+      AppLogger.instance.log(
+        '[paywall] device not entitled (status=${identity.status}, '
+        'trial_used=${identity.trialUsed}, plan=${identity.planKey ?? "-"}) '
+        '— showing the subscription card',
+      );
+    }
+    return allowed;
   } catch (_) {
     return true;
   }

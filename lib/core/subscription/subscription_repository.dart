@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../device/device_fingerprint.dart';
+import '../logging/app_logger.dart';
 import 'subscription_models.dart';
 
 /// The subscription surface the UI depends on. An interface so the cubits can
@@ -64,9 +65,12 @@ class SubscriptionRepository implements SubscriptionApi {
     try {
       final data = await _client.rpc(fn, params: params);
       return parse(data);
-    } catch (_) {
-      // Offline, not signed in, or the function errored: callers treat null as
-      // "unknown" and stay on the cached/local state rather than blocking.
+    } catch (e) {
+      // Offline or the function errored: callers treat null as "unknown" and
+      // stay on the cached/local state rather than blocking. Logged because a
+      // silent null here is what made a missing paywall impossible to diagnose
+      // from the field — the gate fails open on it.
+      AppLogger.instance.log('[subscription] $fn failed: $e', level: 'E');
       return null;
     }
   }
@@ -106,6 +110,11 @@ class SubscriptionRepository implements SubscriptionApi {
   }
 
   /// Upserts this device and returns its identity + subscription. Call on boot.
+  ///
+  /// Bounded: the launch gate awaits this before it can decide whether to show
+  /// the card, so a hung connection would otherwise hold the app on a spinner
+  /// with no way out. A timeout reads as "no verdict", which the gate treats as
+  /// fail-open.
   @override
   Future<DeviceIdentity?> identify() async {
     await DeviceFingerprint.warmSignals();
@@ -117,7 +126,7 @@ class SubscriptionRepository implements SubscriptionApi {
     }, (d) {
       final rows = _rows(d);
       return rows.isEmpty ? null : DeviceIdentity.fromMap(rows.first);
-    });
+    }).timeout(const Duration(seconds: 8), onTimeout: () => null);
   }
 
   /// Resolves a typed code. Returns null when unknown/inactive/expired.
