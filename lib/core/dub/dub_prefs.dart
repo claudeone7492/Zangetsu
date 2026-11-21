@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
 import '../hive/safe_box.dart';
+import 'voice_scan.dart';
 
 /// Settings for AI Dub — reading the current subtitle cue aloud.
 ///
@@ -164,6 +167,123 @@ class DubPrefs extends ChangeNotifier {
 
   /// Whether a transcription can be attempted.
   bool get canTranscribe => transcriptionKey.isNotEmpty;
+
+  // ── Voice scan (D3) ───────────────────────────────────────────────────────
+  //
+  // Speaker detection uses the same hosted, user-supplied endpoint as D4. The
+  // result is stored so the narrator can give each speaker its own voice
+  // without re-scanning on every launch.
+
+  static const String defaultVoiceScanModel = 'gpt-4o-transcribe-diarize';
+
+  String get voiceScanEndpoint {
+    final value = _box.get('voiceScanEndpoint');
+    return value is String && value.trim().isNotEmpty
+        ? value.trim()
+        : defaultTranscriptionEndpoint;
+  }
+
+  Future<void> setVoiceScanEndpoint(String value) async {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      await _box.delete('voiceScanEndpoint');
+    } else {
+      await _box.put('voiceScanEndpoint', trimmed);
+    }
+    notifyListeners();
+  }
+
+  String get voiceScanKey =>
+      (_box.get('voiceScanKey', defaultValue: '') as String).trim();
+
+  Future<void> setVoiceScanKey(String value) async {
+    await _box.put('voiceScanKey', value.trim());
+    notifyListeners();
+  }
+
+  String get voiceScanModel {
+    final value = _box.get('voiceScanModel');
+    return value is String && value.trim().isNotEmpty
+        ? value.trim()
+        : defaultVoiceScanModel;
+  }
+
+  Future<void> setVoiceScanModel(String value) async {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      await _box.delete('voiceScanModel');
+    } else {
+      await _box.put('voiceScanModel', trimmed);
+    }
+    notifyListeners();
+  }
+
+  /// Whether a voice scan can be attempted.
+  bool get canScanVoices => voiceScanKey.isNotEmpty;
+
+  VoiceScanResult? _voiceScanCache;
+
+  /// The last scan, or an empty result. Parsed once and cached, because the
+  /// narrator reads this for every cue.
+  VoiceScanResult get voiceScan {
+    final cached = _voiceScanCache;
+    if (cached != null) return cached;
+    final raw = _box.get('voiceScan');
+    var parsed = VoiceScanResult.empty;
+    if (raw is String && raw.isNotEmpty) {
+      try {
+        parsed = VoiceScanResult.fromJson(jsonDecode(raw));
+      } on FormatException {
+        parsed = VoiceScanResult.empty;
+      }
+    }
+    return _voiceScanCache = parsed;
+  }
+
+  Future<void> setVoiceScan(VoiceScanResult result) async {
+    _voiceScanCache = result;
+    await _box.put('voiceScan', jsonEncode(result.toJson()));
+    notifyListeners();
+  }
+
+  Future<void> clearVoiceScan() async {
+    _voiceScanCache = VoiceScanResult.empty;
+    await _box.delete('voiceScan');
+    await _box.delete('speakerVoices');
+    notifyListeners();
+  }
+
+  /// Voice names chosen for each detected speaker, keyed by the speaker label
+  /// from [voiceScan]. Empty means every speaker uses [voice].
+  Map<String, String> get speakerVoices {
+    final raw = _box.get('speakerVoices');
+    if (raw is! String || raw.isEmpty) return const {};
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) return const {};
+      return {
+        for (final entry in decoded.entries)
+          if (entry.value is String) '${entry.key}': entry.value as String,
+      };
+    } on FormatException {
+      return const {};
+    }
+  }
+
+  Future<void> setSpeakerVoice(String speaker, String? voice) async {
+    final next = Map<String, String>.from(speakerVoices);
+    if (voice == null || voice.isEmpty) {
+      next.remove(speaker);
+    } else {
+      next[speaker] = voice;
+    }
+    await _box.put('speakerVoices', jsonEncode(next));
+    notifyListeners();
+  }
+
+  /// The voice to use for [speaker], or null to fall back to [voice].
+  String? voiceForSpeaker(String? speaker) =>
+      speaker == null ? null : speakerVoices[speaker];
 
   // ── Voice engine (D2) ─────────────────────────────────────────────────────
   //

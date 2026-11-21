@@ -13352,6 +13352,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stop'**
   String get stop;
+
+  /// No description provided for @voiceScanAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan voices'**
+  String get voiceScanAction;
+
+  /// No description provided for @voiceScanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find who is talking so each character can use its own voice.'**
+  String get voiceScanSubtitle;
+
+  /// No description provided for @voiceCharactersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Character voices'**
+  String get voiceCharactersTitle;
+
+  /// No description provided for @voiceCharactersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Each detected character can use a different installed voice. Neural voices follow the spoken language instead.'**
+  String get voiceCharactersSubtitle;
+
+  /// voiceCharacterLabel
+  ///
+  /// In en, this message translates to:
+  /// **'Character {n}'**
+  String voiceCharacterLabel(int n);
 }
 
 class _AppLocalizationsDelegate

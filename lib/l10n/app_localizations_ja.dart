@@ -7374,4 +7374,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get stop => '停止';
+
+  @override
+  String get voiceScanAction => '音声をスキャン';
+
+  @override
+  String get voiceScanSubtitle => '誰が話しているかを検出し、キャラクターごとに声を割り当てます。';
+
+  @override
+  String get voiceCharactersTitle => 'キャラクターの声';
+
+  @override
+  String get voiceCharactersSubtitle =>
+      '検出したキャラクターごとに別のインストール済み音声を使えます。ニューラル音声は話す言語に従います。';
+
+  @override
+  String voiceCharacterLabel(int n) {
+    return 'キャラクター $n';
+  }
 }

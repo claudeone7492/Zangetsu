@@ -7606,4 +7606,23 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get stop => 'Hentikan';
+
+  @override
+  String get voiceScanAction => 'Pindai suara';
+
+  @override
+  String get voiceScanSubtitle =>
+      'Temukan siapa yang berbicara agar setiap karakter memakai suaranya sendiri.';
+
+  @override
+  String get voiceCharactersTitle => 'Suara karakter';
+
+  @override
+  String get voiceCharactersSubtitle =>
+      'Setiap karakter yang terdeteksi dapat memakai suara terpasang yang berbeda. Suara neural mengikuti bahasa lisan.';
+
+  @override
+  String voiceCharacterLabel(int n) {
+    return 'Karakter $n';
+  }
 }

@@ -7600,4 +7600,23 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get stop => 'Durdur';
+
+  @override
+  String get voiceScanAction => 'Sesleri tara';
+
+  @override
+  String get voiceScanSubtitle =>
+      'Kimin konuştuğunu bul, böylece her karakter kendi sesini kullansın.';
+
+  @override
+  String get voiceCharactersTitle => 'Karakter sesleri';
+
+  @override
+  String get voiceCharactersSubtitle =>
+      'Algılanan her karakter farklı bir yüklü ses kullanabilir. Sinirsel sesler bunun yerine konuşulan dili izler.';
+
+  @override
+  String voiceCharacterLabel(int n) {
+    return 'Karakter $n';
+  }
 }

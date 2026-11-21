@@ -3678,5 +3678,10 @@
   "dubAsWritten": "Wie geschrieben",
   "dubReadAloudSubtitle": "Die Untertitelzeile vorlesen",
   "playerProvider": "Anbieter",
-  "stop": "Stopp"
+  "stop": "Stopp",
+  "voiceScanAction": "Stimmen scannen",
+  "voiceScanSubtitle": "Erkenne, wer spricht, damit jede Figur ihre eigene Stimme bekommt.",
+  "voiceCharactersTitle": "Figurenstimmen",
+  "voiceCharactersSubtitle": "Jede erkannte Figur kann eine andere installierte Stimme verwenden. Neuronale Stimmen richten sich stattdessen nach der Sprechsprache.",
+  "voiceCharacterLabel": "Figur {n}"
 }

@@ -7,6 +7,7 @@ import 'package:hive/hive.dart';
 import 'package:watch_app/core/dub/dub_engine.dart';
 import 'package:watch_app/core/dub/dub_narrator.dart';
 import 'package:watch_app/core/dub/dub_prefs.dart';
+import 'package:watch_app/core/dub/voice_scan.dart';
 import 'package:watch_app/features/player/dub_sheet.dart';
 
 /// Speaks on demand and records what it was asked to say, so the assertions are
@@ -233,5 +234,22 @@ void main() {
     await settle(tester);
 
     expect(find.text('Hello there'), findsOneWidget);
+  });
+
+  testWidgets('detected characters get their own voice picker', (tester) async {
+    await tester.runAsync(
+      () => prefs.setVoiceScan(
+        const VoiceScanResult(
+          segments: [
+            VoiceSegment(startMillis: 0, endMillis: 1000, speaker: 'speaker_0'),
+          ],
+          speakers: ['speaker_0'],
+        ),
+      ),
+    );
+    await openSheet(tester);
+
+    expect(find.text('Character voices'), findsOneWidget);
+    expect(find.text('Character 1'), findsOneWidget);
   });
 }

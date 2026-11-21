@@ -7317,6 +7317,23 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get stop => '停止';
+
+  @override
+  String get voiceScanAction => '扫描声音';
+
+  @override
+  String get voiceScanSubtitle => '识别谁在说话，让每个角色使用自己的声音。';
+
+  @override
+  String get voiceCharactersTitle => '角色声音';
+
+  @override
+  String get voiceCharactersSubtitle => '检测到的每个角色可以使用不同的已安装声音。神经声音则跟随朗读语言。';
+
+  @override
+  String voiceCharacterLabel(int n) {
+    return '角色 $n';
+  }
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -14632,4 +14649,21 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get stop => '停止';
+
+  @override
+  String get voiceScanAction => '掃描聲音';
+
+  @override
+  String get voiceScanSubtitle => '辨識誰在說話，讓每個角色使用自己的聲音。';
+
+  @override
+  String get voiceCharactersTitle => '角色聲音';
+
+  @override
+  String get voiceCharactersSubtitle => '偵測到的每個角色可以使用不同的已安裝聲音。神經聲音則跟隨朗讀語言。';
+
+  @override
+  String voiceCharacterLabel(int n) {
+    return '角色 $n';
+  }
 }

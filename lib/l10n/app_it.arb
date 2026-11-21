@@ -3678,5 +3678,10 @@
   "dubAsWritten": "Come scritto",
   "dubReadAloudSubtitle": "Leggi ad alta voce la riga dei sottotitoli",
   "playerProvider": "Provider",
-  "stop": "Interrompi"
+  "stop": "Interrompi",
+  "voiceScanAction": "Analizza voci",
+  "voiceScanSubtitle": "Rileva chi parla così ogni personaggio usa la propria voce.",
+  "voiceCharactersTitle": "Voci dei personaggi",
+  "voiceCharactersSubtitle": "Ogni personaggio rilevato può usare una voce installata diversa. Le voci neurali seguono invece la lingua parlata.",
+  "voiceCharacterLabel": "Personaggio {n}"
 }

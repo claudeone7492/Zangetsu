@@ -3718,5 +3718,10 @@
   "dubAsWritten": "Sesuai tulisan",
   "dubReadAloudSubtitle": "Bacakan baris subtitle dengan suara",
   "playerProvider": "Penyedia",
-  "stop": "Hentikan"
+  "stop": "Hentikan",
+  "voiceScanAction": "Pindai suara",
+  "voiceScanSubtitle": "Temukan siapa yang berbicara agar setiap karakter memakai suaranya sendiri.",
+  "voiceCharactersTitle": "Suara karakter",
+  "voiceCharactersSubtitle": "Setiap karakter yang terdeteksi dapat memakai suara terpasang yang berbeda. Suara neural mengikuti bahasa lisan.",
+  "voiceCharacterLabel": "Karakter {n}"
 }

@@ -7649,4 +7649,23 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get stop => 'Interrompi';
+
+  @override
+  String get voiceScanAction => 'Analizza voci';
+
+  @override
+  String get voiceScanSubtitle =>
+      'Rileva chi parla così ogni personaggio usa la propria voce.';
+
+  @override
+  String get voiceCharactersTitle => 'Voci dei personaggi';
+
+  @override
+  String get voiceCharactersSubtitle =>
+      'Ogni personaggio rilevato può usare una voce installata diversa. Le voci neurali seguono invece la lingua parlata.';
+
+  @override
+  String voiceCharacterLabel(int n) {
+    return 'Personaggio $n';
+  }
 }

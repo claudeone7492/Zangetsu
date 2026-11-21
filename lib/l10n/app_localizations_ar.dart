@@ -7638,4 +7638,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get stop => 'إيقاف';
+
+  @override
+  String get voiceScanAction => 'فحص الأصوات';
+
+  @override
+  String get voiceScanSubtitle => 'اكتشف من يتحدث ليستخدم كل شخصية صوته الخاص.';
+
+  @override
+  String get voiceCharactersTitle => 'أصوات الشخصيات';
+
+  @override
+  String get voiceCharactersSubtitle =>
+      'يمكن لكل شخصية مكتشفة استخدام صوت مثبّت مختلف. أما الأصوات العصبية فتتبع لغة النطق بدلاً من ذلك.';
+
+  @override
+  String voiceCharacterLabel(int n) {
+    return 'الشخصية $n';
+  }
 }

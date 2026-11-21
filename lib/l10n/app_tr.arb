@@ -3717,5 +3717,10 @@
   "dubAsWritten": "Yazıldığı gibi",
   "dubReadAloudSubtitle": "Altyazı satırını sesli oku",
   "playerProvider": "Sağlayıcı",
-  "stop": "Durdur"
+  "stop": "Durdur",
+  "voiceScanAction": "Sesleri tara",
+  "voiceScanSubtitle": "Kimin konuştuğunu bul, böylece her karakter kendi sesini kullansın.",
+  "voiceCharactersTitle": "Karakter sesleri",
+  "voiceCharactersSubtitle": "Algılanan her karakter farklı bir yüklü ses kullanabilir. Sinirsel sesler bunun yerine konuşulan dili izler.",
+  "voiceCharacterLabel": "Karakter {n}"
 }

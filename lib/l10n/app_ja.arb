@@ -3678,5 +3678,10 @@
   "dubAsWritten": "書かれたとおり",
   "dubReadAloudSubtitle": "字幕の行を読み上げる",
   "playerProvider": "プロバイダー",
-  "stop": "停止"
+  "stop": "停止",
+  "voiceScanAction": "音声をスキャン",
+  "voiceScanSubtitle": "誰が話しているかを検出し、キャラクターごとに声を割り当てます。",
+  "voiceCharactersTitle": "キャラクターの声",
+  "voiceCharactersSubtitle": "検出したキャラクターごとに別のインストール済み音声を使えます。ニューラル音声は話す言語に従います。",
+  "voiceCharacterLabel": "キャラクター {n}"
 }

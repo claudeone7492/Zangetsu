@@ -7658,4 +7658,23 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get stop => 'Stopp';
+
+  @override
+  String get voiceScanAction => 'Stimmen scannen';
+
+  @override
+  String get voiceScanSubtitle =>
+      'Erkenne, wer spricht, damit jede Figur ihre eigene Stimme bekommt.';
+
+  @override
+  String get voiceCharactersTitle => 'Figurenstimmen';
+
+  @override
+  String get voiceCharactersSubtitle =>
+      'Jede erkannte Figur kann eine andere installierte Stimme verwenden. Neuronale Stimmen richten sich stattdessen nach der Sprechsprache.';
+
+  @override
+  String voiceCharacterLabel(int n) {
+    return 'Figur $n';
+  }
 }

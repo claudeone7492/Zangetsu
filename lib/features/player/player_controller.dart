@@ -46,6 +46,7 @@ import '../../core/playback/subtitle_text_codec.dart';
 import '../../core/playback/subtitle_translate_service.dart';
 import '../../core/dub/dub_prefs.dart';
 import '../../core/dub/transcription_audio_source.dart';
+import '../../core/dub/voice_scan.dart';
 import '../../core/dub/voice_transcriber.dart';
 import 'mpv_player_pool.dart';
 import '../../core/repository/catalogue_repository.dart';
@@ -1983,6 +1984,51 @@ class PlayerCubit extends Cubit<PlayerState> {
   }
 
   int _lastTranscribePct = -1;
+
+  /// Detects the speakers in the playing audio and stores the result, so AI Dub
+  /// can give each one its own voice.
+  Future<void> scanCurrentSourceSpeakers() async {
+    final source = state.active;
+    if (source == null || source.url.trim().isEmpty) {
+      _toast('Nothing is playing to scan');
+      return;
+    }
+    final prefs = sl<DubPrefs>();
+    if (!prefs.canScanVoices) {
+      _toast('Add a voice-scan key in Settings');
+      return;
+    }
+
+    _toast('Preparing audio to detect speakers…');
+    try {
+      final bytes = await TranscriptionAudioSource().resolve(
+        source.url,
+        headers: source.headers,
+      );
+      final scanner = HttpVoiceScanner(
+        endpoint: prefs.voiceScanEndpoint,
+        apiKey: prefs.voiceScanKey,
+        model: prefs.voiceScanModel,
+      );
+      final result = await scanner.scan(
+        VoiceScanRequest(
+          audio: bytes,
+          fileName: TranscriptionAudioSource.fileNameFor(source.url),
+          language: prefs.language,
+        ),
+      );
+      await prefs.setVoiceScan(result);
+      _toast(
+        result.speakers.length == 1
+            ? 'Detected 1 speaker'
+            : 'Detected ${result.speakers.length} speakers',
+      );
+    } on VoiceScanException catch (e) {
+      _toast(e.message);
+    } catch (_) {
+      _toast('Couldn\'t scan the audio for speakers');
+    }
+  }
 
   /// Writes [cues] to a real file and selects it, exactly as the translation
   /// path does: mpv reports a file sub's id as its path, so `_wantedSubId`

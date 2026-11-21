@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:watch_app/core/dub/dub_engine.dart';
 import 'package:watch_app/core/dub/dub_narrator.dart';
 import 'package:watch_app/core/dub/dub_prefs.dart';
+import 'package:watch_app/core/dub/voice_scan.dart';
 
 import 'dart:io';
 
@@ -257,5 +258,57 @@ void main() {
     // player session that narrates.
     expect(engine.disposed, isFalse);
     expect(engine.stopCount, greaterThan(0));
+  });
+
+  const scan = VoiceScanResult(
+    segments: [
+      VoiceSegment(startMillis: 0, endMillis: 4000, speaker: 'speaker_0'),
+      VoiceSegment(startMillis: 4000, endMillis: 8000, speaker: 'speaker_1'),
+    ],
+    speakers: ['speaker_0', 'speaker_1'],
+  );
+
+  test('stores a scan and per-speaker voices', () async {
+    await prefs.setVoiceScan(scan);
+    await prefs.setSpeakerVoice('speaker_1', 'voice-b');
+
+    expect(prefs.voiceScan.speakers, ['speaker_0', 'speaker_1']);
+    expect(prefs.voiceForSpeaker('speaker_1'), 'voice-b');
+    expect(prefs.voiceForSpeaker('speaker_0'), isNull);
+
+    await prefs.setSpeakerVoice('speaker_1', null);
+    expect(prefs.voiceForSpeaker('speaker_1'), isNull);
+
+    await prefs.clearVoiceScan();
+    expect(prefs.voiceScan.isEmpty, isTrue);
+    expect(prefs.speakerVoices, isEmpty);
+  });
+
+  test('a detected speaker uses its own voice', () async {
+    await prefs.setEnabled(true);
+    await prefs.setVoice('default-voice');
+    await prefs.setVoiceScan(scan);
+    await prefs.setSpeakerVoice('speaker_1', 'en-GB-x');
+
+    final n = narrator();
+    await n.load('ep1', _srt);
+    await n.onPosition(const Duration(seconds: 2));
+    await n.onPosition(const Duration(seconds: 6));
+
+    expect(engine.options.map((o) => o.voice), ['default-voice', 'en-GB-x']);
+  });
+
+  test('neural voices ignore per-speaker device voices', () async {
+    await prefs.setEnabled(true);
+    await prefs.setVoiceEngine(kDubEngineNeural);
+    await prefs.setVoice('en');
+    await prefs.setVoiceScan(scan);
+    await prefs.setSpeakerVoice('speaker_0', 'en-GB-x');
+
+    final n = narrator();
+    await n.load('ep1', _srt);
+    await n.onPosition(const Duration(seconds: 2));
+
+    expect(engine.options.single.voice, 'en');
   });
 }

@@ -3475,6 +3475,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
                       _c.transcribeCurrentSource();
                       _bumpControls();
                     },
+              onScanSpeakers:
+                  castMode || !sl<DubPrefs>().canScanVoices
+                  ? null
+                  : () {
+                      Navigator.pop(context);
+                      _c.scanCurrentSourceSpeakers();
+                      _bumpControls();
+                    },
               onDub: castMode
                   ? null
                   : () {

@@ -268,6 +268,11 @@ const _strings = <String, String>{
   'dubReadAloudSubtitle': 'Read the subtitle line aloud',
   'playerProvider': 'Provider',
   'stop': 'Stop',
+  'voiceScanAction': 'Scan voices',
+  'voiceScanSubtitle': 'Find who is talking so each character can use its own voice.',
+  'voiceCharactersTitle': 'Character voices',
+  'voiceCharactersSubtitle': 'Each detected character can use a different installed voice. Neural voices follow the spoken language instead.',
+  'voiceCharacterLabel': 'Character {n}',
 };
 
 /// Words that are genuinely spelled the same in the target language, so the
@@ -567,6 +572,11 @@ String _value(AppLocalizations l, String key) => switch (key) {
   'playerProvider' => l.playerProvider,
   'stop' => l.stop,
 
+  'voiceScanAction' => l.voiceScanAction,
+  'voiceScanSubtitle' => l.voiceScanSubtitle,
+  'voiceCharactersTitle' => l.voiceCharactersTitle,
+  'voiceCharactersSubtitle' => l.voiceCharactersSubtitle,
+  'voiceCharacterLabel' => l.voiceCharacterLabel(1),
   _ => throw ArgumentError('key $key is registered but not mapped in _value'),
 };
 

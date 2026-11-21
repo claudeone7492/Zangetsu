@@ -3678,5 +3678,10 @@
   "dubAsWritten": "按原文",
   "dubReadAloudSubtitle": "朗读字幕行",
   "playerProvider": "提供方",
-  "stop": "停止"
+  "stop": "停止",
+  "voiceScanAction": "扫描声音",
+  "voiceScanSubtitle": "识别谁在说话，让每个角色使用自己的声音。",
+  "voiceCharactersTitle": "角色声音",
+  "voiceCharactersSubtitle": "检测到的每个角色可以使用不同的已安装声音。神经声音则跟随朗读语言。",
+  "voiceCharacterLabel": "角色 {n}"
 }

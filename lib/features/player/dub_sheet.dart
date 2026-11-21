@@ -273,6 +273,21 @@ class _DubSheetState extends State<_DubSheet> {
                         ),
                     ],
                   ),
+                if (!_prefs.usesNeuralVoice &&
+                    _prefs.voiceScan.speakers.isNotEmpty) ...[
+                  const Divider(color: AppColors.hairline, height: 24),
+                  Text(context.l10n.voiceCharactersTitle, style: AppText.body),
+                  const SizedBox(height: 4),
+                  Text(
+                    context.l10n.voiceCharactersSubtitle,
+                    style: AppText.caption.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  for (final speaker in _prefs.voiceScan.speakers)
+                    _speakerVoiceRow(context, speaker, voices),
+                ],
               ],
 
               // Speech-to-subtitle lives here rather than in the subtitle
@@ -560,6 +575,73 @@ class _DubSheetState extends State<_DubSheet> {
     }
     final name = voice.locale.isEmpty ? voice.name : voice.label;
     return voice.isNetwork ? '$name · net' : name;
+  }
+
+  /// One detected speaker, showing the voice it will use and opening a picker.
+  Widget _speakerVoiceRow(
+    BuildContext context,
+    String speaker,
+    List<DubVoice>? voices,
+  ) {
+    final chosen = _prefs.voiceForSpeaker(speaker);
+    final label = chosen == null
+        ? context.l10n.defaultLabel
+        : _dubVoiceLabel(
+            context.l10n,
+            voices?.firstWhere(
+                  (v) => v.name == chosen,
+                  orElse: () => DubVoice(name: chosen, locale: ''),
+                ) ??
+                DubVoice(name: chosen, locale: ''),
+          );
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      dense: true,
+      title: Text(_speakerName(context.l10n, speaker), style: AppText.body),
+      subtitle: Text(
+        label,
+        style: AppText.caption.copyWith(color: AppColors.textSecondary),
+      ),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 18),
+      onTap: () => _pickSpeakerVoice(context, speaker, voices),
+    );
+  }
+
+  /// `speaker_0` becomes a localised "Character 1"; a named speaker is shown
+  /// as the diarizer reported it.
+  String _speakerName(AppLocalizations l10n, String speaker) {
+    const prefix = 'speaker_';
+    if (speaker.startsWith(prefix)) {
+      final n = int.tryParse(speaker.substring(prefix.length));
+      if (n != null) return l10n.voiceCharacterLabel(n + 1);
+    }
+    return speaker;
+  }
+
+  Future<void> _pickSpeakerVoice(
+    BuildContext context,
+    String speaker,
+    List<DubVoice>? voices,
+  ) async {
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text(_speakerName(context.l10n, speaker)),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, ''),
+            child: Text(context.l10n.defaultLabel),
+          ),
+          for (final voice in voices ?? const <DubVoice>[])
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, voice.name),
+              child: Text(_dubVoiceLabel(context.l10n, voice)),
+            ),
+        ],
+      ),
+    );
+    if (selected == null) return;
+    await _prefs.setSpeakerVoice(speaker, selected.isEmpty ? null : selected);
   }
 
   Widget _voiceChip({

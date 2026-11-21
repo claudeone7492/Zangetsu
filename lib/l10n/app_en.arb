@@ -3927,5 +3927,11 @@
   "playerProvider": "Provider",
   "stop": "Stop",
   "@collectionsDeleteTitle": {"placeholders": {"name": {"type": "String"}}},
-  "@tvErrorPlaySourceBody": {"placeholders": {"showTitle": {"type": "String"}, "code": {"type": "String"}}}
+  "@tvErrorPlaySourceBody": {"placeholders": {"showTitle": {"type": "String"}, "code": {"type": "String"}}},
+  "voiceScanAction": "Scan voices",
+  "voiceScanSubtitle": "Find who is talking so each character can use its own voice.",
+  "voiceCharactersTitle": "Character voices",
+  "voiceCharactersSubtitle": "Each detected character can use a different installed voice. Neural voices follow the spoken language instead.",
+  "voiceCharacterLabel": "Character {n}",
+  "@voiceCharacterLabel": {"description": "voiceCharacterLabel", "placeholders": {"n": {"type": "int"}}}
 }

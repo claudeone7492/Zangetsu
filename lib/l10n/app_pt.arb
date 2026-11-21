@@ -3718,5 +3718,10 @@
   "dubAsWritten": "Como escrito",
   "dubReadAloudSubtitle": "Ler em voz alta a linha de legendas",
   "playerProvider": "Fornecedor",
-  "stop": "Parar"
+  "stop": "Parar",
+  "voiceScanAction": "Analisar vozes",
+  "voiceScanSubtitle": "Deteta quem fala para que cada personagem use a própria voz.",
+  "voiceCharactersTitle": "Vozes das personagens",
+  "voiceCharactersSubtitle": "Cada personagem detetada pode usar uma voz instalada diferente. As vozes neurais seguem antes o idioma falado.",
+  "voiceCharacterLabel": "Personagem {n}"
 }

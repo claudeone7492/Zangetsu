@@ -7571,4 +7571,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stop => 'Stop';
+
+  @override
+  String get voiceScanAction => 'Scan voices';
+
+  @override
+  String get voiceScanSubtitle =>
+      'Find who is talking so each character can use its own voice.';
+
+  @override
+  String get voiceCharactersTitle => 'Character voices';
+
+  @override
+  String get voiceCharactersSubtitle =>
+      'Each detected character can use a different installed voice. Neural voices follow the spoken language instead.';
+
+  @override
+  String voiceCharacterLabel(int n) {
+    return 'Character $n';
+  }
 }

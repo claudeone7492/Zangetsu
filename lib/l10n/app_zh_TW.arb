@@ -3679,5 +3679,10 @@
   "dubAsWritten": "依原文",
   "dubReadAloudSubtitle": "朗讀字幕列",
   "playerProvider": "提供者",
-  "stop": "停止"
+  "stop": "停止",
+  "voiceScanAction": "掃描聲音",
+  "voiceScanSubtitle": "辨識誰在說話，讓每個角色使用自己的聲音。",
+  "voiceCharactersTitle": "角色聲音",
+  "voiceCharactersSubtitle": "偵測到的每個角色可以使用不同的已安裝聲音。神經聲音則跟隨朗讀語言。",
+  "voiceCharacterLabel": "角色 {n}"
 }

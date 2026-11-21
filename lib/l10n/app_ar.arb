@@ -3718,5 +3718,10 @@
   "dubAsWritten": "كما هو مكتوب",
   "dubReadAloudSubtitle": "اقرأ سطر الترجمة بصوت عالٍ",
   "playerProvider": "المزوّد",
-  "stop": "إيقاف"
+  "stop": "إيقاف",
+  "voiceScanAction": "فحص الأصوات",
+  "voiceScanSubtitle": "اكتشف من يتحدث ليستخدم كل شخصية صوته الخاص.",
+  "voiceCharactersTitle": "أصوات الشخصيات",
+  "voiceCharactersSubtitle": "يمكن لكل شخصية مكتشفة استخدام صوت مثبّت مختلف. أما الأصوات العصبية فتتبع لغة النطق بدلاً من ذلك.",
+  "voiceCharacterLabel": "الشخصية {n}"
 }

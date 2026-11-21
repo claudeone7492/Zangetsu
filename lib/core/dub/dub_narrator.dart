@@ -95,7 +95,7 @@ class DubNarrator extends ChangeNotifier {
     if (!prefs.enabled || _scheduler == null) return;
     final cue = _scheduler!.dueAt(position);
     if (cue == null) return;
-    await _speakCue(cue.text);
+    await _speakCue(cue.text, cue.start.inMilliseconds);
   }
 
   /// Drop the loaded track — the viewer turned subtitles off, or picked a track
@@ -134,7 +134,7 @@ class DubNarrator extends ChangeNotifier {
     }
   }
 
-  Future<void> _speakCue(String text) async {
+  Future<void> _speakCue(String text, int startMillis) async {
     // Stage directions are not dialogue. [SubtitleCueText] already knows how to
     // recognise them, so the same rule the translator uses applies here.
     if (prefs.skipSoundEffects && SubtitleCueText.isUntranslatable(
@@ -153,9 +153,16 @@ class DubNarrator extends ChangeNotifier {
     }
     if (!prefs.enabled) return;
     _setSpeaking(spoken);
+    // A detected speaker can have its own voice. Neural voices are picked by
+    // language rather than by name, so the mapping only applies to the device
+    // engine.
+    final speaker = prefs.voiceScan.speakerAt(startMillis);
+    final perSpeaker = prefs.usesNeuralVoice
+        ? null
+        : prefs.voiceForSpeaker(speaker);
     await _engine.speak(
       spoken,
-      voice: prefs.voice,
+      voice: perSpeaker ?? prefs.voice,
       rate: prefs.rate,
       pitch: prefs.pitch,
       volume: prefs.volume,
