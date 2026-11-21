@@ -1,5 +1,8 @@
 # Zangetsu ↔ Hikari parity
 
+> **Superseded in depth by [`AUDIT.md`](AUDIT.md)**, which walks all 33
+> Hikari packages (140 units) and corrects several statuses below.
+
 Measured against `claudeone7492/Zangetsu` at `794a8d5` and the Hikari tree at
 `codegeasse1/hikari` (`/workspace/hikari-reference`). Every row was checked by
 file and symbol search, not by feature name alone. Tests are named where they

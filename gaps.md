@@ -219,7 +219,10 @@ still have no Zangetsu counterpart, verified by file/symbol search at
 | Player skins / server layouts | `player/PlayerSkins.kt`, `ServerLayouts.kt`, `StreamsLive.kt` | ⚠️ | Functional equivalents, different styling. |
 | l10n wiring | `i18n/` | ⚠️ | 12 catalogues at 2269 keys; the new surfaces are translated, the older ~120-literal wiring backlog remains. |
 
-**Count:** 33/33 ledger rows ✅; **14 ❌ and 8 ⚠️** above. The high-impact
+**Count:** 33/33 ledger rows ✅; **14 ❌ and 8 ⚠️** above.
+
+A full second pass over all 33 Hikari packages (140 units) is in
+[`AUDIT.md`](AUDIT.md); this matrix is the narrower feature view. The high-impact
 ones are M3U import, Kitsu/Shikimori, offline TTS, ad-block/userscripts, the
 CS3 resolvers and the repo-link intents.
 
