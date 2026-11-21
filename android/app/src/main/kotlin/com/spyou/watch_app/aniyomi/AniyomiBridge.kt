@@ -18,6 +18,7 @@ package com.spyou.watch_app.aniyomi
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import com.spyou.watch_app.SourcePrefsCodec
 import eu.kanade.tachiyomi.animesource.AnimeCatalogueSource
 import eu.kanade.tachiyomi.animesource.ConfigurableAnimeSource
@@ -60,13 +61,21 @@ class AniyomiBridge(
 
     /** SHA-256 of the APK's signing certificate, or null when unsigned. */
     private fun signerDigest(apk: File): String? {
+        val pm = context.packageManager
         val flags = android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES
-        val info = context.packageManager.getPackageArchiveInfo(apk.absolutePath, flags)
-            ?: return null
-        val signers = info.signingInfo?.apkContentsSigners ?: return null
-        val cert = signers.firstOrNull() ?: return null
+        val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pm.getPackageArchiveInfo(
+                apk.absolutePath,
+                android.content.pm.PackageManager.PackageInfoFlags.of(flags.toLong()),
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            pm.getPackageArchiveInfo(apk.absolutePath, flags)
+        } ?: return null
+        val cert = info.signingInfo?.apkContentsSigners?.firstOrNull() ?: return null
         val md = java.security.MessageDigest.getInstance("SHA-256")
-        return md.digest(cert.toByteArray()).joinToString("") { "%02x".format(it) }
+        return md.digest(cert.toByteArray())
+            .joinToString("") { "%02x".format(it.toInt() and 0xff) }
     }
 
     /**

@@ -21,6 +21,11 @@ void main() {
 
   test('picks the primary source per kind', () {
     expect(RatingAggregator.primaryFor('anime'), RatingSource.mal);
-    expect(RatingAggregator.primaryFor('movie'), RatingSource.imdb);
+    // Movie scores come from TMDB in this app; IMDb is only the fallback for
+    // kinds nothing else covers.
+    expect(RatingAggregator.primaryFor('movie'), RatingSource.tmdb);
+    expect(RatingAggregator.primaryFor('novel'), RatingSource.mangabaka);
+    expect(RatingAggregator.primaryFor('manga'), RatingSource.mangabaka);
+    expect(RatingAggregator.primaryFor('unknown'), RatingSource.imdb);
   });
 }

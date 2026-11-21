@@ -111,6 +111,19 @@ class DubPrefs extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Restrict narration to voices that need no network.
+  ///
+  /// Off by default: the network voices sound better, and a viewer on wifi
+  /// would not notice the difference. On, it is what makes narration work in
+  /// a tunnel — and on a device whose offline packs are downloaded, nothing
+  /// is lost.
+  bool get offlineOnly => _box.get('offlineOnly', defaultValue: false) as bool;
+
+  Future<void> setOfflineOnly(bool value) async {
+    await _box.put('offlineOnly', value);
+    notifyListeners();
+  }
+
   // ── Speech-to-subtitle (D4) ───────────────────────────────────────────────
   //
   // The transcription endpoint is user-supplied. A bundled key would be shared

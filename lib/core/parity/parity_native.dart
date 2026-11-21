@@ -66,8 +66,9 @@ class ParityNative {
   /// Label of the job currently holding the service, for diagnostics.
   static String get workLabel => _workLabel;
 
-  /// Installed offline TTS voice packs. None ship today, so this is empty and
-  /// the voice picker stays on the hosted voices.
+  /// Voices the platform engine can speak with no network — the offline
+  /// narration path. Nothing is bundled, so this is whatever the user has
+  /// downloaded in system settings; empty means only hosted voices can speak.
   static Future<List<String>> voicePacks() async {
     if (!isSupported) return const [];
     try {
@@ -77,6 +78,32 @@ class ParityNative {
       return const [];
     } on MissingPluginException {
       return const [];
+    }
+  }
+
+  /// Opens the system screen where offline voice packs are downloaded.
+  static Future<void> openTtsSettings() async {
+    if (!isSupported) return;
+    try {
+      await _channel.invokeMethod<void>('ttsSettings');
+    } on PlatformException {
+      // Nothing to open on this build.
+    } on MissingPluginException {
+      // Same.
+    }
+  }
+
+  /// Whether TDLib is linked into this build. It is not today; the seam asks
+  /// the runtime rather than asserting, so a build that links it starts
+  /// reporting true with no Dart change.
+  static Future<bool> tdlibAvailable() async {
+    if (!isSupported) return false;
+    try {
+      return await _channel.invokeMethod<bool>('tdlib') ?? false;
+    } on PlatformException {
+      return false;
+    } on MissingPluginException {
+      return false;
     }
   }
 }

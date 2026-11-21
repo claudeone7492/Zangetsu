@@ -45,7 +45,8 @@ class RatingAggregator {
   /// The site the UI should quote for a given media kind.
   static RatingSource? primaryFor(String kind) => switch (kind) {
     'anime' => RatingSource.mal,
-    'manga' => RatingSource.mangabaka,
+    'manga' || 'novel' => RatingSource.mangabaka,
+    'movie' => RatingSource.tmdb,
     _ => RatingSource.imdb,
   };
 }

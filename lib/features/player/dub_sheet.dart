@@ -7,6 +7,7 @@ import '../../core/dub/dub_engine.dart';
 import '../../core/dub/dub_narrator.dart';
 import '../../core/dub/dub_prefs.dart';
 import '../../core/dub/http_tts_service.dart';
+import '../../core/parity/parity_native.dart';
 import '../../core/playback/subtitle_language.dart';
 import '../../l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
@@ -80,6 +81,13 @@ class _DubSheetState extends State<_DubSheet> {
   @override
   Widget build(BuildContext context) {
     final voices = _voices;
+    // "Offline only" is a filter, not a second list: the engine still speaks
+    // with whatever is picked, it just stops offering voices that need data.
+    final shownVoices = voices == null
+        ? const <DubVoice>[]
+        : _prefs.offlineOnly
+        ? voices.where((v) => !v.isNetwork).toList()
+        : voices;
     // A device with no TTS is exactly where the hosted voice earns its keep, so
     // the missing-engine notice must not gate the engine choice itself.
     final available = widget.available || _prefs.usesNeuralVoice;
@@ -255,7 +263,7 @@ class _DubSheetState extends State<_DubSheet> {
                     'default will be used.',
                     style: AppText.caption.copyWith(color: AppColors.textSecondary),
                   )
-                else
+                else ...[
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -265,7 +273,7 @@ class _DubSheetState extends State<_DubSheet> {
                         selected: _prefs.voice == null,
                         onTap: () => _prefs.setVoice(null),
                       ),
-                      for (final v in voices)
+                      for (final v in shownVoices)
                         _voiceChip(
                           label: _dubVoiceLabel(context.l10n, v),
                           selected: _prefs.voice == v.name,
@@ -273,6 +281,57 @@ class _DubSheetState extends State<_DubSheet> {
                         ),
                     ],
                   ),
+                  if (_prefs.offlineOnly && shownVoices.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        'No offline voice is installed. Download one in the '
+                        'system speech settings, or turn the filter off.',
+                        style: AppText.caption.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        TextButton.icon(
+                          onPressed: () => _prefs.setOfflineOnly(
+                            !_prefs.offlineOnly,
+                          ),
+                          icon: Icon(
+                            _prefs.offlineOnly
+                                ? Icons.cloud_off_rounded
+                                : Icons.cloud_queue_rounded,
+                            size: 16,
+                            color: _prefs.offlineOnly
+                                ? AppColors.accent
+                                : AppColors.textSecondary,
+                          ),
+                          label: Text(
+                            'Offline voices only',
+                            style: AppText.caption.copyWith(
+                              color: _prefs.offlineOnly
+                                  ? AppColors.accent
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: ParityNative.openTtsSettings,
+                          child: Text(
+                            'Download voices',
+                            style: AppText.caption.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 if (!_prefs.usesNeuralVoice &&
                     _prefs.voiceScan.speakers.isNotEmpty) ...[
                   const Divider(color: AppColors.hairline, height: 24),

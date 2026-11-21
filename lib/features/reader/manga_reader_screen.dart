@@ -3443,10 +3443,24 @@ class _MangaReaderScreenState extends State<MangaReaderScreen>
     caseSensitive: false,
   );
 
+  /// The current chapter's URL, or null when there is no chapter to point at.
+  ///
+  /// [_buildMessage] also runs when the chapter list itself failed to load,
+  /// and [_chapter] throws on an empty list.
+  String? get _chapterUrl => _chapters.isEmpty ? null : _chapter.url;
+
+  /// [_chapterUrl] when it points straight at an image, which the paged
+  /// reader cannot render but the image list can.
+  String? get _imageChapterUrl {
+    final url = _chapterUrl;
+    return url != null && _imageUrl.hasMatch(url) ? url : null;
+  }
+
   /// Icon, message, and a Retry that re-runs [_load]. Shared by the failure
   /// and the empty-chapter cases — both leave the reader with nothing to show
   /// and both are worth another attempt.
   Widget _buildMessage(String text) {
+    final chapterUrl = _chapterUrl;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -3480,13 +3494,13 @@ class _MangaReaderScreenState extends State<MangaReaderScreen>
                 // Some scrapers hand back a chapter that is one bare image
                 // URL; the paged reader can do nothing with that, but the
                 // image list can show it.
-                if (_imageUrl.hasMatch(_chapter.url))
+                if (_imageChapterUrl != null)
                   TextButton(
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (_) => ScraperReaderScreen(
                           title: widget.showTitle,
-                          pages: [ScraperPage(url: _chapter.url)],
+                          pages: [ScraperPage(url: _imageChapterUrl!)],
                         ),
                       ),
                     ),
@@ -3495,17 +3509,18 @@ class _MangaReaderScreenState extends State<MangaReaderScreen>
                       style: AppText.body.copyWith(color: AppColors.accent),
                     ),
                   ),
-                if (source_actions.canOpenInBrowser(
-                  widget.sourceId,
-                  _chapter.url,
-                ))
+                if (chapterUrl != null &&
+                    source_actions.canOpenInBrowser(
+                      widget.sourceId,
+                      chapterUrl,
+                    ))
                   TextButton(
                     onPressed: () => unawaited(() async {
                       // Ask the source, same as the overflow menu — a stored
                       // chapter key is not always the page (resolveChapterWebUrl).
                       final url = await source_actions.resolveChapterWebUrl(
                         widget.sourceId,
-                        _chapter.url,
+                        chapterUrl,
                       );
                       await source_actions.openUrlInSourceWebView(
                         url ?? '',

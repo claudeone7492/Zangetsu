@@ -15,12 +15,13 @@ Legend: ✅ done and reachable · ⚠️ partial, or deliberately different ·
 | Area | ✅ | ⚠️ | ❌ |
 |---|---:|---:|---:|
 | 33-row ledger (A1–F2) | 33 | 0 | 0 |
-| 33 sub-features below | 31 | 1 | 1 |
-| **Total** | **64** | **1** | **1** |
+| 33 sub-features below | 32 | 1 | 0 |
+| **Total** | **65** | **1** | **0** |
 
-The ledger is closed, and so are the sub-features it sat on top of. Two rows
-stay open on purpose: no Piper/Sherpa models are bundled (hosted voices carry
-the dub), and the YouTube PoToken helper has no YouTube source to serve.
+The ledger is closed, and so are the sub-features it sat on top of. One row
+stays open on purpose: the YouTube PoToken helper has no YouTube source to
+serve. Offline narration closed too — the platform's downloaded voice packs do
+the work, so nothing is bundled and nothing is missing.
 
 ## 1. The 33-row ledger
 
@@ -77,7 +78,7 @@ the dub), and the YouTube PoToken helper has no YouTube source to serve.
 | Redirect allowlist | `data/RedirectAllow.kt` | ✅ | Host-or-word matching, editor in Web protections. |
 | Repo-link intents | `deeplink/RepoLinkActivity.kt` | ✅ | `parity/RepoLinkActivity.kt` + manifest filters for `http(s)://*.json` and `stremio:` |
 | Foreground work service | `work/BackgroundWork.kt` | ✅ | `parity/WorkService.kt`, held by `ParityNative.beginWork` while a download is muxed |
-| Offline Piper/Sherpa voices | `dub/PiperVoice.kt` | ❌ | No models are bundled; `parity/OfflineVoicePack.kt` reports none and Parity tools says so |
+| Offline Piper/Sherpa voices | `dub/PiperVoice.kt` | ✅ | Platform packs, not bundled models: `parity/OfflineVoicePack.kt` lists the installed offline voices, Parity tools shows the count and links the download screen, `DubPrefs.offlineOnly` filters the voice picker |
 | Hard-sub dub | `dub/HardSubDub.kt` | ✅ | `ParityBridge.captureWindow` (PixelCopy on the window) keeps the burned-in subtitle in the saved frame; mpv's own screenshot does not |
 | Audio FX | `dub/AudioFx.kt` | ✅ | `core/playback/audio_fx.dart` sets mpv `af` (reverb/echo), pitch kept |
 | Lossless source | `music/VxLosslessApi.kt` | ✅ | `core/music/lossless_source.dart`, user endpoint + key persisted in Hive, edited in Parity tools |
@@ -102,11 +103,25 @@ the dub), and the YouTube PoToken helper has no YouTube source to serve.
 
 | Item | Kind | Why it is open | Next step |
 |---|---|---|---|
-| Offline Piper/Sherpa voices | Native | Bundling voice models is a licensing and size decision, not a code one. The seam (`parity/OfflineVoicePack.kt`) answers with an empty list and Parity tools says so out loud. | Ship a model pack, then list it from `voicePacks`. |
 | YouTube PoToken | Dart | `core/music/potoken.dart` can mint one, but there is no YouTube music source to hand it to. | Add the source, then wire the token into its manifest request. |
 
-Everything else in §2 is reachable from the UI. The two rows above are the
-whole open set.
+Everything else in §2 is reachable from the UI. That row is the whole open set.
+
+Offline narration closed without shipping a model: `parity/OfflineVoicePack.kt`
+now reports the voices the platform's own speech engine has downloaded, Parity
+tools shows the count and links the system screen where more are downloaded,
+and the dub sheet's "offline voices only" filter keeps the picker on them. Same
+result as a bundled pack, none of the 60–200 MB per voice.
+
+## 3a. Upstream sync
+
+Hikari's `0.12.132` ("direct play starts on a server carrying the default
+quality") landed in `core/playback/source_selection.dart`: a source's height is
+now read from its `quality` **or** its label (`heightFromText`, which needs a
+`p` so a title's year is not a resolution), and a preference means "the best
+server at or below this height", falling back to the lowest one above when
+every mirror is taller. That replaced a nearest-number rule which would pick
+1440p for a 1080p preference when 1440p was arithmetically closer.
 
 ## 4. Landed in this pass
 

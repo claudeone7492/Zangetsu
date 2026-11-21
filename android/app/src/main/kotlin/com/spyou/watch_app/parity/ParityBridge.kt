@@ -109,4 +109,17 @@ object ParityBridge {
     fun stopWork(context: Context) {
         context.stopService(Intent(context, WorkService::class.java))
     }
+
+    /**
+     * Whether TDLib is linked into this build.
+     *
+     * It is not: the library is ~40 MB of native code and the Bot API already
+     * covers the public channels Telegram streaming uses. Asking the runtime
+     * instead of returning a constant means a build that does link it starts
+     * answering true without a Dart change.
+     */
+    fun tdlibLinked(): Boolean = runCatching {
+        Class.forName("org.drinkless.tdlib.TdApi")
+        true
+    }.getOrDefault(false)
 }

@@ -53,12 +53,37 @@ int? resolutionPx(String? label) {
   return m != null ? int.tryParse(m.group(1)!) : null;
 }
 
+/// Height named by free text, or null.
+///
+/// Stricter than [resolutionPx]: the number has to be followed by a `p`, so a
+/// title's year ("2024") never reads as a resolution. Needed because providers
+/// that ship one mirror per quality often put the resolution in the server's
+/// own label ("HDHub · FSL [1080p]") and leave `quality` null.
+int? heightFromText(String? text) {
+  if (text == null || text.isEmpty) return null;
+  final m = RegExp(
+    r'(?<![0-9])(2160|1440|1080|720|576|480|360|240)\s*p',
+    caseSensitive: false,
+  ).firstMatch(text);
+  if (m != null) return int.parse(m.group(1)!);
+  final l = text.toLowerCase();
+  if (RegExp(r'(^|[^a-z0-9])(4k|uhd)([^a-z0-9]|$)').hasMatch(l)) return 2160;
+  if (RegExp(r'(^|[^a-z0-9])fhd([^a-z0-9]|$)').hasMatch(l)) return 1080;
+  return null;
+}
+
+/// Resolution a source names: its [VideoSource.quality] first, then its
+/// [VideoSource.label]. Null when it names none.
+int? sourceHeight(VideoSource source) =>
+    resolutionPx(source.quality) ?? heightFromText(source.label);
+
 /// Best default source: highest quality of [prefer]; if none of that kind,
 /// highest quality overall. Null only when [sources] is empty.
 ///
 /// [preferQuality] is the user's saved resolution preference. When it names a
-/// real resolution the source closest to it wins, so a provider that ships one
-/// stream per quality honours the preference by STARTING on the right stream.
+/// real resolution the source at or just below it wins (the lowest one above
+/// when every server is taller), so a provider that ships one stream per
+/// quality honours the preference by STARTING on the right stream.
 /// Switching streams once playback is already running would be a different
 /// file — different server, audio and subtitles — which is never what a
 /// quality preference means.
@@ -73,19 +98,23 @@ VideoSource? pickDefault(
 
   final want = resolutionPx(preferQuality);
   if (want != null) {
-    VideoSource? best;
-    var bestDiff = 1 << 30;
-    for (final s in pool) {
-      final px = resolutionPx(s.quality);
-      if (px == null) continue;
-      final d = (px - want).abs();
-      // Pool is sorted high->low, so a strict < keeps the HIGHER one on a tie.
-      if (d < bestDiff) {
-        bestDiff = d;
-        best = s;
-      }
+    // Best at or below the wanted height; when everything is taller, the
+    // lowest one above. A preference means "no worse than this", not "the
+    // nearest number" — picking 1440p for a 1080p preference because it
+    // happens to be arithmetically close costs bandwidth for nothing.
+    final known = <(VideoSource, int)>[
+      for (final s in pool)
+        if (sourceHeight(s) case final h?) (s, h),
+    ];
+    if (known.isNotEmpty) {
+      final below = known.where((e) => e.$2 <= want).map((e) => e.$2);
+      final height = below.isEmpty
+          ? known.map((e) => e.$2).reduce((a, b) => a < b ? a : b)
+          : below.reduce((a, b) => a > b ? a : b);
+      // Pool order (high->low, then discovery order) breaks a tie, so the
+      // first server advertising that height wins.
+      return known.firstWhere((e) => e.$2 == height).$1;
     }
-    if (best != null) return best;
   }
   // 'auto'/'highest', or nothing carried a resolution: the existing default.
   return pool.first;

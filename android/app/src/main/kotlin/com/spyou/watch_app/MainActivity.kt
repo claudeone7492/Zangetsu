@@ -585,8 +585,17 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
                         runCatching { ParityBridge.stopWork(applicationContext) }
                         result.success(true)
                     }
-                    "voicePacks" -> result.success(OfflineVoicePack.voiceIds())
-                    "tdlib" -> result.success(false)
+                    // Installed offline narration voices, read from the
+                    // platform engine: no model is bundled, so this is the
+                    // only honest answer to "what can speak without a network".
+                    "voicePacks" -> OfflineVoicePack.offlineVoiceIds(
+                        applicationContext,
+                    ) { ids -> runOnUiThread { result.success(ids) } }
+                    "ttsSettings" -> {
+                        OfflineVoicePack.openSettings(applicationContext)
+                        result.success(true)
+                    }
+                    "tdlib" -> result.success(ParityBridge.tdlibLinked())
                     else -> result.notImplemented()
                 }
             }

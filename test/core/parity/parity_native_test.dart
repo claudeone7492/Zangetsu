@@ -68,6 +68,41 @@ void main() {
     expect(await ParityNative.voicePacks(), isEmpty);
   });
 
+  test('voicePacks returns the installed offline voices', () async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+          calls.add(call);
+          return call.method == 'voicePacks'
+              ? <String>['en-gb-x-gbb-local', 'en-us-x-iom-local']
+              : null;
+        });
+    expect(await ParityNative.voicePacks(), [
+      'en-gb-x-gbb-local',
+      'en-us-x-iom-local',
+    ]);
+  });
+
+  test('openTtsSettings asks the platform and stays quiet off Android', () async {
+    await ParityNative.openTtsSettings();
+    expect(calls.single.method, 'ttsSettings');
+
+    calls.clear();
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    await ParityNative.openTtsSettings();
+    expect(calls, isEmpty);
+  });
+
+  test('tdlibAvailable reports what the build linked', () async {
+    expect(await ParityNative.tdlibAvailable(), isFalse);
+
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+          calls.add(call);
+          return call.method == 'tdlib' ? true : null;
+        });
+    expect(await ParityNative.tdlibAvailable(), isTrue);
+  });
+
   test('desktop skips the channel entirely', () async {
     debugDefaultTargetPlatformOverride = TargetPlatform.linux;
     expect(await ParityNative.captureWindow(), isNull);

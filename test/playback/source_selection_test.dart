@@ -118,12 +118,13 @@ void main() {
       expect(pickDefault(all, preferQuality: '480p')!.quality, '480p');
     });
 
-    test('nearest when the exact resolution is absent, higher on a tie', () {
+    test('the best server at or below the preference wins', () {
       final gap = [_s('2160p', AudioKind.sub), _s('480p', AudioKind.sub)];
       expect(pickDefault(gap, preferQuality: '720p')!.quality, '480p');
-      // 1080 is equidistant from 720 and 1440 -> the higher one wins.
-      final tie = [_s('1440p', AudioKind.sub), _s('720p', AudioKind.sub)];
-      expect(pickDefault(tie, preferQuality: '1080p')!.quality, '1440p');
+      // A 1080p preference is a cap: 720p is inside it, 1440p is not. The
+      // nearest-number rule used to pick 1440p here and pay for it.
+      final cap = [_s('1440p', AudioKind.sub), _s('720p', AudioKind.sub)];
+      expect(pickDefault(cap, preferQuality: '1080p')!.quality, '720p');
     });
 
     test('auto/highest/null keep the existing highest-first default', () {
@@ -147,6 +148,53 @@ void main() {
       final none = [_s('', AudioKind.sub), _s('auto', AudioKind.sub)];
       expect(pickDefault(none, preferQuality: '1080p'), isNotNull);
       expect(pickDefault([], preferQuality: '1080p'), isNull);
+    });
+  });
+
+  group('default quality lands on a server that carries it', () {
+    VideoSource labelled(String label, [String? quality]) => VideoSource(
+      url: 'https://x/${label.hashCode}',
+      quality: quality,
+      label: label,
+      container: SourceContainer.hls,
+      kind: AudioKind.sub,
+    );
+
+    test('heightFromText reads the server label, not a bare number', () {
+      expect(heightFromText('HDHub · FSL [1080p]'), 1080);
+      expect(heightFromText('4K · UHD'), 2160);
+      expect(heightFromText('FHD web-dl'), 1080);
+      expect(heightFromText('1080p'), 1080);
+      // A year is not a resolution, and neither is a bitrate.
+      expect(heightFromText('Blade Runner 2049 (2017)'), isNull);
+      expect(heightFromText('server 2500 kbps'), isNull);
+      expect(heightFromText(null), isNull);
+    });
+
+    test('sourceHeight prefers the quality field, then the label', () {
+      expect(sourceHeight(labelled('1080p WEB', '720p')), 720);
+      expect(sourceHeight(labelled('1080p WEB')), 1080);
+      expect(sourceHeight(labelled('Server 2')), isNull);
+    });
+
+    test('a preference picks the best at-or-below server', () {
+      final mixed = [
+        labelled('Mirror A [2160p]'),
+        labelled('Mirror B [1080p]'),
+        labelled('Mirror C [480p]'),
+      ];
+      expect(pickDefault(mixed, preferQuality: '1080p')!.label, 'Mirror B [1080p]');
+      expect(pickDefault(mixed, preferQuality: '720p')!.label, 'Mirror C [480p]');
+    });
+
+    test('when every server is taller, the lowest one above wins', () {
+      final tall = [labelled('A [2160p]'), labelled('B [1440p]')];
+      expect(pickDefault(tall, preferQuality: '1080p')!.label, 'B [1440p]');
+    });
+
+    test('two servers at the wanted height: discovery order decides', () {
+      final same = [labelled('First [720p]'), labelled('Second [720p]')];
+      expect(pickDefault(same, preferQuality: '720p')!.label, 'First [720p]');
     });
   });
 

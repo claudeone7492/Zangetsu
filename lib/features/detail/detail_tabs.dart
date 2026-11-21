@@ -526,7 +526,14 @@ class _DetailsTab extends StatelessWidget {
     }
 
     final aired = dates();
-    final rating = _blendedRating(d);
+    final blended = _blendedRating(d);
+    // Two sources read as one number only because both are named; with a
+    // single source there is nothing to reconcile.
+    final rating = blended == null
+        ? null
+        : blended.sources > 1
+        ? '${blended.text}  (${l10n.score} + ${l10n.episodes})'
+        : blended.text;
     return [
       if (d.format != null) _DetailRow(label: l10n.format, value: d.format!),
       if (d.durationMins != null)
@@ -559,12 +566,8 @@ class _DetailsTab extends StatelessWidget {
   /// signal. Blending them with [RatingAggregator] keeps one number on screen
   /// without pretending the two agree, and the sites are named so the number
   /// is checkable. Null when neither is present.
-  String? _blendedRating(MediaDetail d) {
-    final titleSource = switch (d.type) {
-      ProviderType.anime => RatingSource.mal,
-      ProviderType.manga || ProviderType.novel => RatingSource.mangabaka,
-      ProviderType.movie => RatingSource.tmdb,
-    };
+  ({String text, int sources})? _blendedRating(MediaDetail d) {
+    final titleSource = RatingAggregator.primaryFor(d.type.name);
     final episodeScores = d.episodes
         .map((e) => e.rating)
         .whereType<double>()
@@ -573,15 +576,16 @@ class _DetailsTab extends StatelessWidget {
         ? null
         : episodeScores.reduce((a, b) => a + b) / episodeScores.length;
     final ratings = <Rating>[
-      if (d.score != null)
-        Rating(source: titleSource, score: d.score! / 10),
+      // [MediaDetail.score] is out of 100 and episode votes are out of 10;
+      // [Rating] normalises by [Rating.max], so the scales have to be declared.
+      if (d.score != null && titleSource != null)
+        Rating(source: titleSource, score: d.score!.toDouble(), max: 100),
       if (episodeAvg != null)
         Rating(source: RatingSource.tmdb, score: episodeAvg),
     ];
-    final blended = RatingAggregator.average(ratings);
-    if (blended == null) return null;
-    final value = '${blended.toStringAsFixed(1)} / 10';
-    return ratings.length == 1 ? value : '$value  (title and episodes)';
+    final mean = RatingAggregator.average(ratings);
+    if (mean == null) return null;
+    return (text: '${mean.toStringAsFixed(1)} / 10', sources: ratings.length);
   }
 
   /// AniList's tags, which say more than the genres do — "Time Travel 92%"

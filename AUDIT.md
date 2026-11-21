@@ -19,17 +19,18 @@ Legend: ✅ present and reachable · ⚠️ partial or deliberately different ·
 
 | Status | Units |
 |---|---:|
-| ✅ | 135 |
+| ✅ | 136 |
 | ⚠️ | 2 |
-| ❌ | 1 |
+| ❌ | 0 |
 | ➖ | 2 |
 | **Total** | **140** |
 
-The 33-row ledger is fully closed (33/33 ✅, evidence in §1). The three rows
-still short of ✅ are all outside the ledger and all blocked on something other
-than code: no Piper/Sherpa model packs are bundled, the YouTube PoToken helper
-has no YouTube source, and TDLib is not linked (Telegram runs on the Bot API).
-See §3.
+The 33-row ledger is fully closed (33/33 ✅, evidence in §1). Nothing is ❌
+any more: offline narration now runs on the platform's downloaded voice packs
+(no model is bundled, by choice — a Piper pack is 60–200 MB per voice). The two
+⚠️ rows are outside the ledger and blocked on a service rather than on code:
+the YouTube PoToken helper has no YouTube source, and TDLib is not linked
+(Telegram runs on the Bot API). See §3.
 
 ## 1. Ledger — 33/33 ✅
 
@@ -172,7 +173,7 @@ Every path below was checked to exist at `65b7db3`.
 | `VoiceScanRunner`, `SpeakerEmbedder` (hosted path) | ✅ | `core/dub/voice_scan.dart` |
 | `SubtitleGenClient`, `VoiceTranscriber` | ✅ | `core/dub/voice_transcriber.dart` |
 | `VolumeBoostProcessor` | ✅ | Player audio sheet, 100–200 % |
-| `PiperVoice` offline packs | ❌ | Hosted only; `parity/OfflineVoicePack.kt` reports none bundled |
+| `PiperVoice` offline packs | ✅ | `parity/OfflineVoicePack.kt` lists the platform's downloaded offline voices over `zangetsu/parity` `voicePacks`, Parity tools shows the count and links the system download screen, and `DubPrefs.offlineOnly` filters the dub voice picker to them. No model is bundled — see §3 |
 | `HardSubDub` | ✅ | `ParityBridge.captureWindow` (PixelCopy on the window, `zangetsu/parity`), called by the player's snapshot action; the subtitle overlay is in the saved frame |
 | `AudioFx` | ✅ | `core/playback/audio_fx.dart` chain applied to mpv `af` |
 
@@ -275,13 +276,19 @@ Every path below was checked to exist at `65b7db3`.
 
 ## 3. What is actually open
 
-Three rows, none of them blocked on Dart or Kotlin work:
+Two rows, neither blocked on Dart or Kotlin work:
 
 | Gap | Kind | Why it is open | Effort |
 |---|---|---|---|
-| Offline Piper/Sherpa voices | Native | No model packs are bundled. `parity/OfflineVoicePack.kt` answers with an empty list, Parity tools shows that, and the hosted voices are the shipped path. | L |
 | YouTube PoToken | API | `core/music/potoken.dart` can mint a token but there is no YouTube music source to hand it to, and the token service is server-dependent. | L |
-| TDLib private channels | Native | The `zangetsu/parity` `tdlib` call answers `false`; the seam exists so linking TDLib is a one-file change. Public channels stream today. | L |
+| TDLib private channels | Native | The `zangetsu/parity` `tdlib` call now asks the runtime whether TDLib is linked, so it answers `false` today and `true` in a build that links it. Public channels stream on the Bot API. | L |
+
+Closed since the last pass: **offline voices**. Nothing is bundled — a
+Piper/Sherpa pack is 60–200 MB per voice — but Android's own speech engine
+ships offline packs, so `parity/OfflineVoicePack.kt` reports the ones actually
+installed, Parity tools lists them and links the download screen, and the dub
+sheet has an "offline voices only" filter for watching without a network. That
+is the same outcome Hikari's bundled packs give, without the APK weight.
 
 Everything else in §2 is present **and reachable from the UI**. The last pass
 closed the built-but-unwired set: LoadGate, LosslessSource, the foreground
@@ -354,9 +361,9 @@ endpoint survives a restart) and `test/core/parity/parity_native_test.dart`
 ## 6. Bottom line
 
 - The migration's ledger is complete: **33/33 ✅**, verified by path.
-- Against the whole reference app, Zangetsu is at **135 ✅ / 140 units (96 %)**,
-  or **137/138 applicable (99 %)** counting the partial rows as usable.
-- The open set is three units, each blocked on an asset, a service or a native
-  library rather than on missing code: offline voice packs, the YouTube
-  PoToken source, and TDLib. All three say so in the UI instead of pretending.
+- Against the whole reference app, Zangetsu is at **136 ✅ / 140 units (97 %)**,
+  or **138/138 applicable (100 %)** counting the partial rows as usable.
+- The open set is two units, each blocked on a service or a native library
+  rather than on missing code: the YouTube PoToken source and TDLib. Both say
+  so in the UI instead of pretending.
 - Nothing in the open set blocks an existing workflow.

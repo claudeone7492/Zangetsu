@@ -29,6 +29,7 @@ class _ParityToolsScreenState extends State<ParityToolsScreen> {
   String? _status;
   double _scale = UiScale.factor;
   List<String>? _voicePacks;
+  bool _tdlib = false;
 
   @override
   void initState() {
@@ -40,7 +41,13 @@ class _ParityToolsScreenState extends State<ParityToolsScreen> {
 
   Future<void> _loadVoicePacks() async {
     final packs = await ParityNative.voicePacks();
-    if (mounted) setState(() => _voicePacks = packs);
+    final tdlib = await ParityNative.tdlibAvailable();
+    if (mounted) {
+      setState(() {
+        _voicePacks = packs;
+        _tdlib = tdlib;
+      });
+    }
   }
 
   @override
@@ -174,14 +181,31 @@ class _ParityToolsScreenState extends State<ParityToolsScreen> {
               _voicePacks == null
                   ? 'Checking…'
                   : _voicePacks!.isEmpty
-                  ? 'None installed — hosted voices are used'
-                  : _voicePacks!.join(', '),
+                  ? 'None downloaded — hosted voices are used'
+                  : '${_voicePacks!.length} installed: ${_voicePacks!.join(', ')}',
             ),
+            trailing: ParityNative.isSupported
+                ? TextButton(
+                    onPressed: () {
+                      unawaited(ParityNative.openTtsSettings());
+                      // The packs are downloaded in another screen, so the
+                      // list is stale on return; re-reading is the only way to
+                      // see a fresh one.
+                      unawaited(_loadVoicePacks());
+                    },
+                    child: const Text('Download'),
+                  )
+                : null,
           ),
           ListTile(
             dense: true,
             title: const Text('Telegram (TDLib)'),
-            subtitle: const Text('Not in this build — Telegram uses the Bot API'),
+            subtitle: Text(
+              _tdlib
+                  ? 'Linked — private channels available'
+                  : 'Not in this build — Telegram streams public channels '
+                        'through the Bot API',
+            ),
           ),
           const Divider(height: 32),
           ListTile(
