@@ -207,7 +207,7 @@ still have no Zangetsu counterpart, verified by file/symbol search at
 | TheTVDB artwork | `data/TvdbArt.kt` | ✅ | Landed: `core/metadata/tvdb_art.dart` — keyless website search, poster/banner/overview, TMDB/IMDb cross-ids, detail-page fallback when the source has no cover. |
 | Performance mode | `data/PerfMode.kt` | ✅ | Landed: `core/performance/perf_mode.dart` — image cache 1000/100 MB → 200/64 MB while active, automatic on TV, Playback settings toggle. |
 | Memory report | `data/MemoryReport.kt` | ✅ | Landed: `core/diagnostics/memory_report.dart` (RSS + peak, platform-safe) behind a Logs & diagnostics action. |
-| Tag translator | `i18n/TagTranslator.kt` | ❌ | Tags stay in the source language. |
+| Tag translator | `i18n/TagTranslator.kt` | ✅ | Landed: `core/i18n/tag_translator.dart` — 13 common genres in all 11 non-English locales, unknown tags pass through; wired into the detail Genres line. |
 | Donghua details | `data/DonghuaDetails.kt` | ⚠️ | Only an ISO country field. |
 | TMDB stills/screenshots | `data/TmdbScreenshots.kt`, `TmdbStills.kt` | ⚠️ | Cross-check: episode stills are already backfilled from TMDB in `core/metadata/episode_metadata_service.dart` (AniZip + season endpoint). The separate detail-page stills rail is still missing. |
 
@@ -219,7 +219,7 @@ still have no Zangetsu counterpart, verified by file/symbol search at
 | Player skins / server layouts | `player/PlayerSkins.kt`, `ServerLayouts.kt`, `StreamsLive.kt` | ⚠️ | Functional equivalents, different styling. |
 | l10n wiring | `i18n/` | ⚠️ | 12 catalogues at 2269 keys; the new surfaces are translated, the older ~120-literal wiring backlog remains. |
 
-**Count:** 33/33 ledger rows ✅; **15 ❌ and 8 ⚠️** above. The high-impact
+**Count:** 33/33 ledger rows ✅; **14 ❌ and 8 ⚠️** above. The high-impact
 ones are M3U import, Kitsu/Shikimori, offline TTS, ad-block/userscripts, the
 CS3 resolvers and the repo-link intents.
 
