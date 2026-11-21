@@ -357,6 +357,7 @@ Counts from `test/` on `main` (`test(` + `testWidgets(` declarations):
 | `test/core/reading` | 23 | 211 |
 | `test/core/tracker` | 18 | 179 |
 | `test/core/live` | 9 | 149 |
+| `test/features/player` | 44 | 401 |
 | `test/core/dub` | 7 | 110 |
 | `test/core/metadata` | 16 | 108 |
 | `test/core/web` | 6 | 31 |
@@ -364,7 +365,7 @@ Counts from `test/` on `main` (`test(` + `testWidgets(` declarations):
 | `test/core/performance` | 1 | 3 |
 | `test/core/diagnostics` | 1 | 2 |
 | `test/features/reader` | 9 | 119 |
-| **Whole suite** | **720** | **5,632** |
+| **Whole suite** | **721** | **5,639** |
 
 `flutter analyze` → No issues found. `flutter build apk --debug` builds, so the
 Kotlin in `android/app/src/main/kotlin/.../parity/` compiles and both method

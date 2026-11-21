@@ -239,8 +239,10 @@ Verified at the head of `main`:
   compiles and both method channels (`zangetsu/media_export`,
   `zangetsu/parity`) are registered in `MainActivity`.
 - 12 ARB catalogues at 2287 keys each; `untranslated.txt` is `{}`.
-- `flutter test` — 5,535 passing, 8 skipped, on the tree above; per-area
-  counts are in `AUDIT.md` §5.
+- `flutter test` — run end to end through `scripts/run_full_tests.sh`
+  (resumable 25-file shards, because a single run outlives the sandbox): 721
+  files, 5,605 passing, 10 skipped. One real failure surfaced — the settings
+  backup drift guard — and is fixed. Per-area counts are in `AUDIT.md` §5.
 
 ## 5. Gap-table pass
 
