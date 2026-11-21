@@ -15,6 +15,8 @@ class FakeSubscriptionApi implements SubscriptionApi {
     this.adminConfiguredResult = false,
     this.adminCheckResult = true,
     this.configResult = const SubscriptionConfig(),
+    this.seatsResult,
+    this.linkResult,
   });
 
   List<SubscriptionPlan> plansResult;
@@ -35,6 +37,13 @@ class FakeSubscriptionApi implements SubscriptionApi {
   String? lastCheckoutPlan;
   String? lastCheckoutPromo;
   int identifyCalls = 0;
+  int createDeviceCodeCalls = 0;
+  SeatResult? deviceCodeResult;
+  SeatResult? linkResult;
+  SeatSummary? seatsResult;
+  bool revokeResult = true;
+  final List<String> linkedCodes = [];
+  final List<String> revokedSeats = [];
   final List<Map<String, Object?>> redemptions = [];
   final List<Map<String, Object?>> promoWrites = [];
 
@@ -74,6 +83,39 @@ class FakeSubscriptionApi implements SubscriptionApi {
   Future<String?> startTrial(String planKey) async {
     startTrialCalls++;
     return trialResult;
+  }
+
+  @override
+  Future<SeatResult?> createDeviceCode() async {
+    createDeviceCodeCalls++;
+    return deviceCodeResult;
+  }
+
+  @override
+  Future<SeatResult?> linkDevice(String code, {String? label}) async {
+    linkedCodes.add(code);
+    if (linkResult?.ok == true) {
+      identityResult = const DeviceIdentity(
+        sessionId: 's1',
+        isNew: false,
+        trialUsed: true,
+        planKey: 'stream_standard',
+        status: 'active',
+        entitled: true,
+        showPaywall: false,
+        daysLeft: 20,
+      );
+    }
+    return linkResult;
+  }
+
+  @override
+  Future<SeatSummary?> deviceSeats() async => seatsResult;
+
+  @override
+  Future<bool> revokeDeviceSeat(String fingerprint) async {
+    revokedSeats.add(fingerprint);
+    return revokeResult;
   }
 
   @override

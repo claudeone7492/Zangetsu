@@ -108,6 +108,7 @@ import 'settings_search_index.dart';
 import 'cubit/settings_cubit.dart';
 import '../../core/tv/tv_focusable.dart';
 import '../admin/admin_screen.dart';
+import '../paywall/device_seats_screen.dart';
 import '../paywall/paywall_screen.dart';
 
 part 'settings_playback.dart';
@@ -937,6 +938,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       subtitle: l10n.settingsSubscriptionSubtitle,
       keywords: 'subscription plan premium pay promo upgrade billing',
       onTap: () => showPaywall(context),
+    ),
+    _SettingsEntry(
+      section: SettingsSection.account,
+      icon: Icons.devices_other_outlined,
+      title: 'Devices on this plan',
+      subtitle: 'Share this plan, or see what it is running on',
+      keywords: 'devices seats share family plan link code add device remove',
+      onTap: () => _push(const DeviceSeatsScreen()),
     ),
     _SettingsEntry(
       section: SettingsSection.account,

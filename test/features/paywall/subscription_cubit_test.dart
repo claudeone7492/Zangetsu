@@ -413,4 +413,45 @@ void main() {
       expect(cubit.state.identity?.daysLeft, 30);
     });
   });
+
+  group('Device seats', () {
+    test('joining a plan re-reads the identity and unlocks the card', () async {
+      final api = FakeSubscriptionApi(
+        plansResult: samplePlans(),
+        linkResult: SeatResult.fromMap({
+          'ok': true,
+          'plan_key': 'stream_standard',
+          'seats_used': 2,
+          'seat_limit': 2,
+        }),
+      );
+      final cubit = SubscriptionCubit(api);
+      await cubit.load();
+
+      final result = await cubit.linkDevice('abcd2345');
+
+      expect(result?.ok, isTrue);
+      expect(api.linkedCodes, ['abcd2345']);
+      // The seat's entitlement comes from the owner's plan, so the card must
+      // reflect the re-read identity rather than assume the join worked.
+      expect(cubit.state.identity?.entitled, isTrue);
+      expect(cubit.state.stage, PaywallStage.ready);
+    });
+
+    test('a refused code leaves the device where it was', () async {
+      final api = FakeSubscriptionApi(
+        plansResult: samplePlans(),
+        linkResult: SeatResult.fromMap({'ok': false, 'error': 'no_seats'}),
+      );
+      final cubit = SubscriptionCubit(api);
+      await cubit.load();
+
+      final result = await cubit.linkDevice('ABCD2345');
+
+      expect(result?.ok, isFalse);
+      expect(result?.message, contains('already in use'));
+      expect(cubit.state.identity?.entitled ?? false, isFalse);
+      expect(cubit.state.stage, PaywallStage.ready);
+    });
+  });
 }

@@ -20,6 +20,20 @@ abstract class SubscriptionApi {
   });
   Future<String?> startTrial(String planKey);
 
+  /// Mints a short code this device's plan can be joined with. Null when the
+  /// call itself failed; a refusal comes back as `SeatResult(ok: false)`.
+  Future<SeatResult?> createDeviceCode();
+
+  /// Joins the plan behind [code]. On success this device is a seat and
+  /// `identify()` starts reporting it entitled.
+  Future<SeatResult?> linkDevice(String code, {String? label});
+
+  /// The devices sharing this plan, with the cap.
+  Future<SeatSummary?> deviceSeats();
+
+  /// Frees a seat. The owner may drop any seat; a guest may drop its own.
+  Future<bool> revokeDeviceSeat(String fingerprint);
+
   /// Starts a checkout for [planKey] on this device and returns the result,
   /// which carries either a Korapay checkout URL or a free-access grant.
   Future<CheckoutResult> startCheckout({
@@ -168,6 +182,57 @@ class SubscriptionRepository implements SubscriptionApi {
       {'p_fingerprint': fp, 'p_plan': planKey},
       (d) => d is String ? d : null,
     );
+  }
+
+  /// Mints a join code for this plan.
+  @override
+  Future<SeatResult?> createDeviceCode() async {
+    final fp = await _fingerprint();
+    return _rpc(
+      'create_device_code',
+      {'p_fingerprint': fp},
+      _firstSeatResult,
+    );
+  }
+
+  /// Redeems [code] on this device.
+  @override
+  Future<SeatResult?> linkDevice(String code, {String? label}) async {
+    final fp = await _fingerprint();
+    return _rpc('link_device', {
+      'p_code': code.trim().toUpperCase(),
+      'p_fingerprint': fp,
+      'p_label': label ?? DeviceFingerprint.model,
+    }, _firstSeatResult);
+  }
+
+  /// Lists the devices on this plan.
+  @override
+  Future<SeatSummary?> deviceSeats() async {
+    final fp = await _fingerprint();
+    return _rpc('device_seat_list', {'p_fingerprint': fp}, (d) {
+      final rows = _rows(d);
+      return rows.isEmpty ? null : SeatSummary.fromMap(rows.first);
+    });
+  }
+
+  /// Drops a seat from this plan.
+  @override
+  Future<bool> revokeDeviceSeat(String fingerprint) async {
+    final fp = await _fingerprint();
+    final res = await _rpc(
+      'revoke_device_seat',
+      {'p_fingerprint': fp, 'p_seat_fingerprint': fingerprint},
+      (d) => _firstSeatResult(d)?.ok,
+    );
+    return res ?? false;
+  }
+
+  /// The seat RPCs answer with one jsonb object; [_rows] normalises the
+  /// list-or-object shape PostgREST can return.
+  static SeatResult? _firstSeatResult(Object? data) {
+    final rows = _rows(data);
+    return rows.isEmpty ? null : SeatResult.fromMap(rows.first);
   }
 
   /// Starts a checkout through the `stream-subscribe` edge function.

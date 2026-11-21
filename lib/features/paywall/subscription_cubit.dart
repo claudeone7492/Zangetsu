@@ -302,6 +302,20 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     return identity?.entitled ?? false;
   }
 
+  /// Joins the plan behind a device code. On success the identity is re-read,
+  /// so the card and the launch gate see the seat without a relaunch.
+  Future<SeatResult?> linkDevice(String code) async {
+    emit(state.copyWith(stage: PaywallStage.activating, message: null));
+    final result = await _repo.linkDevice(code);
+    if (result?.ok == true) {
+      final identity = await _repo.identify();
+      emit(state.copyWith(stage: PaywallStage.ready, identity: identity));
+    } else {
+      emit(state.copyWith(stage: PaywallStage.ready));
+    }
+    return result;
+  }
+
   /// Redeems the current promo (if any) against this device. Best-effort: a
   /// failure never blocks the unlock the caller already decided on.
   Future<void> commitPromo() async {

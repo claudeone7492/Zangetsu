@@ -114,6 +114,54 @@ void main() {
     expect(find.text(kPremiumPlanLabel), findsOneWidget);
   });
 
+  testWidgets('a second device joins with a code and the gate opens', (
+    t,
+  ) async {
+    final api =
+        FakeSubscriptionApi(
+            plansResult: samplePlans(),
+            identityResult: const DeviceIdentity(
+              sessionId: 's1',
+              isNew: true,
+              trialUsed: false,
+              showPaywall: true,
+              trialAvailable: true,
+            ),
+          )
+          ..linkResult = SeatResult.fromMap({
+            'ok': true,
+            'plan_key': 'stream_standard',
+            'seats_used': 2,
+            'seat_limit': 2,
+          });
+    sl.registerLazySingleton<SubscriptionApi>(() => api);
+
+    await t.pumpWidget(host(api));
+    await settle(t);
+    expect(find.text('HOME'), findsNothing);
+
+    final link = find.text('On someone\'s plan? Enter their code');
+    await t.ensureVisible(link);
+    await t.tap(link);
+    await settle(t);
+
+    await t.enterText(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(TextField),
+      ),
+      'abcd2345',
+    );
+    await t.pump();
+    await t.tap(find.text('Join'));
+    await settle(t);
+
+    // The code is normalised before it leaves the device, and the seat's
+    // entitlement comes from the owner's plan, so the gate opens.
+    expect(api.linkedCodes, ['ABCD2345']);
+    expect(find.text('HOME'), findsOneWidget);
+  });
+
   testWidgets('a subscription found in the database lets a reinstall in', (
     t,
   ) async {

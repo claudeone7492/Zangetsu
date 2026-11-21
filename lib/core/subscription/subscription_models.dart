@@ -334,3 +334,140 @@ String periodWord(int periodDays) {
   if (periodDays >= 28 && periodDays <= 31) return 'monthly';
   return 'every $periodDays days';
 }
+
+/// Outcome of a seat operation (`create_device_code`, `link_device`,
+/// `revoke_device_seat`).
+///
+/// The server answers expected refusals as `{ok: false, error: '<code>'}` rather
+/// than raising, so [error] is a stable token the UI turns into copy instead of
+/// a message that has to be parsed.
+class SeatResult {
+  const SeatResult._({
+    required this.ok,
+    this.error,
+    this.planKey,
+    this.periodEnd,
+    this.seatsUsed,
+    this.seatLimit,
+    this.code,
+    this.expiresAt,
+  });
+
+  static SeatResult fromMap(Map<String, dynamic> m) => SeatResult._(
+    ok: m['ok'] == true,
+    error: m['error'] as String?,
+    planKey: m['plan_key'] as String?,
+    periodEnd: _dt(m['period_end']),
+    seatsUsed: (m['seats_used'] as num?)?.toInt(),
+    seatLimit: (m['seat_limit'] as num?)?.toInt(),
+    code: m['code'] as String?,
+    expiresAt: _dt(m['expires_at']),
+  );
+
+  final bool ok;
+  final String? error;
+  final String? planKey;
+  final DateTime? periodEnd;
+  final int? seatsUsed;
+  final int? seatLimit;
+
+  /// The 8-character code, when this was a `create_device_code` call.
+  final String? code;
+  final DateTime? expiresAt;
+
+  /// Copy for [error], so every surface words a refusal the same way.
+  String get message => switch (error) {
+    'not_entitled' => 'This device has no active plan to share.',
+    'linked_device' => "A device on someone else's plan can't add devices.",
+    'no_seats' => 'Every device on this plan is already in use.',
+    'bad_code' => 'That code is wrong or has expired.',
+    'own_code' => 'That code is for this device.',
+    'already_linked' => 'This device is already on a plan.',
+    'own_subscription' => 'This device already has its own subscription.',
+    'plan_ended' => "That plan has ended, so it can't add devices.",
+    'too_many_attempts' => 'Too many tries. Wait an hour and try again.',
+    'code_busy' => 'Could not make a code. Try again.',
+    'not_found' => 'That device is no longer on this plan.',
+    _ => "That didn't work. Try again.",
+  };
+}
+
+/// One device sharing a plan, from `device_seat_list`.
+class DeviceSeat {
+  const DeviceSeat({
+    required this.fingerprint,
+    this.label,
+    this.platform,
+    this.model,
+    this.addedAt,
+    this.lastSeenAt,
+    this.isSelf = false,
+  });
+
+  final String fingerprint;
+  final String? label;
+  final String? platform;
+  final String? model;
+  final DateTime? addedAt;
+  final DateTime? lastSeenAt;
+  final bool isSelf;
+
+  /// What the list shows: the name the owner gave it, else the hardware, else
+  /// the tail of the fingerprint so two unlabelled phones stay distinguishable.
+  String get displayName {
+    final named = label?.trim();
+    if (named != null && named.isNotEmpty) return named;
+    final hardware = [platform, model]
+        .whereType<String>()
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .join(' · ');
+    if (hardware.isNotEmpty) return hardware;
+    final tail = fingerprint.length > 4
+        ? fingerprint.substring(fingerprint.length - 4)
+        : fingerprint;
+    return 'Device $tail';
+  }
+
+  static DeviceSeat fromMap(Map<String, dynamic> m) => DeviceSeat(
+    fingerprint: '${m['fingerprint']}',
+    label: m['label'] as String?,
+    platform: m['platform'] as String?,
+    model: m['device_model'] as String?,
+    addedAt: _dt(m['added_at']),
+    lastSeenAt: _dt(m['last_seen_at']),
+    isSelf: m['is_self'] == true,
+  );
+}
+
+/// The seat picture for this plan: the cap, how much of it is used, and who is
+/// on it. `seats_used` counts the owner, so a 2-device plan with one friend on
+/// it reports 2 of 2.
+class SeatSummary {
+  const SeatSummary({
+    this.seatLimit = 1,
+    this.seatsUsed = 1,
+    this.isSeat = false,
+    this.seats = const [],
+  });
+
+  final int seatLimit;
+  final int seatsUsed;
+
+  /// True when this device is the guest rather than the plan owner.
+  final bool isSeat;
+  final List<DeviceSeat> seats;
+
+  int get seatsLeft => (seatLimit - seatsUsed).clamp(0, 99);
+
+  static SeatSummary fromMap(Map<String, dynamic> m) => SeatSummary(
+    seatLimit: (m['seat_limit'] as num?)?.toInt() ?? 1,
+    seatsUsed: (m['seats_used'] as num?)?.toInt() ?? 1,
+    isSeat: m['is_seat'] == true,
+    seats: (m['seats'] as List?)
+            ?.whereType<Map>()
+            .map((e) => DeviceSeat.fromMap(e.cast<String, dynamic>()))
+            .toList() ??
+        const [],
+  );
+}

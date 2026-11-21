@@ -8,6 +8,7 @@ import '../../core/subscription/geo_pricing.dart';
 import '../../core/subscription/subscription_models.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import 'join_plan_dialog.dart';
 import 'korapay_checkout.dart';
 import 'subscription_cubit.dart';
 import '../../l10n/l10n.dart';
@@ -173,6 +174,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
             ],
             const SizedBox(height: 4),
             _promoField(context, state, cubit),
+            _joinPlanLink(context, cubit),
             const SizedBox(height: 16),
             _summary(state),
             const SizedBox(height: 16),
@@ -383,6 +385,66 @@ class _PaywallSheetState extends State<PaywallSheet> {
         ],
       ],
     );
+  }
+
+  /// The guest's way in: a second device joins the plan it is already paying
+  /// for instead of buying its own.
+  Widget _joinPlanLink(BuildContext context, SubscriptionCubit cubit) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton(
+        onPressed: () => _joinWithCode(context, cubit),
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.zero,
+          minimumSize: const Size(0, 34),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        child: Text(
+          "On someone's plan? Enter their code",
+          style: AppText.caption.copyWith(
+            color: AppColors.textSecondary,
+            decoration: TextDecoration.underline,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _joinWithCode(
+    BuildContext context,
+    SubscriptionCubit cubit,
+  ) async {
+    final code = await showJoinPlanDialog(context);
+    if (code == null || !context.mounted) return;
+
+    final result = await cubit.linkDevice(code);
+    if (!context.mounted) return;
+    if (result == null) {
+      _snack(context, 'Could not reach the server. Try again.');
+      return;
+    }
+    if (!result.ok) {
+      _snack(context, result.message);
+      return;
+    }
+    if (await cubit.refreshEntitlement() && context.mounted) {
+      Navigator.of(context).pop(true);
+    }
+  }
+
+  void _snack(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.surface2,
+          behavior: SnackBarBehavior.floating,
+          content: Text(
+            message,
+            style: AppText.body.copyWith(color: Colors.white),
+          ),
+        ),
+      );
   }
 
   Widget _summary(SubscriptionState state) {
