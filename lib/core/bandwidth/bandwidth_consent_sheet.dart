@@ -20,7 +20,12 @@ Future<void> maybeShowCookiesConsent(
   BandwidthShare? share,
 }) async {
   final s = share ?? _registeredShare();
-  if (s == null || !s.supported || s.answeredConsent) return;
+  if (s == null) return;
+  // Wait for the saved answer: the shell opens this on its first frame, before
+  // the channel round trip that reads native storage has finished.
+  await s.ready;
+  if (!s.supported || !s.available || s.answeredConsent) return;
+  if (!context.mounted) return;
   await showCookiesConsentSheet(context, share: s);
 }
 
@@ -31,10 +36,17 @@ Future<void> showCookiesConsentSheet(
 }) {
   final s = share ?? _registeredShare();
   if (s == null) return Future<void>.value();
+  // Not dismissible: the answer is what stops this card returning, so it is
+  // taken here — Accept or Manage — rather than by a tap outside or the back
+  // gesture that records nothing.
   return showDialog<void>(
     context: context,
+    barrierDismissible: false,
     barrierColor: Colors.black.withValues(alpha: 0.55),
-    builder: (_) => _CookiesConsentCard(share: s),
+    builder: (_) => PopScope(
+      canPop: false,
+      child: _CookiesConsentCard(share: s),
+    ),
   );
 }
 
@@ -60,20 +72,28 @@ class _CookiesConsentCardState extends State<_CookiesConsentCard> {
     if (_busy) return;
     setState(() => _busy = true);
     final nav = Navigator.of(context);
-    await widget.share.accept();
-    if (nav.mounted) nav.pop();
+    try {
+      await widget.share.accept();
+    } finally {
+      if (nav.mounted) nav.pop();
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   Future<void> _savePrefs() async {
     if (_busy) return;
     setState(() => _busy = true);
     final nav = Navigator.of(context);
-    if (_performance) {
-      await widget.share.accept();
-    } else {
-      await widget.share.decline();
+    try {
+      if (_performance) {
+        await widget.share.accept();
+      } else {
+        await widget.share.decline();
+      }
+    } finally {
+      if (nav.mounted) nav.pop();
+      if (mounted) setState(() => _busy = false);
     }
-    if (nav.mounted) nav.pop();
   }
 
   @override

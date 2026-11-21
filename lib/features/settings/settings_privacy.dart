@@ -231,6 +231,8 @@ class _BandwidthShareCard extends StatelessWidget {
     return ListenableBuilder(
       listenable: share,
       builder: (context, _) {
+        // No SDK key in this build: nothing can run, so do not offer a switch.
+        if (!share.available) return const SizedBox.shrink();
         final status = switch (share.status) {
           BandwidthShareStatus.connected => context.l10n.bandwidthStatusConnected,
           BandwidthShareStatus.connecting =>

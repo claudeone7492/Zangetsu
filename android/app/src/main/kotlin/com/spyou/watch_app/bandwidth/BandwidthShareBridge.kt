@@ -9,9 +9,10 @@ import io.flutter.plugin.common.MethodChannel
  * Dart side of bandwidth sharing. Two channels:
  *
  * - `zangetsu/bandwidth_share` — commands + a snapshot. `enable` records the
- *   opt-in flag and starts the SDK; `disable` clears the flag and stops it;
- *   `markAnswered` records that the consent sheet was dismissed without
- *   enabling; `snapshot` returns {enabled, answeredConsent, status}.
+ *   opt-in flag and starts the SDK, then waits for the relay's answer before
+ *   reporting; `disable` clears the flag and stops it; `markAnswered` records
+ *   that the consent sheet was dismissed without enabling; `snapshot` returns
+ *   {enabled, answeredConsent, running, available, status}.
  * - `zangetsu/bandwidth_share/status` — the SDK's status stream, pushed on
  *   every change.
  *
@@ -25,21 +26,35 @@ class BandwidthShareBridge(context: Context) : MethodChannel.MethodCallHandler {
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "enable" -> {
+                // The answer is recorded before anything is started, so a
+                // refused relay — or a crash — cannot bring the consent sheet
+                // back on the next launch.
                 BandwidthSharePrefs.setAnswered(appContext, true)
                 BandwidthSharePrefs.setEnabled(appContext, true)
-                // Report whether the SDK actually came up. If it did not (no key
-                // compiled in, relay refused), the flag is rolled back so the
-                // switch does not lie and the boot receiver does not try to
-                // resurrect a service that never started.
-                val started = PeerShare.start(appContext)
-                if (!started) BandwidthSharePrefs.setEnabled(appContext, false)
-                result.success(
-                    mapOf(
-                        "started" to started,
-                        "enabled" to BandwidthSharePrefs.isEnabled(appContext),
-                        "status" to PeerShare.currentStatus(appContext),
-                    ),
-                )
+                // `start()` returns as soon as it has launched the registration
+                // coroutine, so the reply waits for a terminal status: reporting
+                // "started" for a key the relay rejects is what left the switch
+                // on with nothing running.
+                Thread {
+                    val configured = PeerShare.isConfigured()
+                    val requested = configured && PeerShare.start(appContext)
+                    val status = if (configured) {
+                        PeerShare.awaitSettled(appContext)
+                    } else {
+                        "unsupported"
+                    }
+                    val started = requested && status != "error"
+                    if (!started) BandwidthSharePrefs.setEnabled(appContext, false)
+                    result.success(
+                        mapOf(
+                            "started" to started,
+                            "enabled" to BandwidthSharePrefs.isEnabled(appContext),
+                            "running" to PeerShare.isRunning(appContext),
+                            "available" to configured,
+                            "status" to status,
+                        ),
+                    )
+                }.start()
             }
             "disable" -> {
                 BandwidthSharePrefs.setEnabled(appContext, false)
@@ -60,6 +75,7 @@ class BandwidthShareBridge(context: Context) : MethodChannel.MethodCallHandler {
                     "enabled" to BandwidthSharePrefs.isEnabled(appContext),
                     "answeredConsent" to BandwidthSharePrefs.isAnswered(appContext),
                     "running" to PeerShare.isRunning(appContext),
+                    "available" to PeerShare.isConfigured(),
                     "status" to PeerShare.currentStatus(appContext),
                 ),
             )

@@ -52,11 +52,19 @@ BandwidthShareStatus _statusFromName(String? name) => switch (name) {
 /// call is a no-op, so callers never have to branch on the platform.
 class BandwidthShare extends ChangeNotifier {
   BandwidthShare() {
-    if (supported) {
-      _listen();
-      unawaited(_refresh());
-    }
+    _ready = supported ? _refresh() : Future<void>.value();
+    if (supported) _listen();
   }
+
+  late final Future<void> _ready;
+
+  /// Completes once the stored opt-in has been read from native storage.
+  ///
+  /// The consent sheet is opened by the first frame of the shell, which is
+  /// earlier than a channel round trip; without this, `answeredConsent` was
+  /// still its default `false` when the sheet checked it, so the sheet came
+  /// back on every cold start even though the answer was saved.
+  Future<void> get ready => _ready;
 
   static const MethodChannel _method = MethodChannel(
     'zangetsu/bandwidth_share',
@@ -71,6 +79,7 @@ class BandwidthShare extends ChangeNotifier {
       : BandwidthShareStatus.unsupported;
   bool _enabled = false;
   bool _answeredConsent = false;
+  bool _available = true;
 
   /// Whether the native SDK reports itself running. Distinct from [_enabled]
   /// (the stored opt-in): a device can be opted in while the relay is still
@@ -87,6 +96,11 @@ class BandwidthShare extends ChangeNotifier {
   /// Whether the user has already answered the consent sheet (either way). The
   /// sheet shows once; this is what stops it returning on every launch.
   bool get answeredConsent => _answeredConsent;
+
+  /// Whether this build carries the peer SDK key. A build without it cannot
+  /// share anything, so the sheet and the Settings row stay away instead of
+  /// asking for consent to a feature that will never run.
+  bool get available => _available;
 
   /// Whether sharing is on or coming up. A device that is opted in but whose
   /// SDK failed to start is deliberately NOT active — the status line and the
@@ -118,6 +132,7 @@ class BandwidthShare extends ChangeNotifier {
       _enabled = result['enabled'] == true;
       _answeredConsent = result['answeredConsent'] == true;
       _running = result['running'] == true;
+      _available = result['available'] as bool? ?? true;
       _status = _statusFromName(result['status'] as String?);
       notifyListeners();
     } catch (_) {
@@ -138,15 +153,25 @@ class BandwidthShare extends ChangeNotifier {
     _answeredConsent = true;
     _status = BandwidthShareStatus.connecting;
     notifyListeners();
+    // Record the answer before starting: the sheet must never return because
+    // the relay refused, the key was rejected, or the call itself failed.
+    try {
+      await _method.invokeMethod<void>('markAnswered');
+    } catch (_) {}
     try {
       final result =
           await _method.invokeMapMethod<String, dynamic>('enable') ??
           const <String, dynamic>{};
       final started = result['started'] == true;
       _enabled = result['enabled'] == true;
-      _running = started;
+      _running = result['running'] == true;
+      _available = result['available'] as bool? ?? true;
       _status = _statusFromName(result['status'] as String?);
-      if (!started) _status = BandwidthShareStatus.error;
+      if (!started) {
+        _enabled = false;
+        _running = false;
+        _status = BandwidthShareStatus.error;
+      }
       notifyListeners();
     } catch (_) {
       _enabled = false;

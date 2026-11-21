@@ -27,11 +27,16 @@ object BandwidthSharePrefs {
     fun isAnswered(context: Context): Boolean =
         prefs(context).getBoolean(ANSWERED, false)
 
+    // commit(), not apply(): the consent answer is written the instant the
+    // sheet is dismissed, and a process killed right afterwards must still find
+    // it on the next launch. apply() flushes asynchronously and can be lost.
+    @Suppress("ApplySharedPref")
     fun setEnabled(context: Context, value: Boolean) {
-        prefs(context).edit().putBoolean(ENABLED, value).apply()
+        prefs(context).edit().putBoolean(ENABLED, value).commit()
     }
 
+    @Suppress("ApplySharedPref")
     fun setAnswered(context: Context, value: Boolean) {
-        prefs(context).edit().putBoolean(ANSWERED, value).apply()
+        prefs(context).edit().putBoolean(ANSWERED, value).commit()
     }
 }

@@ -47,7 +47,12 @@ void main() {
   test('accept only reports enabled when the SDK actually started', () async {
     stubMethod(
       (call) async => switch (call.method) {
-        'enable' => {'started': true, 'enabled': true, 'status': 'connected'},
+        'enable' => {
+          'started': true,
+          'enabled': true,
+          'running': true,
+          'status': 'connected',
+        },
         'snapshot' => {
           'enabled': false,
           'answeredConsent': false,
@@ -130,7 +135,12 @@ void main() {
   test('disable clears the flag and stops sharing', () async {
     stubMethod(
       (call) async => switch (call.method) {
-        'enable' => {'started': true, 'enabled': true, 'status': 'connected'},
+        'enable' => {
+          'started': true,
+          'enabled': true,
+          'running': true,
+          'status': 'connected',
+        },
         'disable' => {'enabled': false, 'status': 'stopped'},
         'snapshot' => {
           'enabled': false,

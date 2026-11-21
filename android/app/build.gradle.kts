@@ -67,6 +67,12 @@ android {
                 ?: System.getenv("PROXIES_API_KEY")
                 ?: ""
         buildConfigField("String", "PROXIES_API_KEY", "\"$proxiesApiKey\"")
+        if (proxiesApiKey.isBlank()) {
+            logger.warn(
+                "PROXIES_API_KEY is not set (android/proxies.properties): " +
+                    "bandwidth sharing will be inert in this build.",
+            )
+        }
     }
 
     buildFeatures {

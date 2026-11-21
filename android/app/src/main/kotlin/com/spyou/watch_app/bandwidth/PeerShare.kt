@@ -3,6 +3,7 @@ package com.spyou.watch_app.bandwidth
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import com.spyou.watch_app.BuildConfig
 import sx.proxies.peer.ProxiesPeerSDK
@@ -33,6 +34,13 @@ object PeerShare {
         ProxiesPeerSDK.Status.ERROR -> "error"
     }
 
+    /**
+     * Whether this build carries an SDK key at all. A blank key makes the SDK
+     * inert, so the UI hides the feature instead of offering a switch that can
+     * never come up.
+     */
+    fun isConfigured(): Boolean = BuildConfig.PROXIES_API_KEY.isNotBlank()
+
     /** Idempotent: initialises the SDK on first use, no-ops afterwards. */
     private fun ensureInit(context: Context) {
         if (initialized) return
@@ -61,6 +69,11 @@ object PeerShare {
     fun start(context: Context): Boolean {
         ensureInit(context)
         if (!initialized) return false
+        // `start()` registers the device and dials the relay; calling it again
+        // while that is in flight only repeats the registration, which is what
+        // the resume hook would otherwise do on every foregrounding.
+        val current = currentStatus(context)
+        if (current == "connected" || current == "connecting") return true
         return try {
             ProxiesPeerSDK.getInstance().start()
             true
@@ -71,6 +84,30 @@ object PeerShare {
     }
 
     /**
+     * Blocks until the SDK names a terminal status or [timeoutMs] elapses.
+     *
+     * `start()` only launches a coroutine: it registers the device over the
+     * network and then starts the foreground service, so it returns "started"
+     * long before the relay answers. Without this wait, `enable` reported
+     * success for a key the relay rejects and the switch showed on while
+     * nothing ran. Call it off the main thread.
+     */
+    fun awaitSettled(context: Context, timeoutMs: Long = 5_000): String {
+        val deadline = SystemClock.elapsedRealtime() + timeoutMs
+        while (SystemClock.elapsedRealtime() < deadline) {
+            val status = currentStatus(context)
+            if (status == "connected" || status == "error") return status
+            try {
+                Thread.sleep(150)
+            } catch (interrupted: InterruptedException) {
+                Thread.currentThread().interrupt()
+                break
+            }
+        }
+        return currentStatus(context)
+    }
+
+    /**
      * Bring sharing back if the user opted in — the Android 15+ path, where
      * [PeerShareBootReceiver] cannot start the SDK's `dataSync` foreground
      * service from BOOT_COMPLETED. Called on Activity resume; a no-op when
@@ -78,11 +115,15 @@ object PeerShare {
      */
     fun resumeIfOptedIn(context: Context) {
         if (!BandwidthSharePrefs.isEnabled(context)) return
-        if (isRunning(context)) return
+        val status = currentStatus(context)
+        if (status == "connected" || status == "connecting") return
         start(context)
     }
 
     fun stop(context: Context) {
+        // init() is what makes `getInstance()` legal; stopping without it threw
+        // and left a service the previous process had started running.
+        ensureInit(context)
         if (!initialized) return
         try {
             ProxiesPeerSDK.getInstance().stop()
