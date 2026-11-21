@@ -1,8 +1,8 @@
 # HANDOFF — Zangetsu migration: finish l10n parity, then close the last two feature gaps
 
 Written 2026-11-17. Everything below is measured against the tree at
-`b1d8333b` plus the uncommitted working-tree changes listed in §3. Read §0
-first; it tells you what to do before touching anything.
+**`eee8104d`**, which is pushed and level with `origin/main`. The working tree
+is clean. Read §0 first; it tells you what to do before touching anything.
 
 ---
 
@@ -11,21 +11,19 @@ first; it tells you what to do before touching anything.
 ```bash
 cd /workspace/project
 source scripts/env.sh          # ALWAYS. Sets Flutter/JDK/Android paths.
-git status --short             # expect the §3 changes, nothing else
-git --no-pager log --oneline -3
+git status --short             # expect clean
+git --no-pager log --oneline -4
 ```
 
 Then, in order:
 
-1. **Verify the uncommitted voice-label work** (§3) — it is written and
-   `dart analyze` clean, but its test run has never completed (see §5). Run it
-   before you commit it. If it fails, the fix is almost certainly in
-   `_dubVoiceLabel` (§3.2).
-2. **Commit §3** as one commit (`l10n: name the hosted voices in the UI
-   language`), plus `gaps.md` separately.
-3. **Push** (`git push origin main`). The tree is 0 behind / 49+ ahead of
-   `origin/main`; it fast-forwards.
-4. Then work §4 (the remaining work) top to bottom.
+1. **Run the one test that was never run** (§3.3). The voice-label change is
+   committed and `dart analyze` clean, but the sandbox killed every attempt to
+   test it (§5). This is the single unverified item in the repo.
+2. Work §4 (the remaining work) top to bottom.
+
+Everything in §3 is already committed and pushed — it is documented because it
+is the most subtle change in the tree, not because it is pending.
 
 ### Two-repo context — read this before you look for the "other repo"
 
@@ -63,8 +61,9 @@ wants upstream sync, add it explicitly — do not assume it exists.
 - Three pushed commits did the bulk: `85327daf`, `b49c6778`, `b1d8333b`.
   Earlier: `24c01dfc`, `075ed6bf`.
 - **30-row gap ledger (`gaps.md`): 28 done, 2 open** (§4.3, §4.4).
-- `flutter analyze`: **No issues found** (verified after the §3 edits too, via
-  `dart analyze` on the changed files).
+- `dart analyze lib/` → **"No issues found"**, verified after the voice-label
+  change and after removing the two orphaned keys. A full `flutter analyze`
+  also passed earlier in the session (65 s).
 - `test/l10n/migrated_strings_test.dart` passes: every migrated string is
   translated in all 12 locales.
 
@@ -83,11 +82,10 @@ wants upstream sync, add it explicitly — do not assume it exists.
 
 ---
 
-## 3. Uncommitted work in the tree — finish this first
+## 3. The voice-label change (committed as `aa954942`) — one test still owed
 
-`git status` shows `gaps.md` plus a coherent, complete, **analytically clean**
-change set that localises the hosted TTS voice names. It has never been
-test-run (§5). It is correct by inspection; treat it as "verify then commit".
+This is the most subtle change in the tree, and the only one whose test run was
+never completed (§5). Read this before you touch `dub_sheet.dart`.
 
 ### 3.1 What it does
 
@@ -139,19 +137,27 @@ If a test fails on a label mismatch, the fix belongs in `_voiceName` /
 
 ## 4. Remaining work, in priority order
 
-### 4.1 Commit + push §3 and `gaps.md`  *(blocks everything)*
+### 4.1 Already done — nothing to commit *(was: commit §3 and `gaps.md`)*
 
-`gaps.md` holds one uncommitted edit: F2 (CloudStream native API completeness)
-marked ✅ done — it was closed by A9's bytecode audit (761 `.cs3` plugins, 0
-missing classes/methods against `library-android:v4.8.0`). Commit it on its own.
+All three commits are pushed and the tree is clean:
+
+```
+eee8104d  docs: hand off the remaining migration work
+c4c862ac  docs(gaps): close F2, CloudStream native API completeness
+aa954942  l10n: name the hosted voices in the UI language
+```
+
+The only outstanding item from that batch is running `dub_sheet_test` (§3.3).
 
 ### 4.2 Finish the l10n migration — **120 literals in 50 files**
 
 Key-level parity is done; **wiring is not**. 120 user-visible strings are still
-hard-coded English in widgets. Full line-by-line inventory:
-**`.agent_logs/remaining_l10n.txt`** (untracked, regenerable — see below).
+hard-coded English in widgets.
 
-How to regenerate it at any time:
+**The inventory lives in this document — there is no separate file.** It was
+generated into `.agent_logs/remaining_l10n.txt`, which is gitignored and will
+not exist in a fresh clone. Regenerate it with the script below (it is
+idempotent and cheap).
 
 ```bash
 cd /workspace/project && python3 - <<'PY'
@@ -386,7 +392,10 @@ on purpose).
 ## 8. Commit log for context
 
 ```
-b1d8333b  l10n: finish the locale catalogues          (HEAD, pushed)
+eee8104d  docs: hand off the remaining migration work          (HEAD, pushed)
+c4c862ac  docs(gaps): close F2, CloudStream native API completeness
+aa954942  l10n: name the hosted voices in the UI language
+b1d8333b  l10n: finish the locale catalogues
 b49c6778  l10n: backfill the subtitle and streaming surfaces
 85327daf  l10n: translate the settings and appearance surfaces
 075ed6bf  l10n: finish the hardcoded-string sweep
@@ -394,4 +403,4 @@ b49c6778  l10n: backfill the subtitle and streaming surfaces
 a78ff049  docs: add Zangetsu vs Hikari feature & plugin-catalogue comparison   (was origin/main)
 ```
 
-Uncommitted: `gaps.md` (F2 closure) + the §3 voice-label change set.
+Working tree: clean. Nothing is pending a commit.
