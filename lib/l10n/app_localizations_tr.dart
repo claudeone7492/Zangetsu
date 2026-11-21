@@ -7346,4 +7346,258 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get voiceLangChineseMandarin => 'Çince (Mandarin)';
+
+  @override
+  String get adminCreatePasscode => 'Yönetici parolası oluştur';
+
+  @override
+  String get adminEnterPasscode => 'Yönetici parolasını girin';
+
+  @override
+  String get adminPasscode => 'Parola';
+
+  @override
+  String get adminDevices => 'Cihazlar';
+
+  @override
+  String get adminActiveNow => 'Şu anda etkin';
+
+  @override
+  String get adminActiveSubs => 'Etkin abonelikler';
+
+  @override
+  String get adminMrr => 'MRR';
+
+  @override
+  String get freeAccess => 'Ücretsiz erişim';
+
+  @override
+  String get readerCustomColorFilter => 'Özel renk filtresi';
+
+  @override
+  String get readerBlendMode => 'Renk filtresi karışım modu';
+
+  @override
+  String get readerBlendMultiply => 'Çarpma';
+
+  @override
+  String get readerBlendScreen => 'Ekran';
+
+  @override
+  String get readerBlendOverlay => 'Kaplama';
+
+  @override
+  String get readerBlendDodge => 'Kaçınma';
+
+  @override
+  String get readerBlendLighten => 'Aydınlatma';
+
+  @override
+  String get stremioPasteAddonUrl =>
+      'Eklenti ayarları sayfasındaki URL\'yi yapıştırın';
+
+  @override
+  String get stremioAddonUrl => 'Eklenti URL\'si';
+
+  @override
+  String get moveUp => 'Yukarı taşı';
+
+  @override
+  String get moveDown => 'Aşağı taşı';
+
+  @override
+  String get stremioConfigureAddon => 'Eklentiyi yapılandır';
+
+  @override
+  String get stremioUpdateUrl => 'URL\'yi güncelle';
+
+  @override
+  String get pairSendTitle => 'Bu cihazdan gönder';
+
+  @override
+  String get pairSendSubtitle => 'Diğer cihazın gireceği bir kod gösterir';
+
+  @override
+  String get pairReceiveTitle => 'Bu cihazda al';
+
+  @override
+  String get pairReceiveSubtitle => 'Wi-Fi ağınızdaki göndericileri bulur';
+
+  @override
+  String get pairCodeExample => '123456';
+
+  @override
+  String get collectionsRename => 'Koleksiyonu yeniden adlandır';
+
+  @override
+  String get collectionsNewFolder => 'Yeni klasör';
+
+  @override
+  String get collectionsNewLiveFolder => 'Yeni canlı klasör';
+
+  @override
+  String get collectionsSearchText => 'Arama metni';
+
+  @override
+  String collectionsDeleteTitle(String name) {
+    return '\"$name\" silinsin mi?';
+  }
+
+  @override
+  String get liveParentalConfirmOldPin => 'Eski PIN\'i onayla';
+
+  @override
+  String get liveParentalCurrentPin => 'Mevcut PIN';
+
+  @override
+  String get liveParentalRemovePin => 'PIN\'i kaldır';
+
+  @override
+  String get liveParentalRemovePinBody =>
+      'Kilidi kaldırmak için mevcut PIN\'i girin';
+
+  @override
+  String get liveParentalUnlockBody =>
+      'Kısıtlı kanalları göstermek için PIN\'i girin';
+
+  @override
+  String get paywallPromoHint => 'Promosyon kodunuz var mı?';
+
+  @override
+  String get paywallPlan => 'Plan';
+
+  @override
+  String get paywallPrice => 'Fiyat';
+
+  @override
+  String get paywallTotal => 'Toplam';
+
+  @override
+  String get paywallYouSave => 'Tasarrufunuz';
+
+  @override
+  String get tvErrorCouldNotLoadEpisode => 'Bu bölüm yüklenemedi';
+
+  @override
+  String get tvErrorCouldNotCheckSources => 'Tüm kaynaklar kontrol edilemedi';
+
+  @override
+  String get tvErrorGenericBody =>
+      'Bu içerik yüklenirken bir sorun oluştu. Devam ederse kaynağı değiştirmeyi deneyin.';
+
+  @override
+  String get tvErrorCouldNotPlaySource => 'Bu kaynak oynatılamadı';
+
+  @override
+  String tvErrorPlaySourceBody(String showTitle, String code) {
+    return '$showTitle oynatılamadı. Akış bulundu ancak oynatıcı çözemedi$code. Başka bir kaynak deneyin veya elle seçin.';
+  }
+
+  @override
+  String get tvErrorTryNextSource => 'Sonraki kaynağı dene';
+
+  @override
+  String get episodeWhereToWatch => 'Nerede izlenir';
+
+  @override
+  String get episodeWhereToWatchSubtitle =>
+      'Bu bölümün hangi kaynağınızda olduğunu görün';
+
+  @override
+  String get episodeReadOnSourceSite => 'Kaynağın kendi sitesinde okuyun';
+
+  @override
+  String get sourcesNoneAvailable => 'Kaynak yok';
+
+  @override
+  String get sourcesCouldNotLoadCatalogue => 'Bu katalog yüklenemedi';
+
+  @override
+  String get sourcesNoTitlesToShow => 'Gösterilecek başlık yok';
+
+  @override
+  String get liveRefreshGuide => 'Kılavuzu yenile';
+
+  @override
+  String get liveSetReminder => 'Hatırlatıcı ayarla';
+
+  @override
+  String get liveRecord => 'Kaydet';
+
+  @override
+  String get profileRemoveLock => 'Profil kilidini kaldır';
+
+  @override
+  String get profileEnableFingerprint => 'Parmak izini etkinleştir';
+
+  @override
+  String get profileRecoverPin => 'Profil PIN\'ini kurtar';
+
+  @override
+  String get profileRemoveAvatar => 'Avatarı kaldır';
+
+  @override
+  String get profileBio => 'Biyografi';
+
+  @override
+  String get profileHideAdultTitles => 'Yetişkin başlıklarını katalogda gizle';
+
+  @override
+  String get profileEditProfile => 'Profili düzenle';
+
+  @override
+  String get profileMenu => 'Profil menüsü';
+
+  @override
+  String get debridTokenSaved => 'API belirteci bu cihazda kaydedildi';
+
+  @override
+  String get debridApiToken => 'API belirteci';
+
+  @override
+  String get debridGetApiToken => 'API belirteci al';
+
+  @override
+  String get checkOtherSources => 'Diğer kaynakları kontrol et';
+
+  @override
+  String get goBack => 'Geri dön';
+
+  @override
+  String get backupPairSyncTitle => 'Wi-Fi üzerinden eşleştir ve senkronize et';
+
+  @override
+  String get backupPairSyncSubtitle =>
+      'Yedeklemeyi iki cihaz arasında taşıyın, bulut yok';
+
+  @override
+  String get liveXtreamAccounts => 'Xtream hesapları';
+
+  @override
+  String get tvGuide => 'TV rehberi';
+
+  @override
+  String get repositoryActions => 'Depo işlemleri';
+
+  @override
+  String get sourceHealthDeepTest =>
+      'Derin test (her kaynaktan bir başlık açar)';
+
+  @override
+  String get gifSearchKlipy => 'KLIPY\'de ara';
+
+  @override
+  String get profilesAskOnLaunch => 'Açılışta kimin izlediğini sor';
+
+  @override
+  String get dubAsWritten => 'Yazıldığı gibi';
+
+  @override
+  String get dubReadAloudSubtitle => 'Altyazı satırını sesli oku';
+
+  @override
+  String get playerProvider => 'Sağlayıcı';
+
+  @override
+  String get stop => 'Durdur';
 }

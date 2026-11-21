@@ -93,7 +93,9 @@ void main() {
     await tester.runAsync(() async {
       await tester.tap(finder);
       // Let the write the tap starts finish before the fake clock resumes.
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+      // Hive writes go through a background isolate; under a parallel
+      // full-suite run this can take far longer than it needs in isolation.
+      await Future<void>.delayed(const Duration(milliseconds: 250));
     });
     await settle(tester);
   }

@@ -90,3 +90,6 @@ supabase/.temp/
 
 # Kotlin build session files
 android/.kotlin/
+
+# Local agent scratch logs and helper scripts (never committed).
+/.agent_logs/

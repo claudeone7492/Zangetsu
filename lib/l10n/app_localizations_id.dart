@@ -7351,4 +7351,259 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get voiceLangChineseMandarin => 'Mandarin';
+
+  @override
+  String get adminCreatePasscode => 'Buat kode sandi admin';
+
+  @override
+  String get adminEnterPasscode => 'Masukkan kode sandi admin';
+
+  @override
+  String get adminPasscode => 'Kode sandi';
+
+  @override
+  String get adminDevices => 'Perangkat';
+
+  @override
+  String get adminActiveNow => 'Aktif sekarang';
+
+  @override
+  String get adminActiveSubs => 'Langganan aktif';
+
+  @override
+  String get adminMrr => 'MRR';
+
+  @override
+  String get freeAccess => 'Akses gratis';
+
+  @override
+  String get readerCustomColorFilter => 'Filter warna khusus';
+
+  @override
+  String get readerBlendMode => 'Mode campuran filter warna';
+
+  @override
+  String get readerBlendMultiply => 'Perkalian';
+
+  @override
+  String get readerBlendScreen => 'Layar';
+
+  @override
+  String get readerBlendOverlay => 'Hamparan';
+
+  @override
+  String get readerBlendDodge => 'Sorotan';
+
+  @override
+  String get readerBlendLighten => 'Pencerahan';
+
+  @override
+  String get stremioPasteAddonUrl => 'Tempel URL dari halaman pengaturan addon';
+
+  @override
+  String get stremioAddonUrl => 'URL addon';
+
+  @override
+  String get moveUp => 'Pindahkan ke atas';
+
+  @override
+  String get moveDown => 'Pindahkan ke bawah';
+
+  @override
+  String get stremioConfigureAddon => 'Konfigurasikan addon';
+
+  @override
+  String get stremioUpdateUrl => 'Perbarui URL';
+
+  @override
+  String get pairSendTitle => 'Kirim dari perangkat ini';
+
+  @override
+  String get pairSendSubtitle =>
+      'Menampilkan kode yang diketik di perangkat lain';
+
+  @override
+  String get pairReceiveTitle => 'Terima di perangkat ini';
+
+  @override
+  String get pairReceiveSubtitle => 'Menemukan pengirim di Wi-Fi Anda';
+
+  @override
+  String get pairCodeExample => '123456';
+
+  @override
+  String get collectionsRename => 'Ganti nama koleksi';
+
+  @override
+  String get collectionsNewFolder => 'Folder baru';
+
+  @override
+  String get collectionsNewLiveFolder => 'Folder langsung baru';
+
+  @override
+  String get collectionsSearchText => 'Teks pencarian';
+
+  @override
+  String collectionsDeleteTitle(String name) {
+    return 'Hapus \"$name\"?';
+  }
+
+  @override
+  String get liveParentalConfirmOldPin => 'Konfirmasi PIN lama';
+
+  @override
+  String get liveParentalCurrentPin => 'PIN saat ini';
+
+  @override
+  String get liveParentalRemovePin => 'Hapus PIN';
+
+  @override
+  String get liveParentalRemovePinBody =>
+      'Masukkan PIN saat ini untuk menghapus kunci';
+
+  @override
+  String get liveParentalUnlockBody =>
+      'Masukkan PIN untuk menampilkan saluran terbatas';
+
+  @override
+  String get paywallPromoHint => 'Punya kode promo?';
+
+  @override
+  String get paywallPlan => 'Paket';
+
+  @override
+  String get paywallPrice => 'Harga';
+
+  @override
+  String get paywallTotal => 'Total';
+
+  @override
+  String get paywallYouSave => 'Anda menghemat';
+
+  @override
+  String get tvErrorCouldNotLoadEpisode => 'Tidak dapat memuat episode ini';
+
+  @override
+  String get tvErrorCouldNotCheckSources =>
+      'Tidak dapat memeriksa semua sumber';
+
+  @override
+  String get tvErrorGenericBody =>
+      'Terjadi masalah saat memuat konten ini. Jika berlanjut, coba ganti sumber.';
+
+  @override
+  String get tvErrorCouldNotPlaySource => 'Tidak dapat memutar sumber ini';
+
+  @override
+  String tvErrorPlaySourceBody(String showTitle, String code) {
+    return '$showTitle gagal diputar. Aliran ditemukan tetapi pemutar tidak dapat mendekodenya$code. Coba sumber lain, atau pilih secara manual.';
+  }
+
+  @override
+  String get tvErrorTryNextSource => 'Coba sumber berikutnya';
+
+  @override
+  String get episodeWhereToWatch => 'Tempat menonton';
+
+  @override
+  String get episodeWhereToWatchSubtitle =>
+      'Lihat sumber mana yang memiliki episode ini';
+
+  @override
+  String get episodeReadOnSourceSite => 'Baca di situs sumbernya';
+
+  @override
+  String get sourcesNoneAvailable => 'Tidak ada sumber tersedia';
+
+  @override
+  String get sourcesCouldNotLoadCatalogue => 'Tidak dapat memuat katalog ini';
+
+  @override
+  String get sourcesNoTitlesToShow => 'Tidak ada judul untuk ditampilkan';
+
+  @override
+  String get liveRefreshGuide => 'Segarkan panduan';
+
+  @override
+  String get liveSetReminder => 'Setel pengingat';
+
+  @override
+  String get liveRecord => 'Rekam';
+
+  @override
+  String get profileRemoveLock => 'Hapus kunci profil';
+
+  @override
+  String get profileEnableFingerprint => 'Aktifkan sidik jari';
+
+  @override
+  String get profileRecoverPin => 'Pulihkan PIN profil';
+
+  @override
+  String get profileRemoveAvatar => 'Hapus avatar';
+
+  @override
+  String get profileBio => 'Bio';
+
+  @override
+  String get profileHideAdultTitles => 'Sembunyikan judul dewasa di katalog';
+
+  @override
+  String get profileEditProfile => 'Edit profil';
+
+  @override
+  String get profileMenu => 'Menu profil';
+
+  @override
+  String get debridTokenSaved => 'Token API disimpan di perangkat ini';
+
+  @override
+  String get debridApiToken => 'Token API';
+
+  @override
+  String get debridGetApiToken => 'Dapatkan token API';
+
+  @override
+  String get checkOtherSources => 'Periksa sumber lain';
+
+  @override
+  String get goBack => 'Kembali';
+
+  @override
+  String get backupPairSyncTitle => 'Pasangkan & sinkronkan lewat Wi-Fi';
+
+  @override
+  String get backupPairSyncSubtitle =>
+      'Pindahkan cadangan antar dua perangkat, tanpa cloud';
+
+  @override
+  String get liveXtreamAccounts => 'Akun Xtream';
+
+  @override
+  String get tvGuide => 'Panduan TV';
+
+  @override
+  String get repositoryActions => 'Tindakan repositori';
+
+  @override
+  String get sourceHealthDeepTest =>
+      'Uji mendalam (membuka judul dari setiap sumber)';
+
+  @override
+  String get gifSearchKlipy => 'Cari di KLIPY';
+
+  @override
+  String get profilesAskOnLaunch => 'Tanyakan siapa yang menonton saat dibuka';
+
+  @override
+  String get dubAsWritten => 'Sesuai tulisan';
+
+  @override
+  String get dubReadAloudSubtitle => 'Bacakan baris subtitle dengan suara';
+
+  @override
+  String get playerProvider => 'Penyedia';
+
+  @override
+  String get stop => 'Hentikan';
 }

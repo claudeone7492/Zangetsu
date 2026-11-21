@@ -12866,6 +12866,492 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Chinese (Mandarin)'**
   String get voiceLangChineseMandarin;
+
+  /// No description provided for @adminCreatePasscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Create admin passcode'**
+  String get adminCreatePasscode;
+
+  /// No description provided for @adminEnterPasscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter admin passcode'**
+  String get adminEnterPasscode;
+
+  /// No description provided for @adminPasscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Passcode'**
+  String get adminPasscode;
+
+  /// No description provided for @adminDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Devices'**
+  String get adminDevices;
+
+  /// No description provided for @adminActiveNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Active now'**
+  String get adminActiveNow;
+
+  /// No description provided for @adminActiveSubs.
+  ///
+  /// In en, this message translates to:
+  /// **'Active subs'**
+  String get adminActiveSubs;
+
+  /// No description provided for @adminMrr.
+  ///
+  /// In en, this message translates to:
+  /// **'MRR'**
+  String get adminMrr;
+
+  /// No description provided for @freeAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Free access'**
+  String get freeAccess;
+
+  /// No description provided for @readerCustomColorFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom color filter'**
+  String get readerCustomColorFilter;
+
+  /// No description provided for @readerBlendMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Color filter blend mode'**
+  String get readerBlendMode;
+
+  /// No description provided for @readerBlendMultiply.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiply'**
+  String get readerBlendMultiply;
+
+  /// No description provided for @readerBlendScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Screen'**
+  String get readerBlendScreen;
+
+  /// No description provided for @readerBlendOverlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Overlay'**
+  String get readerBlendOverlay;
+
+  /// No description provided for @readerBlendDodge.
+  ///
+  /// In en, this message translates to:
+  /// **'Dodge'**
+  String get readerBlendDodge;
+
+  /// No description provided for @readerBlendLighten.
+  ///
+  /// In en, this message translates to:
+  /// **'Lighten'**
+  String get readerBlendLighten;
+
+  /// No description provided for @stremioPasteAddonUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the URL from the addon settings page'**
+  String get stremioPasteAddonUrl;
+
+  /// No description provided for @stremioAddonUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Addon URL'**
+  String get stremioAddonUrl;
+
+  /// No description provided for @moveUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get moveUp;
+
+  /// No description provided for @moveDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get moveDown;
+
+  /// No description provided for @stremioConfigureAddon.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure addon'**
+  String get stremioConfigureAddon;
+
+  /// No description provided for @stremioUpdateUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Update URL'**
+  String get stremioUpdateUrl;
+
+  /// No description provided for @pairSendTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send from this device'**
+  String get pairSendTitle;
+
+  /// No description provided for @pairSendSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows a code the other device types in'**
+  String get pairSendSubtitle;
+
+  /// No description provided for @pairReceiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive on this device'**
+  String get pairReceiveTitle;
+
+  /// No description provided for @pairReceiveSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finds senders on your Wi-Fi'**
+  String get pairReceiveSubtitle;
+
+  /// No description provided for @pairCodeExample.
+  ///
+  /// In en, this message translates to:
+  /// **'123456'**
+  String get pairCodeExample;
+
+  /// No description provided for @collectionsRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename collection'**
+  String get collectionsRename;
+
+  /// No description provided for @collectionsNewFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'New folder'**
+  String get collectionsNewFolder;
+
+  /// No description provided for @collectionsNewLiveFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'New live folder'**
+  String get collectionsNewLiveFolder;
+
+  /// No description provided for @collectionsSearchText.
+  ///
+  /// In en, this message translates to:
+  /// **'Search text'**
+  String get collectionsSearchText;
+
+  /// No description provided for @collectionsDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"?'**
+  String collectionsDeleteTitle(String name);
+
+  /// No description provided for @liveParentalConfirmOldPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm the old PIN'**
+  String get liveParentalConfirmOldPin;
+
+  /// No description provided for @liveParentalCurrentPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Current PIN'**
+  String get liveParentalCurrentPin;
+
+  /// No description provided for @liveParentalRemovePin.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove PIN'**
+  String get liveParentalRemovePin;
+
+  /// No description provided for @liveParentalRemovePinBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the current PIN to remove the lock'**
+  String get liveParentalRemovePinBody;
+
+  /// No description provided for @liveParentalUnlockBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the PIN to reveal restricted channels'**
+  String get liveParentalUnlockBody;
+
+  /// No description provided for @paywallPromoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Have a promo code?'**
+  String get paywallPromoHint;
+
+  /// No description provided for @paywallPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get paywallPlan;
+
+  /// No description provided for @paywallPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get paywallPrice;
+
+  /// No description provided for @paywallTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get paywallTotal;
+
+  /// No description provided for @paywallYouSave.
+  ///
+  /// In en, this message translates to:
+  /// **'You save'**
+  String get paywallYouSave;
+
+  /// No description provided for @tvErrorCouldNotLoadEpisode.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load this episode'**
+  String get tvErrorCouldNotLoadEpisode;
+
+  /// No description provided for @tvErrorCouldNotCheckSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t check every source'**
+  String get tvErrorCouldNotCheckSources;
+
+  /// No description provided for @tvErrorGenericBody.
+  ///
+  /// In en, this message translates to:
+  /// **'There was an issue loading this content. If this continues, try changing sources.'**
+  String get tvErrorGenericBody;
+
+  /// No description provided for @tvErrorCouldNotPlaySource.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t play this source'**
+  String get tvErrorCouldNotPlaySource;
+
+  /// No description provided for @tvErrorPlaySourceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{showTitle} failed to play. The stream was found but the player couldn\'t decode it{code}. Try another source, or pick one manually.'**
+  String tvErrorPlaySourceBody(String showTitle, String code);
+
+  /// No description provided for @tvErrorTryNextSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Next Source'**
+  String get tvErrorTryNextSource;
+
+  /// No description provided for @episodeWhereToWatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Where to watch'**
+  String get episodeWhereToWatch;
+
+  /// No description provided for @episodeWhereToWatchSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'See which of your sources has this episode'**
+  String get episodeWhereToWatchSubtitle;
+
+  /// No description provided for @episodeReadOnSourceSite.
+  ///
+  /// In en, this message translates to:
+  /// **'Read it on the source\'s own site'**
+  String get episodeReadOnSourceSite;
+
+  /// No description provided for @sourcesNoneAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No sources available'**
+  String get sourcesNoneAvailable;
+
+  /// No description provided for @sourcesCouldNotLoadCatalogue.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this catalogue'**
+  String get sourcesCouldNotLoadCatalogue;
+
+  /// No description provided for @sourcesNoTitlesToShow.
+  ///
+  /// In en, this message translates to:
+  /// **'No titles to show'**
+  String get sourcesNoTitlesToShow;
+
+  /// No description provided for @liveRefreshGuide.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh guide'**
+  String get liveRefreshGuide;
+
+  /// No description provided for @liveSetReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Set reminder'**
+  String get liveSetReminder;
+
+  /// No description provided for @liveRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Record'**
+  String get liveRecord;
+
+  /// No description provided for @profileRemoveLock.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove profile lock'**
+  String get profileRemoveLock;
+
+  /// No description provided for @profileEnableFingerprint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable fingerprint'**
+  String get profileEnableFingerprint;
+
+  /// No description provided for @profileRecoverPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Recover profile PIN'**
+  String get profileRecoverPin;
+
+  /// No description provided for @profileRemoveAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove avatar'**
+  String get profileRemoveAvatar;
+
+  /// No description provided for @profileBio.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get profileBio;
+
+  /// No description provided for @profileHideAdultTitles.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide adult-rated catalogue titles'**
+  String get profileHideAdultTitles;
+
+  /// No description provided for @profileEditProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get profileEditProfile;
+
+  /// No description provided for @profileMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile menu'**
+  String get profileMenu;
+
+  /// No description provided for @debridTokenSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'API token saved on this device'**
+  String get debridTokenSaved;
+
+  /// No description provided for @debridApiToken.
+  ///
+  /// In en, this message translates to:
+  /// **'API token'**
+  String get debridApiToken;
+
+  /// No description provided for @debridGetApiToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Get an API token'**
+  String get debridGetApiToken;
+
+  /// No description provided for @checkOtherSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Check other sources'**
+  String get checkOtherSources;
+
+  /// No description provided for @goBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Go back'**
+  String get goBack;
+
+  /// No description provided for @backupPairSyncTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair & sync over Wi-Fi'**
+  String get backupPairSyncTitle;
+
+  /// No description provided for @backupPairSyncSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move a backup between two devices, no cloud'**
+  String get backupPairSyncSubtitle;
+
+  /// No description provided for @liveXtreamAccounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Xtream accounts'**
+  String get liveXtreamAccounts;
+
+  /// No description provided for @tvGuide.
+  ///
+  /// In en, this message translates to:
+  /// **'TV guide'**
+  String get tvGuide;
+
+  /// No description provided for @repositoryActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Repository actions'**
+  String get repositoryActions;
+
+  /// No description provided for @sourceHealthDeepTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep test (opens a title from each source)'**
+  String get sourceHealthDeepTest;
+
+  /// No description provided for @gifSearchKlipy.
+  ///
+  /// In en, this message translates to:
+  /// **'Search KLIPY'**
+  String get gifSearchKlipy;
+
+  /// No description provided for @profilesAskOnLaunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask who is watching on launch'**
+  String get profilesAskOnLaunch;
+
+  /// No description provided for @dubAsWritten.
+  ///
+  /// In en, this message translates to:
+  /// **'As written'**
+  String get dubAsWritten;
+
+  /// No description provided for @dubReadAloudSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the subtitle line aloud'**
+  String get dubReadAloudSubtitle;
+
+  /// No description provided for @playerProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get playerProvider;
+
+  /// No description provided for @stop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get stop;
 }
 
 class _AppLocalizationsDelegate

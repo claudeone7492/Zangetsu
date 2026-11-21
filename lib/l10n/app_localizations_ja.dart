@@ -7126,4 +7126,252 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get voiceLangChineseMandarin => '中国語（標準語）';
+
+  @override
+  String get adminCreatePasscode => '管理者パスコードを作成';
+
+  @override
+  String get adminEnterPasscode => '管理者パスコードを入力';
+
+  @override
+  String get adminPasscode => 'パスコード';
+
+  @override
+  String get adminDevices => 'デバイス';
+
+  @override
+  String get adminActiveNow => '現在アクティブ';
+
+  @override
+  String get adminActiveSubs => '有効なサブスク';
+
+  @override
+  String get adminMrr => 'MRR';
+
+  @override
+  String get freeAccess => '無料アクセス';
+
+  @override
+  String get readerCustomColorFilter => 'カスタムカラーフィルター';
+
+  @override
+  String get readerBlendMode => 'カラーフィルターの合成モード';
+
+  @override
+  String get readerBlendMultiply => '乗算';
+
+  @override
+  String get readerBlendScreen => 'スクリーン';
+
+  @override
+  String get readerBlendOverlay => 'オーバーレイ';
+
+  @override
+  String get readerBlendDodge => '覆い焼き';
+
+  @override
+  String get readerBlendLighten => '比較（明）';
+
+  @override
+  String get stremioPasteAddonUrl => 'アドオンの設定ページからURLを貼り付けてください';
+
+  @override
+  String get stremioAddonUrl => 'アドオンのURL';
+
+  @override
+  String get moveUp => '上へ移動';
+
+  @override
+  String get moveDown => '下へ移動';
+
+  @override
+  String get stremioConfigureAddon => 'アドオンを設定';
+
+  @override
+  String get stremioUpdateUrl => 'URLを更新';
+
+  @override
+  String get pairSendTitle => 'このデバイスから送信';
+
+  @override
+  String get pairSendSubtitle => 'もう一方のデバイスが入力するコードを表示します';
+
+  @override
+  String get pairReceiveTitle => 'このデバイスで受信';
+
+  @override
+  String get pairReceiveSubtitle => 'Wi-Fi上の送信元を検索します';
+
+  @override
+  String get pairCodeExample => '123456';
+
+  @override
+  String get collectionsRename => 'コレクションの名前を変更';
+
+  @override
+  String get collectionsNewFolder => '新しいフォルダー';
+
+  @override
+  String get collectionsNewLiveFolder => '新しいライブフォルダー';
+
+  @override
+  String get collectionsSearchText => '検索テキスト';
+
+  @override
+  String collectionsDeleteTitle(String name) {
+    return '「$name」を削除しますか？';
+  }
+
+  @override
+  String get liveParentalConfirmOldPin => '以前のPINを確認';
+
+  @override
+  String get liveParentalCurrentPin => '現在のPIN';
+
+  @override
+  String get liveParentalRemovePin => 'PINを削除';
+
+  @override
+  String get liveParentalRemovePinBody => 'ロックを解除するには現在のPINを入力してください';
+
+  @override
+  String get liveParentalUnlockBody => '制限されたチャンネルを表示するにはPINを入力してください';
+
+  @override
+  String get paywallPromoHint => 'プロモコードをお持ちですか？';
+
+  @override
+  String get paywallPlan => 'プラン';
+
+  @override
+  String get paywallPrice => '価格';
+
+  @override
+  String get paywallTotal => '合計';
+
+  @override
+  String get paywallYouSave => '節約額';
+
+  @override
+  String get tvErrorCouldNotLoadEpisode => 'このエピソードを読み込めませんでした';
+
+  @override
+  String get tvErrorCouldNotCheckSources => 'すべてのソースを確認できませんでした';
+
+  @override
+  String get tvErrorGenericBody =>
+      'このコンテンツの読み込み中に問題が発生しました。続く場合はソースを変更してみてください。';
+
+  @override
+  String get tvErrorCouldNotPlaySource => 'このソースを再生できませんでした';
+
+  @override
+  String tvErrorPlaySourceBody(String showTitle, String code) {
+    return '$showTitleを再生できませんでした。ストリームは見つかりましたが、プレーヤーがデコードできませんでした$code。別のソースを試すか、手動で選択してください。';
+  }
+
+  @override
+  String get tvErrorTryNextSource => '次のソースを試す';
+
+  @override
+  String get episodeWhereToWatch => '視聴先';
+
+  @override
+  String get episodeWhereToWatchSubtitle => 'このエピソードを持つソースを確認します';
+
+  @override
+  String get episodeReadOnSourceSite => 'ソース自体のサイトで読む';
+
+  @override
+  String get sourcesNoneAvailable => '利用できるソースがありません';
+
+  @override
+  String get sourcesCouldNotLoadCatalogue => 'このカタログを読み込めませんでした';
+
+  @override
+  String get sourcesNoTitlesToShow => '表示するタイトルがありません';
+
+  @override
+  String get liveRefreshGuide => '番組表を更新';
+
+  @override
+  String get liveSetReminder => 'リマインダーを設定';
+
+  @override
+  String get liveRecord => '録画';
+
+  @override
+  String get profileRemoveLock => 'プロフィールロックを解除';
+
+  @override
+  String get profileEnableFingerprint => '指紋を有効にする';
+
+  @override
+  String get profileRecoverPin => 'プロフィールPINを復元';
+
+  @override
+  String get profileRemoveAvatar => 'アバターを削除';
+
+  @override
+  String get profileBio => '自己紹介';
+
+  @override
+  String get profileHideAdultTitles => 'カタログの成人向けタイトルを非表示';
+
+  @override
+  String get profileEditProfile => 'プロフィールを編集';
+
+  @override
+  String get profileMenu => 'プロフィールメニュー';
+
+  @override
+  String get debridTokenSaved => 'APIトークンをこのデバイスに保存しました';
+
+  @override
+  String get debridApiToken => 'APIトークン';
+
+  @override
+  String get debridGetApiToken => 'APIトークンを取得';
+
+  @override
+  String get checkOtherSources => '他のソースを確認';
+
+  @override
+  String get goBack => '戻る';
+
+  @override
+  String get backupPairSyncTitle => 'Wi-Fiでペアリングして同期';
+
+  @override
+  String get backupPairSyncSubtitle => 'クラウドなしで2台のデバイス間でバックアップを移動';
+
+  @override
+  String get liveXtreamAccounts => 'Xtreamアカウント';
+
+  @override
+  String get tvGuide => 'TVガイド';
+
+  @override
+  String get repositoryActions => 'リポジトリの操作';
+
+  @override
+  String get sourceHealthDeepTest => '詳細テスト（各ソースからタイトルを開きます）';
+
+  @override
+  String get gifSearchKlipy => 'KLIPYを検索';
+
+  @override
+  String get profilesAskOnLaunch => '起動時に誰が見ているか尋ねる';
+
+  @override
+  String get dubAsWritten => '書かれたとおり';
+
+  @override
+  String get dubReadAloudSubtitle => '字幕の行を読み上げる';
+
+  @override
+  String get playerProvider => 'プロバイダー';
+
+  @override
+  String get stop => '停止';
 }

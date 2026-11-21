@@ -177,7 +177,7 @@ class ViewerProfileHomeScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 8),
                                   IconButton(
-                                    tooltip: 'Edit profile',
+                                    tooltip: context.l10n.profileEditProfile,
                                     onPressed: () => openViewerProfileEditor(
                                       context,
                                       _profiles,
@@ -241,7 +241,7 @@ class ViewerProfileHomeScreen extends StatelessWidget {
               Text(context.l10n.profile, style: AppText.title),
               const Spacer(),
               IconButton(
-                tooltip: 'Profile menu',
+                tooltip: context.l10n.profileMenu,
                 onPressed: () => _openMenu(context),
                 style: IconButton.styleFrom(
                   foregroundColor: AppColors.textPrimary,
@@ -367,7 +367,7 @@ class ViewerProfileHomeScreen extends StatelessWidget {
                 ),
                 const Spacer(),
                 IconButton(
-                  tooltip: 'Profile menu',
+                  tooltip: context.l10n.profileMenu,
                   onPressed: () => _openMenu(context),
                   style: IconButton.styleFrom(
                     foregroundColor: AppColors.textPrimary,

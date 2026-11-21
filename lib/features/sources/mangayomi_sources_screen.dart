@@ -739,7 +739,7 @@ class _MangayomiSourcesScreenState extends State<MangayomiSourcesScreen>
                   ),
                 ),
                 PopupMenuButton<String>(
-                  tooltip: 'Repository actions',
+                  tooltip: context.l10n.repositoryActions,
                   color: AppColors.surface2,
                   icon: const Icon(
                     Icons.more_vert,

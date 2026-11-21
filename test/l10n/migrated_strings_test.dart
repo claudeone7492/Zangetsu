@@ -186,6 +186,88 @@ const _strings = <String, String>{
   'authGifTooLarge': 'This GIF is too large to optimize safely. Try a smaller file.',
   'authGifUnreadable': 'Could not read that GIF file.',
   'profileMoreComingSoon': 'More features are on their way with Zoro… he just got lost again.',
+  // remaining hard-coded UI strings
+  'adminCreatePasscode': 'Create admin passcode',
+  'adminEnterPasscode': 'Enter admin passcode',
+  'adminPasscode': 'Passcode',
+  'adminDevices': 'Devices',
+  'adminActiveNow': 'Active now',
+  'adminActiveSubs': 'Active subs',
+  'adminMrr': 'MRR',
+  'freeAccess': 'Free access',
+  'readerCustomColorFilter': 'Custom color filter',
+  'readerBlendMode': 'Color filter blend mode',
+  'readerBlendMultiply': 'Multiply',
+  'readerBlendScreen': 'Screen',
+  'readerBlendOverlay': 'Overlay',
+  'readerBlendDodge': 'Dodge',
+  'readerBlendLighten': 'Lighten',
+  'stremioPasteAddonUrl': 'Paste the URL from the addon settings page',
+  'stremioAddonUrl': 'Addon URL',
+  'moveUp': 'Move up',
+  'moveDown': 'Move down',
+  'stremioConfigureAddon': 'Configure addon',
+  'stremioUpdateUrl': 'Update URL',
+  'pairSendTitle': 'Send from this device',
+  'pairSendSubtitle': 'Shows a code the other device types in',
+  'pairReceiveTitle': 'Receive on this device',
+  'pairReceiveSubtitle': 'Finds senders on your Wi-Fi',
+  'pairCodeExample': '123456',
+  'collectionsRename': 'Rename collection',
+  'collectionsNewFolder': 'New folder',
+  'collectionsNewLiveFolder': 'New live folder',
+  'collectionsSearchText': 'Search text',
+  'collectionsDeleteTitle': 'Delete "{name}"?',
+  'liveParentalConfirmOldPin': 'Confirm the old PIN',
+  'liveParentalCurrentPin': 'Current PIN',
+  'liveParentalRemovePin': 'Remove PIN',
+  'liveParentalRemovePinBody': 'Enter the current PIN to remove the lock',
+  'liveParentalUnlockBody': 'Enter the PIN to reveal restricted channels',
+  'paywallPromoHint': 'Have a promo code?',
+  'paywallPlan': 'Plan',
+  'paywallPrice': 'Price',
+  'paywallTotal': 'Total',
+  'paywallYouSave': 'You save',
+  'tvErrorCouldNotLoadEpisode': 'Couldn\'t load this episode',
+  'tvErrorCouldNotCheckSources': 'Couldn\'t check every source',
+  'tvErrorGenericBody': 'There was an issue loading this content. If this continues, try changing sources.',
+  'tvErrorCouldNotPlaySource': 'Couldn\'t play this source',
+  'tvErrorPlaySourceBody': '{showTitle} failed to play. The stream was found but the player couldn\'t decode it{code}. Try another source, or pick one manually.',
+  'tvErrorTryNextSource': 'Try Next Source',
+  'episodeWhereToWatch': 'Where to watch',
+  'episodeWhereToWatchSubtitle': 'See which of your sources has this episode',
+  'episodeReadOnSourceSite': 'Read it on the source\'s own site',
+  'sourcesNoneAvailable': 'No sources available',
+  'sourcesCouldNotLoadCatalogue': 'Could not load this catalogue',
+  'sourcesNoTitlesToShow': 'No titles to show',
+  'liveRefreshGuide': 'Refresh guide',
+  'liveSetReminder': 'Set reminder',
+  'liveRecord': 'Record',
+  'profileRemoveLock': 'Remove profile lock',
+  'profileEnableFingerprint': 'Enable fingerprint',
+  'profileRecoverPin': 'Recover profile PIN',
+  'profileRemoveAvatar': 'Remove avatar',
+  'profileBio': 'Bio',
+  'profileHideAdultTitles': 'Hide adult-rated catalogue titles',
+  'profileEditProfile': 'Edit profile',
+  'profileMenu': 'Profile menu',
+  'debridTokenSaved': 'API token saved on this device',
+  'debridApiToken': 'API token',
+  'debridGetApiToken': 'Get an API token',
+  'checkOtherSources': 'Check other sources',
+  'goBack': 'Go back',
+  'backupPairSyncTitle': 'Pair & sync over Wi-Fi',
+  'backupPairSyncSubtitle': 'Move a backup between two devices, no cloud',
+  'liveXtreamAccounts': 'Xtream accounts',
+  'tvGuide': 'TV guide',
+  'repositoryActions': 'Repository actions',
+  'sourceHealthDeepTest': 'Deep test (opens a title from each source)',
+  'gifSearchKlipy': 'Search KLIPY',
+  'profilesAskOnLaunch': 'Ask who is watching on launch',
+  'dubAsWritten': 'As written',
+  'dubReadAloudSubtitle': 'Read the subtitle line aloud',
+  'playerProvider': 'Provider',
+  'stop': 'Stop',
 };
 
 /// Words that are genuinely spelled the same in the target language, so the
@@ -194,19 +276,39 @@ const _legitCognates = <String, Set<String>>{
   'de': {
     'adminTitle', // German UIs say "Admin", not "Administrator"
     'settingsGroupLayout', // "Layout" is the standard German UI word
+    'profileBio', // "Bio" is the standard German abbreviation
+  },
+  'es': {
+    'paywallPlan', // Spanish uses "Plan"
+    'paywallTotal', // Spanish uses "Total"
   },
   'fr': {
     'posterLayoutPortrait', // French "Portrait" is correct French
     'adminTitle', // French UIs say "Admin" too
     'homeTvSourcePrefix', // French "Source" is the French word
     'collections', // "Collections" is a French word
+    'paywallTotal', // French uses "Total"
+    'profileBio', // French uses "Bio"
   },
-  'id': {'adminTitle'}, // Indonesian uses "Admin" natively
+  'id': {
+    'adminTitle', // Indonesian uses "Admin" natively
+    'paywallTotal', // Indonesian uses "Total"
+    'profileBio', // Indonesian uses "Bio"
+  },
   'it': {
     'profileAccount', // Italian "Account" is correct Italian
     'settingsGroupLayout', // Italian borrows "Layout" for this
+    'profileBio', // Italian uses "Bio"
+    'playerProvider', // Italian uses "Provider"
   },
-  'pt': {'settingsGroupLayout'}, // Portuguese borrows "Layout" too
+  'pt': {
+    'settingsGroupLayout', // Portuguese borrows "Layout" too
+    'paywallTotal', // Portuguese uses "Total"
+    'profileBio', // Portuguese uses "Bio"
+  },
+  'tr': {
+    'paywallPlan', // Turkish uses "Plan"
+  },
 };
 
 /// Keys that are acronyms or universal loanwords, so the same text in every
@@ -215,6 +317,8 @@ const _legitCognates = <String, Set<String>>{
 const _universalTokens = <String>{
   'liveParentalPin', // PIN is the word in every one of these languages
   'settingsDebrid', // "Debrid" is the Real-Debrid brand, kept as-is everywhere
+  'adminMrr', // MRR is a finance acronym, kept as-is everywhere
+  'pairCodeExample', // A sample numeric code, not prose
 };
 
 /// Pulls one key's value out of a catalogue.
@@ -381,6 +485,87 @@ String _value(AppLocalizations l, String key) => switch (key) {
   'authGifTooLarge' => l.authGifTooLarge,
   'authGifUnreadable' => l.authGifUnreadable,
   'profileMoreComingSoon' => l.profileMoreComingSoon,
+  'adminCreatePasscode' => l.adminCreatePasscode,
+  'adminEnterPasscode' => l.adminEnterPasscode,
+  'adminPasscode' => l.adminPasscode,
+  'adminDevices' => l.adminDevices,
+  'adminActiveNow' => l.adminActiveNow,
+  'adminActiveSubs' => l.adminActiveSubs,
+  'adminMrr' => l.adminMrr,
+  'freeAccess' => l.freeAccess,
+  'readerCustomColorFilter' => l.readerCustomColorFilter,
+  'readerBlendMode' => l.readerBlendMode,
+  'readerBlendMultiply' => l.readerBlendMultiply,
+  'readerBlendScreen' => l.readerBlendScreen,
+  'readerBlendOverlay' => l.readerBlendOverlay,
+  'readerBlendDodge' => l.readerBlendDodge,
+  'readerBlendLighten' => l.readerBlendLighten,
+  'stremioPasteAddonUrl' => l.stremioPasteAddonUrl,
+  'stremioAddonUrl' => l.stremioAddonUrl,
+  'moveUp' => l.moveUp,
+  'moveDown' => l.moveDown,
+  'stremioConfigureAddon' => l.stremioConfigureAddon,
+  'stremioUpdateUrl' => l.stremioUpdateUrl,
+  'pairSendTitle' => l.pairSendTitle,
+  'pairSendSubtitle' => l.pairSendSubtitle,
+  'pairReceiveTitle' => l.pairReceiveTitle,
+  'pairReceiveSubtitle' => l.pairReceiveSubtitle,
+  'pairCodeExample' => l.pairCodeExample,
+  'collectionsRename' => l.collectionsRename,
+  'collectionsNewFolder' => l.collectionsNewFolder,
+  'collectionsNewLiveFolder' => l.collectionsNewLiveFolder,
+  'collectionsSearchText' => l.collectionsSearchText,
+  'collectionsDeleteTitle' => l.collectionsDeleteTitle('X'),
+  'liveParentalConfirmOldPin' => l.liveParentalConfirmOldPin,
+  'liveParentalCurrentPin' => l.liveParentalCurrentPin,
+  'liveParentalRemovePin' => l.liveParentalRemovePin,
+  'liveParentalRemovePinBody' => l.liveParentalRemovePinBody,
+  'liveParentalUnlockBody' => l.liveParentalUnlockBody,
+  'paywallPromoHint' => l.paywallPromoHint,
+  'paywallPlan' => l.paywallPlan,
+  'paywallPrice' => l.paywallPrice,
+  'paywallTotal' => l.paywallTotal,
+  'paywallYouSave' => l.paywallYouSave,
+  'tvErrorCouldNotLoadEpisode' => l.tvErrorCouldNotLoadEpisode,
+  'tvErrorCouldNotCheckSources' => l.tvErrorCouldNotCheckSources,
+  'tvErrorGenericBody' => l.tvErrorGenericBody,
+  'tvErrorCouldNotPlaySource' => l.tvErrorCouldNotPlaySource,
+  'tvErrorPlaySourceBody' => l.tvErrorPlaySourceBody('X', ' (E)'),
+  'tvErrorTryNextSource' => l.tvErrorTryNextSource,
+  'episodeWhereToWatch' => l.episodeWhereToWatch,
+  'episodeWhereToWatchSubtitle' => l.episodeWhereToWatchSubtitle,
+  'episodeReadOnSourceSite' => l.episodeReadOnSourceSite,
+  'sourcesNoneAvailable' => l.sourcesNoneAvailable,
+  'sourcesCouldNotLoadCatalogue' => l.sourcesCouldNotLoadCatalogue,
+  'sourcesNoTitlesToShow' => l.sourcesNoTitlesToShow,
+  'liveRefreshGuide' => l.liveRefreshGuide,
+  'liveSetReminder' => l.liveSetReminder,
+  'liveRecord' => l.liveRecord,
+  'profileRemoveLock' => l.profileRemoveLock,
+  'profileEnableFingerprint' => l.profileEnableFingerprint,
+  'profileRecoverPin' => l.profileRecoverPin,
+  'profileRemoveAvatar' => l.profileRemoveAvatar,
+  'profileBio' => l.profileBio,
+  'profileHideAdultTitles' => l.profileHideAdultTitles,
+  'profileEditProfile' => l.profileEditProfile,
+  'profileMenu' => l.profileMenu,
+  'debridTokenSaved' => l.debridTokenSaved,
+  'debridApiToken' => l.debridApiToken,
+  'debridGetApiToken' => l.debridGetApiToken,
+  'checkOtherSources' => l.checkOtherSources,
+  'goBack' => l.goBack,
+  'backupPairSyncTitle' => l.backupPairSyncTitle,
+  'backupPairSyncSubtitle' => l.backupPairSyncSubtitle,
+  'liveXtreamAccounts' => l.liveXtreamAccounts,
+  'tvGuide' => l.tvGuide,
+  'repositoryActions' => l.repositoryActions,
+  'sourceHealthDeepTest' => l.sourceHealthDeepTest,
+  'gifSearchKlipy' => l.gifSearchKlipy,
+  'profilesAskOnLaunch' => l.profilesAskOnLaunch,
+  'dubAsWritten' => l.dubAsWritten,
+  'dubReadAloudSubtitle' => l.dubReadAloudSubtitle,
+  'playerProvider' => l.playerProvider,
+  'stop' => l.stop,
 
   _ => throw ArgumentError('key $key is registered but not mapped in _value'),
 };

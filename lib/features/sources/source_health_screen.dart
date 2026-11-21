@@ -323,7 +323,7 @@ class _SourceHealthScreenState extends State<SourceHealthScreen> {
         context.l10n.sourceHealth,
         actions: [
           IconButton(
-            tooltip: 'Deep test (opens a title from each source)',
+            tooltip: context.l10n.sourceHealthDeepTest,
             icon: const Icon(Icons.biotech_outlined),
             color: _deep ? AppColors.accent : AppColors.textPrimary,
             // Live even mid-run. The screen kicks off a test on open, and

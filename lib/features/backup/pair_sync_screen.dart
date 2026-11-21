@@ -199,14 +199,14 @@ class _PairSyncScreenState extends State<PairSyncScreen> {
                   children: [
                     SettingsTile(
                       icon: Icons.upload_rounded,
-                      title: 'Send from this device',
-                      subtitle: 'Shows a code the other device types in',
+                      title: context.l10n.pairSendTitle,
+                      subtitle: context.l10n.pairSendSubtitle,
                       onTap: _busy ? null : _startSending,
                     ),
                     SettingsTile(
                       icon: Icons.download_rounded,
-                      title: 'Receive on this device',
-                      subtitle: 'Finds senders on your Wi-Fi',
+                      title: context.l10n.pairReceiveTitle,
+                      subtitle: context.l10n.pairReceiveSubtitle,
                       onTap: _busy ? null : _startReceiving,
                     ),
                   ],
@@ -325,9 +325,9 @@ class _PairSyncScreenState extends State<PairSyncScreen> {
                       controller: _codeCtrl,
                       keyboardType: TextInputType.number,
                       style: AppText.body.copyWith(letterSpacing: 6),
-                      decoration: const InputDecoration(
-                        hintText: '123456',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        hintText: context.l10n.pairCodeExample,
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 12),

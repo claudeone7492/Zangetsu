@@ -107,7 +107,7 @@ class _TvPlaybackLoadErrorDialog extends StatelessWidget {
         // verdict we haven't earned — say what happened instead.
         title = failure.detail == null
             ? l10n.checkedTopSources
-            : "Couldn't check every source";
+            : l10n.tvErrorCouldNotCheckSources;
         body =
             failure.detail ??
             'None of your installed sources have this title. Try another source '
@@ -116,16 +116,14 @@ class _TvPlaybackLoadErrorDialog extends StatelessWidget {
         onPrimary = () => Navigator.pop(context);
       case TvPlaybackLoadFailureKind.episodeNotAvailable:
         title = failure.detail == null
-            ? "Couldn't load this episode"
-            : "Couldn't check every source";
+            ? l10n.tvErrorCouldNotLoadEpisode
+            : l10n.tvErrorCouldNotCheckSources;
         body = failure.detail ?? l10n.noSourcesFoundForThisEpisode;
         primaryLabel = l10n.ok;
         onPrimary = () => Navigator.pop(context);
       case TvPlaybackLoadFailureKind.generic:
-        title = "Couldn't load this episode";
-        body =
-            'There was an issue loading this content. If this continues, '
-            'try changing sources.';
+        title = l10n.tvErrorCouldNotLoadEpisode;
+        body = l10n.tvErrorGenericBody;
         primaryLabel = l10n.ok;
         onPrimary = () => Navigator.pop(context);
     }
@@ -196,24 +194,25 @@ class _TvPlaybackErrorDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TvAlertDialog(
-      title: "Couldn't play this source",
+      title: context.l10n.tvErrorCouldNotPlaySource,
       body: Text(
-        '$showTitle failed to play. The stream was found but the '
-        'player couldn\'t decode it${errorCode.isNotEmpty ? " ($errorCode)" : ""}. '
-        'Try another source, or pick one manually.',
+        context.l10n.tvErrorPlaySourceBody(
+          showTitle,
+          errorCode.isNotEmpty ? ' ($errorCode)' : '',
+        ),
       ),
       actions: [
         TvAlertAction(
-          label: 'Close',
+          label: context.l10n.close,
           onTap: () => Navigator.pop(context, TvPlaybackErrorAction.close),
         ),
         TvAlertAction(
-          label: 'Select Source',
+          label: context.l10n.selectSource,
           onTap: () =>
               Navigator.pop(context, TvPlaybackErrorAction.selectSource),
         ),
         TvAlertAction(
-          label: 'Try Next Source',
+          label: context.l10n.tvErrorTryNextSource,
           primary: true,
           autofocus: true,
           onTap: () => Navigator.pop(context, TvPlaybackErrorAction.tryNext),

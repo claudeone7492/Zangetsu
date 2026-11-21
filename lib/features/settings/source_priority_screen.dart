@@ -175,7 +175,7 @@ class _SourcePriorityScreenState extends State<SourcePriorityScreen> {
     if (r == null) return null;
     return switch (sl<SourceHealthStore>().statusOf(id)) {
       SourceHealth.dead => (label: r.reason, color: _red),
-      SourceHealth.slow => (label: 'slow', color: _amber),
+      SourceHealth.slow => (label: context.l10n.slow, color: _amber),
       SourceHealth.ok => null,
     };
   }

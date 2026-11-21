@@ -472,8 +472,8 @@ class _BackupScreenState extends State<BackupScreen> {
                   ),
                   SettingsTile(
                     icon: Icons.devices_other_rounded,
-                    title: 'Pair & sync over Wi-Fi',
-                    subtitle: 'Move a backup between two devices, no cloud',
+                    title: context.l10n.backupPairSyncTitle,
+                    subtitle: context.l10n.backupPairSyncSubtitle,
                     onTap: _busy
                         ? null
                         : () => Navigator.push(

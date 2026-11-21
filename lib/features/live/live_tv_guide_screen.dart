@@ -108,7 +108,7 @@ class _LiveTvGuideScreenState extends State<LiveTvGuideScreen> {
         'TV guide',
         actions: [
           IconButton(
-            tooltip: 'Refresh guide',
+            tooltip: context.l10n.liveRefreshGuide,
             onPressed: _refreshing ? null : _refresh,
             icon: const Icon(Icons.refresh_rounded),
           ),
@@ -242,7 +242,7 @@ class _LiveTvGuideScreenState extends State<LiveTvGuideScreen> {
                 ],
                 if (_dvr != null) ...[
                   IconButton(
-                    tooltip: 'Set reminder',
+                    tooltip: context.l10n.liveSetReminder,
                     visualDensity: VisualDensity.compact,
                     onPressed: () => _book(now, channel, DvrKind.reminder),
                     icon: const Icon(
@@ -251,7 +251,7 @@ class _LiveTvGuideScreenState extends State<LiveTvGuideScreen> {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Record',
+                    tooltip: context.l10n.liveRecord,
                     visualDensity: VisualDensity.compact,
                     onPressed: () => _book(now, channel, DvrKind.recording),
                     icon: const Icon(

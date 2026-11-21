@@ -573,7 +573,7 @@ class _PinSetupSheetState extends State<_PinSetupSheet> {
   Future<void> _remove() async {
     if (_busy || _hasLock != true) return;
     final removed = await _askPin(
-      title: 'Remove profile lock',
+      title: context.l10n.profileRemoveLock,
       button: 'Remove lock',
       confirm: (pin) async {
         if (!await widget.locks.verify(widget.profileId, pin)) {
@@ -595,7 +595,7 @@ class _PinSetupSheetState extends State<_PinSetupSheet> {
       final changed =
           !enabled ||
           await _askPin(
-            title: 'Enable fingerprint',
+            title: context.l10n.profileEnableFingerprint,
             button: 'Enable fingerprint',
             confirm: (pin) => widget.locks.setBiometricEnabled(
               widget.profileId,
@@ -891,7 +891,7 @@ class _PinRecoverySheetState extends State<_PinRecoverySheet> {
 
   @override
   Widget build(BuildContext context) => _SheetShell(
-    title: 'Recover profile PIN',
+    title: context.l10n.profileRecoverPin,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

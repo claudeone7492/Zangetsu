@@ -7394,4 +7394,261 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get voiceLangChineseMandarin => 'Chino (mandarín)';
+
+  @override
+  String get adminCreatePasscode => 'Crear código de administrador';
+
+  @override
+  String get adminEnterPasscode => 'Introduce el código de administrador';
+
+  @override
+  String get adminPasscode => 'Código';
+
+  @override
+  String get adminDevices => 'Dispositivos';
+
+  @override
+  String get adminActiveNow => 'Activos ahora';
+
+  @override
+  String get adminActiveSubs => 'Suscripciones activas';
+
+  @override
+  String get adminMrr => 'MRR';
+
+  @override
+  String get freeAccess => 'Acceso gratuito';
+
+  @override
+  String get readerCustomColorFilter => 'Filtro de color personalizado';
+
+  @override
+  String get readerBlendMode => 'Modo de fusión del filtro de color';
+
+  @override
+  String get readerBlendMultiply => 'Multiplicar';
+
+  @override
+  String get readerBlendScreen => 'Trama';
+
+  @override
+  String get readerBlendOverlay => 'Superponer';
+
+  @override
+  String get readerBlendDodge => 'Sobreexponer';
+
+  @override
+  String get readerBlendLighten => 'Aclarar';
+
+  @override
+  String get stremioPasteAddonUrl =>
+      'Pega la URL de la página de ajustes del complemento';
+
+  @override
+  String get stremioAddonUrl => 'URL del complemento';
+
+  @override
+  String get moveUp => 'Subir';
+
+  @override
+  String get moveDown => 'Bajar';
+
+  @override
+  String get stremioConfigureAddon => 'Configurar complemento';
+
+  @override
+  String get stremioUpdateUrl => 'Actualizar URL';
+
+  @override
+  String get pairSendTitle => 'Enviar desde este dispositivo';
+
+  @override
+  String get pairSendSubtitle =>
+      'Muestra un código que el otro dispositivo introduce';
+
+  @override
+  String get pairReceiveTitle => 'Recibir en este dispositivo';
+
+  @override
+  String get pairReceiveSubtitle => 'Encuentra emisores en tu Wi-Fi';
+
+  @override
+  String get pairCodeExample => '123456';
+
+  @override
+  String get collectionsRename => 'Renombrar colección';
+
+  @override
+  String get collectionsNewFolder => 'Nueva carpeta';
+
+  @override
+  String get collectionsNewLiveFolder => 'Nueva carpeta en vivo';
+
+  @override
+  String get collectionsSearchText => 'Texto de búsqueda';
+
+  @override
+  String collectionsDeleteTitle(String name) {
+    return '¿Eliminar «$name»?';
+  }
+
+  @override
+  String get liveParentalConfirmOldPin => 'Confirma el PIN anterior';
+
+  @override
+  String get liveParentalCurrentPin => 'PIN actual';
+
+  @override
+  String get liveParentalRemovePin => 'Eliminar PIN';
+
+  @override
+  String get liveParentalRemovePinBody =>
+      'Introduce el PIN actual para quitar el bloqueo';
+
+  @override
+  String get liveParentalUnlockBody =>
+      'Introduce el PIN para mostrar los canales restringidos';
+
+  @override
+  String get paywallPromoHint => '¿Tienes un código promocional?';
+
+  @override
+  String get paywallPlan => 'Plan';
+
+  @override
+  String get paywallPrice => 'Precio';
+
+  @override
+  String get paywallTotal => 'Total';
+
+  @override
+  String get paywallYouSave => 'Ahorras';
+
+  @override
+  String get tvErrorCouldNotLoadEpisode => 'No se pudo cargar este episodio';
+
+  @override
+  String get tvErrorCouldNotCheckSources =>
+      'No se pudieron comprobar todas las fuentes';
+
+  @override
+  String get tvErrorGenericBody =>
+      'Hubo un problema al cargar este contenido. Si continúa, prueba a cambiar de fuente.';
+
+  @override
+  String get tvErrorCouldNotPlaySource => 'No se pudo reproducir esta fuente';
+
+  @override
+  String tvErrorPlaySourceBody(String showTitle, String code) {
+    return '$showTitle no se pudo reproducir. Se encontró el flujo, pero el reproductor no pudo decodificarlo$code. Prueba otra fuente o elige una manualmente.';
+  }
+
+  @override
+  String get tvErrorTryNextSource => 'Probar la siguiente fuente';
+
+  @override
+  String get episodeWhereToWatch => 'Dónde verlo';
+
+  @override
+  String get episodeWhereToWatchSubtitle =>
+      'Mira cuál de tus fuentes tiene este episodio';
+
+  @override
+  String get episodeReadOnSourceSite => 'Léelo en el sitio de la fuente';
+
+  @override
+  String get sourcesNoneAvailable => 'No hay fuentes disponibles';
+
+  @override
+  String get sourcesCouldNotLoadCatalogue => 'No se pudo cargar este catálogo';
+
+  @override
+  String get sourcesNoTitlesToShow => 'No hay títulos que mostrar';
+
+  @override
+  String get liveRefreshGuide => 'Actualizar guía';
+
+  @override
+  String get liveSetReminder => 'Establecer recordatorio';
+
+  @override
+  String get liveRecord => 'Grabar';
+
+  @override
+  String get profileRemoveLock => 'Quitar bloqueo del perfil';
+
+  @override
+  String get profileEnableFingerprint => 'Activar huella dactilar';
+
+  @override
+  String get profileRecoverPin => 'Recuperar PIN del perfil';
+
+  @override
+  String get profileRemoveAvatar => 'Quitar avatar';
+
+  @override
+  String get profileBio => 'Biografía';
+
+  @override
+  String get profileHideAdultTitles =>
+      'Ocultar títulos para adultos del catálogo';
+
+  @override
+  String get profileEditProfile => 'Editar perfil';
+
+  @override
+  String get profileMenu => 'Menú del perfil';
+
+  @override
+  String get debridTokenSaved => 'Token de API guardado en este dispositivo';
+
+  @override
+  String get debridApiToken => 'Token de API';
+
+  @override
+  String get debridGetApiToken => 'Obtener un token de API';
+
+  @override
+  String get checkOtherSources => 'Comprobar otras fuentes';
+
+  @override
+  String get goBack => 'Volver';
+
+  @override
+  String get backupPairSyncTitle => 'Emparejar y sincronizar por Wi-Fi';
+
+  @override
+  String get backupPairSyncSubtitle =>
+      'Mueve una copia de seguridad entre dos dispositivos, sin nube';
+
+  @override
+  String get liveXtreamAccounts => 'Cuentas de Xtream';
+
+  @override
+  String get tvGuide => 'Guía de TV';
+
+  @override
+  String get repositoryActions => 'Acciones del repositorio';
+
+  @override
+  String get sourceHealthDeepTest =>
+      'Prueba profunda (abre un título de cada fuente)';
+
+  @override
+  String get gifSearchKlipy => 'Buscar en KLIPY';
+
+  @override
+  String get profilesAskOnLaunch => 'Preguntar quién está viendo al iniciar';
+
+  @override
+  String get dubAsWritten => 'Tal como está escrito';
+
+  @override
+  String get dubReadAloudSubtitle => 'Leer en voz alta la línea de subtítulos';
+
+  @override
+  String get playerProvider => 'Proveedor';
+
+  @override
+  String get stop => 'Detener';
 }

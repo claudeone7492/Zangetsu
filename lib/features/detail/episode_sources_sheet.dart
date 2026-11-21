@@ -5,6 +5,7 @@ import 'dart:ui' show FramePhase;
 
 import 'package:flutter/scheduler.dart';
 
+import '../../l10n/l10n.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
 import '../../core/models/episode.dart';
@@ -292,7 +293,7 @@ class _EpisodeSourcesBodyState extends State<_EpisodeSourcesBody> {
               if (!_done) ...[
                 const SizedBox(height: 12),
                 _WideButton(
-                  label: 'Stop',
+                  label: context.l10n.stop,
                   onTap: _stop,
                 ),
               ] else if (more) ...[

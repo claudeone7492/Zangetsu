@@ -212,7 +212,7 @@ class _DubSheetState extends State<_DubSheet> {
                   runSpacing: 8,
                   children: [
                     _voiceChip(
-                      label: 'As written',
+                      label: context.l10n.dubAsWritten,
                       selected: _prefs.language == null,
                       onTap: () => _prefs.setLanguage(null),
                     ),

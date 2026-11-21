@@ -327,7 +327,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
                 onSubmitted: cubit.applyPromo,
                 style: AppText.body.copyWith(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Have a promo code?',
+                  hintText: context.l10n.paywallPromoHint,
                   hintStyle: AppText.body.copyWith(
                     color: AppColors.textTertiary,
                   ),
@@ -390,11 +390,11 @@ class _PaywallSheetState extends State<PaywallSheet> {
     final hasOffer = state.discountPct > 0;
     final rows = <Widget>[
       _SummaryRow(
-        label: 'Plan',
+        label: context.l10n.paywallPlan,
         value: '${plan?.label ?? kPremiumPlanLabel} · '
             '${periodWord(plan?.periodDays ?? 30)}',
       ),
-      _SummaryRow(label: 'Price', value: money(state.listCents)),
+      _SummaryRow(label: context.l10n.paywallPrice, value: money(state.listCents)),
     ];
     if (hasOffer) {
       rows.add(
@@ -409,7 +409,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
       rows.add(
         _SummaryRow(
           label: state.promo!.isFree
-              ? 'Free access'
+              ? context.l10n.freeAccess
               : 'Promo · ${state.promo!.percentOff}% off',
           value:
               '−${money(state.offerCents - state.totalCents)}',
@@ -419,7 +419,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
     }
     rows.add(
       _SummaryRow(
-        label: 'Total',
+        label: context.l10n.paywallTotal,
         value: money(state.totalCents),
         total: true,
       ),
@@ -429,7 +429,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
     if (saved > 0) {
       rows.add(
         _SummaryRow(
-          label: 'You save',
+          label: context.l10n.paywallYouSave,
           value: money(saved),
           accent: true,
         ),

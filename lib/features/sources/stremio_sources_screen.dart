@@ -99,9 +99,9 @@ class _StremioSourcesScreenState extends State<StremioSourcesScreen> {
               content: TextField(
                 controller: controller,
                 autofocus: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Configured addon URL',
-                  hintText: 'Paste the URL from the addon settings page',
+                  hintText: context.l10n.stremioPasteAddonUrl,
                 ),
               ),
               actions: [
@@ -256,8 +256,8 @@ class _StremioSourcesScreenState extends State<StremioSourcesScreen> {
                         autocorrect: false,
                         enableSuggestions: false,
                         onSubmitted: (_) => _busy ? null : _add(),
-                        decoration: const InputDecoration(
-                          hintText: 'Addon URL',
+                        decoration: InputDecoration(
+                          hintText: context.l10n.stremioAddonUrl,
                         ),
                       )
                     else
@@ -269,7 +269,7 @@ class _StremioSourcesScreenState extends State<StremioSourcesScreen> {
                         enableSuggestions: false,
                         onSubmitted: (_) => _busy ? null : _add(),
                         decoration: InputDecoration(
-                          hintText: 'Addon URL',
+                          hintText: context.l10n.stremioAddonUrl,
                           filled: true,
                           fillColor: AppColors.bg.withValues(alpha: .3),
                           border: OutlineInputBorder(
@@ -420,7 +420,7 @@ class _StremioSourcesScreenState extends State<StremioSourcesScreen> {
                           alignment: WrapAlignment.end,
                           children: [
                             IconButton(
-                              tooltip: 'Move up',
+                              tooltip: context.l10n.moveUp,
                               icon: const Icon(Icons.arrow_upward_rounded),
                               onPressed:
                                   _busy || all.first.id == installation.id
@@ -431,7 +431,7 @@ class _StremioSourcesScreenState extends State<StremioSourcesScreen> {
                                     ),
                             ),
                             IconButton(
-                              tooltip: 'Move down',
+                              tooltip: context.l10n.moveDown,
                               icon: const Icon(Icons.arrow_downward_rounded),
                               onPressed: _busy || all.last.id == installation.id
                                   ? null
@@ -442,14 +442,14 @@ class _StremioSourcesScreenState extends State<StremioSourcesScreen> {
                             ),
                             if (installation.configurable)
                               IconButton(
-                                tooltip: 'Configure addon',
+                                tooltip: context.l10n.stremioConfigureAddon,
                                 onPressed: _busy
                                     ? null
                                     : () => _openConfiguration(installation),
                                 icon: const Icon(Icons.settings_outlined),
                               ),
                             IconButton(
-                              tooltip: 'Update URL',
+                              tooltip: context.l10n.stremioUpdateUrl,
                               onPressed: _busy
                                   ? null
                                   : () => _configure(installation),

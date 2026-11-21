@@ -54,7 +54,7 @@ class _LiveParentalScreenState extends State<LiveParentalScreen> {
     );
     if (pin == null || !mounted) return;
     final current = parental.pinSet
-        ? await _askPin(title: 'Current PIN', subtitle: 'Confirm the old PIN')
+        ? await _askPin(title: context.l10n.liveParentalCurrentPin, subtitle: context.l10n.liveParentalConfirmOldPin)
         : null;
     if (parental.pinSet && (current == null || !mounted)) return;
     final ok = await parental.setPin(pin, current: current);
@@ -68,8 +68,8 @@ class _LiveParentalScreenState extends State<LiveParentalScreen> {
     final parental = _parental;
     if (parental == null) return;
     final current = await _askPin(
-      title: 'Remove PIN',
-      subtitle: 'Enter the current PIN to remove the lock',
+      title: context.l10n.liveParentalRemovePin,
+      subtitle: context.l10n.liveParentalRemovePinBody,
     );
     if (current == null || !mounted) return;
     final ok = await parental.clearPin(current);
@@ -84,7 +84,7 @@ class _LiveParentalScreenState extends State<LiveParentalScreen> {
     if (parental == null) return;
     final pin = await _askPin(
       title: 'Unlock',
-      subtitle: 'Enter the PIN to reveal restricted channels',
+      subtitle: context.l10n.liveParentalUnlockBody,
     );
     if (pin == null || !mounted) return;
     final ok = await parental.verifyPin(pin);

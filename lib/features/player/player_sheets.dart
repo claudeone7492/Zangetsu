@@ -169,7 +169,7 @@ class _AudioSubsSheetState extends State<_AudioSubsSheet> {
                   if (widget.onDub != null)
                     _SheetRow(
                       label: 'AI Dub',
-                      subtitle: 'Read the subtitle line aloud',
+                      subtitle: context.l10n.dubReadAloudSubtitle,
                       icon: Icons.record_voice_over_rounded,
                       active: false,
                       onTap: () {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/l10n.dart';
 import '../app_mode.dart';
 import '../di/injector.dart';
 import '../models/episode.dart';
@@ -64,7 +65,7 @@ Future<bool> showEpisodeUnavailable(
             const SizedBox(height: 22),
             _DeadEndButton(
               icon: Icons.travel_explore_rounded,
-              label: 'Check other sources',
+              label: ctx.l10n.checkOtherSources,
               filled: true,
               onTap: () => Navigator.pop(ctx, true),
             ),
@@ -139,7 +140,7 @@ Future<bool> showPlaybackDeadEnd(BuildContext context, String message) async {
             const SizedBox(height: 10),
             _DeadEndButton(
               icon: Icons.arrow_back_rounded,
-              label: 'Go back',
+              label: ctx.l10n.goBack,
               filled: false,
               onTap: () => Navigator.pop(ctx, false),
             ),

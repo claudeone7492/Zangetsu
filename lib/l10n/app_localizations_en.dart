@@ -7317,4 +7317,258 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voiceLangChineseMandarin => 'Chinese (Mandarin)';
+
+  @override
+  String get adminCreatePasscode => 'Create admin passcode';
+
+  @override
+  String get adminEnterPasscode => 'Enter admin passcode';
+
+  @override
+  String get adminPasscode => 'Passcode';
+
+  @override
+  String get adminDevices => 'Devices';
+
+  @override
+  String get adminActiveNow => 'Active now';
+
+  @override
+  String get adminActiveSubs => 'Active subs';
+
+  @override
+  String get adminMrr => 'MRR';
+
+  @override
+  String get freeAccess => 'Free access';
+
+  @override
+  String get readerCustomColorFilter => 'Custom color filter';
+
+  @override
+  String get readerBlendMode => 'Color filter blend mode';
+
+  @override
+  String get readerBlendMultiply => 'Multiply';
+
+  @override
+  String get readerBlendScreen => 'Screen';
+
+  @override
+  String get readerBlendOverlay => 'Overlay';
+
+  @override
+  String get readerBlendDodge => 'Dodge';
+
+  @override
+  String get readerBlendLighten => 'Lighten';
+
+  @override
+  String get stremioPasteAddonUrl =>
+      'Paste the URL from the addon settings page';
+
+  @override
+  String get stremioAddonUrl => 'Addon URL';
+
+  @override
+  String get moveUp => 'Move up';
+
+  @override
+  String get moveDown => 'Move down';
+
+  @override
+  String get stremioConfigureAddon => 'Configure addon';
+
+  @override
+  String get stremioUpdateUrl => 'Update URL';
+
+  @override
+  String get pairSendTitle => 'Send from this device';
+
+  @override
+  String get pairSendSubtitle => 'Shows a code the other device types in';
+
+  @override
+  String get pairReceiveTitle => 'Receive on this device';
+
+  @override
+  String get pairReceiveSubtitle => 'Finds senders on your Wi-Fi';
+
+  @override
+  String get pairCodeExample => '123456';
+
+  @override
+  String get collectionsRename => 'Rename collection';
+
+  @override
+  String get collectionsNewFolder => 'New folder';
+
+  @override
+  String get collectionsNewLiveFolder => 'New live folder';
+
+  @override
+  String get collectionsSearchText => 'Search text';
+
+  @override
+  String collectionsDeleteTitle(String name) {
+    return 'Delete \"$name\"?';
+  }
+
+  @override
+  String get liveParentalConfirmOldPin => 'Confirm the old PIN';
+
+  @override
+  String get liveParentalCurrentPin => 'Current PIN';
+
+  @override
+  String get liveParentalRemovePin => 'Remove PIN';
+
+  @override
+  String get liveParentalRemovePinBody =>
+      'Enter the current PIN to remove the lock';
+
+  @override
+  String get liveParentalUnlockBody =>
+      'Enter the PIN to reveal restricted channels';
+
+  @override
+  String get paywallPromoHint => 'Have a promo code?';
+
+  @override
+  String get paywallPlan => 'Plan';
+
+  @override
+  String get paywallPrice => 'Price';
+
+  @override
+  String get paywallTotal => 'Total';
+
+  @override
+  String get paywallYouSave => 'You save';
+
+  @override
+  String get tvErrorCouldNotLoadEpisode => 'Couldn\'t load this episode';
+
+  @override
+  String get tvErrorCouldNotCheckSources => 'Couldn\'t check every source';
+
+  @override
+  String get tvErrorGenericBody =>
+      'There was an issue loading this content. If this continues, try changing sources.';
+
+  @override
+  String get tvErrorCouldNotPlaySource => 'Couldn\'t play this source';
+
+  @override
+  String tvErrorPlaySourceBody(String showTitle, String code) {
+    return '$showTitle failed to play. The stream was found but the player couldn\'t decode it$code. Try another source, or pick one manually.';
+  }
+
+  @override
+  String get tvErrorTryNextSource => 'Try Next Source';
+
+  @override
+  String get episodeWhereToWatch => 'Where to watch';
+
+  @override
+  String get episodeWhereToWatchSubtitle =>
+      'See which of your sources has this episode';
+
+  @override
+  String get episodeReadOnSourceSite => 'Read it on the source\'s own site';
+
+  @override
+  String get sourcesNoneAvailable => 'No sources available';
+
+  @override
+  String get sourcesCouldNotLoadCatalogue => 'Could not load this catalogue';
+
+  @override
+  String get sourcesNoTitlesToShow => 'No titles to show';
+
+  @override
+  String get liveRefreshGuide => 'Refresh guide';
+
+  @override
+  String get liveSetReminder => 'Set reminder';
+
+  @override
+  String get liveRecord => 'Record';
+
+  @override
+  String get profileRemoveLock => 'Remove profile lock';
+
+  @override
+  String get profileEnableFingerprint => 'Enable fingerprint';
+
+  @override
+  String get profileRecoverPin => 'Recover profile PIN';
+
+  @override
+  String get profileRemoveAvatar => 'Remove avatar';
+
+  @override
+  String get profileBio => 'Bio';
+
+  @override
+  String get profileHideAdultTitles => 'Hide adult-rated catalogue titles';
+
+  @override
+  String get profileEditProfile => 'Edit profile';
+
+  @override
+  String get profileMenu => 'Profile menu';
+
+  @override
+  String get debridTokenSaved => 'API token saved on this device';
+
+  @override
+  String get debridApiToken => 'API token';
+
+  @override
+  String get debridGetApiToken => 'Get an API token';
+
+  @override
+  String get checkOtherSources => 'Check other sources';
+
+  @override
+  String get goBack => 'Go back';
+
+  @override
+  String get backupPairSyncTitle => 'Pair & sync over Wi-Fi';
+
+  @override
+  String get backupPairSyncSubtitle =>
+      'Move a backup between two devices, no cloud';
+
+  @override
+  String get liveXtreamAccounts => 'Xtream accounts';
+
+  @override
+  String get tvGuide => 'TV guide';
+
+  @override
+  String get repositoryActions => 'Repository actions';
+
+  @override
+  String get sourceHealthDeepTest =>
+      'Deep test (opens a title from each source)';
+
+  @override
+  String get gifSearchKlipy => 'Search KLIPY';
+
+  @override
+  String get profilesAskOnLaunch => 'Ask who is watching on launch';
+
+  @override
+  String get dubAsWritten => 'As written';
+
+  @override
+  String get dubReadAloudSubtitle => 'Read the subtitle line aloud';
+
+  @override
+  String get playerProvider => 'Provider';
+
+  @override
+  String get stop => 'Stop';
 }

@@ -7070,6 +7070,253 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get voiceLangChineseMandarin => '中文（普通话）';
+
+  @override
+  String get adminCreatePasscode => '创建管理员密码';
+
+  @override
+  String get adminEnterPasscode => '输入管理员密码';
+
+  @override
+  String get adminPasscode => '密码';
+
+  @override
+  String get adminDevices => '设备';
+
+  @override
+  String get adminActiveNow => '当前活跃';
+
+  @override
+  String get adminActiveSubs => '活跃订阅';
+
+  @override
+  String get adminMrr => 'MRR';
+
+  @override
+  String get freeAccess => '免费访问';
+
+  @override
+  String get readerCustomColorFilter => '自定义颜色滤镜';
+
+  @override
+  String get readerBlendMode => '颜色滤镜混合模式';
+
+  @override
+  String get readerBlendMultiply => '正片叠底';
+
+  @override
+  String get readerBlendScreen => '滤色';
+
+  @override
+  String get readerBlendOverlay => '叠加';
+
+  @override
+  String get readerBlendDodge => '减淡';
+
+  @override
+  String get readerBlendLighten => '变亮';
+
+  @override
+  String get stremioPasteAddonUrl => '粘贴插件设置页面中的 URL';
+
+  @override
+  String get stremioAddonUrl => '插件 URL';
+
+  @override
+  String get moveUp => '上移';
+
+  @override
+  String get moveDown => '下移';
+
+  @override
+  String get stremioConfigureAddon => '配置插件';
+
+  @override
+  String get stremioUpdateUrl => '更新 URL';
+
+  @override
+  String get pairSendTitle => '从此设备发送';
+
+  @override
+  String get pairSendSubtitle => '显示另一台设备需要输入的代码';
+
+  @override
+  String get pairReceiveTitle => '在此设备上接收';
+
+  @override
+  String get pairReceiveSubtitle => '在你的 Wi-Fi 中查找发送设备';
+
+  @override
+  String get pairCodeExample => '123456';
+
+  @override
+  String get collectionsRename => '重命名收藏';
+
+  @override
+  String get collectionsNewFolder => '新建文件夹';
+
+  @override
+  String get collectionsNewLiveFolder => '新建实时文件夹';
+
+  @override
+  String get collectionsSearchText => '搜索文本';
+
+  @override
+  String collectionsDeleteTitle(String name) {
+    return '删除“$name”？';
+  }
+
+  @override
+  String get liveParentalConfirmOldPin => '确认旧 PIN';
+
+  @override
+  String get liveParentalCurrentPin => '当前 PIN';
+
+  @override
+  String get liveParentalRemovePin => '移除 PIN';
+
+  @override
+  String get liveParentalRemovePinBody => '输入当前 PIN 以移除锁定';
+
+  @override
+  String get liveParentalUnlockBody => '输入 PIN 以显示受限频道';
+
+  @override
+  String get paywallPromoHint => '有优惠码吗？';
+
+  @override
+  String get paywallPlan => '套餐';
+
+  @override
+  String get paywallPrice => '价格';
+
+  @override
+  String get paywallTotal => '总计';
+
+  @override
+  String get paywallYouSave => '节省';
+
+  @override
+  String get tvErrorCouldNotLoadEpisode => '无法加载此集';
+
+  @override
+  String get tvErrorCouldNotCheckSources => '无法检查所有来源';
+
+  @override
+  String get tvErrorGenericBody => '加载此内容时出现问题。如果持续出现，请尝试更换来源。';
+
+  @override
+  String get tvErrorCouldNotPlaySource => '无法播放此来源';
+
+  @override
+  String tvErrorPlaySourceBody(String showTitle, String code) {
+    return '$showTitle 播放失败。已找到流，但播放器无法解码$code。请尝试其他来源，或手动选择。';
+  }
+
+  @override
+  String get tvErrorTryNextSource => '尝试下一个来源';
+
+  @override
+  String get episodeWhereToWatch => '在哪里观看';
+
+  @override
+  String get episodeWhereToWatchSubtitle => '查看你的哪个来源有此集';
+
+  @override
+  String get episodeReadOnSourceSite => '在来源自己的网站上阅读';
+
+  @override
+  String get sourcesNoneAvailable => '没有可用的来源';
+
+  @override
+  String get sourcesCouldNotLoadCatalogue => '无法加载此目录';
+
+  @override
+  String get sourcesNoTitlesToShow => '没有可显示的标题';
+
+  @override
+  String get liveRefreshGuide => '刷新节目指南';
+
+  @override
+  String get liveSetReminder => '设置提醒';
+
+  @override
+  String get liveRecord => '录制';
+
+  @override
+  String get profileRemoveLock => '移除个人资料锁定';
+
+  @override
+  String get profileEnableFingerprint => '启用指纹';
+
+  @override
+  String get profileRecoverPin => '恢复个人资料 PIN';
+
+  @override
+  String get profileRemoveAvatar => '移除头像';
+
+  @override
+  String get profileBio => '简介';
+
+  @override
+  String get profileHideAdultTitles => '在目录中隐藏成人内容标题';
+
+  @override
+  String get profileEditProfile => '编辑个人资料';
+
+  @override
+  String get profileMenu => '个人资料菜单';
+
+  @override
+  String get debridTokenSaved => 'API 令牌已保存在此设备上';
+
+  @override
+  String get debridApiToken => 'API 令牌';
+
+  @override
+  String get debridGetApiToken => '获取 API 令牌';
+
+  @override
+  String get checkOtherSources => '检查其他来源';
+
+  @override
+  String get goBack => '返回';
+
+  @override
+  String get backupPairSyncTitle => '通过 Wi-Fi 配对并同步';
+
+  @override
+  String get backupPairSyncSubtitle => '在两台设备之间移动备份，无需云端';
+
+  @override
+  String get liveXtreamAccounts => 'Xtream 账户';
+
+  @override
+  String get tvGuide => '电视指南';
+
+  @override
+  String get repositoryActions => '仓库操作';
+
+  @override
+  String get sourceHealthDeepTest => '深度测试（从每个来源打开一个标题）';
+
+  @override
+  String get gifSearchKlipy => '搜索 KLIPY';
+
+  @override
+  String get profilesAskOnLaunch => '启动时询问谁在观看';
+
+  @override
+  String get dubAsWritten => '按原文';
+
+  @override
+  String get dubReadAloudSubtitle => '朗读字幕行';
+
+  @override
+  String get playerProvider => '提供方';
+
+  @override
+  String get stop => '停止';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -14138,4 +14385,251 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get voiceLangChineseMandarin => '中文（國語）';
+
+  @override
+  String get adminCreatePasscode => '建立管理員密碼';
+
+  @override
+  String get adminEnterPasscode => '輸入管理員密碼';
+
+  @override
+  String get adminPasscode => '密碼';
+
+  @override
+  String get adminDevices => '裝置';
+
+  @override
+  String get adminActiveNow => '目前活躍';
+
+  @override
+  String get adminActiveSubs => '活躍訂閱';
+
+  @override
+  String get adminMrr => 'MRR';
+
+  @override
+  String get freeAccess => '免費存取';
+
+  @override
+  String get readerCustomColorFilter => '自訂顏色濾鏡';
+
+  @override
+  String get readerBlendMode => '顏色濾鏡混合模式';
+
+  @override
+  String get readerBlendMultiply => '正片疊底';
+
+  @override
+  String get readerBlendScreen => '濾色';
+
+  @override
+  String get readerBlendOverlay => '疊加';
+
+  @override
+  String get readerBlendDodge => '減淡';
+
+  @override
+  String get readerBlendLighten => '變亮';
+
+  @override
+  String get stremioPasteAddonUrl => '貼上附加元件設定頁面中的 URL';
+
+  @override
+  String get stremioAddonUrl => '附加元件 URL';
+
+  @override
+  String get moveUp => '上移';
+
+  @override
+  String get moveDown => '下移';
+
+  @override
+  String get stremioConfigureAddon => '設定附加元件';
+
+  @override
+  String get stremioUpdateUrl => '更新 URL';
+
+  @override
+  String get pairSendTitle => '從此裝置傳送';
+
+  @override
+  String get pairSendSubtitle => '顯示另一台裝置需要輸入的代碼';
+
+  @override
+  String get pairReceiveTitle => '在此裝置上接收';
+
+  @override
+  String get pairReceiveSubtitle => '在你的 Wi-Fi 中尋找傳送裝置';
+
+  @override
+  String get pairCodeExample => '123456';
+
+  @override
+  String get collectionsRename => '重新命名收藏';
+
+  @override
+  String get collectionsNewFolder => '新增資料夾';
+
+  @override
+  String get collectionsNewLiveFolder => '新增即時資料夾';
+
+  @override
+  String get collectionsSearchText => '搜尋文字';
+
+  @override
+  String collectionsDeleteTitle(String name) {
+    return '刪除「$name」？';
+  }
+
+  @override
+  String get liveParentalConfirmOldPin => '確認舊 PIN';
+
+  @override
+  String get liveParentalCurrentPin => '目前 PIN';
+
+  @override
+  String get liveParentalRemovePin => '移除 PIN';
+
+  @override
+  String get liveParentalRemovePinBody => '輸入目前 PIN 以移除鎖定';
+
+  @override
+  String get liveParentalUnlockBody => '輸入 PIN 以顯示受限頻道';
+
+  @override
+  String get paywallPromoHint => '有優惠碼嗎？';
+
+  @override
+  String get paywallPlan => '方案';
+
+  @override
+  String get paywallPrice => '價格';
+
+  @override
+  String get paywallTotal => '總計';
+
+  @override
+  String get paywallYouSave => '節省';
+
+  @override
+  String get tvErrorCouldNotLoadEpisode => '無法載入此集';
+
+  @override
+  String get tvErrorCouldNotCheckSources => '無法檢查所有來源';
+
+  @override
+  String get tvErrorGenericBody => '載入此內容時發生問題。若持續發生，請嘗試更換來源。';
+
+  @override
+  String get tvErrorCouldNotPlaySource => '無法播放此來源';
+
+  @override
+  String tvErrorPlaySourceBody(String showTitle, String code) {
+    return '$showTitle 播放失敗。已找到串流，但播放器無法解碼$code。請嘗試其他來源，或手動選擇。';
+  }
+
+  @override
+  String get tvErrorTryNextSource => '嘗試下一個來源';
+
+  @override
+  String get episodeWhereToWatch => '在哪裡觀看';
+
+  @override
+  String get episodeWhereToWatchSubtitle => '查看你的哪個來源有此集';
+
+  @override
+  String get episodeReadOnSourceSite => '在來源自己的網站上閱讀';
+
+  @override
+  String get sourcesNoneAvailable => '沒有可用的來源';
+
+  @override
+  String get sourcesCouldNotLoadCatalogue => '無法載入此目錄';
+
+  @override
+  String get sourcesNoTitlesToShow => '沒有可顯示的標題';
+
+  @override
+  String get liveRefreshGuide => '重新整理節目指南';
+
+  @override
+  String get liveSetReminder => '設定提醒';
+
+  @override
+  String get liveRecord => '錄製';
+
+  @override
+  String get profileRemoveLock => '移除個人資料鎖定';
+
+  @override
+  String get profileEnableFingerprint => '啟用指紋';
+
+  @override
+  String get profileRecoverPin => '復原個人資料 PIN';
+
+  @override
+  String get profileRemoveAvatar => '移除頭像';
+
+  @override
+  String get profileBio => '簡介';
+
+  @override
+  String get profileHideAdultTitles => '在目錄中隱藏成人內容標題';
+
+  @override
+  String get profileEditProfile => '編輯個人資料';
+
+  @override
+  String get profileMenu => '個人資料選單';
+
+  @override
+  String get debridTokenSaved => 'API 權杖已儲存在此裝置上';
+
+  @override
+  String get debridApiToken => 'API 權杖';
+
+  @override
+  String get debridGetApiToken => '取得 API 權杖';
+
+  @override
+  String get checkOtherSources => '檢查其他來源';
+
+  @override
+  String get goBack => '返回';
+
+  @override
+  String get backupPairSyncTitle => '透過 Wi-Fi 配對並同步';
+
+  @override
+  String get backupPairSyncSubtitle => '在兩台裝置之間移動備份，無需雲端';
+
+  @override
+  String get liveXtreamAccounts => 'Xtream 帳戶';
+
+  @override
+  String get tvGuide => '電視指南';
+
+  @override
+  String get repositoryActions => '儲存庫操作';
+
+  @override
+  String get sourceHealthDeepTest => '深度測試（從每個來源開啟一個標題）';
+
+  @override
+  String get gifSearchKlipy => '搜尋 KLIPY';
+
+  @override
+  String get profilesAskOnLaunch => '啟動時詢問誰在觀看';
+
+  @override
+  String get dubAsWritten => '依原文';
+
+  @override
+  String get dubReadAloudSubtitle => '朗讀字幕列';
+
+  @override
+  String get playerProvider => '提供者';
+
+  @override
+  String get stop => '停止';
 }

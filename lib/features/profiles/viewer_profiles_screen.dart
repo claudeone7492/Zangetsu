@@ -411,7 +411,7 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
               children: [
                 SettingsTile(
                   icon: Icons.login_rounded,
-                  title: 'Ask who is watching on launch',
+                  title: context.l10n.profilesAskOnLaunch,
                   subtitle:
                       'Off opens straight into the active profile, even if it has a PIN.',
                   trailing: Switch.adaptive(

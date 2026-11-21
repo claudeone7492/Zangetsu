@@ -616,7 +616,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
         actions: [
           if (sl.isRegistered<XtreamAccountStore>())
             IconButton(
-              tooltip: 'Xtream accounts',
+              tooltip: context.l10n.liveXtreamAccounts,
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => const XtreamAccountsScreen(),
@@ -650,7 +650,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
             ),
           if (sl.isRegistered<EpgStore>())
             IconButton(
-              tooltip: 'TV guide',
+              tooltip: context.l10n.tvGuide,
               onPressed: _openGuide,
               icon: const Icon(Icons.calendar_month_rounded),
             ),

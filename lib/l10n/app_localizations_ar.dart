@@ -7387,4 +7387,255 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get voiceLangChineseMandarin => 'الصينية (الماندرين)';
+
+  @override
+  String get adminCreatePasscode => 'إنشاء رمز مرور للمسؤول';
+
+  @override
+  String get adminEnterPasscode => 'أدخل رمز مرور المسؤول';
+
+  @override
+  String get adminPasscode => 'رمز المرور';
+
+  @override
+  String get adminDevices => 'الأجهزة';
+
+  @override
+  String get adminActiveNow => 'نشط الآن';
+
+  @override
+  String get adminActiveSubs => 'الاشتراكات النشطة';
+
+  @override
+  String get adminMrr => 'MRR';
+
+  @override
+  String get freeAccess => 'وصول مجاني';
+
+  @override
+  String get readerCustomColorFilter => 'مرشح ألوان مخصص';
+
+  @override
+  String get readerBlendMode => 'وضع دمج مرشح الألوان';
+
+  @override
+  String get readerBlendMultiply => 'ضرب';
+
+  @override
+  String get readerBlendScreen => 'شاشة';
+
+  @override
+  String get readerBlendOverlay => 'تراكب';
+
+  @override
+  String get readerBlendDodge => 'تجنب';
+
+  @override
+  String get readerBlendLighten => 'تفتيح';
+
+  @override
+  String get stremioPasteAddonUrl => 'الصق عنوان URL من صفحة إعدادات الإضافة';
+
+  @override
+  String get stremioAddonUrl => 'عنوان URL للإضافة';
+
+  @override
+  String get moveUp => 'نقل لأعلى';
+
+  @override
+  String get moveDown => 'نقل لأسفل';
+
+  @override
+  String get stremioConfigureAddon => 'تهيئة الإضافة';
+
+  @override
+  String get stremioUpdateUrl => 'تحديث عنوان URL';
+
+  @override
+  String get pairSendTitle => 'الإرسال من هذا الجهاز';
+
+  @override
+  String get pairSendSubtitle => 'يعرض رمزًا يُدخله الجهاز الآخر';
+
+  @override
+  String get pairReceiveTitle => 'الاستقبال على هذا الجهاز';
+
+  @override
+  String get pairReceiveSubtitle => 'يبحث عن المرسِلين على شبكة Wi-Fi';
+
+  @override
+  String get pairCodeExample => '123456';
+
+  @override
+  String get collectionsRename => 'إعادة تسمية المجموعة';
+
+  @override
+  String get collectionsNewFolder => 'مجلد جديد';
+
+  @override
+  String get collectionsNewLiveFolder => 'مجلد مباشر جديد';
+
+  @override
+  String get collectionsSearchText => 'نص البحث';
+
+  @override
+  String collectionsDeleteTitle(String name) {
+    return 'حذف \"$name\"؟';
+  }
+
+  @override
+  String get liveParentalConfirmOldPin => 'تأكيد رمز PIN القديم';
+
+  @override
+  String get liveParentalCurrentPin => 'رمز PIN الحالي';
+
+  @override
+  String get liveParentalRemovePin => 'إزالة رمز PIN';
+
+  @override
+  String get liveParentalRemovePinBody => 'أدخل رمز PIN الحالي لإزالة القفل';
+
+  @override
+  String get liveParentalUnlockBody => 'أدخل رمز PIN لإظهار القنوات المقيدة';
+
+  @override
+  String get paywallPromoHint => 'هل لديك رمز خصم؟';
+
+  @override
+  String get paywallPlan => 'الخطة';
+
+  @override
+  String get paywallPrice => 'السعر';
+
+  @override
+  String get paywallTotal => 'الإجمالي';
+
+  @override
+  String get paywallYouSave => 'توفر';
+
+  @override
+  String get tvErrorCouldNotLoadEpisode => 'تعذّر تحميل هذه الحلقة';
+
+  @override
+  String get tvErrorCouldNotCheckSources => 'تعذّر التحقق من كل المصادر';
+
+  @override
+  String get tvErrorGenericBody =>
+      'حدثت مشكلة أثناء تحميل هذا المحتوى. إذا استمر الأمر، جرّب تغيير المصدر.';
+
+  @override
+  String get tvErrorCouldNotPlaySource => 'تعذّر تشغيل هذا المصدر';
+
+  @override
+  String tvErrorPlaySourceBody(String showTitle, String code) {
+    return 'تعذّر تشغيل $showTitle. تم العثور على البث لكن المشغّل لم يتمكن من فك ترميزه$code. جرّب مصدرًا آخر، أو اختر واحدًا يدويًا.';
+  }
+
+  @override
+  String get tvErrorTryNextSource => 'جرّب المصدر التالي';
+
+  @override
+  String get episodeWhereToWatch => 'أين تشاهد';
+
+  @override
+  String get episodeWhereToWatchSubtitle =>
+      'اعرف أي من مصادرك يحتوي على هذه الحلقة';
+
+  @override
+  String get episodeReadOnSourceSite => 'اقرأه على موقع المصدر نفسه';
+
+  @override
+  String get sourcesNoneAvailable => 'لا توجد مصادر متاحة';
+
+  @override
+  String get sourcesCouldNotLoadCatalogue => 'تعذّر تحميل هذا الكتالوج';
+
+  @override
+  String get sourcesNoTitlesToShow => 'لا توجد عناوين لعرضها';
+
+  @override
+  String get liveRefreshGuide => 'تحديث الدليل';
+
+  @override
+  String get liveSetReminder => 'تعيين تذكير';
+
+  @override
+  String get liveRecord => 'تسجيل';
+
+  @override
+  String get profileRemoveLock => 'إزالة قفل الملف الشخصي';
+
+  @override
+  String get profileEnableFingerprint => 'تفعيل بصمة الإصبع';
+
+  @override
+  String get profileRecoverPin => 'استعادة رمز PIN للملف الشخصي';
+
+  @override
+  String get profileRemoveAvatar => 'إزالة الصورة الرمزية';
+
+  @override
+  String get profileBio => 'نبذة';
+
+  @override
+  String get profileHideAdultTitles =>
+      'إخفاء العناوين المخصصة للبالغين من الكتالوج';
+
+  @override
+  String get profileEditProfile => 'تعديل الملف الشخصي';
+
+  @override
+  String get profileMenu => 'قائمة الملف الشخصي';
+
+  @override
+  String get debridTokenSaved => 'تم حفظ رمز API على هذا الجهاز';
+
+  @override
+  String get debridApiToken => 'رمز API';
+
+  @override
+  String get debridGetApiToken => 'الحصول على رمز API';
+
+  @override
+  String get checkOtherSources => 'تحقق من مصادر أخرى';
+
+  @override
+  String get goBack => 'رجوع';
+
+  @override
+  String get backupPairSyncTitle => 'الاقتران والمزامنة عبر Wi-Fi';
+
+  @override
+  String get backupPairSyncSubtitle =>
+      'انقل نسخة احتياطية بين جهازين دون سحابة';
+
+  @override
+  String get liveXtreamAccounts => 'حسابات Xtream';
+
+  @override
+  String get tvGuide => 'دليل التلفاز';
+
+  @override
+  String get repositoryActions => 'إجراءات المستودع';
+
+  @override
+  String get sourceHealthDeepTest => 'اختبار عميق (يفتح عنوانًا من كل مصدر)';
+
+  @override
+  String get gifSearchKlipy => 'ابحث في KLIPY';
+
+  @override
+  String get profilesAskOnLaunch => 'اسأل من يشاهد عند البدء';
+
+  @override
+  String get dubAsWritten => 'كما هو مكتوب';
+
+  @override
+  String get dubReadAloudSubtitle => 'اقرأ سطر الترجمة بصوت عالٍ';
+
+  @override
+  String get playerProvider => 'المزوّد';
+
+  @override
+  String get stop => 'إيقاف';
 }

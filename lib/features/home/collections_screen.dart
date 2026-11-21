@@ -60,23 +60,23 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
   }
 
   Future<void> _rename(Collection c) async {
-    final name = await _promptName(title: 'Rename collection', initial: c.name);
+    final name = await _promptName(title: context.l10n.collectionsRename, initial: c.name);
     if (name == null || !mounted) return;
     await _store.rename(c.id, name);
     if (mounted) setState(() {});
   }
 
   Future<void> _addFolder(Collection c) async {
-    final name = await _promptName(title: 'New folder');
+    final name = await _promptName(title: context.l10n.collectionsNewFolder);
     if (name == null || !mounted) return;
     await _store.addFolder(c.id, name);
     if (mounted) setState(() {});
   }
 
   Future<void> _addLiveFolder(Collection c) async {
-    final name = await _promptName(title: 'New live folder');
+    final name = await _promptName(title: context.l10n.collectionsNewLiveFolder);
     if (name == null || !mounted) return;
-    final query = await _promptName(title: 'Search text', initial: name);
+    final query = await _promptName(title: context.l10n.collectionsSearchText, initial: name);
     if (query == null || query.trim().isEmpty || !mounted) return;
     await _store.addLiveFolder(c.id, name, query);
     if (mounted) setState(() {});
@@ -85,7 +85,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
   Future<void> _delete(Collection c) async {
     final ok = await AppDialog.confirm(
       context,
-      title: 'Delete "${c.name}"?',
+      title: context.l10n.collectionsDeleteTitle(c.name),
       message:
           'The collection and its folders are removed. The titles '
           'themselves stay in your library.',

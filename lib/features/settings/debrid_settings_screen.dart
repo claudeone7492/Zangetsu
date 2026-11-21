@@ -337,7 +337,7 @@ class _DebridServiceScreenState extends State<DebridServiceScreen> {
                 SettingsTile(
                   icon: Icons.verified_outlined,
                   title: 'Connected',
-                  subtitle: 'API token saved on this device',
+                  subtitle: context.l10n.debridTokenSaved,
                 ),
                 SettingsTile(
                   icon: Icons.logout_rounded,
@@ -360,7 +360,7 @@ class _DebridServiceScreenState extends State<DebridServiceScreen> {
                     enabled: !_busy,
                     style: AppText.body.copyWith(color: AppColors.textPrimary),
                     decoration: InputDecoration(
-                      hintText: 'API token',
+                      hintText: context.l10n.debridApiToken,
                       hintStyle: AppText.body.copyWith(
                         color: AppColors.textTertiary,
                       ),
@@ -403,7 +403,7 @@ class _DebridServiceScreenState extends State<DebridServiceScreen> {
             children: [
               SettingsTile(
                 icon: Icons.open_in_new_rounded,
-                title: 'Get an API token',
+                title: context.l10n.debridGetApiToken,
                 onTap: _openHelp,
               ),
             ],

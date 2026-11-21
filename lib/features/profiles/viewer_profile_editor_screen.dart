@@ -638,7 +638,7 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
                                   ),
                                   if (_photoUrl != null)
                                     IconButton.filledTonal(
-                                      tooltip: 'Remove avatar',
+                                      tooltip: context.l10n.profileRemoveAvatar,
                                       onPressed: _uploading
                                           ? null
                                           : () => setState(
@@ -685,7 +685,7 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
                       onChanged: (_) => setState(() {}),
                       textCapitalization: TextCapitalization.sentences,
                       decoration: _fieldDecoration(
-                        label: 'Bio',
+                        label: context.l10n.profileBio,
                         hint: 'Add a short bio',
                         errorText:
                             _bio.text.trim().runes.length >
@@ -789,7 +789,7 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
                   SettingsTile(
                     icon: Icons.child_care_rounded,
                     title: 'Kids profile',
-                    subtitle: 'Hide adult-rated catalogue titles',
+                    subtitle: context.l10n.profileHideAdultTitles,
                     trailing: Switch.adaptive(
                       value: _isKids,
                       onChanged: (value) => setState(() => _isKids = value),

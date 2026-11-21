@@ -45,13 +45,13 @@ class _AdminView extends StatelessWidget {
               );
             case AdminGate.needsSetup:
               return _Gate(
-                title: 'Create admin passcode',
+                title: context.l10n.adminCreatePasscode,
                 cta: 'Create passcode',
                 onSubmit: (p) => context.read<AdminCubit>().setup(p),
               );
             case AdminGate.locked:
               return _Gate(
-                title: 'Enter admin passcode',
+                title: context.l10n.adminEnterPasscode,
                 cta: 'Unlock',
                 onSubmit: (p) => context.read<AdminCubit>().unlock(p),
               );
@@ -107,7 +107,7 @@ class _GateState extends State<_Gate> {
               obscureText: true,
               style: AppText.body.copyWith(color: Colors.white),
               decoration: InputDecoration(
-                hintText: 'Passcode',
+                hintText: context.l10n.adminPasscode,
                 hintStyle: AppText.body.copyWith(color: AppColors.textTertiary),
                 filled: true,
                 fillColor: AppColors.surface,
@@ -287,11 +287,11 @@ class _Kpis extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       child: Row(
         children: [
-          _Kpi(label: 'Devices', value: '${state.devices.length}'),
-          _Kpi(label: 'Active now', value: '${state.activeDevices}'),
-          _Kpi(label: 'Active subs', value: '${state.activeSubs}'),
-          _Kpi(label: 'MRR', value: mrr),
-          _Kpi(label: 'Free access', value: '${state.freeAccess}'),
+          _Kpi(label: context.l10n.adminDevices, value: '${state.devices.length}'),
+          _Kpi(label: context.l10n.adminActiveNow, value: '${state.activeDevices}'),
+          _Kpi(label: context.l10n.adminActiveSubs, value: '${state.activeSubs}'),
+          _Kpi(label: context.l10n.adminMrr, value: mrr),
+          _Kpi(label: context.l10n.freeAccess, value: '${state.freeAccess}'),
         ],
       ),
     );

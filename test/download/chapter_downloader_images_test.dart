@@ -104,11 +104,16 @@ void main() {
   });
 
   Future<void> waitUntilDone(String id) async {
-    for (var i = 0; i < 400; i++) {
-      if (!downloader.isBusy(id)) return;
+    // Wall-clock deadline rather than a fixed number of 5 ms ticks: under a
+    // parallel full-suite run the download's async work can be starved for
+    // seconds, and a 2 s budget then reports a false timeout.
+    final deadline = DateTime.now().add(const Duration(seconds: 30));
+    while (downloader.isBusy(id)) {
+      if (DateTime.now().isAfter(deadline)) {
+        fail('chapter never finished downloading');
+      }
       await Future<void>.delayed(const Duration(milliseconds: 5));
     }
-    fail('chapter never finished downloading');
   }
 
   test(

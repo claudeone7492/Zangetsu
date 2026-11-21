@@ -67,9 +67,9 @@ Widget _stremioTvConfigureDialog(
     keyboardType: TextInputType.url,
     autocorrect: false,
     enableSuggestions: false,
-    decoration: const InputDecoration(
+    decoration: InputDecoration(
       labelText: 'Configured addon URL',
-      hintText: 'Paste the URL from the addon settings page',
+      hintText: dialog.l10n.stremioPasteAddonUrl,
     ),
   ),
   actions: [

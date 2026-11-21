@@ -128,7 +128,7 @@ class _KlipyGifPickerState extends State<_KlipyGifPicker> {
                   onChanged: _search,
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
-                    hintText: 'Search KLIPY',
+                    hintText: context.l10n.gifSearchKlipy,
                     prefixIcon: const Icon(Icons.search_rounded),
                     filled: true,
                     fillColor: AppColors.settingsCard,

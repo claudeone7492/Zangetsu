@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 
+import '../../l10n/l10n.dart';
 import '../../core/di/injector.dart';
 import '../../core/stremio/stremio_manager.dart';
 import '../../core/mode/content_mode.dart';
@@ -305,7 +306,7 @@ class SourceCatalogueHomeContentState
         if (_sources.isEmpty)
           _emptyState(
             icon: Icons.extension_off_rounded,
-            title: 'No sources available',
+            title: context.l10n.sourcesNoneAvailable,
             message: 'Install a source to browse its catalogue here.',
             action: _openSources,
             actionLabel: 'Browse sources',
@@ -337,7 +338,7 @@ class SourceCatalogueHomeContentState
         children: [
           _emptyState(
             icon: Icons.cloud_off_outlined,
-            title: 'Could not load this catalogue',
+            title: context.l10n.sourcesCouldNotLoadCatalogue,
             message: 'Check your connection and try again.',
             action: () => _load(reset: true),
             actionLabel: 'Try again',
@@ -351,7 +352,7 @@ class SourceCatalogueHomeContentState
         children: [
           _emptyState(
             icon: Icons.movie_filter_outlined,
-            title: 'No titles to show',
+            title: context.l10n.sourcesNoTitlesToShow,
             message: 'This source did not return any home lists.',
             action: () => _load(reset: true),
             actionLabel: 'Refresh',

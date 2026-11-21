@@ -144,8 +144,8 @@ Future<EpisodeAction?> showEpisodeActionSheet(
               if (canSurveySources && !reading)
                 _PlayerRow(
                   icon: Icons.travel_explore_rounded,
-                  label: 'Where to watch',
-                  subtitle: 'See which of your sources has this episode',
+                  label: sheetContext.l10n.episodeWhereToWatch,
+                  subtitle: sheetContext.l10n.episodeWhereToWatchSubtitle,
                   onTap: () =>
                       Navigator.pop(sheetContext, EpisodeAction.whereToWatch),
                 ),
@@ -183,7 +183,7 @@ Future<EpisodeAction?> showEpisodeActionSheet(
                 _PlayerRow(
                   icon: Icons.public_rounded,
                   label: 'Open in browser',
-                  subtitle: "Read it on the source's own site",
+                  subtitle: sheetContext.l10n.episodeReadOnSourceSite,
                   onTap: () =>
                       Navigator.pop(sheetContext, EpisodeAction.openInBrowser),
                 ),

@@ -4262,7 +4262,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen>
                           ),
                           readerSheetRow(
                             icon: Icons.palette_outlined,
-                            label: 'Custom color filter',
+                            label: context.l10n.readerCustomColorFilter,
                             trailing: Switch(
                               value: prefs.customColorFilter,
                               activeThumbColor: AppColors.accent,
@@ -4300,15 +4300,15 @@ class _MangaReaderScreenState extends State<MangaReaderScreen>
                               ),
                             readerSheetRow(
                               icon: Icons.layers_outlined,
-                              label: 'Color filter blend mode',
+                              label: context.l10n.readerBlendMode,
                               child: ReaderSegmentedControl(
-                                options: const [
-                                  (value: 'default', label: 'Default'),
-                                  (value: 'multiply', label: 'Multiply'),
-                                  (value: 'screen', label: 'Screen'),
-                                  (value: 'overlay', label: 'Overlay'),
-                                  (value: 'dodge', label: 'Dodge'),
-                                  (value: 'lighten', label: 'Lighten'),
+                                options: [
+                                  (value: 'default', label: context.l10n.defaultLabel),
+                                  (value: 'multiply', label: context.l10n.readerBlendMultiply),
+                                  (value: 'screen', label: context.l10n.readerBlendScreen),
+                                  (value: 'overlay', label: context.l10n.readerBlendOverlay),
+                                  (value: 'dodge', label: context.l10n.readerBlendDodge),
+                                  (value: 'lighten', label: context.l10n.readerBlendLighten),
                                 ],
                                 selected: prefs.customFilterBlend,
                                 onSelect: (v) =>
