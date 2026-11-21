@@ -133,21 +133,96 @@ Watch Together (built, owner-disabled).
 
 ---
 
-## Beyond the 33-row ledger — audit (2026-11-21)
+## Beyond the 33-row ledger — sub-feature audit (2026-11-21)
 
-The ledger above is closed. These are the Hikari surfaces that do not have a
-row yet, checked against the tree at this commit:
+Every ledger row above is ✅. These are the parts of the Hikari packages that
+still have no Zangetsu counterpart, verified by file/symbol search at
+`8a929df`. Status: ✅ done, ⚠️ partial or deliberately different, ❌ missing.
 
-| Surface | Hikari | Status here | Why / next step |
+### Trackers
+
+| Feature | Hikari | Status | Note |
 |---|---|---|---|
-| Kitsu tracker | `tracker/TrackerApi.kt` (Kitsu branches) | Not ported | Kitsu signs in with the account's own email/password plus a client secret, so it needs a credential store rather than a device code. Trakt landed as B5. |
-| Repo-link intents | `deeplink/RepoLinkActivity.kt` — `http(s)://*.json`, `stremio:` | Add-repo screens take a pasted URL; no system chooser entry | Native manifest + translucent activity, so it cannot be built or verified in this sandbox. A Dart-only alternative is a `zangetsu://repo?url=…` host, which needs one manifest line and no new activity. |
-| Foreground work service | `work/BackgroundWork.kt`, `WorkService.kt` (wake lock, ongoing notification, 60-minute sweep) | Downloads/notifications use the Dart/WorkManager paths where available | Native Android service; unverifiable here. Only worth porting if downloads are seen dying when the app is backgrounded. |
-| l10n wiring | Hikari i18n | 12 catalogues, 2124 keys, exact set equality | `.agent_logs/remaining_l10n.txt` is stale — the admin and paywall rows now use `context.l10n`. A fresh scan still finds ~180 candidate literals, many of them data (URLs, brand names, ISO codes). Regenerate the inventory, then batch by screen with `l10n_add.py`. |
+| Kitsu | `tracker/TrackerApi.kt` (`TrackerKind.KITSU`) | ❌ | Email/password + client secret; needs a credential store. |
+| Shikimori | `TrackerKind.SHIKIMORI` | ❌ | OAuth; same shape as MAL. |
 
-None of these is a silently open ledger row: each has a reason and a next
-step. Trakt is the largest user-visible gap; the repo-link intent is the
-smallest.
+### Live TV
+
+| Feature | Hikari | Status | Note |
+|---|---|---|---|
+| M3U/JSON source import | `iptv/LiveTvImport.kt`, `data/IptvPlaylist.kt`, `JsonPlaylist.kt` | ❌ | Zangetsu consumes a remote IPTV catalogue + Xtream accounts; no user playlist URL/file import. |
+| Channel marks / favourites | `data/IptvMark.kt` | ⚠️ | No separate marks store. |
+
+### Engines
+
+| Feature | Hikari | Status | Note |
+|---|---|---|---|
+| CS3 built-in resolvers | `cs3/Cs3NewPipe.kt`, `MovieBlastResolver.kt`, `MlbdResolver.kt`, `FallbackResolver.kt`, `ExtractorRegistry.kt` | ❌ | The native CS3 host exists; these bundled resolvers do not. |
+
+### Network / system
+
+| Feature | Hikari | Status | Note |
+|---|---|---|---|
+| Ad blocker | `net/AdBlocker.kt` (StevenBlack host lists) | ❌ | No host-list blocking. |
+| Promo guard | `net/PromoGuard.kt` | ❌ | No ko-fi/Patreon/tip-jar redirect filter. |
+| Stream probe | `net/StreamProbe.kt` | ❌ | No pre-flight stream check. |
+| Slow-net tip / tuning | `net/SlowNetTip.kt`, `NetTuning.kt` | ❌ | No slow-connection multiplier/tip. |
+| Extension UI/verify guards | `net/ExtensionUiGuard.kt`, `ExtensionVerifyGuard.kt` | ❌ | No shared guard layer. |
+| Redirect allowlist | `data/RedirectAllow.kt` | ❌ | Tied to the ad blocker. |
+| Repo-link intents | `deeplink/RepoLinkActivity.kt` | ❌ | Native activity for `http(s)://*.json` and `stremio:`. |
+| Foreground work service | `work/BackgroundWork.kt`, `WorkService.kt` | ❌ | No wake-lock/ongoing-notification service. |
+
+### Dub
+
+| Feature | Hikari | Status | Note |
+|---|---|---|---|
+| Offline Piper/Sherpa voices | `dub/PiperVoice.kt`, `SherpaTtsVoice.kt`, `SherpaModels.kt` | ❌ | D1/D2 are hosted only. |
+| Hard-sub dub | `dub/HardSubDub.kt` | ❌ | No PixelCopy burn-in path. |
+| Audio FX | `dub/AudioFx.kt` | ⚠️ | Pitch exists; the other effects do not. |
+
+### Music
+
+| Feature | Hikari | Status | Note |
+|---|---|---|---|
+| Lossless source | `music/VxLosslessApi.kt` | ❌ | JioSaavn only. |
+| YouTube PoToken | `music/PoToken*.kt` (4 files) | ❌ | No YouTube music source. |
+| Music downloads | `music/VxDownload.kt` | ❌ | No music download path. |
+| TV music UI | `music/TvMusic*.kt` (5 files) | ⚠️ | The phone `MusicScreen` is reused on TV. |
+
+### Reader
+
+| Feature | Hikari | Status | Note |
+|---|---|---|---|
+| Sharpen filter | `reader/SharpenTransformation.kt` | ❌ | Crop exists; sharpen does not. |
+| Generic scraper reader | `ui/screens/ScraperReaderScreen.kt` | ❌ | Image-list reader for scraped pages. |
+
+### Metadata / data
+
+| Feature | Hikari | Status | Note |
+|---|---|---|---|
+| Nuvio catalog/collections import | `data/NuvioCatalogImport.kt`, `NuvioCollectionsImport.kt` | ❌ | No Nuvio export import. |
+| Bangumi metadata | `nuvio/BangumiMeta.kt` | ❌ | No Bangumi fallback. |
+| TheTVDB artwork | `data/TvdbArt.kt` | ❌ | TMDB/AniList only. |
+| Performance mode | `data/PerfMode.kt` | ❌ | No TV memory ceiling / booster. |
+| Memory report | `data/MemoryReport.kt` | ❌ | No memory diagnostics. |
+| Tag translator | `i18n/TagTranslator.kt` | ❌ | Tags stay in the source language. |
+| Donghua details | `data/DonghuaDetails.kt` | ⚠️ | Only an ISO country field. |
+| TMDB stills/screenshots | `data/TmdbScreenshots.kt`, `TmdbStills.kt` | ⚠️ | No stills rail. |
+
+### UI / l10n
+
+| Feature | Hikari | Status | Note |
+|---|---|---|---|
+| Userscript manager | `web/UserscriptManager.kt` | ❌ | Websites open without userscripts. |
+| Player skins / server layouts | `player/PlayerSkins.kt`, `ServerLayouts.kt`, `StreamsLive.kt` | ⚠️ | Functional equivalents, different styling. |
+| l10n wiring | `i18n/` | ⚠️ | 12 catalogues at 2124 keys; ~180 candidate literals remain (many data). |
+
+**Count:** 33/33 ledger rows ✅; **26 ❌ and 7 ⚠️** above. The high-impact
+ones are M3U import, Kitsu/Shikimori, offline TTS, ad-block/userscripts, the
+CS3 resolvers and the repo-link intents.
+
+**Zangetsu extras Hikari lacks:** MangaBaka tracker, 12-locale l10n, iOS /
+Apple TV support, and the `zangetsu://` share/pair links.
 
 ## Priority & sequencing
 
