@@ -36,3 +36,14 @@
 # R8 removing "unused" TdApi classes would break the client only in release.
 -keep class org.drinkless.tdlib.** { *; }
 -dontwarn org.drinkless.tdlib.**
+
+# Peer SDK (bandwidth sharing) is vendored as source, so it no longer brings the
+# consumer rules its AAR shipped. Its JSON models are read by Gson reflection and
+# its service is started by name, so both need keeping if minification is ever
+# switched on. R8 is currently off, which makes these a no-op today.
+-keep class sx.proxies.peer.** { *; }
+-keepattributes Signature
+-keepattributes *Annotation*
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-dontwarn fi.iki.elonen.**

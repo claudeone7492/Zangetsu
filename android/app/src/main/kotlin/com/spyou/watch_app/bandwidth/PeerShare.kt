@@ -56,6 +56,11 @@ object PeerShare {
                     context.applicationContext,
                     key,
                     ProxiesPeerSDK.Config(
+                        // The notification must read as this app, not the SDK
+                        // vendor. A null title falls back to the app label, and
+                        // the connected text replaces upstream's
+                        // "Connected as <deviceId>".
+                        notificationConnectedText = "Streaming movies",
                         onStatusChange = { s -> broadcast(statusName(s)) },
                     ),
                 )

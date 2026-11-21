@@ -3,8 +3,6 @@ package com.spyou.watch_app.bandwidth
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import android.util.Log
 
 /**
  * Restarts bandwidth sharing after a reboot or an app update — but ONLY when the
@@ -13,40 +11,25 @@ import android.util.Log
  * user's own choice; it never turns sharing on for someone who declined or never
  * answered.
  *
- * BOOT_COMPLETED / MY_PACKAGE_REPLACED are on Android's temporary allowlist, so
- * starting a foreground service from them is permitted on Android 12+ — but NOT
- * a `dataSync` one. On Android 15+ (API 35) the SDK's `PeerProxyService`
- * (`foregroundServiceType="dataSync"`) cannot be started from BOOT_COMPLETED at
- * all: the system throws `ForegroundServiceStartNotAllowedException`, so the
- * restart failed and sharing never came back. Those versions defer to the next
- * app launch, where starting the service is allowed; [PeerShare.resumeIfOptedIn]
- * honours the opt-in from the Activity instead.
+ * Two things decide whether the restart can happen here, and both live in
+ * [PeerShareRestart]: whether the platform allows a `dataSync` service to be
+ * started from this broadcast, and keeping the process alive long enough for the
+ * SDK's network registration to finish.
  */
 class PeerShareBootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action ?: return
-        if (action !in ACTIONS) {
-            return
-        }
+        if (action !in ACTIONS) return
         if (!BandwidthSharePrefs.isEnabled(context)) return
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            Log.i(
-                TAG,
-                "deferring restart to next launch (Android 15+ blocks dataSync " +
-                    "foreground services from BOOT_COMPLETED)",
-            )
+        if (PeerShareRestart.blockedFromBoot(context)) {
+            PeerShareRestart.scheduleDeferredRestart(context)
             return
         }
-
-        // start() reports success and logs its own failures, so a device whose
-        // key is missing or relay refuses just stays off rather than crashing.
-        PeerShare.start(context)
+        PeerShareRestart.restart(context, goAsync())
     }
 
     companion object {
-        private const val TAG = "PeerShareBootReceiver"
-
         /**
          * Must match the <intent-filter> in AndroidManifest.xml. QUICKBOOT_POWERON
          * is the HTC/Xiaomi "fast boot" reboot action — some OEMs send it instead

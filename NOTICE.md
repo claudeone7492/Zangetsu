@@ -125,3 +125,14 @@ Local Authentication (Flutter)
   https://pub.dev/packages/local_auth
   License: BSD-3-Clause
   Used for optional device-local profile unlock with biometrics.
+
+Proxies.sx Peer SDK (android-peer-sdk)
+  https://github.com/bolivian-peru/android-peer-sdk
+  License: MIT (full text: android/app/src/main/kotlin/sx/proxies/peer/LICENSE)
+  Source vendored at android/app/src/main/kotlin/sx/proxies/peer/ from tag
+  v1.3.2, replacing the JitPack AAR so the foreground notification shown while
+  bandwidth sharing runs can carry this app's name instead of the SDK vendor's,
+  and without a device identifier. Local changes are limited to that
+  notification copy (PeerNotification.kt, ProxiesPeerSDK.Config,
+  PeerProxyService); everything else is upstream.
+

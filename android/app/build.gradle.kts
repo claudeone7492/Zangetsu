@@ -234,10 +234,15 @@ configurations.configureEach {
 // it. GPL-3.0 — see docs/cloudstream-integration-spec.md §7.
 dependencies {
     implementation("com.github.recloudstream.cloudstream:library:v4.8.0")
-    // Proxies.sx peer SDK — powers opt-in bandwidth sharing. JitPack artifact
-    // (repo added in android/build.gradle.kts). Ships its own foreground service
-    // and merges the permissions it needs.
-    implementation("com.github.bolivian-peru:android-peer-sdk:v1.3.2")
+    // Proxies.sx peer SDK — powers opt-in bandwidth sharing. Vendored as source
+    // (android/app/src/main/kotlin/sx/proxies/peer) from upstream v1.3.2 (MIT)
+    // instead of the JitPack AAR: the published artifact hardcodes its vendor
+    // name and the device id into the sharing notification, with no way to
+    // override either. Only the notification copy differs from upstream; the
+    // service declaration moved to AndroidManifest.xml with it. Its own
+    // dependencies are listed below.
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
     // Jackson is already on the RUNTIME classpath (CloudStream library transitive
     // dep). compileOnly lets our clean-room DataStore reference JsonMapper for the
     // plugin-settings API without duplicating Jackson at runtime. Same version.
