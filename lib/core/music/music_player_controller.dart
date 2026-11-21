@@ -6,6 +6,7 @@ import 'audio_output.dart';
 import 'music_models.dart';
 import 'music_queue.dart';
 import 'music_service.dart';
+import 'vx_audio_fx.dart';
 
 /// Drives playback for music mode: owns the queue, resolves stream URLs, and
 /// turns the audio output's events into state the UI can render.
@@ -219,6 +220,9 @@ class MusicPlayerController extends ChangeNotifier {
       await _output.open(url);
       if (generation != _loadGeneration) return;
       await _output.setVolume(_volume);
+      // The equaliser is part of the output chain, so it is (re)applied on
+      // every open — a track change must not drop it.
+      await _output.setAudioFilter(VxAudioFx.filterFor());
       if (play) await _output.play();
     } catch (e) {
       if (generation != _loadGeneration) return;

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'flat_json_scanner.dart';
 
 /// One Xtream account. Credentials are per-account because a household often
 /// holds more than one subscription (or a trial plus a paid line).
@@ -237,35 +238,83 @@ class XtreamApi {
       XtreamKind.vod => 'get_vod_streams',
       XtreamKind.series => 'get_series',
     };
-    final body = await _get(
+    // Big panels answer 100,000+ titles; this reads them straight off the
+    // socket instead of holding bytes, text and a parsed tree at once.
+    final out = <XtreamStream>[];
+    await _scan(
       account,
       action,
       params: categoryId == null || categoryId.isEmpty
           ? null
           : {'category_id': categoryId},
-      tolerateErrors: true,
+      onObject: (fields) => out.add(_streamFromFields(fields, kind)),
     );
-    final list = _asList(body);
-    return [
-      for (final raw in list)
-        if (raw is Map) _streamFrom(raw, kind),
-    ];
+    return out;
   }
 
-  XtreamStream _streamFrom(Map raw, XtreamKind kind) {
-    final id = '${raw['stream_id'] ?? raw['series_id'] ?? ''}';
-    final name = '${raw['name'] ?? raw['title'] ?? ''}';
+  /// Streams [action]'s answer through [FlatJsonScanner], one item at a time.
+  Future<void> _scan(
+    XtreamAccount account,
+    String action, {
+    Map<String, String>? params,
+    required void Function(Map<String, String> fields) onObject,
+  }) async {
+    final query = StringBuffer(
+      '?username=${Uri.encodeQueryComponent(account.username)}'
+      '&password=${Uri.encodeQueryComponent(account.password)}'
+      '&action=${Uri.encodeQueryComponent(action)}',
+    );
+    for (final e in (params ?? const <String, String>{}).entries) {
+      query.write('&${e.key}=${Uri.encodeQueryComponent(e.value)}');
+    }
+    final scanner = FlatJsonScanner(onObject);
+    try {
+      final res = await _dio.get<ResponseBody>(
+        '${account.host}/player_api.php$query',
+        options: Options(
+          responseType: ResponseType.stream,
+          validateStatus: (c) => c != null && c < 500,
+          receiveTimeout: timeout,
+          sendTimeout: timeout,
+        ),
+      );
+      final body = res.data;
+      if (body == null) return;
+      await for (final chunk in body.stream) {
+        scanner.feed(chunk);
+      }
+      scanner.finish();
+    } on DioException catch (e) {
+      debugPrint('[xtream] $action failed: $e');
+    } on StateError catch (e) {
+      // Truncated answer: the items read so far are still good.
+      debugPrint('[xtream] $action ended early: $e');
+    } on FormatException catch (e) {
+      debugPrint('[xtream] $action unreadable: $e');
+    }
+  }
+
+  XtreamStream _streamFromFields(Map<String, String> raw, XtreamKind kind) {
+    String pick(List<String> keys) {
+      for (final k in keys) {
+        final v = raw[k];
+        if (v != null && v.isNotEmpty) return v;
+      }
+      return '';
+    }
+
+    final name = pick(const ['name', 'title']);
     return XtreamStream(
-      id: id,
+      id: pick(const ['stream_id', 'series_id']),
       name: name.isEmpty ? 'Unnamed' : name,
       kind: kind,
-      icon: '${raw['stream_icon'] ?? raw['cover'] ?? ''}',
-      categoryId: '${raw['category_id'] ?? ''}',
-      epgChannelId: '${raw['epg_channel_id'] ?? ''}',
-      container: '${raw['container_extension'] ?? ''}',
-      year: '${raw['year'] ?? ''}',
-      rating: '${raw['rating'] ?? raw['rating_5based'] ?? ''}',
-      plot: '${raw['plot'] ?? ''}',
+      icon: pick(const ['stream_icon', 'cover']),
+      categoryId: pick(const ['category_id']),
+      epgChannelId: pick(const ['epg_channel_id']),
+      container: pick(const ['container_extension']),
+      year: pick(const ['year']),
+      rating: pick(const ['rating', 'rating_5based']),
+      plot: pick(const ['plot']),
     );
   }
 

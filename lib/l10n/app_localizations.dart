@@ -13892,6 +13892,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign out'**
   String get telegramSignOut;
+
+  /// No description provided for @interfaceScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Interface scale'**
+  String get interfaceScale;
+
+  /// No description provided for @interfaceScaleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Grows or shrinks the whole interface — text, posters and spacing together. 100% is unchanged.'**
+  String get interfaceScaleBody;
+
+  /// No description provided for @detailHeaderHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Detail header height'**
+  String get detailHeaderHeight;
+
+  /// No description provided for @preferLossless.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer lossless'**
+  String get preferLossless;
+
+  /// No description provided for @streamingQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Streaming quality'**
+  String get streamingQuality;
+
+  /// No description provided for @downloadQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Download quality'**
+  String get downloadQuality;
+
+  /// No description provided for @bitPerfect.
+  ///
+  /// In en, this message translates to:
+  /// **'Bit-perfect output'**
+  String get bitPerfect;
+
+  /// No description provided for @studioClarity.
+  ///
+  /// In en, this message translates to:
+  /// **'Studio clarity'**
+  String get studioClarity;
+
+  /// No description provided for @equalizer.
+  ///
+  /// In en, this message translates to:
+  /// **'Equaliser'**
+  String get equalizer;
+
+  /// No description provided for @dnsMode.
+  ///
+  /// In en, this message translates to:
+  /// **'DNS mode'**
+  String get dnsMode;
+
+  /// No description provided for @dnsTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Test'**
+  String get dnsTest;
+
+  /// No description provided for @dnsCustomAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'DNS-over-HTTPS address'**
+  String get dnsCustomAddress;
+
+  /// No description provided for @slideToExplore.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide to explore'**
+  String get slideToExplore;
+
+  /// No description provided for @tmdbBrowse.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse TMDB'**
+  String get tmdbBrowse;
+
+  /// No description provided for @tmdbTrending.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending this week'**
+  String get tmdbTrending;
+
+  /// No description provided for @tmdbPopularMovies.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular movies'**
+  String get tmdbPopularMovies;
+
+  /// No description provided for @tmdbTopRatedMovies.
+  ///
+  /// In en, this message translates to:
+  /// **'Top rated movies'**
+  String get tmdbTopRatedMovies;
+
+  /// No description provided for @tmdbPopularSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular series'**
+  String get tmdbPopularSeries;
+
+  /// No description provided for @tmdbTopRatedSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Top rated series'**
+  String get tmdbTopRatedSeries;
+
+  /// No description provided for @tmdbOnTv.
+  ///
+  /// In en, this message translates to:
+  /// **'On TV now'**
+  String get tmdbOnTv;
+
+  /// No description provided for @tmdbPopularAnime.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular anime'**
+  String get tmdbPopularAnime;
+
+  /// No description provided for @tmdbTopRatedAnime.
+  ///
+  /// In en, this message translates to:
+  /// **'Top rated anime'**
+  String get tmdbTopRatedAnime;
+
+  /// No description provided for @tmdbNewAnime.
+  ///
+  /// In en, this message translates to:
+  /// **'New anime'**
+  String get tmdbNewAnime;
+
+  /// No description provided for @tmdbAnimeMovies.
+  ///
+  /// In en, this message translates to:
+  /// **'Anime movies'**
+  String get tmdbAnimeMovies;
+
+  /// No description provided for @tmdbPopularKoreanDramas.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular Korean dramas'**
+  String get tmdbPopularKoreanDramas;
+
+  /// No description provided for @tmdbPopularHindiMovies.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular Hindi movies'**
+  String get tmdbPopularHindiMovies;
+
+  /// No description provided for @tmdbPopularFrenchMovies.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular French movies'**
+  String get tmdbPopularFrenchMovies;
+
+  /// No description provided for @tmdbPopularPersianMovies.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular Persian movies'**
+  String get tmdbPopularPersianMovies;
 }
 
 class _AppLocalizationsDelegate

@@ -7900,4 +7900,89 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get telegramSignOut => 'Çıkış yap';
+
+  @override
+  String get interfaceScale => 'Arayüz ölçeği';
+
+  @override
+  String get interfaceScaleBody =>
+      'Tüm arayüzü — yazı, afiş ve boşluklarla birlikte — büyütür veya küçültür. %100 hiçbir şeyi değiştirmez.';
+
+  @override
+  String get detailHeaderHeight => 'Ayrıntı başlığı yüksekliği';
+
+  @override
+  String get preferLossless => 'Kayıpsızı tercih et';
+
+  @override
+  String get streamingQuality => 'Yayın kalitesi';
+
+  @override
+  String get downloadQuality => 'İndirme kalitesi';
+
+  @override
+  String get bitPerfect => 'Bit-perfect çıkış';
+
+  @override
+  String get studioClarity => 'Stüdyo netliği';
+
+  @override
+  String get equalizer => 'Ekolayzer';
+
+  @override
+  String get dnsMode => 'DNS modu';
+
+  @override
+  String get dnsTest => 'Dene';
+
+  @override
+  String get dnsCustomAddress => 'DNS-over-HTTPS adresi';
+
+  @override
+  String get slideToExplore => 'Seçmek için kaydır';
+
+  @override
+  String get tmdbBrowse => 'TMDB\'ye göz at';
+
+  @override
+  String get tmdbTrending => 'Bu hafta popüler';
+
+  @override
+  String get tmdbPopularMovies => 'Popüler filmler';
+
+  @override
+  String get tmdbTopRatedMovies => 'En iyi filmler';
+
+  @override
+  String get tmdbPopularSeries => 'Popüler diziler';
+
+  @override
+  String get tmdbTopRatedSeries => 'En iyi diziler';
+
+  @override
+  String get tmdbOnTv => 'Şu an yayında';
+
+  @override
+  String get tmdbPopularAnime => 'Popüler anime';
+
+  @override
+  String get tmdbTopRatedAnime => 'En iyi anime';
+
+  @override
+  String get tmdbNewAnime => 'Yeni animeler';
+
+  @override
+  String get tmdbAnimeMovies => 'Anime filmleri';
+
+  @override
+  String get tmdbPopularKoreanDramas => 'Popüler Kore dizileri';
+
+  @override
+  String get tmdbPopularHindiMovies => 'Popüler Hint filmleri';
+
+  @override
+  String get tmdbPopularFrenchMovies => 'Popüler Fransız filmleri';
+
+  @override
+  String get tmdbPopularPersianMovies => 'Popüler Fars filmleri';
 }

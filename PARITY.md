@@ -1,7 +1,7 @@
 # Zangetsu ↔ Hikari parity
 
 > **Superseded in depth by [`AUDIT.md`](AUDIT.md)**, which walks all 33
-> Hikari packages (140 units) and corrects several statuses below.
+> Hikari packages (149 units) and corrects several statuses below.
 
 Measured against `claudeone7492/Zangetsu` at the head of `main` and the Hikari tree at
 `codegeasse1/hikari` (`/workspace/hikari`). Every row was checked by file and
@@ -241,3 +241,13 @@ Verified at the head of `main`:
 - 12 ARB catalogues at 2287 keys each; `untranslated.txt` is `{}`.
 - `flutter test` — 5,535 passing, 8 skipped, on the tree above; per-area
   counts are in `AUDIT.md` §5.
+
+## 5. Gap-table pass
+
+Twelve audited rows landed after the wiring pass, each with a call site and a
+test: UI scale, header height, poster quick menu, TMDB browse rows and screen,
+streaming Xtream parses (`FlatJsonScanner`), provider timeout recovery
+(`ExtensionRecovery`), DoH wire format and DNS provider list with its settings
+screen, music quality tiers, the music EQ chain, the `AudioOutput` filter seam,
+and lossless tier ordering. `AUDIT.md` §6 is the row-by-row table; `AUDIT.md`
+§5 has the test counts.

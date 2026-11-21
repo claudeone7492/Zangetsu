@@ -28,6 +28,7 @@ import 'js_bootstrap.dart';
 import 'js_call_scheduler.dart';
 import 'js_engine.dart';
 import 'reading_provider.dart';
+import 'extension_recovery.dart';
 
 enum ProviderHealthStatus { healthy, degraded, broken }
 
@@ -348,6 +349,9 @@ class _JsHost {
           .timeout(
             timeout,
             onTimeout: () {
+              // Counted per provider: two in a row gets its runtime dropped
+              // on the next call (see ExtensionRecovery).
+              ExtensionRecovery.noteTimeout(sourceId);
               throw JsRuntimeException(
                 '$method timed out after ${timeout.inSeconds}s',
               );
@@ -373,6 +377,7 @@ class _JsHost {
           if (u is String) s = u;
         } catch (_) {}
       }
+      ExtensionRecovery.noteSuccess(sourceId);
       return s;
     } finally {
       _suppressCfSolve = wasSuppress;

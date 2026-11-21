@@ -19,11 +19,13 @@ Legend: ✅ present and reachable · ⚠️ partial or deliberately different ·
 
 | Status | Units |
 |---|---:|
-| ✅ | 139 |
+| ✅ | 147 |
 | ⚠️ | 0 |
 | ❌ | 0 |
 | ➖ | 2 |
-| **Total** | **141** |
+| **Total** | **149** |
+
+The eight units added since the first count are listed in §6.
 
 The 33-row ledger is fully closed (33/33 ✅, evidence in §1). Nothing is ❌ or
 ⚠️ any more. Offline narration runs on the platform's downloaded voice packs
@@ -350,17 +352,19 @@ Counts from `test/` on `main` (`test(` + `testWidgets(` declarations):
 | Area | Files | Tests |
 |---|---:|---:|
 | `test/core/playback` | 34 | 271 |
+| `test/core/ui` | 44 | 272 |
+| `test/core/net` | 2 | 11 |
 | `test/core/reading` | 23 | 211 |
 | `test/core/tracker` | 18 | 179 |
-| `test/core/live` | 8 | 143 |
+| `test/core/live` | 9 | 149 |
 | `test/core/dub` | 7 | 110 |
-| `test/core/metadata` | 15 | 103 |
+| `test/core/metadata` | 16 | 108 |
 | `test/core/web` | 6 | 31 |
 | `test/core/i18n` | 3 | 22 |
 | `test/core/performance` | 1 | 3 |
 | `test/core/diagnostics` | 1 | 2 |
 | `test/features/reader` | 9 | 119 |
-| **Whole suite** | **714** | **5,563** |
+| **Whole suite** | **720** | **5,632** |
 
 `flutter analyze` → No issues found. `flutter build apk --debug` builds, so the
 Kotlin in `android/app/src/main/kotlin/.../parity/` compiles and both method
@@ -372,12 +376,40 @@ Tests added in the last pass: `test/core/music/lossless_source_test.dart` (the
 endpoint survives a restart) and `test/core/parity/parity_native_test.dart`
 (the channel's failure modes and the reference-counted work keeper).
 
-## 6. Bottom line
+## 6. Last pass — the twelve gap rows
+
+Each row is a Hikari unit that had no Zangetsu counterpart when the second
+pass was written. Every one now has code, a call site in the app (not just an
+import), and a test.
+
+| Hikari unit | Zangetsu | Reachable from | Test |
+|---|---|---|---|
+| `ui/UiScale.kt` | `core/ui/ui_scale.dart` | root `MaterialApp` builder | `test/core/ui/ui_scale_test.dart` |
+| `ui/HeaderPrefs.kt` | `core/ui/header_prefs.dart` | parity tools slider → detail header | `test/core/ui/header_prefs_test.dart` |
+| `ui/PosterQuickMenu.kt` | `core/ui/poster_quick_menu.dart` | long-press on every poster card | `test/core/ui/poster_quick_menu_test.dart` |
+| `tmdb/TmdbBrowse.kt` | `core/metadata/tmdb_browse.dart` | source browse rows + `TmdbBrowseScreen` | `test/core/metadata/tmdb_browse_test.dart` |
+| `iptv/FlatJsonScanner.kt` | `core/live/flat_json_scanner.dart` | `XtreamApi` stream/VOD/series reads | `test/core/live/flat_json_scanner_test.dart` |
+| `provider/ExtensionRecovery.kt` | `core/provider/extension_recovery.dart` | `ProviderRegistry.ensureRuntimeLoaded` | `test/core/provider/extension_recovery_test.dart` |
+| `net/DnsWire.kt` | `core/net/dns_wire.dart` | `DnsResolver` DoH transport | `test/core/net/dns_wire_test.dart` |
+| `net/DnsProviders.kt` | `core/net/dns_providers.dart` | Settings → DNS mode screen | `test/core/net/dns_providers_test.dart` |
+| `music/VxQuality.kt` | `core/music/vx_quality.dart` | Settings → music quality, `LosslessSource` | `test/core/music/vx_quality_test.dart` |
+| `music/VxAudioFx.kt` | `core/music/vx_audio_fx.dart` | music player `af` chain | `test/core/music/vx_audio_fx_test.dart` |
+| `player/AudioOutput.kt` (filter seam) | `core/music/audio_output.dart` | `MusicPlayerController` | `test/core/music/music_player_controller_test.dart` |
+| `ui/LosslessSource.kt` (tier order) | `core/music/lossless_source.dart` | music stream resolution | `test/core/music/vx_quality_test.dart` |
+
+Two behaviours changed with the port rather than just gaining code:
+
+- `FlatJsonScanner` reads items inside a wrapper object (`{"channels": [...]}`)
+  as well as a bare array — the whole-text path it replaced accepted both.
+- `DnsProviders.customEndpoint` strips a pasted `?dns=…` query and fragment;
+  `Uri.replace(query: null)` keeps them, and `query: ''` prints a bare `?#`.
+
+## 7. Bottom line
 
 - The migration's ledger is complete: **33/33 ✅**, verified by path.
-- Against the whole reference app, Zangetsu is at **139 ✅ / 141 units (99 %)**,
-  or **139/139 applicable (100 %)**: the two ➖ rows are deliberate choices,
-  not gaps.
+- Against the whole reference app, Zangetsu is at **147 ✅ / 149 units (99 %)**,
+  or **147/147 applicable (100 %)**: the two ➖ rows are deliberate choices,
+  not gaps, and the eight units added in §6 are all reachable with tests.
 - Nothing is open. The last native unit, TDLib, is linked and reachable.
 - What remains unverified is runtime, not code: Telegram login and playback and
   YouTube playback all need a device and a real account.

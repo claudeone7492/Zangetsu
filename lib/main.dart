@@ -52,6 +52,7 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/app_font_prefs.dart';
 import 'core/theme/background_pref.dart';
 import 'core/theme/theme_controller.dart';
+import 'core/ui/ui_scale.dart';
 import 'core/tv/tv_route_pop_guard.dart';
 import 'core/tv/tv_viewport.dart';
 import 'l10n/app_localizations.dart';
@@ -425,6 +426,10 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
     }
   }
 
+  void _onUiScaleChanged() {
+    if (mounted) setState(() {});
+  }
+
   void _onLocaleChanged() {
     if (mounted) {
       setState(() {}); // language changed → rebuild MaterialApp.locale
@@ -477,6 +482,9 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
     ZModePrefs.revision.addListener(_onStreamKindChanged);
     MetadataProviderPrefs.revision.addListener(_onMetadataProviderChanged);
     HomeRowsPrefs.revision.addListener(_onHomeRowsChanged);
+    // The interface scale is applied around the whole app, so a change has to
+    // rebuild MaterialApp — same contract as an accent change.
+    UiScale.revision.addListener(_onUiScaleChanged);
     _watchBoot(_boot);
   }
 
@@ -488,6 +496,7 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
     ZModePrefs.revision.removeListener(_onStreamKindChanged);
     MetadataProviderPrefs.revision.removeListener(_onMetadataProviderChanged);
     HomeRowsPrefs.revision.removeListener(_onHomeRowsChanged);
+    UiScale.revision.removeListener(_onUiScaleChanged);
     WidgetsBinding.instance.removeObserver(this);
     _tvShellGate.dispose();
     super.dispose();
@@ -881,7 +890,10 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
           final locked = shellFeatures ? AppLockGate(child: framed) : framed;
           // The background photo paints behind everything, including the lock
           // overlay, so unlocking never flashes the stock colour.
-          return shellFeatures ? BackgroundPref.apply(locked) : locked;
+          final painted = shellFeatures ? BackgroundPref.apply(locked) : locked;
+          // 100 % is a no-op; anything else lays the shell out at 1/scale and
+          // draws it at scale (see UiScale).
+          return UiScale.wrap(context, painted);
         },
       ),
       brightnessResolver: Theme.maybeBrightnessOf,

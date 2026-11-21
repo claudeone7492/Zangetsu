@@ -10,6 +10,7 @@ import '../stremio/stremio_poster_shape.dart';
 import '../playback/playback_prefs.dart';
 
 import 'image_fade.dart';
+import 'poster_quick_menu.dart';
 import '../aniyomi/aniyomi_image_provider.dart';
 import '../mihon/mihon_image_provider.dart';
 import '../theme/app_colors.dart';
@@ -39,6 +40,7 @@ class PosterCard extends StatefulWidget {
     this.headers,
     this.onTap,
     this.onLongPress,
+    this.onQuickMenu,
     this.tags = const [],
     this.cellWidth = 180,
     this.showTitle = true,
@@ -61,6 +63,10 @@ class PosterCard extends StatefulWidget {
   final Map<String, String>? headers;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
+
+  /// Hikari's hold-for-a-second quick menu. When set, the 1 s hold opens it
+  /// and the card's own tap/long-press stand down while it is open.
+  final ValueChanged<PosterQuickAction>? onQuickMenu;
 
   /// Small overlay badges drawn at the bottom-left of the art (e.g. SUB/DUB).
   final List<String> tags;
@@ -394,14 +400,14 @@ class _PosterCardState extends State<PosterCard> {
       );
     }
 
-    return RepaintBoundary(
-      child: GestureDetector(
-        onTap: widget.onTap,
-        onLongPress: widget.onLongPress,
-        onTapDown: interactive ? _handleTapDown : null,
-        onTapUp: interactive ? _handleTapUp : null,
-        onTapCancel: interactive ? _handleTapCancel : null,
-        child: AnimatedScale(
+    final menu = widget.onQuickMenu;
+    Widget withMenu(bool open) => GestureDetector(
+      onTap: open ? null : widget.onTap,
+      onLongPress: open ? null : widget.onLongPress,
+      onTapDown: interactive && !open ? _handleTapDown : null,
+      onTapUp: interactive && !open ? _handleTapUp : null,
+      onTapCancel: interactive && !open ? _handleTapCancel : null,
+      child: AnimatedScale(
           scale: _pressed ? 0.97 : 1.0,
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOut,
@@ -600,6 +606,20 @@ class _PosterCardState extends State<PosterCard> {
             ],
           ),
         ),
+    );
+    final card = withMenu(false);
+    if (menu == null) return RepaintBoundary(child: card);
+    return RepaintBoundary(
+      child: PosterQuickMenuArea(
+        onPick: menu,
+        labels: [
+          context.l10n.details,
+          context.l10n.play,
+          context.l10n.myList,
+          context.l10n.close,
+        ],
+        hint: context.l10n.slideToExplore,
+        builder: (_, open) => withMenu(open),
       ),
     );
   }

@@ -186,6 +186,12 @@ import '../music/youtube_music_source.dart';
 import '../music/music_service.dart';
 import '../supabase/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show OtpType;
+import '../ui/ui_scale.dart';
+import '../ui/header_prefs.dart';
+import '../net/doh_dns.dart';
+import '../net/dns_providers.dart';
+import '../music/vx_quality.dart';
+import '../music/vx_audio_fx.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -642,6 +648,13 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   // Persisted Cloudflare clearances: JS sources reuse a solved cf_clearance
   // across restarts instead of re-popping the "Verifying…" solver each session.
   await CfClearanceStore.init();
+  // Interface scale, detail-header height, music quality/EQ and the DNS mode
+  // are read before the first frame so the shell never flashes the defaults.
+  await UiScale.load();
+  await HeaderPrefs.load();
+  await VxQuality.load();
+  await VxAudioFx.load();
+  await DnsProviders.load();
 
   final dio = Dio(
     BaseOptions(
@@ -652,6 +665,10 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
       headers: {'User-Agent': 'Mozilla/5.0 (WATCH_APP) Chrome/120.0'},
     ),
   );
+  // A chosen DNS provider takes over resolution for the app's own HTTP; the
+  // default ("Automatic") leaves this Dio exactly as it was.
+  DohDns.applyTo(dio);
+  DnsProviders.revision.addListener(DohDns.invalidate);
   // TMDB v3 auth: attach our api_key to every TMDB request (the old keyless
   // proxy died with a 1027). Per-IP limits, so one key scales to all users.
   dio.interceptors.add(

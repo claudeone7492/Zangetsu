@@ -7,6 +7,7 @@ import '../error/exceptions.dart';
 import 'provider_downloader.dart';
 import 'provider_manager.dart';
 import 'provider_repo_registry.dart';
+import 'extension_recovery.dart';
 
 /// Separator inside a composite provider key (`'$repoUrl::$sourceId'`).
 const String kProviderKeySep = '::';
@@ -517,6 +518,13 @@ class ProviderRegistry {
     String sourceId, {
     Duration timeout = const Duration(seconds: 8),
   }) {
+    // Two timeouts in a row means the cached runtime is wedged: drop it and
+    // let the reload below build a fresh one (ExtensionRecovery).
+    if (ExtensionRecovery.shouldRecover(sourceId)) {
+      ExtensionRecovery.markRecovered(sourceId);
+      _manager.remove(sourceId);
+      debugPrint('[ProviderRegistry] dropped wedged runtime for $sourceId');
+    }
     if (_manager.get(sourceId) != null) return Future.value(true);
     // One load per source at a time. On TV nothing is loaded at boot, so
     // opening a title fires several calls that all want the same provider
@@ -537,7 +545,12 @@ class ProviderRegistry {
     if (entry == null || !entry.enabled) return false;
     try {
       await _loadEntryIntoRuntime(entry).timeout(timeout);
+      ExtensionRecovery.noteSuccess(sourceId);
       return _manager.get(sourceId) != null;
+    } on TimeoutException {
+      ExtensionRecovery.noteTimeout(sourceId);
+      debugPrint('[ProviderRegistry] ensureRuntimeLoaded timed out: $sourceId');
+      return false;
     } catch (e) {
       debugPrint(
         '[ProviderRegistry] ensureRuntimeLoaded failed for $sourceId: $e',

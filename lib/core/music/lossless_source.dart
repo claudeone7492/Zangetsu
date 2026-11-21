@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 
 import '../hive/safe_box.dart';
 import 'music_models.dart';
+import 'vx_quality.dart';
 import 'music_source.dart';
 
 /// Lossless catalogue behind a user-supplied endpoint (Navidrome/Jellyfin/own).
@@ -111,14 +112,39 @@ class LosslessSource implements MusicSource {
     return _tracks(response.data?['tracks']);
   }
 
+  /// Streams [track] at the best tier the endpoint will serve.
+  ///
+  /// The tier the user picked is tried first, then the ones above it, then the
+  /// ones below (VxQuality.attemptOrder), each as `?quality=<id>`; a plain
+  /// request without the parameter is the last try, for servers that predate
+  /// the tiers. Empty answers are skipped rather than returned, so a server
+  /// that says "no" at 24/192 still plays 16/44.1.
   @override
   Future<String?> streamFor(MusicTrack track) async {
     if (!isConfigured) return null;
-    final response = await _dio.get<Map<String, dynamic>>(
-      '$_base/api/stream/${Uri.encodeComponent(track.id)}',
-      options: Options(headers: _headers),
-    );
-    return response.data?['url'] as String?;
+    final path = '$_base/api/stream/${Uri.encodeComponent(track.id)}';
+    final tiers = VxQuality.preferLossless
+        ? VxQuality.attemptOrder(VxQuality.streamQuality)
+        : const <int>[];
+    for (final tier in tiers) {
+      final url = await _streamUrl(path, {'quality': '$tier'});
+      if (url != null && url.isNotEmpty) return url;
+    }
+    return _streamUrl(path, const {});
+  }
+
+  Future<String?> _streamUrl(String path, Map<String, String> query) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        path,
+        queryParameters: query.isEmpty ? null : query,
+        options: Options(headers: _headers),
+      );
+      final url = response.data?['url'];
+      return url is String && url.isNotEmpty ? url : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   List<MusicTrack> _tracks(dynamic raw) {

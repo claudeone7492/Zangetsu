@@ -105,6 +105,8 @@ import 'genres_screen.dart';
 import 'search_screen.dart';
 import 'cubit/tracker_home_rows.dart' show releasedCount;
 import 'see_all_screen.dart';
+import '../../core/ui/poster_quick_menu.dart';
+import '../../core/ui/app_toast.dart';
 
 /// Provides the [HomeCubit] (which owns the three browse rows + the carousel's
 /// trending source) and kicks off the first load. The view itself stays
@@ -538,14 +540,39 @@ class _HomeViewState extends State<_HomeView>
     _heroMeta(items.first);
   }
 
-  void _openDetail(MediaItem item) {
+  void _openDetail(MediaItem item, {bool autoplay = false}) {
     // Only rebuild Home if this visit actually changed My List — Continue
     // Watching/Reading rows already listen to their Hive boxes, so a blanket
     // setState made every back-press rebuild the whole page for nothing.
     final listRev = _myList.revision.value;
-    Navigator.push(context, DetailScreen.route(item)).then((_) {
+    Navigator.push(
+      context,
+      DetailScreen.route(item, autoplay: autoplay),
+    ).then((_) {
       if (mounted && _myList.revision.value != listRev) setState(() {});
     });
+  }
+
+  /// The hold-and-slide discs on a poster: Details opens the page, Play opens
+  /// it with the player already starting, Library flips My List, Close just
+  /// dismisses.
+  Future<void> _quickMenu(MediaItem item, PosterQuickAction action) async {
+    switch (action) {
+      case PosterQuickAction.details:
+        _openDetail(item);
+      case PosterQuickAction.play:
+        _openDetail(item, autoplay: true);
+      case PosterQuickAction.library:
+        final added = !_myList.contains(item);
+        await _myList.toggle(item);
+        if (!mounted) return;
+        showAppToast(
+          context,
+          added ? context.l10n.myList : context.l10n.removed,
+        );
+      case PosterQuickAction.close:
+        break;
+    }
   }
 
   Future<void> _withSourceCatalogueItem(
@@ -1143,6 +1170,7 @@ class _HomeViewState extends State<_HomeView>
           onLongPress: () => sourceCatalogue
               ? _showSourceCatalogueInfo(items[i])
               : _showInfo(items[i]),
+          onQuickMenu: (action) => _quickMenu(items[i], action),
         ),
       ),
     );

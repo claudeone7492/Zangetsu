@@ -7956,4 +7956,89 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get telegramSignOut => 'Abmelden';
+
+  @override
+  String get interfaceScale => 'Größe der Oberfläche';
+
+  @override
+  String get interfaceScaleBody =>
+      'Vergrößert oder verkleinert die ganze Oberfläche — Text, Poster und Abstände gemeinsam. 100 % ist unverändert.';
+
+  @override
+  String get detailHeaderHeight => 'Höhe des Detailkopfs';
+
+  @override
+  String get preferLossless => 'Verlustfrei bevorzugen';
+
+  @override
+  String get streamingQuality => 'Streaming-Qualität';
+
+  @override
+  String get downloadQuality => 'Download-Qualität';
+
+  @override
+  String get bitPerfect => 'Bitgenaue Ausgabe';
+
+  @override
+  String get studioClarity => 'Studio-Klarheit';
+
+  @override
+  String get equalizer => 'Equalizer';
+
+  @override
+  String get dnsMode => 'DNS-Modus';
+
+  @override
+  String get dnsTest => 'Testen';
+
+  @override
+  String get dnsCustomAddress => 'DNS-over-HTTPS-Adresse';
+
+  @override
+  String get slideToExplore => 'Zum Auswählen wischen';
+
+  @override
+  String get tmdbBrowse => 'TMDB durchsuchen';
+
+  @override
+  String get tmdbTrending => 'Diese Woche im Trend';
+
+  @override
+  String get tmdbPopularMovies => 'Beliebte Filme';
+
+  @override
+  String get tmdbTopRatedMovies => 'Bestbewertete Filme';
+
+  @override
+  String get tmdbPopularSeries => 'Beliebte Serien';
+
+  @override
+  String get tmdbTopRatedSeries => 'Bestbewertete Serien';
+
+  @override
+  String get tmdbOnTv => 'Jetzt im TV';
+
+  @override
+  String get tmdbPopularAnime => 'Beliebte Animes';
+
+  @override
+  String get tmdbTopRatedAnime => 'Bestbewertete Animes';
+
+  @override
+  String get tmdbNewAnime => 'Neue Animes';
+
+  @override
+  String get tmdbAnimeMovies => 'Anime-Filme';
+
+  @override
+  String get tmdbPopularKoreanDramas => 'Beliebte koreanische Dramen';
+
+  @override
+  String get tmdbPopularHindiMovies => 'Beliebte Hindi-Filme';
+
+  @override
+  String get tmdbPopularFrenchMovies => 'Beliebte französische Filme';
+
+  @override
+  String get tmdbPopularPersianMovies => 'Beliebte persische Filme';
 }

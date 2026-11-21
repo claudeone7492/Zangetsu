@@ -62,6 +62,9 @@ class FakeOutput implements AudioOutput {
   Future<void> setVolume(double value) async => volumes.add(value);
 
   @override
+  Future<void> setAudioFilter(String? filter) async {}
+
+  @override
   Future<void> dispose() async {
     disposed = true;
     await position.close();

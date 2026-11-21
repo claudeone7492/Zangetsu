@@ -7957,4 +7957,89 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get telegramSignOut => 'Terminar sessão';
+
+  @override
+  String get interfaceScale => 'Escala da interface';
+
+  @override
+  String get interfaceScaleBody =>
+      'Aumenta ou reduz toda a interface — texto, cartazes e espaçamento juntos. 100% não altera nada.';
+
+  @override
+  String get detailHeaderHeight => 'Altura do cabeçalho';
+
+  @override
+  String get preferLossless => 'Preferir sem perdas';
+
+  @override
+  String get streamingQuality => 'Qualidade em streaming';
+
+  @override
+  String get downloadQuality => 'Qualidade do download';
+
+  @override
+  String get bitPerfect => 'Saída bit-perfect';
+
+  @override
+  String get studioClarity => 'Clareza de estúdio';
+
+  @override
+  String get equalizer => 'Equalizador';
+
+  @override
+  String get dnsMode => 'Modo DNS';
+
+  @override
+  String get dnsTest => 'Testar';
+
+  @override
+  String get dnsCustomAddress => 'Endereço DNS-over-HTTPS';
+
+  @override
+  String get slideToExplore => 'Deslize para escolher';
+
+  @override
+  String get tmdbBrowse => 'Explorar o TMDB';
+
+  @override
+  String get tmdbTrending => 'Tendências da semana';
+
+  @override
+  String get tmdbPopularMovies => 'Filmes populares';
+
+  @override
+  String get tmdbTopRatedMovies => 'Melhores filmes';
+
+  @override
+  String get tmdbPopularSeries => 'Séries populares';
+
+  @override
+  String get tmdbTopRatedSeries => 'Melhores séries';
+
+  @override
+  String get tmdbOnTv => 'Em exibição';
+
+  @override
+  String get tmdbPopularAnime => 'Anime popular';
+
+  @override
+  String get tmdbTopRatedAnime => 'Melhor anime';
+
+  @override
+  String get tmdbNewAnime => 'Anime novo';
+
+  @override
+  String get tmdbAnimeMovies => 'Filmes de anime';
+
+  @override
+  String get tmdbPopularKoreanDramas => 'Dramas coreanos populares';
+
+  @override
+  String get tmdbPopularHindiMovies => 'Filmes hindi populares';
+
+  @override
+  String get tmdbPopularFrenchMovies => 'Filmes franceses populares';
+
+  @override
+  String get tmdbPopularPersianMovies => 'Filmes persas populares';
 }

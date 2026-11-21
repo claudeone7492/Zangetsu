@@ -7906,4 +7906,89 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get telegramSignOut => 'Keluar';
+
+  @override
+  String get interfaceScale => 'Skala antarmuka';
+
+  @override
+  String get interfaceScaleBody =>
+      'Memperbesar atau memperkecil seluruh antarmuka — teks, poster, dan jarak sekaligus. 100% tidak berubah.';
+
+  @override
+  String get detailHeaderHeight => 'Tinggi kepala detail';
+
+  @override
+  String get preferLossless => 'Utamakan lossless';
+
+  @override
+  String get streamingQuality => 'Kualitas streaming';
+
+  @override
+  String get downloadQuality => 'Kualitas unduhan';
+
+  @override
+  String get bitPerfect => 'Keluaran bit-perfect';
+
+  @override
+  String get studioClarity => 'Kejernihan studio';
+
+  @override
+  String get equalizer => 'Ekualiser';
+
+  @override
+  String get dnsMode => 'Mode DNS';
+
+  @override
+  String get dnsTest => 'Uji';
+
+  @override
+  String get dnsCustomAddress => 'Alamat DNS-over-HTTPS';
+
+  @override
+  String get slideToExplore => 'Geser untuk memilih';
+
+  @override
+  String get tmdbBrowse => 'Jelajahi TMDB';
+
+  @override
+  String get tmdbTrending => 'Tren minggu ini';
+
+  @override
+  String get tmdbPopularMovies => 'Film populer';
+
+  @override
+  String get tmdbTopRatedMovies => 'Film terbaik';
+
+  @override
+  String get tmdbPopularSeries => 'Serial populer';
+
+  @override
+  String get tmdbTopRatedSeries => 'Serial terbaik';
+
+  @override
+  String get tmdbOnTv => 'Sedang tayang';
+
+  @override
+  String get tmdbPopularAnime => 'Anime populer';
+
+  @override
+  String get tmdbTopRatedAnime => 'Anime terbaik';
+
+  @override
+  String get tmdbNewAnime => 'Anime baru';
+
+  @override
+  String get tmdbAnimeMovies => 'Film anime';
+
+  @override
+  String get tmdbPopularKoreanDramas => 'Drama Korea populer';
+
+  @override
+  String get tmdbPopularHindiMovies => 'Film Hindi populer';
+
+  @override
+  String get tmdbPopularFrenchMovies => 'Film Prancis populer';
+
+  @override
+  String get tmdbPopularPersianMovies => 'Film Persia populer';
 }

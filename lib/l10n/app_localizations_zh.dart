@@ -7598,6 +7598,90 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get telegramSignOut => '退出登录';
+
+  @override
+  String get interfaceScale => '界面缩放';
+
+  @override
+  String get interfaceScaleBody => '整体放大或缩小界面——文字、海报和间距一起变化。100% 保持不变。';
+
+  @override
+  String get detailHeaderHeight => '详情页头图高度';
+
+  @override
+  String get preferLossless => '优先无损';
+
+  @override
+  String get streamingQuality => '流媒体音质';
+
+  @override
+  String get downloadQuality => '下载音质';
+
+  @override
+  String get bitPerfect => '比特完美输出';
+
+  @override
+  String get studioClarity => '录音室清晰度';
+
+  @override
+  String get equalizer => '均衡器';
+
+  @override
+  String get dnsMode => 'DNS 模式';
+
+  @override
+  String get dnsTest => '测试';
+
+  @override
+  String get dnsCustomAddress => 'DNS-over-HTTPS 地址';
+
+  @override
+  String get slideToExplore => '滑动选择';
+
+  @override
+  String get tmdbBrowse => '浏览 TMDB';
+
+  @override
+  String get tmdbTrending => '本周热门';
+
+  @override
+  String get tmdbPopularMovies => '热门电影';
+
+  @override
+  String get tmdbTopRatedMovies => '高分电影';
+
+  @override
+  String get tmdbPopularSeries => '热门剧集';
+
+  @override
+  String get tmdbTopRatedSeries => '高分剧集';
+
+  @override
+  String get tmdbOnTv => '正在播出';
+
+  @override
+  String get tmdbPopularAnime => '热门动画';
+
+  @override
+  String get tmdbTopRatedAnime => '高分动画';
+
+  @override
+  String get tmdbNewAnime => '新番动画';
+
+  @override
+  String get tmdbAnimeMovies => '动画电影';
+
+  @override
+  String get tmdbPopularKoreanDramas => '热门韩剧';
+
+  @override
+  String get tmdbPopularHindiMovies => '热门印地语电影';
+
+  @override
+  String get tmdbPopularFrenchMovies => '热门法语电影';
+
+  @override
+  String get tmdbPopularPersianMovies => '热门波斯语电影';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -15194,4 +15278,88 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get telegramSignOut => '登出';
+
+  @override
+  String get interfaceScale => '介面縮放';
+
+  @override
+  String get interfaceScaleBody => '整體放大或縮小介面——文字、海報與間距一起變化。100% 維持不變。';
+
+  @override
+  String get detailHeaderHeight => '詳情頁橫幅高度';
+
+  @override
+  String get preferLossless => '優先無損';
+
+  @override
+  String get streamingQuality => '串流音質';
+
+  @override
+  String get downloadQuality => '下載音質';
+
+  @override
+  String get bitPerfect => '位元完美輸出';
+
+  @override
+  String get studioClarity => '錄音室清晰度';
+
+  @override
+  String get equalizer => '等化器';
+
+  @override
+  String get dnsMode => 'DNS 模式';
+
+  @override
+  String get dnsTest => '測試';
+
+  @override
+  String get dnsCustomAddress => 'DNS-over-HTTPS 位址';
+
+  @override
+  String get slideToExplore => '滑動選擇';
+
+  @override
+  String get tmdbBrowse => '瀏覽 TMDB';
+
+  @override
+  String get tmdbTrending => '本週熱門';
+
+  @override
+  String get tmdbPopularMovies => '熱門電影';
+
+  @override
+  String get tmdbTopRatedMovies => '高分電影';
+
+  @override
+  String get tmdbPopularSeries => '熱門影集';
+
+  @override
+  String get tmdbTopRatedSeries => '高分影集';
+
+  @override
+  String get tmdbOnTv => '正在播出';
+
+  @override
+  String get tmdbPopularAnime => '熱門動畫';
+
+  @override
+  String get tmdbTopRatedAnime => '高分動畫';
+
+  @override
+  String get tmdbNewAnime => '新番動畫';
+
+  @override
+  String get tmdbAnimeMovies => '動畫電影';
+
+  @override
+  String get tmdbPopularKoreanDramas => '熱門韓劇';
+
+  @override
+  String get tmdbPopularHindiMovies => '熱門印地語電影';
+
+  @override
+  String get tmdbPopularFrenchMovies => '熱門法語電影';
+
+  @override
+  String get tmdbPopularPersianMovies => '熱門波斯語電影';
 }

@@ -7657,4 +7657,88 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get telegramSignOut => 'サインアウト';
+
+  @override
+  String get interfaceScale => '画面の大きさ';
+
+  @override
+  String get interfaceScaleBody => '文字・ポスター・余白をまとめて拡大／縮小します。100% で元のままです。';
+
+  @override
+  String get detailHeaderHeight => '詳細ヘッダーの高さ';
+
+  @override
+  String get preferLossless => 'ロスレスを優先';
+
+  @override
+  String get streamingQuality => 'ストリーミング品質';
+
+  @override
+  String get downloadQuality => 'ダウンロード品質';
+
+  @override
+  String get bitPerfect => 'ビットパーフェクト出力';
+
+  @override
+  String get studioClarity => 'スタジオの明瞭さ';
+
+  @override
+  String get equalizer => 'イコライザー';
+
+  @override
+  String get dnsMode => 'DNS モード';
+
+  @override
+  String get dnsTest => 'テスト';
+
+  @override
+  String get dnsCustomAddress => 'DNS-over-HTTPS アドレス';
+
+  @override
+  String get slideToExplore => 'スライドして選択';
+
+  @override
+  String get tmdbBrowse => 'TMDB を見る';
+
+  @override
+  String get tmdbTrending => '今週のトレンド';
+
+  @override
+  String get tmdbPopularMovies => '人気の映画';
+
+  @override
+  String get tmdbTopRatedMovies => '高評価の映画';
+
+  @override
+  String get tmdbPopularSeries => '人気のドラマ';
+
+  @override
+  String get tmdbTopRatedSeries => '高評価のドラマ';
+
+  @override
+  String get tmdbOnTv => '放送中';
+
+  @override
+  String get tmdbPopularAnime => '人気のアニメ';
+
+  @override
+  String get tmdbTopRatedAnime => '高評価のアニメ';
+
+  @override
+  String get tmdbNewAnime => '新着アニメ';
+
+  @override
+  String get tmdbAnimeMovies => 'アニメ映画';
+
+  @override
+  String get tmdbPopularKoreanDramas => '人気の韓国ドラマ';
+
+  @override
+  String get tmdbPopularHindiMovies => '人気のヒンディー映画';
+
+  @override
+  String get tmdbPopularFrenchMovies => '人気のフランス映画';
+
+  @override
+  String get tmdbPopularPersianMovies => '人気のペルシャ映画';
 }

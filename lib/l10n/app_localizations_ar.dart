@@ -7932,4 +7932,89 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get telegramSignOut => 'تسجيل الخروج';
+
+  @override
+  String get interfaceScale => 'مقياس الواجهة';
+
+  @override
+  String get interfaceScaleBody =>
+      'يكبّر الواجهة كلها أو يصغّرها — النص والملصقات والمسافات معًا. 100% بدون تغيير.';
+
+  @override
+  String get detailHeaderHeight => 'ارتفاع رأس صفحة العمل';
+
+  @override
+  String get preferLossless => 'تفضيل الصوت بلا فقد';
+
+  @override
+  String get streamingQuality => 'جودة البث';
+
+  @override
+  String get downloadQuality => 'جودة التنزيل';
+
+  @override
+  String get bitPerfect => 'إخراج بت مثالي';
+
+  @override
+  String get studioClarity => 'نقاء الاستوديو';
+
+  @override
+  String get equalizer => 'موازن الصوت';
+
+  @override
+  String get dnsMode => 'وضع DNS';
+
+  @override
+  String get dnsTest => 'اختبار';
+
+  @override
+  String get dnsCustomAddress => 'عنوان DNS-over-HTTPS';
+
+  @override
+  String get slideToExplore => 'اسحب للاستكشاف';
+
+  @override
+  String get tmdbBrowse => 'تصفح TMDB';
+
+  @override
+  String get tmdbTrending => 'الأكثر رواجًا هذا الأسبوع';
+
+  @override
+  String get tmdbPopularMovies => 'أفلام شائعة';
+
+  @override
+  String get tmdbTopRatedMovies => 'أفضل الأفلام تقييمًا';
+
+  @override
+  String get tmdbPopularSeries => 'مسلسلات شائعة';
+
+  @override
+  String get tmdbTopRatedSeries => 'أفضل المسلسلات تقييمًا';
+
+  @override
+  String get tmdbOnTv => 'يُعرض الآن';
+
+  @override
+  String get tmdbPopularAnime => 'أنمي شائع';
+
+  @override
+  String get tmdbTopRatedAnime => 'أفضل الأنمي تقييمًا';
+
+  @override
+  String get tmdbNewAnime => 'أنمي جديد';
+
+  @override
+  String get tmdbAnimeMovies => 'أفلام أنمي';
+
+  @override
+  String get tmdbPopularKoreanDramas => 'دراما كورية شائعة';
+
+  @override
+  String get tmdbPopularHindiMovies => 'أفلام هندية شائعة';
+
+  @override
+  String get tmdbPopularFrenchMovies => 'أفلام فرنسية شائعة';
+
+  @override
+  String get tmdbPopularPersianMovies => 'أفلام فارسية شائعة';
 }

@@ -7952,4 +7952,89 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get telegramSignOut => 'Cerrar sesión';
+
+  @override
+  String get interfaceScale => 'Escala de la interfaz';
+
+  @override
+  String get interfaceScaleBody =>
+      'Amplía o reduce toda la interfaz — texto, carteles y espacios a la vez. El 100 % no cambia nada.';
+
+  @override
+  String get detailHeaderHeight => 'Altura de la cabecera';
+
+  @override
+  String get preferLossless => 'Preferir sin pérdida';
+
+  @override
+  String get streamingQuality => 'Calidad en streaming';
+
+  @override
+  String get downloadQuality => 'Calidad de descarga';
+
+  @override
+  String get bitPerfect => 'Salida bit a bit';
+
+  @override
+  String get studioClarity => 'Claridad de estudio';
+
+  @override
+  String get equalizer => 'Ecualizador';
+
+  @override
+  String get dnsMode => 'Modo DNS';
+
+  @override
+  String get dnsTest => 'Probar';
+
+  @override
+  String get dnsCustomAddress => 'Dirección DNS-over-HTTPS';
+
+  @override
+  String get slideToExplore => 'Desliza para elegir';
+
+  @override
+  String get tmdbBrowse => 'Explorar TMDB';
+
+  @override
+  String get tmdbTrending => 'Tendencias de la semana';
+
+  @override
+  String get tmdbPopularMovies => 'Películas populares';
+
+  @override
+  String get tmdbTopRatedMovies => 'Mejores películas';
+
+  @override
+  String get tmdbPopularSeries => 'Series populares';
+
+  @override
+  String get tmdbTopRatedSeries => 'Mejores series';
+
+  @override
+  String get tmdbOnTv => 'En emisión';
+
+  @override
+  String get tmdbPopularAnime => 'Anime popular';
+
+  @override
+  String get tmdbTopRatedAnime => 'Mejor anime';
+
+  @override
+  String get tmdbNewAnime => 'Anime nuevo';
+
+  @override
+  String get tmdbAnimeMovies => 'Películas de anime';
+
+  @override
+  String get tmdbPopularKoreanDramas => 'Dramas coreanos populares';
+
+  @override
+  String get tmdbPopularHindiMovies => 'Películas hindi populares';
+
+  @override
+  String get tmdbPopularFrenchMovies => 'Películas francesas populares';
+
+  @override
+  String get tmdbPopularPersianMovies => 'Películas persas populares';
 }

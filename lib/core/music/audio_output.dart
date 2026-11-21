@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 
 /// The slice of an audio player the music mode needs.
@@ -32,6 +33,13 @@ abstract class AudioOutput {
 
   /// [value] is 0..1.
   Future<void> setVolume(double value);
+
+  /// Replaces the audio filter chain — an mpv `af` value such as
+  /// `lavfi=[equalizer=…]`, or null to play the stream untouched.
+  ///
+  /// A no-op by default so a fake output in a test needs no change; the real
+  /// one talks to mpv.
+  Future<void> setAudioFilter(String? filter) async {}
 
   Future<void> dispose();
 }
@@ -73,6 +81,21 @@ class MediaKitAudioOutput implements AudioOutput {
   Future<void> seek(Duration position) => _player.seek(position);
 
   /// `media_kit` takes volume as 0..100.
+  @override
+  Future<void> setAudioFilter(String? filter) async {
+    try {
+      // media_kit exposes mpv through the native platform; `af` with an empty
+      // value clears the chain.
+      final platform = _player.platform;
+      if (platform is NativePlayer) {
+        await platform.command(['af', filter ?? '']);
+      }
+    } catch (e) {
+      // A build without the mpv command surface still plays, just unfiltered.
+      debugPrint('[music] audio filter unavailable: $e');
+    }
+  }
+
   @override
   Future<void> setVolume(double value) =>
       _player.setVolume((value.clamp(0.0, 1.0) * 100).toDouble());

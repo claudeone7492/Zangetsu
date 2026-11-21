@@ -142,6 +142,8 @@ import '../trailer/trailer_screen.dart';
 import 'cubit/detail_cubit.dart';
 import 'wrong_title_sheet.dart';
 import '../../l10n/l10n.dart';
+import '../../core/ui/header_prefs.dart';
+import '../../core/ui/ui_scale.dart';
 
 part 'detail_hero.dart';
 part 'detail_native_trailer.dart';
@@ -388,8 +390,17 @@ SearchScreen detailTitleSearchScreen({
 );
 
 class DetailScreen extends StatelessWidget {
-  const DetailScreen({super.key, required this.item, this.prefer});
+  const DetailScreen({
+    super.key,
+    required this.item,
+    this.prefer,
+    this.autoplay = false,
+  });
   final MediaItem item;
+
+  /// Start the first episode/source as soon as the episodes land. Set by the
+  /// poster quick menu's Play disc, which is Hikari's one-tap play.
+  final bool autoplay;
 
   /// Read this title from a specific metadata catalogue. Set when it was
   /// opened from a tracker that has one, so an AniList library entry shows
@@ -397,10 +408,14 @@ class DetailScreen extends StatelessWidget {
   final PreferredProvider? prefer;
 
   /// Opens with a Cue spring while the lightweight tapped-title preview shows.
-  static Route<void> route(MediaItem item, {PreferredProvider? prefer}) =>
-      _CueDetailRoute(
-        pageBuilder: (_, _, _) => DetailScreen(item: item, prefer: prefer),
-      );
+  static Route<void> route(
+    MediaItem item, {
+    PreferredProvider? prefer,
+    bool autoplay = false,
+  }) => _CueDetailRoute(
+    pageBuilder: (_, _, _) =>
+        DetailScreen(item: item, prefer: prefer, autoplay: autoplay),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -417,7 +432,7 @@ class DetailScreen extends StatelessWidget {
         // label agree instead of one naming AniList over MAL's data.
         prefer: prefer ?? _preferFromName(item.savedFrom),
       )..load(),
-      child: _DetailView(item: item, prefer: prefer),
+      child: _DetailView(item: item, prefer: prefer, autoplay: autoplay),
     );
   }
 }
@@ -459,8 +474,15 @@ class _CueDetailRoute extends PageRouteBuilder<void>
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _DetailView extends StatefulWidget {
-  const _DetailView({required this.item, this.prefer});
+  const _DetailView({
+    required this.item,
+    this.prefer,
+    this.autoplay = false,
+  });
   final MediaItem item;
+
+  /// See [DetailScreen.autoplay].
+  final bool autoplay;
 
   /// The catalogue this title was opened from, so the name matches the data.
   final PreferredProvider? prefer;
@@ -471,9 +493,13 @@ class _DetailView extends StatefulWidget {
 
 class _DetailViewState extends State<_DetailView>
     with SingleTickerProviderStateMixin {
-  static const double _expandedHeight = 320;
+  /// The banner's height: 320 at 100 %, scaled by the user's detail-header
+  /// preference (50..150 %) and by the interface scale, as Hikari does.
+  double get _expandedHeight =>
+      320 * HeaderPrefs.factorFor(UiScale.factor);
   bool _showAppBarTitle = false;
   bool _hasEntered = false;
+  bool _autoplayFired = false;
   Animation<double>? _routeAnimation;
 
   // The episode url we've already kicked a background source-prefetch for, so we
@@ -1440,6 +1466,22 @@ class _DetailViewState extends State<_DetailView>
     }
   }
 
+  /// One-shot: the quick menu's Play disc opens this screen with
+  /// [DetailScreen.autoplay] and expects the player, not the page.
+  void _maybeAutoplay(
+    List<Episode> eps,
+    int index,
+    MediaDetail detail,
+    String category,
+  ) {
+    if (!widget.autoplay || _autoplayFired || eps.isEmpty) return;
+    _autoplayFired = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _openPlayer(eps, index, detail, category);
+    });
+  }
+
   Future<void> _openPlayer(
     List<Episode> episodes,
     int index,
@@ -2273,7 +2315,7 @@ class _DetailViewState extends State<_DetailView>
                       sourceMetadataReady: false,
                     );
                   }
-                  return const _DetailSkeleton(heroHeight: _expandedHeight);
+                  return _DetailSkeleton(heroHeight: _expandedHeight);
                 }
                 if (state.cloudflareUrl != null) {
                   return _DetailCloudflareBlocked(
@@ -2736,6 +2778,14 @@ class _DetailViewState extends State<_DetailView>
         SliverToBoxAdapter(
           child: Column(
             children: [
+              // Runs the one-shot autoplay check during build, before the
+              // button exists to press.
+              Builder(
+                builder: (_) {
+                  _maybeAutoplay(eps, resumeIdx, detail, category);
+                  return const SizedBox.shrink();
+                },
+              ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
                 child: _PlayButton(

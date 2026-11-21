@@ -52,6 +52,9 @@ class _SilentOutput implements AudioOutput {
   Future<void> seek(Duration position) async {}
   @override
   Future<void> setVolume(double volume) async {}
+
+  @override
+  Future<void> setAudioFilter(String? filter) async {}
   @override
   Future<void> dispose() async {}
 }

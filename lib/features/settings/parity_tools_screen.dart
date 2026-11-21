@@ -11,6 +11,13 @@ import '../../core/tracker/kitsu_service.dart';
 import '../../core/tracker/shikimori_service.dart';
 import '../../core/ui/help_sheet.dart';
 import '../../core/ui/ui_scale.dart';
+import '../../core/music/vx_quality.dart';
+import '../../core/net/dns_providers.dart';
+import '../../core/ui/header_prefs.dart';
+import 'dns_mode_screen.dart';
+import 'music_quality_screen.dart';
+import '../../l10n/l10n.dart';
+import '../home/tmdb_browse_screen.dart';
 
 /// One place for the integrations that used to have no entry point:
 /// the two importers, the lossless endpoint, tracker configuration and the
@@ -29,6 +36,7 @@ class _ParityToolsScreenState extends State<ParityToolsScreen> {
   final _losslessKey = TextEditingController();
   String? _status;
   double _scale = UiScale.factor;
+  int _header = HeaderPrefs.percent;
   List<String>? _voicePacks;
   bool _tdlib = false;
 
@@ -164,6 +172,42 @@ class _ParityToolsScreenState extends State<ParityToolsScreen> {
               UiScale.set(value);
               setState(() => _scale = value);
             },
+          ),
+          Text(
+            context.l10n.detailHeaderHeight,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          Slider(
+            value: _header.toDouble(),
+            min: HeaderPrefs.minPercent.toDouble(),
+            max: HeaderPrefs.maxPercent.toDouble(),
+            divisions: 10,
+            label: '$_header%',
+            onChanged: (value) {
+              HeaderPrefs.setPercent(value.round());
+              setState(() => _header = value.round());
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.graphic_eq),
+            title: Text(context.l10n.equalizer),
+            subtitle: Text(
+              '${context.l10n.streamingQuality}: '
+              '${VxQuality.labelFor(VxQuality.streamQuality)}',
+            ),
+            onTap: () => Navigator.push(context, MusicQualityScreen.route()),
+          ),
+          ListTile(
+            leading: const Icon(Icons.movie_filter_outlined),
+            title: Text(context.l10n.tmdbBrowse),
+            subtitle: Text(context.l10n.tmdbTrending),
+            onTap: () => Navigator.push(context, TmdbBrowseScreen.route()),
+          ),
+          ListTile(
+            leading: const Icon(Icons.dns_outlined),
+            title: Text(context.l10n.dnsMode),
+            subtitle: Text(DnsProviders.byKey(DnsProviders.choice).label),
+            onTap: () => Navigator.push(context, DnsModeScreen.route()),
           ),
           const Divider(height: 32),
           Text('Native seams', style: Theme.of(context).textTheme.titleMedium),

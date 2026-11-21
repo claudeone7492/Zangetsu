@@ -7867,4 +7867,89 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get telegramSignOut => 'Sign out';
+
+  @override
+  String get interfaceScale => 'Interface scale';
+
+  @override
+  String get interfaceScaleBody =>
+      'Grows or shrinks the whole interface — text, posters and spacing together. 100% is unchanged.';
+
+  @override
+  String get detailHeaderHeight => 'Detail header height';
+
+  @override
+  String get preferLossless => 'Prefer lossless';
+
+  @override
+  String get streamingQuality => 'Streaming quality';
+
+  @override
+  String get downloadQuality => 'Download quality';
+
+  @override
+  String get bitPerfect => 'Bit-perfect output';
+
+  @override
+  String get studioClarity => 'Studio clarity';
+
+  @override
+  String get equalizer => 'Equaliser';
+
+  @override
+  String get dnsMode => 'DNS mode';
+
+  @override
+  String get dnsTest => 'Test';
+
+  @override
+  String get dnsCustomAddress => 'DNS-over-HTTPS address';
+
+  @override
+  String get slideToExplore => 'Slide to explore';
+
+  @override
+  String get tmdbBrowse => 'Browse TMDB';
+
+  @override
+  String get tmdbTrending => 'Trending this week';
+
+  @override
+  String get tmdbPopularMovies => 'Popular movies';
+
+  @override
+  String get tmdbTopRatedMovies => 'Top rated movies';
+
+  @override
+  String get tmdbPopularSeries => 'Popular series';
+
+  @override
+  String get tmdbTopRatedSeries => 'Top rated series';
+
+  @override
+  String get tmdbOnTv => 'On TV now';
+
+  @override
+  String get tmdbPopularAnime => 'Popular anime';
+
+  @override
+  String get tmdbTopRatedAnime => 'Top rated anime';
+
+  @override
+  String get tmdbNewAnime => 'New anime';
+
+  @override
+  String get tmdbAnimeMovies => 'Anime movies';
+
+  @override
+  String get tmdbPopularKoreanDramas => 'Popular Korean dramas';
+
+  @override
+  String get tmdbPopularHindiMovies => 'Popular Hindi movies';
+
+  @override
+  String get tmdbPopularFrenchMovies => 'Popular French movies';
+
+  @override
+  String get tmdbPopularPersianMovies => 'Popular Persian movies';
 }
