@@ -1640,7 +1640,27 @@ class AppLocalizationsTr extends AppLocalizations {
   String get customColour => 'Özel renk';
 
   @override
+  String get backgroundImage => 'Arka plan görseli';
+
+  @override
+  String get backgroundImageSubtitle =>
+      'Uygulamanın arkasında kendi görselinizi gösterin';
+
+  @override
+  String get backgroundImageOpacity => 'Arka plan opaklığı';
+
+  @override
+  String get backgroundImageRemove => 'Arka plan görselini kaldır';
+
+  @override
   String get materialYou => 'Material You';
+
+  @override
+  String get tvMouseMode => 'Fare modu';
+
+  @override
+  String get tvMouseModeSubtitle =>
+      'TV’de tıklamak ve sürüklemek için imleç göster';
 
   @override
   String get coloursFromYourWallpaper => 'Duvar kağıdından renkler';
@@ -3035,6 +3055,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get webView => 'WebView';
+
+  @override
+  String get imageList => 'Görsel listesi';
 
   @override
   String get openInBrowser => 'Tarayıcıda aç';

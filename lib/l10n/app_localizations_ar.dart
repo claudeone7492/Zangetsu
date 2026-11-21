@@ -1641,7 +1641,25 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customColour => 'لون مخصص';
 
   @override
+  String get backgroundImage => 'صورة الخلفية';
+
+  @override
+  String get backgroundImageSubtitle => 'اعرض صورتك الخاصة خلف التطبيق';
+
+  @override
+  String get backgroundImageOpacity => 'عتامة الخلفية';
+
+  @override
+  String get backgroundImageRemove => 'إزالة صورة الخلفية';
+
+  @override
   String get materialYou => 'Material You';
+
+  @override
+  String get tvMouseMode => 'وضع الفأرة';
+
+  @override
+  String get tvMouseModeSubtitle => 'أظهر مؤشرًا على التلفاز للنقر والسحب';
 
   @override
   String get coloursFromYourWallpaper => 'ألوان من خلفيتك';
@@ -3032,6 +3050,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get webView => 'WebView';
+
+  @override
+  String get imageList => 'قائمة الصور';
 
   @override
   String get openInBrowser => 'فتح في المتصفّح';

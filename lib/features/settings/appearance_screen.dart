@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import '../../core/ui/settings_widgets.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
@@ -7,7 +11,9 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/ui/app_toast.dart';
 import '../../core/theme/app_font_prefs.dart';
+import '../../core/theme/background_pref.dart';
 import '../../core/theme/theme_controller.dart';
+import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
 import '../../core/profiles/viewer_profile.dart';
 import '../../l10n/l10n.dart';
@@ -382,6 +388,36 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
     if (mounted) setState(() {});
   }
 
+  /// Copies the pick out of the picker's cache and into app storage: the
+  /// cache path dies with the next clean, and a background that vanishes on
+  /// its own reads as a bug.
+  Future<void> _pickBackgroundImage() async {
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 2000,
+      imageQuality: 88,
+    );
+    if (picked == null) return;
+    final dir = await getApplicationSupportDirectory();
+    final target = File(
+      '${dir.path}/background_${DateTime.now().millisecondsSinceEpoch}.jpg',
+    );
+    await File(picked.path).copy(target.path);
+    await ThemeController.setBackgroundImage(target.path);
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _removeBackgroundImage() async {
+    final old = ThemeController.backgroundImage;
+    await ThemeController.setBackgroundImage(null);
+    if (old != null) {
+      // Best effort: a leftover file is harmless, a failed delete must not
+      // block removing the background from the UI.
+      await File(old).delete().catchError((_) => File(old));
+    }
+    if (mounted) setState(() {});
+  }
+
   Future<void> _updateProfileTheme({
     int? accentColor,
     bool? materialYou,
@@ -490,6 +526,52 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                 ),
                 onTap: _pickBackground,
               ),
+              SettingsTile(
+                icon: Icons.image_outlined,
+                title: context.l10n.backgroundImage,
+                subtitle: context.l10n.backgroundImageSubtitle,
+                subtitleMaxLines: null,
+                onTap: _pickBackgroundImage,
+              ),
+              if (BackgroundPref.path != null) ...[
+                SettingsTile(
+                  icon: Icons.opacity_rounded,
+                  title: context.l10n.backgroundImageOpacity,
+                  subtitle: '${(BackgroundPref.opacity * 100).round()}%',
+                  onTap: () {},
+                  trailing: SizedBox(
+                    width: 160,
+                    child: Slider(
+                      value: BackgroundPref.opacity,
+                      min: 0.05,
+                      max: 1,
+                      divisions: 19,
+                      activeColor: AppColors.accent,
+                      onChanged: (value) async {
+                        await ThemeController.setBackgroundImageOpacity(value);
+                        if (mounted) setState(() {});
+                      },
+                    ),
+                  ),
+                ),
+                SettingsTile(
+                  icon: Icons.delete_outline_rounded,
+                  title: context.l10n.backgroundImageRemove,
+                  onTap: _removeBackgroundImage,
+                ),
+              ],
+              if (sl.isRegistered<AppMode>() && sl<AppMode>().isTv)
+                _switchTile(
+                  icon: Icons.mouse_outlined,
+                  title: context.l10n.tvMouseMode,
+                  subtitle: context.l10n.tvMouseModeSubtitle,
+                  value: ThemeController.mouseMode,
+                  onChanged: (value) async {
+                    await ThemeController.setMouseMode(value);
+                    if (mounted) setState(() {});
+                  },
+                  subtitleMaxLines: null,
+                ),
               _switchTile(
                 icon: Icons.auto_awesome_outlined,
                 title: context.l10n.appearanceAdaptiveColour,

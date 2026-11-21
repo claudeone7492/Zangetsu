@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../core/collections/nuvio_import.dart';
 import '../../core/mihon/tachiyomi_backup.dart';
 import '../../core/music/lossless_source.dart';
+import '../../core/parity/parity_native.dart';
 import '../../core/tracker/kitsu_service.dart';
 import '../../core/tracker/shikimori_service.dart';
 import '../../core/ui/help_sheet.dart';
@@ -25,6 +28,20 @@ class _ParityToolsScreenState extends State<ParityToolsScreen> {
   final _losslessKey = TextEditingController();
   String? _status;
   double _scale = UiScale.factor;
+  List<String>? _voicePacks;
+
+  @override
+  void initState() {
+    super.initState();
+    _losslessUrl.text = LosslessSource.baseUrl;
+    _losslessKey.text = LosslessSource.apiKey;
+    unawaited(_loadVoicePacks());
+  }
+
+  Future<void> _loadVoicePacks() async {
+    final packs = await ParityNative.voicePacks();
+    if (mounted) setState(() => _voicePacks = packs);
+  }
 
   @override
   void dispose() {
@@ -92,12 +109,18 @@ class _ParityToolsScreenState extends State<ParityToolsScreen> {
           ),
           const SizedBox(height: 8),
           FilledButton(
-            onPressed: () {
-              LosslessSource.configureStatic(
+            onPressed: () async {
+              await LosslessSource.save(
                 baseUrl: _losslessUrl.text,
                 apiKey: _losslessKey.text,
               );
-              setState(() => _status = 'Lossless endpoint saved');
+              if (mounted) {
+                setState(
+                  () => _status = LosslessSource.baseUrl.isNotEmpty
+                      ? 'Lossless endpoint saved'
+                      : 'Lossless endpoint cleared',
+                );
+              }
             },
             child: const Text('Save endpoint'),
           ),
@@ -123,6 +146,42 @@ class _ParityToolsScreenState extends State<ParityToolsScreen> {
               UiScale.set(value);
               setState(() => _scale = value);
             },
+          ),
+          const Divider(height: 32),
+          Text('Native seams', style: Theme.of(context).textTheme.titleMedium),
+          ListTile(
+            dense: true,
+            title: const Text('Frame capture with subtitles'),
+            subtitle: Text(
+              ParityNative.isSupported
+                  ? 'Saves to Pictures/Zangetsu'
+                  : 'Android only; the raw-frame fallback is used',
+            ),
+          ),
+          ListTile(
+            dense: true,
+            title: const Text('Background job keeper'),
+            subtitle: Text(
+              ParityNative.workLabel.isEmpty
+                  ? 'Idle'
+                  : 'Running: ${ParityNative.workLabel}',
+            ),
+          ),
+          ListTile(
+            dense: true,
+            title: const Text('Offline voice packs'),
+            subtitle: Text(
+              _voicePacks == null
+                  ? 'Checking…'
+                  : _voicePacks!.isEmpty
+                  ? 'None installed — hosted voices are used'
+                  : _voicePacks!.join(', '),
+            ),
+          ),
+          ListTile(
+            dense: true,
+            title: const Text('Telegram (TDLib)'),
+            subtitle: const Text('Not in this build — Telegram uses the Bot API'),
           ),
           const Divider(height: 32),
           ListTile(

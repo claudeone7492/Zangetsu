@@ -176,6 +176,12 @@ void _driftGuard() {
       // Playlist URLs can embed provider credentials (Xtream-style user/pass).
       'live_playlists': 'playlist URLs may carry credentials',
       'trakt': 'oauth token',
+      // Endpoint URL plus its API key; a restore onto another device would
+      // carry the credential with it.
+      'lossless_endpoint': 'endpoint URL and API key',
+      // Signing-cert digests pinned on this install. Restoring them elsewhere
+      // would vouch for extensions this device never verified.
+      'extension_signers': 'per-install extension pins',
     };
 
     test('every settings box is either backed up or explicitly excluded', () {

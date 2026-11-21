@@ -3117,11 +3117,47 @@ abstract class AppLocalizations {
   /// **'Custom colour'**
   String get customColour;
 
+  /// No description provided for @backgroundImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Background image'**
+  String get backgroundImage;
+
+  /// No description provided for @backgroundImageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show your own picture behind the app'**
+  String get backgroundImageSubtitle;
+
+  /// No description provided for @backgroundImageOpacity.
+  ///
+  /// In en, this message translates to:
+  /// **'Background opacity'**
+  String get backgroundImageOpacity;
+
+  /// No description provided for @backgroundImageRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove background image'**
+  String get backgroundImageRemove;
+
   /// No description provided for @materialYou.
   ///
   /// In en, this message translates to:
   /// **'Material You'**
   String get materialYou;
+
+  /// No description provided for @tvMouseMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Mouse mode'**
+  String get tvMouseMode;
+
+  /// No description provided for @tvMouseModeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show a pointer on TV to click and drag'**
+  String get tvMouseModeSubtitle;
 
   /// No description provided for @coloursFromYourWallpaper.
   ///
@@ -5769,6 +5805,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'WebView'**
   String get webView;
+
+  /// No description provided for @imageList.
+  ///
+  /// In en, this message translates to:
+  /// **'Image list'**
+  String get imageList;
 
   /// No description provided for @openInBrowser.
   ///

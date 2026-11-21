@@ -101,6 +101,7 @@ class TvRail extends StatelessWidget {
           SizedBox(
             height: rowHeight,
             child: ListView.builder(
+              key: ScrollKeeper.keyFor('tv-row:${section.title}'),
               scrollDirection: Axis.horizontal,
               // Don't clip the focused card's scale-up + accent glow. Combined
               // with the extra row headroom above, the top rail (pinned under

@@ -36,6 +36,8 @@ import com.spyou.watch_app.cloudstream.SubscriptionWorker
 import com.spyou.watch_app.mihon.MihonBridge
 import com.spyou.watch_app.parity.MediaExporter
 import com.spyou.watch_app.parity.RepoLinkActivity
+import com.spyou.watch_app.parity.OfflineVoicePack
+import com.spyou.watch_app.parity.ParityBridge
 import com.spyou.watch_app.tiles.TileBridge
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -546,6 +548,46 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
                             },
                         )
                     }
+                }
+            }
+
+        // Parity seams: a frame grab that includes the Flutter subtitle
+        // overlay (PixelCopy on the window — mpv's screenshot has no
+        // subtitles), and the foreground keeper for long in-process jobs.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "zangetsu/parity")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "captureWindow" -> {
+                        val name = call.argument<String>("name")
+                            ?: "Zangetsu_${System.currentTimeMillis()}"
+                        executor.execute {
+                            val outcome = ParityBridge.captureWindow(this, name)
+                            runOnUiThread {
+                                outcome.fold(
+                                    { path -> result.success(path) },
+                                    { error ->
+                                        result.error(
+                                            "capture_failed",
+                                            error.message ?: "could not capture",
+                                            null,
+                                        )
+                                    },
+                                )
+                            }
+                        }
+                    }
+                    "startWork" -> {
+                        val label = call.argument<String>("label") ?: "Working"
+                        runCatching { ParityBridge.startWork(applicationContext, label) }
+                        result.success(true)
+                    }
+                    "stopWork" -> {
+                        runCatching { ParityBridge.stopWork(applicationContext) }
+                        result.success(true)
+                    }
+                    "voicePacks" -> result.success(OfflineVoicePack.voiceIds())
+                    "tdlib" -> result.success(false)
+                    else -> result.notImplemented()
                 }
             }
 

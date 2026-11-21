@@ -68,6 +68,7 @@ import '../../core/download/download_manager.dart';
 import '../../core/mode/content_mode.dart';
 import '../../core/models/episode.dart';
 import '../../core/models/episode_title.dart';
+import '../../core/metadata/rating_aggregator.dart';
 import '../../core/models/media_detail.dart';
 import 'chapter_meta.dart';
 import '../../core/tv/tv_episode_range_chips.dart';

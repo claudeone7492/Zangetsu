@@ -20,6 +20,9 @@ class ThemeController {
   static const String _adaptiveKey = 'adaptiveColour';
   static const String _titleLogoKey = 'titleLogo';
   static const String _bgKey = 'backgroundColour';
+  static const String _bgImageKey = 'backgroundImage';
+  static const String _bgImageOpacityKey = 'backgroundImageOpacity';
+  static const String _mouseKey = 'mouseMode';
 
   /// Near-black palette used when AMOLED is on (bg + card surfaces).
   static const Color amoledBg = Color(0xFF000000);
@@ -238,6 +241,56 @@ class ThemeController {
   /// Persist the title-logo toggle and rebuild listeners.
   static Future<void> setTitleLogo(bool on) async {
     await _box.put(_titleLogoKey, on);
+    revision.value++;
+  }
+
+  // ── Background image ──────────────────────────────────────────────────────
+  // A photo behind the shell, distinct from [backgroundColour]: the colour is
+  // a flat tint the rest of the app reads, the image is decoration painted
+  // once in the MaterialApp builder. Stored as a copied file path, not the
+  // picker's cache path, so a cache clean doesn't blank the background.
+
+  /// The picked background image, or null while the stock background is used.
+  static String? get backgroundImage {
+    if (!Hive.isBoxOpen(boxName)) return null;
+    final path = _box.get(_bgImageKey) as String?;
+    return (path == null || path.isEmpty) ? null : path;
+  }
+
+  /// How strongly the image shows through, 0.05–1.
+  static double get backgroundImageOpacity {
+    if (!Hive.isBoxOpen(boxName)) return defaultBackgroundOpacity;
+    final v = _box.get(_bgImageOpacityKey);
+    return v is num ? v.toDouble() : defaultBackgroundOpacity;
+  }
+
+  static const double defaultBackgroundOpacity = 0.35;
+
+  static Future<void> setBackgroundImage(String? path) async {
+    if (path == null || path.isEmpty) {
+      await _box.delete(_bgImageKey);
+    } else {
+      await _box.put(_bgImageKey, path);
+    }
+    revision.value++;
+  }
+
+  static Future<void> setBackgroundImageOpacity(double value) async {
+    await _box.put(_bgImageOpacityKey, value.clamp(0.05, 1.0));
+    revision.value++;
+  }
+
+  // ── TV mouse mode ─────────────────────────────────────────────────────────
+
+  /// Hover moves focus and the pointer becomes a hand. For a TV box with a
+  /// mouse or an air remote; inert on a D-pad-only device.
+  static bool get mouseMode {
+    if (!Hive.isBoxOpen(boxName)) return false;
+    return _box.get(_mouseKey, defaultValue: false) as bool;
+  }
+
+  static Future<void> setMouseMode(bool on) async {
+    await _box.put(_mouseKey, on);
     revision.value++;
   }
 

@@ -50,6 +50,7 @@ import 'core/zmode/metadata_provider_prefs.dart';
 import 'core/zmode/zmode_prefs.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_font_prefs.dart';
+import 'core/theme/background_pref.dart';
 import 'core/theme/theme_controller.dart';
 import 'core/tv/tv_route_pop_guard.dart';
 import 'core/tv/tv_viewport.dart';
@@ -877,7 +878,10 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
           );
           // Device-wide app lock sits inside the MaterialApp builder so it
           // can read localizations; it is a pure overlay over the whole tree.
-          return shellFeatures ? AppLockGate(child: framed) : framed;
+          final locked = shellFeatures ? AppLockGate(child: framed) : framed;
+          // The background photo paints behind everything, including the lock
+          // overlay, so unlocking never flashes the stock colour.
+          return shellFeatures ? BackgroundPref.apply(locked) : locked;
         },
       ),
       brightnessResolver: Theme.maybeBrightnessOf,

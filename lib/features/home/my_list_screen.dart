@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/tracker/tracker_item_url.dart';
+import '../../core/ui/scroll_keeper.dart';
 import '../../core/zmode/metadata_provider_prefs.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
@@ -1215,7 +1216,10 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
           );
         }
         return GridView.builder(
-          scrollCacheExtent: ScrollCacheExtent.pixels(800), key: ValueKey('${view.id}|${_sort?.name}|$_sortDesc'),
+          scrollCacheExtent: ScrollCacheExtent.pixels(800),
+          // Per view+sort, so switching lists still starts at the top but
+          // coming back to one restores the offset.
+          key: ScrollKeeper.keyFor('my-list:${view.id}|${_sort?.name}|$_sortDesc'),
           // Bottom: clear the floating dock, which overlays content
           // (extendBody reserves it no space of its own).
           padding: EdgeInsets.fromLTRB(

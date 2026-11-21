@@ -1,4 +1,5 @@
 import '../../core/metadata/streaming_service.dart';
+import '../../core/ui/scroll_keeper.dart';
 import '../../core/zmode/metadata_provider_prefs.dart';
 import '../../core/zmode/tmdb_catalogue.dart';
 import '../settings/streaming_services_screen_tv.dart';

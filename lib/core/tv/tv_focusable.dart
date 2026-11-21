@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
+import '../theme/theme_controller.dart';
 import '../theme/app_text.dart';
 import 'tv_keys.dart';
 import 'tv_route_pop_guard.dart';
@@ -125,6 +126,11 @@ class TvFocusable extends StatefulWidget {
 
 class _TvFocusableState extends State<TvFocusable> {
   bool _focused = false;
+
+  /// Owned only when the call site did not pass one — mouse mode needs a node
+  /// to move focus to on hover.
+  FocusNode? _ownNode;
+  FocusNode get _node => widget.focusNode ?? (_ownNode ??= FocusNode());
   int _lastActivateMs = 0;
   Timer? _longPressTimer;
   bool _okHeld = false;
@@ -133,6 +139,7 @@ class _TvFocusableState extends State<TvFocusable> {
   @override
   void dispose() {
     _cancelLongPressTimer();
+    _ownNode?.dispose();
     super.dispose();
   }
 
@@ -399,6 +406,18 @@ class _TvFocusableState extends State<TvFocusable> {
     // on — so every nav item/button announced as "unlabeled". The visible label
     // Text is ExcludeSemantics'd at the call sites, so only [semanticLabel]
     // (or, when it's null, the child's own text) names the merged node.
+    // Mouse mode: a pointer on a TV box should behave like a pointer — the
+    // highlight follows the cursor and the cursor reads as clickable. Inert
+    // when the mode is off, so D-pad-only devices are untouched.
+    Widget pointer(Widget child) {
+      if (!ThemeController.mouseMode) return child;
+      return MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => _node.requestFocus(),
+        child: child,
+      );
+    }
+
     return MergeSemantics(
       child: Semantics(
         container: true,
@@ -408,7 +427,7 @@ class _TvFocusableState extends State<TvFocusable> {
         onTap: _activate,
         onLongPress: widget.onLongPress,
         child: Focus(
-          focusNode: widget.focusNode,
+          focusNode: _node,
           autofocus: widget.autofocus,
           onKeyEvent: _onKey,
           onFocusChange: (f) {
@@ -436,7 +455,7 @@ class _TvFocusableState extends State<TvFocusable> {
             excludeFromSemantics: true,
             onTap: _activate,
             onLongPress: widget.onLongPress,
-            child: box,
+            child: pointer(box),
           ),
         ),
       ),

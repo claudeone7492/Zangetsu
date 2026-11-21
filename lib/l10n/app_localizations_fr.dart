@@ -1640,7 +1640,27 @@ class AppLocalizationsFr extends AppLocalizations {
   String get customColour => 'Couleur perso';
 
   @override
+  String get backgroundImage => 'Image d’arrière-plan';
+
+  @override
+  String get backgroundImageSubtitle =>
+      'Afficher votre propre image derrière l’application';
+
+  @override
+  String get backgroundImageOpacity => 'Opacité de l’arrière-plan';
+
+  @override
+  String get backgroundImageRemove => 'Retirer l’image d’arrière-plan';
+
+  @override
   String get materialYou => 'Matériel Vous';
+
+  @override
+  String get tvMouseMode => 'Mode souris';
+
+  @override
+  String get tvMouseModeSubtitle =>
+      'Afficher un pointeur sur la TV pour cliquer et glisser';
 
   @override
   String get coloursFromYourWallpaper => 'Couleurs de ton fond d’écran';
@@ -3053,6 +3073,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get webView => 'WebView';
+
+  @override
+  String get imageList => 'Liste d’images';
 
   @override
   String get openInBrowser => 'Ouvrir dans le navigateur';

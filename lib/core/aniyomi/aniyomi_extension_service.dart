@@ -14,6 +14,7 @@ import 'aniyomi_provider.dart';
 import 'aniyomi_repo.dart';
 import 'aniyomi_source_info.dart';
 import 'aniyomi_update.dart';
+import 'extension_verify_guard.dart';
 
 export 'aniyomi_source_info.dart';
 
@@ -28,6 +29,8 @@ class AniyomiExtensionService {
   /// Hive box name used to persist installed pkg → apk-path entries so they
   /// can be reloaded on a cold start without re-downloading.
   static const String installedBoxName = 'aniyomi_installed';
+
+  final ExtensionVerifyGuard _verify = ExtensionVerifyGuard();
 
   /// Loads and registers a single extension APK located at [apkPath].
   ///
@@ -197,7 +200,19 @@ class AniyomiExtensionService {
         await _downloadApk(effectiveDio, entry.apkUrl, apkPath);
       }
 
-      // 3. Install and list sources.
+      // 3. Verify the signer before the code is ever loaded. First install
+      //    pins the certificate; an update signed by a different key is
+      //    refused and the download discarded.
+      final refusal = await _verify.check(entry.pkg, apkPath);
+      if (refusal != null) {
+        debugPrint('[aniyomi] refused ${entry.pkg}: $refusal');
+        try {
+          await File(apkPath).delete();
+        } catch (_) {}
+        return const [];
+      }
+
+      // 4. Install and list sources.
       await installExtension(apkPath);
       final allSources = await listSources();
       final providers = allSources

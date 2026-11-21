@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import 'reveal_item.dart';
+import 'scroll_keeper.dart';
 
 /// An edge-bleed horizontal content row with an optional header and "See All" link.
 ///
@@ -39,6 +40,10 @@ class ContentRow extends StatelessWidget {
         SizedBox(
           height: itemHeight,
           child: ListView.builder(
+            // Survives a rebuild (data refresh, tab switch): without a key the
+            // row snaps back to the first poster and the viewer loses their
+            // place in it.
+            key: ScrollKeeper.keyFor('row:$title'),
             scrollCacheExtent: ScrollCacheExtent.pixels(MediaQuery.of(context).accessibleNavigation
                 ? double.infinity
                 : 600), scrollDirection: Axis.horizontal,

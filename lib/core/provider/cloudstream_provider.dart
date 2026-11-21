@@ -17,6 +17,7 @@ import '../models/video_source.dart';
 import 'base_provider.dart';
 import 'cf_solve_needed.dart';
 import 'cs_repo_url.dart';
+import 'extension_guard.dart';
 
 /// Native MethodChannel bridging to the CloudStream plugin host. All methods
 /// are async, Android-only, and return JSON-shaped collections. Every call is
@@ -546,7 +547,9 @@ class CloudStreamProvider implements BaseProvider {
       for (final s in subsRaw) {
         final sm = _asMap(s);
         final subUrl = (sm['url'] ?? '').toString();
-        if (subUrl.isEmpty) continue;
+        // A plugin controls this string; a `javascript:` or `file:` subtitle
+        // URL has no business reaching a renderer or the disk.
+        if (!ExtensionGuard.isSafeUrl(subUrl)) continue;
         subtitles.add(
           Subtitle(url: subUrl, lang: (sm['lang'] ?? '').toString()),
         );

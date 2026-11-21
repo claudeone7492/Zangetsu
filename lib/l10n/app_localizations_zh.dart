@@ -1579,7 +1579,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get customColour => '自定义颜色';
 
   @override
+  String get backgroundImage => '背景图片';
+
+  @override
+  String get backgroundImageSubtitle => '在应用背后显示你自己的图片';
+
+  @override
+  String get backgroundImageOpacity => '背景不透明度';
+
+  @override
+  String get backgroundImageRemove => '移除背景图片';
+
+  @override
   String get materialYou => '材料你';
+
+  @override
+  String get tvMouseMode => '鼠标模式';
+
+  @override
+  String get tvMouseModeSubtitle => '在电视上显示指针以点击和拖动';
 
   @override
   String get coloursFromYourWallpaper => '取自壁纸的颜色';
@@ -2928,6 +2946,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get webView => 'WebView';
+
+  @override
+  String get imageList => '图片列表';
 
   @override
   String get openInBrowser => '在浏览器中打开';
@@ -9129,7 +9150,25 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get customColour => '自訂顏色';
 
   @override
+  String get backgroundImage => '背景圖片';
+
+  @override
+  String get backgroundImageSubtitle => '在應用程式背後顯示你自己的圖片';
+
+  @override
+  String get backgroundImageOpacity => '背景不透明度';
+
+  @override
+  String get backgroundImageRemove => '移除背景圖片';
+
+  @override
   String get materialYou => '材料你';
+
+  @override
+  String get tvMouseMode => '滑鼠模式';
+
+  @override
+  String get tvMouseModeSubtitle => '在電視上顯示指標以點擊和拖曳';
 
   @override
   String get coloursFromYourWallpaper => '取自桌布的顏色';
@@ -10478,6 +10517,9 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get webView => 'WebView';
+
+  @override
+  String get imageList => '圖片列表';
 
   @override
   String get openInBrowser => '在瀏覽器開啟';

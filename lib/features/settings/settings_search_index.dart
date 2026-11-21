@@ -454,6 +454,26 @@ final settingsLeaves = <SettingsLeaf>[
   SettingsLeaf(LeafParent.appearance, (l) => l.customColour),
   SettingsLeaf(
     LeafParent.appearance,
+    (l) => l.backgroundImage,
+    keywords: 'photo picture wallpaper image backdrop',
+  ),
+  SettingsLeaf(
+    LeafParent.appearance,
+    (l) => l.backgroundImageOpacity,
+    keywords: 'photo strength dim fade',
+  ),
+  SettingsLeaf(
+    LeafParent.appearance,
+    (l) => l.backgroundImageRemove,
+    keywords: 'photo delete clear',
+  ),
+  SettingsLeaf(
+    LeafParent.appearance,
+    (l) => l.tvMouseMode,
+    keywords: 'cursor pointer hover remote',
+  ),
+  SettingsLeaf(
+    LeafParent.appearance,
     (l) => l.materialYou,
     keywords: 'wallpaper colours dynamic theme',
   ),

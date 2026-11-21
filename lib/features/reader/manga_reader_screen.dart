@@ -57,6 +57,7 @@ import 'reader_comfort.dart';
 import '../../l10n/l10n.dart';
 import 'reader_pull_chapter.dart';
 import 'manga_page_translation_settings_sheet.dart';
+import 'scraper_reader_screen.dart';
 import 'manga_translation_floating_control.dart';
 
 /// Image reader for manga chapters — the paged/webtoon counterpart of
@@ -3435,6 +3436,13 @@ class _MangaReaderScreenState extends State<MangaReaderScreen>
     await _load();
   }
 
+  /// A chapter URL that is itself an image, which the paged reader cannot
+  /// render but the image list can.
+  static final RegExp _imageUrl = RegExp(
+    r'\.(png|jpe?g|webp|gif|avif)(\?|$)',
+    caseSensitive: false,
+  );
+
   /// Icon, message, and a Retry that re-runs [_load]. Shared by the failure
   /// and the empty-chapter cases — both leave the reader with nothing to show
   /// and both are worth another attempt.
@@ -3469,6 +3477,24 @@ class _MangaReaderScreenState extends State<MangaReaderScreen>
                     style: AppText.body.copyWith(color: AppColors.accent),
                   ),
                 ),
+                // Some scrapers hand back a chapter that is one bare image
+                // URL; the paged reader can do nothing with that, but the
+                // image list can show it.
+                if (_imageUrl.hasMatch(_chapter.url))
+                  TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => ScraperReaderScreen(
+                          title: widget.showTitle,
+                          pages: [ScraperPage(url: _chapter.url)],
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      context.l10n.imageList,
+                      style: AppText.body.copyWith(color: AppColors.accent),
+                    ),
+                  ),
                 if (source_actions.canOpenInBrowser(
                   widget.sourceId,
                   _chapter.url,

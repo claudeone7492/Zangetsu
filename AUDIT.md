@@ -9,7 +9,7 @@ Trees compared:
 
 | Tree | Revision | Files |
 |---|---|---|
-| `claudeone7492/Zangetsu` | `main` (post-wiring) | Dart, 708 test files / 5,551 test declarations |
+| `claudeone7492/Zangetsu` | `main` head | Dart, 714 test files / 5,563 test declarations |
 | `codegeasse1/hikari` | `main` | 600 Kotlin files, 33 packages |
 
 Legend: ✅ present and reachable · ⚠️ partial or deliberately different ·
@@ -19,17 +19,17 @@ Legend: ✅ present and reachable · ⚠️ partial or deliberately different ·
 
 | Status | Units |
 |---|---:|
-| ✅ | 125 |
-| ⚠️ | 11 |
-| ❌ | 2 |
+| ✅ | 135 |
+| ⚠️ | 2 |
+| ❌ | 1 |
 | ➖ | 2 |
 | **Total** | **140** |
 
-The 33-row ledger is fully closed (33/33 ✅, evidence in §1). Both remaining
-❌ rows are outside the ledger: a shared extension guard layer, and offline
-Piper/Sherpa voice packs (no models are bundled). The 11 partial rows are
-built-but-unwired helpers, account- or server-gated APIs, or a deliberate
-architectural choice — see §3.
+The 33-row ledger is fully closed (33/33 ✅, evidence in §1). The three rows
+still short of ✅ are all outside the ledger and all blocked on something other
+than code: no Piper/Sherpa model packs are bundled, the YouTube PoToken helper
+has no YouTube source, and TDLib is not linked (Telegram runs on the Bot API).
+See §3.
 
 ## 1. Ledger — 33/33 ✅
 
@@ -92,15 +92,15 @@ Every path below was checked to exist at `65b7db3`.
 | Mangayomi host | ✅ | `core/mangayomi/` |
 | `lnreader/` | ✅ | `core/lnreader/` |
 | `zangetsu/` plugin family | ➖ | Zangetsu is the host; its Dart provider API is the equivalent |
-| `core/LoadGate.kt` (load-slot semaphore) | ⚠️ | No load-slot cap; per-host in-flight dedupe only |
+| `core/LoadGate.kt` (load-slot semaphore) | ✅ | `core/provider/load_gate.dart` wraps every JS-pack load; per-host in-flight dedupe kept |
 
 ### Music
 
 | Hikari unit | Status | Zangetsu evidence |
 |---|---|---|
 | `music/` mode + JioSaavn | ✅ | `core/music/`, `features/music/` |
-| `VxLosslessApi.kt` | ⚠️ | `core/music/lossless_source.dart` registered in the injector; needs a user endpoint (Parity tools), so it stays hidden until configured |
-| `PoToken*.kt` | ⚠️ | `core/music/potoken.dart` built; no caller yet |
+| `VxLosslessApi.kt` | ✅ | `core/music/lossless_source.dart`; endpoint and key persist in Hive (`lossless_endpoint`), prefilled and editable in Parity tools |
+| `PoToken*.kt` | ⚠️ | `core/music/potoken.dart` built; no YouTube source to call it yet |
 | `VxDownload.kt` | ✅ | `core/music/music_download.dart`, download action in the music player sheet |
 | `TvMusic*.kt` | ✅ | `features/music/music_screen_tv.dart` on the TV shell |
 
@@ -109,7 +109,7 @@ Every path below was checked to exist at `65b7db3`.
 | Hikari unit | Status | Zangetsu evidence |
 |---|---|---|
 | Public channel streaming | ✅ | `core/telegram/`, web fallback |
-| TDLib private channels | ⚠️ | Native seam reports `available=false` until TDLib is linked |
+| TDLib private channels | ⚠️ | `zangetsu/parity` `tdlib` answers `false` and Parity tools says so; Telegram runs on the Bot API |
 
 ### Web and network
 
@@ -120,11 +120,11 @@ Every path below was checked to exist at `65b7db3`.
 | `net/AdBlocker.kt` | ✅ | `core/web/ad_block.dart` |
 | `net/PromoGuard.kt` | ✅ | `core/web/promo_guard.dart` |
 | `data/RedirectAllow.kt` | ✅ | `core/web/redirect_allow.dart` |
-| `net/ExtensionUiGuard.kt`, `ExtensionVerifyGuard.kt` | ❌ | No shared guard layer |
+| `net/ExtensionUiGuard.kt`, `ExtensionVerifyGuard.kt` | ✅ | `core/provider/extension_guard.dart` on every JS-pack call and manifest; `ExtensionVerifyGuard` pins Aniyomi signer digests |
 | `deeplink/RepoLinkActivity.kt` | ✅ | `parity/RepoLinkActivity.kt`, manifest filters, handed to `addRepo` in `MainActivity` |
 | `net/StreamProbe.kt` | ✅ | `core/playback/stream_probe.dart` |
 | `net/SlowNetTip.kt` | ✅ | `core/playback/slow_net_tip.dart`, shown after the probe in `player_controller` |
-| `work/` foreground service | ⚠️ | `parity/WorkService.kt` ships and compiles; nothing starts it yet |
+| `work/` foreground service | ✅ | `parity/WorkService.kt`, started through `ParityNative.beginWork` around the DASH mux |
 
 ### Subtitles
 
@@ -146,7 +146,7 @@ Every path below was checked to exist at `65b7db3`.
 | MangaBaka | ✅ | `core/tracker/mangabaka_service.dart` |
 | Kitsu | ✅ | `core/tracker/kitsu_service.dart` |
 | Shikimori | ✅ | `core/tracker/shikimori_service.dart` |
-| `data/Ratings.kt` (IMDb/RT/Metacritic aggregation) | ⚠️ | `core/metadata/rating_aggregator.dart` built; no keyless source, so nothing calls it |
+| `data/Ratings.kt` (IMDb/RT/Metacritic aggregation) | ✅ | `core/metadata/rating_aggregator.dart`, blended score replaces the single-source row in the detail tabs |
 | `data/TrackerLibraryRepository.kt` | ✅ | `features/home/cubit/tracker_list_cubit.dart` |
 
 ### Live TV
@@ -173,7 +173,7 @@ Every path below was checked to exist at `65b7db3`.
 | `SubtitleGenClient`, `VoiceTranscriber` | ✅ | `core/dub/voice_transcriber.dart` |
 | `VolumeBoostProcessor` | ✅ | Player audio sheet, 100–200 % |
 | `PiperVoice` offline packs | ❌ | Hosted only; `parity/OfflineVoicePack.kt` reports none bundled |
-| `HardSubDub` | ⚠️ | `parity/HardSubBurner.kt` compiles; no caller and needs a device to verify |
+| `HardSubDub` | ✅ | `ParityBridge.captureWindow` (PixelCopy on the window, `zangetsu/parity`), called by the player's snapshot action; the subtitle overlay is in the saved frame |
 | `AudioFx` | ✅ | `core/playback/audio_fx.dart` chain applied to mpv `af` |
 
 ### Player and TV
@@ -187,9 +187,9 @@ Every path below was checked to exist at `65b7db3`.
 | `ServerScreenStyles`, `ServerStreamsPage`, `StreamsLive` | ✅ | `features/player/server_streams_page.dart`, opened from the stream picker |
 | `TvFocus`, `TvKeys`, `TvNavRail`, `TvTopBar`, `TvHomeStage` | ✅ | `core/tv/`, TV surfaces |
 | `TvCs3` | ✅ | `features/sources/cloudstream_sources_screen_tv.dart` |
-| `MouseMode` | ⚠️ | `core/tv/mouse_mode.dart` built; no settings toggle yet |
+| `MouseMode` | ✅ | `core/tv/mouse_mode.dart`; switch in Appearance → Mouse mode (`tvMouseMode`) |
 | `TvDesktop` | ➖ | No desktop target |
-| `ScrollAnim`, `ScrollKeeper` | ⚠️ | `core/ui/scroll_keeper.dart` built; not wired into the lists |
+| `ScrollAnim`, `ScrollKeeper` | ✅ | `core/ui/scroll_keeper.dart` on the home rows and My List |
 
 ### Reader
 
@@ -205,7 +205,7 @@ Every path below was checked to exist at `65b7db3`.
 | Reader highlights | ✅ | `core/reading/reader_highlights.dart` |
 | Tap zones | ✅ | `core/reading/tap_zones.dart` |
 | `SharpenTransformation` | ✅ | `core/reading/sharpen_provider.dart`, reader pref, page pipeline |
-| `ScraperReaderScreen` | ⚠️ | `features/reader/scraper_reader_screen.dart` built; no entry point yet |
+| `ScraperReaderScreen` | ✅ | `features/reader/scraper_reader_screen.dart`, offered from the reader error state when a chapter is one bare image URL |
 | `TachiyomiReaderDecoder` | ✅ | `core/mihon/tachiyomi_backup.dart`, import in Parity tools |
 | `ExtensionPageImageFetcher` | ✅ | Reader fetches pages through the provider |
 
@@ -257,7 +257,7 @@ Every path below was checked to exist at `65b7db3`.
 | `PosterCardsScreen`, `PosterSizing`, `PosterStyle` | ✅ | `poster_card_settings_screen.dart`, `core/ui/poster_card.dart` |
 | `LoadingStyles` | ✅ | `features/detail/detail_skeleton.dart` |
 | `Accents`, `AccentStore`, `AuraColors`, `Theme`, `AppFonts` | ✅ | `core/theme/`, `appearance_screen.dart` |
-| `CustomBackground` | ⚠️ | `core/theme/background_pref.dart` built; no picker yet |
+| `CustomBackground` | ✅ | `core/theme/background_pref.dart`; picker, opacity and remove rows in Appearance |
 | `UiScale` | ✅ | `core/ui/ui_scale.dart`, slider in Parity tools |
 | `AppIconManager` | ✅ | `core/app_icon/app_icon_service.dart` |
 | `AppLockGate` | ✅ | `features/privacy/app_lock_gate.dart` |
@@ -275,31 +275,23 @@ Every path below was checked to exist at `65b7db3`.
 
 ## 3. What is actually open
 
-The 2 ❌ units, then the 11 ⚠️ rows that are still partial. Everything else in
-§2 is present **and reachable from the UI**:
+Three rows, none of them blocked on Dart or Kotlin work:
 
 | Gap | Kind | Why it is open | Effort |
 |---|---|---|---|
-| Extension UI/verify guards | Dart | No shared guard layer; each caller still checks by hand | S |
-| Offline Piper/Sherpa voices | Native | No model packs are bundled; `OfflineVoicePack` reports none, the hosted path is the shipped one | L |
-| Load-slot semaphore (`LoadGate`) | Native | Replaced by per-host in-flight dedupe, not a global cap | M |
-| Lossless music | API | `LosslessSource` is registered but needs a user-supplied endpoint, so it is hidden until configured | M |
-| YouTube PoToken | API | `core/music/potoken.dart` built; no caller — the token service is server-dependent | L |
-| Foreground work service | Native | `WorkService` compiles and ships; nothing starts it (downloads use the existing background service) | S |
-| Hard-sub dub | Native | `HardSubBurner` compiles; no caller, and PixelCopy burn-in needs a device to verify | L |
-| Multi-source ratings | API | `rating_aggregator.dart` built; no keyless IMDb/RT/Metacritic source, so nothing calls it | M |
-| TDLib private channels | Native | The seam reports `available=false` until TDLib is linked | L |
-| TV mouse mode | Dart | `core/tv/mouse_mode.dart` built; no settings toggle | S |
-| Scroll keeper / animations | Dart | `core/ui/scroll_keeper.dart` built; not wired into the lists | S |
-| Generic scraper reader | Dart | `features/reader/scraper_reader_screen.dart` built; no entry point yet | M |
-| Custom background | Dart | `core/theme/background_pref.dart` built; no picker or persistence | S |
+| Offline Piper/Sherpa voices | Native | No model packs are bundled. `parity/OfflineVoicePack.kt` answers with an empty list, Parity tools shows that, and the hosted voices are the shipped path. | L |
+| YouTube PoToken | API | `core/music/potoken.dart` can mint a token but there is no YouTube music source to hand it to, and the token service is server-dependent. | L |
+| TDLib private channels | Native | The `zangetsu/parity` `tdlib` call answers `false`; the seam exists so linking TDLib is a one-file change. Public channels stream today. | L |
 
-Everything else that used to be listed here — Kitsu, Shikimori, the CS3
-built-in resolvers, repo-link intents, music downloads, novel translation,
-sharpen, Nuvio import, the Tachiyomi decoder, download export, the stills rail,
-donghua facts, UI scale, the help sheet, player skins, the server page, Live TV
-marks and the manage/on-demand/sports screens — now has a call site, listed in
-§2.
+Everything else in §2 is present **and reachable from the UI**. The last pass
+closed the built-but-unwired set: LoadGate, LosslessSource, the foreground
+service, the window frame grab, multi-source ratings, TV mouse mode, the scroll
+keeper, the scraper reader, the custom background and the extension guards.
+`HardSubBurner.kt` was folded into `ParityBridge`: two frame grabbers, one of
+which nothing called, was one too many.
+
+Two rows are ➖ on purpose: the `zangetsu/` plugin family (Zangetsu is the host)
+and `TvDesktop` (no desktop target).
 
 ## 4. Corrections to the earlier matrix
 
@@ -318,11 +310,12 @@ The first pass under-counted Zangetsu. These are **present** and were not in
 
 These were **over-counted or mis-scoped**:
 
-- "Audio FX" is pitch only — correct as ⚠️, but the row is smaller than it reads.
+- "Audio FX" was pitch only; reverb and echo now go through mpv's `af`, so the
+  row covers what its name claims.
 - "Player skins" is cosmetic; the functional stream/server selection exists.
 - "Channel marks" is the only Live TV store gap; favourites elsewhere are not it.
 
-Newly discovered open items (not in the first matrix at all):
+Units the first matrix missed entirely, all of them landed since:
 
 - `data/Ratings.kt`, `data/TitleQuality.kt`, `data/EpisodeDubSub.kt`,
   `data/DownloadsSaver.kt`, app-wide `NsfwGate`, cross-engine `HomeDedupe`,
@@ -346,19 +339,24 @@ Counts from `test/` on `main` (`test(` + `testWidgets(` declarations):
 | `test/core/performance` | 1 | 3 |
 | `test/core/diagnostics` | 1 | 2 |
 | `test/features/reader` | 9 | 119 |
-| **Whole suite** | **708** | **5,551** |
+| **Whole suite** | **714** | **5,563** |
 
-`flutter analyze` → No issues found. Suites are run per area in this sandbox
-(a whole-suite run gets killed by the runtime restart); the results are in the
-handoff notes. `flutter build apk --debug` builds, so the Kotlin in
-`android/app/src/main/kotlin/.../parity/` compiles.
+`flutter analyze` → No issues found. `flutter build apk --debug` builds, so the
+Kotlin in `android/app/src/main/kotlin/.../parity/` compiles and both method
+channels (`zangetsu/media_export`, `zangetsu/parity`) are registered in
+`MainActivity`. The whole suite is run per area in this sandbox — a full run
+takes ~40 minutes and gets killed by the runtime restart.
+
+Tests added in the last pass: `test/core/music/lossless_source_test.dart` (the
+endpoint survives a restart) and `test/core/parity/parity_native_test.dart`
+(the channel's failure modes and the reference-counted work keeper).
 
 ## 6. Bottom line
 
 - The migration's ledger is complete: **33/33 ✅**, verified by path.
-- Against the whole reference app, Zangetsu is at **125 ✅ / 140 units (89 %)**,
-  or **136/138 applicable (99 %)** counting the partial rows as usable.
-- The remaining ❌ set is two units: a shared extension guard layer and offline
-  voice packs. The ⚠️ set is built-but-unwired helpers and account- or
-  server-gated APIs, each named in §3.
+- Against the whole reference app, Zangetsu is at **135 ✅ / 140 units (96 %)**,
+  or **137/138 applicable (99 %)** counting the partial rows as usable.
+- The open set is three units, each blocked on an asset, a service or a native
+  library rather than on missing code: offline voice packs, the YouTube
+  PoToken source, and TDLib. All three say so in the UI instead of pretending.
 - Nothing in the open set blocks an existing workflow.

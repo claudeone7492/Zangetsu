@@ -19,6 +19,7 @@ import '../debrid/playable_torrent.dart';
 import '../logging/app_logger.dart';
 import '../models/episode.dart';
 import '../models/video_source.dart';
+import '../parity/parity_native.dart';
 import '../platform/apple_tv.dart';
 import '../repository/catalogue_repository.dart';
 import '../torrent/torrent_download_service.dart';
@@ -1089,7 +1090,14 @@ class DownloadManager extends ChangeNotifier {
     }
     if (muxed == null) {
       final out = _withExt(videoPath, 'mp4');
-      if (await _muxDashToMp4(videoPath, audioPath, out)) muxed = out;
+      // Muxing runs in-process and can outlast the app being backgrounded, so
+      // hold a foreground service for its duration.
+      await ParityNative.beginWork('Finishing download');
+      try {
+        if (await _muxDashToMp4(videoPath, audioPath, out)) muxed = out;
+      } finally {
+        await ParityNative.endWork();
+      }
     }
     // Keep the video track if muxing failed; drop the now-redundant audio.
     final publish = muxed ?? videoPath;

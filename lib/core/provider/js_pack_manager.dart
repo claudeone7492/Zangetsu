@@ -15,6 +15,8 @@ import 'base_provider.dart';
 import 'js_pack_engine.dart';
 import 'js_pack_module.dart';
 import 'provider_manager.dart';
+import 'extension_guard.dart';
+import 'load_gate.dart';
 
 /// Owns every installed JS plugin-pack source for ONE family (`nuvio:`,
 /// `vega:`, `sora:`, `sky:`, `kot:`).
@@ -35,6 +37,10 @@ class JsPackManager extends ChangeNotifier {
   final JsPackEngine engine;
   final ProviderManager _runtime;
   final Dio _dio = Dio();
+
+  /// Caps concurrent loads: a home refresh can ask a dozen sources to boot at
+  /// once, and every one of them evaluates JS on the same isolate.
+  final LoadGate _gate = LoadGate(maxConcurrent: 3);
 
   final Map<String, JsPackModule> _modules = {};
   final List<String> _repositories = [];
@@ -97,17 +103,21 @@ class JsPackManager extends ChangeNotifier {
       }
       await _persist(mod.copyWith(code: code));
     }
-    try {
-      return await _runtime.load(
-        sourceId: runtimeId,
-        jsSource: code,
-        originRepoUrl: mod.repoUrl,
-        displayName: mod.name,
-      );
-    } catch (e) {
-      debugPrint('[${engine.prefix}] module load failed ${mod.id}: $e');
-      return null;
-    }
+    // Guarded twice: the gate keeps a burst of loads from stacking up, and the
+    // guard turns a throwing module into "this source is unavailable" instead
+    // of taking down whichever screen asked for it.
+    return ExtensionGuard.guard('load:${mod.id}', () {
+      return _gate.run(() {
+        return _runtime.load(
+          sourceId: runtimeId,
+          jsSource: code,
+          originRepoUrl: mod.repoUrl,
+          displayName: mod.name,
+        );
+      });
+    }, onError: (label, error, _) {
+      debugPrint('[${engine.prefix}] module load failed ${mod.id}: $error');
+    });
   }
 
   /// Install a repo: parse its index, fetch each module's code, persist both.
@@ -131,6 +141,17 @@ class JsPackManager extends ChangeNotifier {
   }) async {
     final installed = <String>[];
     for (final mod in modules) {
+      // Same contract as a CloudStream manifest: name, version and a reachable
+      // http(s) base. A pack that fails it is skipped, not installed broken.
+      final problem = ExtensionGuard.checkManifest(
+        name: mod.name,
+        version: mod.version,
+        baseUrl: mod.baseUrl.isEmpty ? (mod.file.isEmpty ? null : mod.file) : mod.baseUrl,
+      );
+      if (problem != null) {
+        debugPrint('[${engine.prefix}] skip ${mod.id} ($problem)');
+        continue;
+      }
       var ready = mod;
       if (ready.code.isEmpty) {
         try {
@@ -211,6 +232,10 @@ class JsPackManager extends ChangeNotifier {
 
   Future<String> _fetch(String url) async {
     if (url.isEmpty) throw ArgumentError('empty url');
+    // A repo index can name `file:` or `javascript:` — nothing a pack needs.
+    if (!ExtensionGuard.isSafeUrl(url)) {
+      throw ArgumentError.value(url, 'url', 'not an http(s) extension url');
+    }
     final res = await _dio.get<String>(
       url,
       options: Options(

@@ -1639,7 +1639,27 @@ class AppLocalizationsId extends AppLocalizations {
   String get customColour => 'Warna kustom';
 
   @override
+  String get backgroundImage => 'Gambar latar';
+
+  @override
+  String get backgroundImageSubtitle =>
+      'Tampilkan gambar Anda sendiri di belakang aplikasi';
+
+  @override
+  String get backgroundImageOpacity => 'Opasitas latar';
+
+  @override
+  String get backgroundImageRemove => 'Hapus gambar latar';
+
+  @override
   String get materialYou => 'Material You';
+
+  @override
+  String get tvMouseMode => 'Mode tetikus';
+
+  @override
+  String get tvMouseModeSubtitle =>
+      'Tampilkan penunjuk di TV untuk mengeklik dan menyeret';
 
   @override
   String get coloursFromYourWallpaper => 'Warna dari wallpaper-mu';
@@ -3041,6 +3061,9 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get webView => 'WebView';
+
+  @override
+  String get imageList => 'Daftar gambar';
 
   @override
   String get openInBrowser => 'Buka di browser';

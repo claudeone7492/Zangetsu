@@ -26,6 +26,7 @@ import '../../core/tracker/simkl_playback_session.dart';
 import '../../core/models/episode.dart';
 import '../../core/models/provider_info.dart';
 import '../../core/models/video_source.dart';
+import '../../core/parity/parity_native.dart';
 import '../../core/playback/audio_fx.dart';
 import '../../core/playback/hls.dart';
 import '../../core/playback/hls_segment_proxy.dart';
@@ -3946,17 +3947,25 @@ class PlayerCubit extends Cubit<PlayerState> {
     subSyncTextMs = null;
   }
 
-  /// Grab the current video frame and save it to the gallery. Returns true on
-  /// success. NOTE: subtitles are a Flutter overlay, so they are NOT part of the
-  /// captured frame — only the raw video.
+  /// Grab what is on screen and save it to the gallery. Returns true on
+  /// success.
+  ///
+  /// Android grabs the window, which keeps the subtitle overlay in the image.
+  /// Everywhere else — and if that capture fails — this falls back to mpv's
+  /// raw frame, which has the picture only.
   Future<bool> captureScreenshot() async {
+    final name = 'Zangetsu_${DateTime.now().millisecondsSinceEpoch}';
+    final saved = await ParityNative.captureWindow(name: name);
+    if (saved != null) {
+      _toast('Saved to $saved');
+      return true;
+    }
     try {
       final bytes = await player.screenshot(format: 'image/png');
       if (bytes == null || bytes.isEmpty) {
         _toast("Couldn't capture the frame");
         return false;
       }
-      final name = 'Zangetsu_${DateTime.now().millisecondsSinceEpoch}';
       // Saving needs no runtime permission on Android 10+; on older Android /
       // iOS the first attempt throws accessDenied — request, then retry once.
       try {

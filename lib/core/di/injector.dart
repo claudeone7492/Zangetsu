@@ -147,6 +147,7 @@ import '../notify/subscription_store.dart';
 import '../notify/subscription_checker.dart';
 import '../discord/discord_rpc.dart';
 import '../aniyomi/aniyomi_extension_service.dart';
+import '../aniyomi/extension_verify_guard.dart';
 import '../aniyomi/aniyomi_provider.dart';
 import '../lnreader/lnreader_extension_service.dart';
 import '../lnreader/lnreader_manager.dart';
@@ -1208,6 +1209,11 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
       if (!Hive.isBoxOpen('aniyomi_repos')) {
         await openBoxSafely<String>('aniyomi_repos');
       }
+      // Pinned signing certificates, so the first update after a restart is
+      // still checked against the key the first install recorded.
+      if (!Hive.isBoxOpen(ExtensionVerifyGuard.boxName)) {
+        await openBoxSafely<dynamic>(ExtensionVerifyGuard.boxName);
+      }
       // Icon URLs picked up from repo indexes, read synchronously by the
       // source picker. Shared with Mihon.
       if (!Hive.isBoxOpen(SourceIconStore.boxName)) {
@@ -1418,6 +1424,10 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
       ],
     ),
   );
+  // The lossless source ships unconfigured; this reads the endpoint the user
+  // saved in Parity tools so the singleton is usable without a restart.
+  unawaited(LosslessSource.load());
+
   sl.registerLazySingleton<MusicPlayerController>(
     () => MusicPlayerController(
       service: sl<MusicService>(),

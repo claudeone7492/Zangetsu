@@ -58,6 +58,17 @@ class AniyomiBridge(
     @Suppress("unused") private val scope: CoroutineScope,
 ) {
 
+    /** SHA-256 of the APK's signing certificate, or null when unsigned. */
+    private fun signerDigest(apk: File): String? {
+        val flags = android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES
+        val info = context.packageManager.getPackageArchiveInfo(apk.absolutePath, flags)
+            ?: return null
+        val signers = info.signingInfo?.apkContentsSigners ?: return null
+        val cert = signers.firstOrNull() ?: return null
+        val md = java.security.MessageDigest.getInstance("SHA-256")
+        return md.digest(cert.toByteArray()).joinToString("") { "%02x".format(it) }
+    }
+
     /**
      * Attaches this bridge to [channel] by registering a [MethodChannel.MethodCallHandler].
      *
@@ -66,6 +77,22 @@ class AniyomiBridge(
     fun attach(channel: MethodChannel) {
         channel.setMethodCallHandler { call, result ->
             when (call.method) {
+
+                // Signing certificate of an APK, as a lowercase SHA-256 hex
+                // digest. The Dart side pins it on first install and refuses an
+                // update signed by a different key — a repo takeover otherwise
+                // swaps the extension's code with no warning.
+                "apkSigner" -> {
+                    val apkPath = call.argument<String>("apkPath")
+                    if (apkPath.isNullOrBlank()) {
+                        result.error("BAD_ARGS", "apkPath is required", null)
+                        return@setMethodCallHandler
+                    }
+                    scope.launch(Dispatchers.IO) {
+                        val digest = runCatching { signerDigest(File(apkPath)) }.getOrNull()
+                        withContext(Dispatchers.Main) { result.success(digest) }
+                    }
+                }
 
                 // Load a single extension APK and register it. DexClassLoad +
                 // instantiate is heavy — run OFF the platform main thread (calling

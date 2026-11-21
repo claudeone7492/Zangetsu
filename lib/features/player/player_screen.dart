@@ -2407,13 +2407,22 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   Future<void> _captureScreenshot() async {
-    // Instant camera-flash feedback. It's a Flutter overlay (not in the mpv
-    // frame), so it never corrupts the captured image.
-    setState(() => _flashing = true);
+    // The Android capture is a window grab, so the controls and the flash
+    // would be baked into the image: hide both for a couple of frames first.
+    final wasVisible = _controlsVisible;
+    if (wasVisible) setState(() => _controlsVisible = false);
+    if (wasVisible) {
+      await Future<void>.delayed(const Duration(milliseconds: 120));
+    }
+    final ok = await _c.captureScreenshot(); // saves + toasts the result
+    if (!mounted) return;
+    setState(() {
+      if (wasVisible) _controlsVisible = true;
+      _flashing = ok;
+    });
     Future.delayed(const Duration(milliseconds: 130), () {
       if (mounted) setState(() => _flashing = false);
     });
-    await _c.captureScreenshot(); // saves to gallery + toasts the result
     _bumpControls();
   }
 

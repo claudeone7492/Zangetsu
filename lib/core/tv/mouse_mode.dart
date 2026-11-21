@@ -1,23 +1,13 @@
-import 'package:flutter/material.dart';
+import '../theme/theme_controller.dart';
 
 /// Pointer support for TV.
 ///
 /// A leanback box with a remote has no pointer; a TV stick with a mouse or a
-/// desktop-style air remote does. Hikari's `MouseMode.kt` turns hover into a
-/// visible cursor. In Flutter the equivalent is a click cursor plus hover
-/// feedback on focusable tiles.
+/// desktop-style air remote does. With mouse mode on, hovering a [TvFocusable]
+/// moves focus to it (so the highlight follows the pointer) and the cursor
+/// becomes a hand. Off by default; inert on a D-pad-only device.
 class MouseMode {
   const MouseMode._();
 
-  static bool _enabled = false;
-  static bool get enabled => _enabled;
-  static void setEnabled(bool value) => _enabled = value;
-
-  static Widget wrap(Widget child) {
-    if (!_enabled) return child;
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: child,
-    );
-  }
+  static bool get enabled => ThemeController.mouseMode;
 }
