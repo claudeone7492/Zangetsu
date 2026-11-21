@@ -68,6 +68,17 @@ android {
                 ?: ""
         buildConfigField("String", "PROXIES_API_KEY", "\"$proxiesApiKey\"")
         if (proxiesApiKey.isBlank()) {
+            // A blank key makes the SDK inert, which also hides the consent
+            // sheet — so a shipping build must not be allowed to slip through
+            // silently. CI and debug builds have no release keystore and stay
+            // unaffected.
+            if (hasReleaseKeystore) {
+                throw GradleException(
+                    "PROXIES_API_KEY is not set (android/proxies.properties or " +
+                        "the PROXIES_API_KEY env var). A signed release without it " +
+                        "ships with bandwidth sharing and the consent sheet off.",
+                )
+            }
             logger.warn(
                 "PROXIES_API_KEY is not set (android/proxies.properties): " +
                     "bandwidth sharing will be inert in this build.",
