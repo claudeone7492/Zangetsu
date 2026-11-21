@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../core/collections/nuvio_import.dart';
 import '../../core/mihon/tachiyomi_backup.dart';
 import '../../core/music/lossless_source.dart';
+import '../../core/music/potoken.dart';
 import '../../core/parity/parity_native.dart';
 import '../../core/tracker/kitsu_service.dart';
 import '../../core/tracker/shikimori_service.dart';
@@ -130,6 +131,16 @@ class _ParityToolsScreenState extends State<ParityToolsScreen> {
               }
             },
             child: const Text('Save endpoint'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.music_video_outlined),
+            title: const Text('YouTube Music'),
+            subtitle: Text(
+              YouTubePoToken.isAvailable
+                  ? 'Catalogue ready · PO token minted on demand'
+                  : 'Catalogue ready · PO token unavailable on this build, '
+                        'native clients still play',
+            ),
           ),
           const Divider(height: 32),
           Text('Trackers', style: Theme.of(context).textTheme.titleMedium),

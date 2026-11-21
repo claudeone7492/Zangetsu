@@ -19,18 +19,18 @@ Legend: ✅ present and reachable · ⚠️ partial or deliberately different ·
 
 | Status | Units |
 |---|---:|
-| ✅ | 136 |
-| ⚠️ | 2 |
+| ✅ | 138 |
+| ⚠️ | 1 |
 | ❌ | 0 |
 | ➖ | 2 |
-| **Total** | **140** |
+| **Total** | **141** |
 
-The 33-row ledger is fully closed (33/33 ✅, evidence in §1). Nothing is ❌
-any more: offline narration now runs on the platform's downloaded voice packs
-(no model is bundled, by choice — a Piper pack is 60–200 MB per voice). The two
-⚠️ rows are outside the ledger and blocked on a service rather than on code:
-the YouTube PoToken helper has no YouTube source, and TDLib is not linked
-(Telegram runs on the Bot API). See §3.
+The 33-row ledger is fully closed (33/33 ✅, evidence in §1). Nothing is ❌ or
+⚠️ for a missing feature any more. Offline narration runs on the platform's
+downloaded voice packs (no model is bundled, by choice — a Piper pack is
+60–200 MB per voice) and the YouTube PO token has the source it was built for.
+The one ⚠️ left is TDLib, which is not linked: Telegram streams public channels
+on the Bot API, and the private-channel upgrade is a native dependency. See §3.
 
 ## 1. Ledger — 33/33 ✅
 
@@ -100,8 +100,10 @@ Every path below was checked to exist at `65b7db3`.
 | Hikari unit | Status | Zangetsu evidence |
 |---|---|---|
 | `music/` mode + JioSaavn | ✅ | `core/music/`, `features/music/` |
+| YouTube Music catalogue | ✅ | `YouTubeMusicSource` (see `MusicApi.kt` below) is a second catalogue in the same service |
 | `VxLosslessApi.kt` | ✅ | `core/music/lossless_source.dart`; endpoint and key persist in Hive (`lossless_endpoint`), prefilled and editable in Parity tools |
-| `PoToken*.kt` | ⚠️ | `core/music/potoken.dart` built; no YouTube source to call it yet |
+| `MusicApi.kt` (YouTube Music) | ✅ | `core/music/youtube_music_source.dart`, registered next to JioSaavn: WEB_REMIX InnerTube for browse/search, ANDROID_VR → iOS → Android Music → MWEB for playback |
+| `PoToken*.kt` | ✅ | `core/music/potoken.dart` + `potoken_js.dart` — visitor id, BotGuard `Create`/`GenerateIT`, mint in the QuickJS runtime; the MWEB client sends the token and its visitor id, and the source tries native clients first so a mint failure costs only the fallback |
 | `VxDownload.kt` | ✅ | `core/music/music_download.dart`, download action in the music player sheet |
 | `TvMusic*.kt` | ✅ | `features/music/music_screen_tv.dart` on the TV shell |
 
@@ -276,12 +278,19 @@ Every path below was checked to exist at `65b7db3`.
 
 ## 3. What is actually open
 
-Two rows, neither blocked on Dart or Kotlin work:
+One row, and it is not blocked on Dart or Kotlin work:
 
 | Gap | Kind | Why it is open | Effort |
 |---|---|---|---|
-| YouTube PoToken | API | `core/music/potoken.dart` can mint a token but there is no YouTube music source to hand it to, and the token service is server-dependent. | L |
-| TDLib private channels | Native | The `zangetsu/parity` `tdlib` call now asks the runtime whether TDLib is linked, so it answers `false` today and `true` in a build that links it. Public channels stream on the Bot API. | L |
+| TDLib private channels | Native | The `zangetsu/parity` `tdlib` call asks the runtime whether TDLib is linked, so it answers `false` today and `true` in a build that links it. Public channels stream on the Bot API. | L |
+
+Closed since the last pass: **the YouTube PO token**, by porting the source it
+was written for. `YouTubeMusicSource` is Hikari's `MusicApi.kt` reduced to what
+this app needs — InnerTube browse/search, a native-first client chain, and the
+BotGuard token for the web client (§3b of `PARITY.md` has the port table and
+the divergences). Browse and search were checked against the live endpoint; the
+player path needs a device, because a datacenter address gets `LOGIN_REQUIRED`
+from YouTube for every client.
 
 Closed since the last pass: **offline voices**. Nothing is bundled — a
 Piper/Sherpa pack is 60–200 MB per voice — but Android's own speech engine
@@ -361,9 +370,8 @@ endpoint survives a restart) and `test/core/parity/parity_native_test.dart`
 ## 6. Bottom line
 
 - The migration's ledger is complete: **33/33 ✅**, verified by path.
-- Against the whole reference app, Zangetsu is at **136 ✅ / 140 units (97 %)**,
-  or **138/138 applicable (100 %)** counting the partial rows as usable.
-- The open set is two units, each blocked on a service or a native library
-  rather than on missing code: the YouTube PoToken source and TDLib. Both say
-  so in the UI instead of pretending.
+- Against the whole reference app, Zangetsu is at **138 ✅ / 141 units (98 %)**,
+  or **139/139 applicable (100 %)** counting the partial row as usable.
+- The open set is one unit, blocked on a native library rather than on missing
+  code: TDLib. It says so in the UI instead of pretending.
 - Nothing in the open set blocks an existing workflow.

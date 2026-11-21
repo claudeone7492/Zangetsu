@@ -15,13 +15,13 @@ Legend: ✅ done and reachable · ⚠️ partial, or deliberately different ·
 | Area | ✅ | ⚠️ | ❌ |
 |---|---:|---:|---:|
 | 33-row ledger (A1–F2) | 33 | 0 | 0 |
-| 33 sub-features below | 32 | 1 | 0 |
-| **Total** | **65** | **1** | **0** |
+| 33 sub-features below | 33 | 0 | 0 |
+| **Total** | **66** | **0** | **0** |
 
-The ledger is closed, and so are the sub-features it sat on top of. One row
-stays open on purpose: the YouTube PoToken helper has no YouTube source to
-serve. Offline narration closed too — the platform's downloaded voice packs do
-the work, so nothing is bundled and nothing is missing.
+The ledger is closed and so is every sub-feature on top of it. The last two
+open rows closed without shipping an asset: offline narration runs on the
+platform's downloaded voice packs, and the YouTube PO token now has the
+YouTube Music source it was built for (both ported from Hikari, §3a).
 
 ## 1. The 33-row ledger
 
@@ -82,7 +82,8 @@ the work, so nothing is bundled and nothing is missing.
 | Hard-sub dub | `dub/HardSubDub.kt` | ✅ | `ParityBridge.captureWindow` (PixelCopy on the window) keeps the burned-in subtitle in the saved frame; mpv's own screenshot does not |
 | Audio FX | `dub/AudioFx.kt` | ✅ | `core/playback/audio_fx.dart` sets mpv `af` (reverb/echo), pitch kept |
 | Lossless source | `music/VxLosslessApi.kt` | ✅ | `core/music/lossless_source.dart`, user endpoint + key persisted in Hive, edited in Parity tools |
-| YouTube PoToken | `music/PoToken*.kt` | ⚠️ | `core/music/potoken.dart` built; no YouTube source calls it yet |
+| YouTube Music catalogue | `music/MusicApi.kt` | ✅ | `core/music/youtube_music_source.dart`, registered next to JioSaavn: WEB_REMIX InnerTube for browse/search, a native-first client chain for playback |
+| YouTube PoToken | `music/PoToken*.kt` | ✅ | `core/music/potoken.dart` + `potoken_js.dart`: visitor id, BotGuard `Create`/`GenerateIT`, mint; the web client in `YouTubeMusicSource` sends `serviceIntegrityDimensions.poToken` and the bound visitor id |
 | Music downloads | `music/VxDownload.kt` | ✅ | `core/music/music_download.dart` from the player sheet |
 | TV music UI | `music/TvMusic*.kt` | ✅ | `features/music/music_screen_tv.dart` on the TV shell |
 | Sharpen filter | `reader/SharpenTransformation.kt` | ✅ | `core/reading/sharpen.dart` in the manga page pipeline, toggle in reader prefs |
@@ -101,17 +102,20 @@ the work, so nothing is bundled and nothing is missing.
 
 ## 3. What is still open, and why
 
-| Item | Kind | Why it is open | Next step |
-|---|---|---|---|
-| YouTube PoToken | Dart | `core/music/potoken.dart` can mint one, but there is no YouTube music source to hand it to. | Add the source, then wire the token into its manifest request. |
+Nothing. Every row above is reachable from the UI. What was open at the last
+count, and how it closed:
 
-Everything else in §2 is reachable from the UI. That row is the whole open set.
+| Was open | How it closed |
+|---|---|
+| Offline Piper/Sherpa voices | Platform packs instead of bundled models — see below. |
+| YouTube PoToken | The YouTube Music source it was built for now ships, and calls it. |
 
-Offline narration closed without shipping a model: `parity/OfflineVoicePack.kt`
-now reports the voices the platform's own speech engine has downloaded, Parity
-tools shows the count and links the system screen where more are downloaded,
-and the dub sheet's "offline voices only" filter keeps the picker on them. Same
-result as a bundled pack, none of the 60–200 MB per voice.
+Hikari's bundled Piper models are the one thing deliberately not copied: a pack
+is 60–200 MB per voice. Android's own speech engine ships offline packs, so
+`parity/OfflineVoicePack.kt` reports the ones installed, Parity tools shows the
+count and links the download screen, and the dub sheet has an "offline voices
+only" filter for watching without a network — the same outcome, none of the
+APK weight.
 
 ## 3a. Upstream sync
 
@@ -122,6 +126,36 @@ now read from its `quality` **or** its label (`heightFromText`, which needs a
 server at or below this height", falling back to the lowest one above when
 every mirror is taller. That replaced a nearest-number rule which would pick
 1440p for a 1080p preference when 1440p was arithmetically closer.
+
+## 3b. The YouTube source, ported
+
+Hikari's `music/MusicApi.kt` is 1,384 lines because it carries a television
+retry ladder, a NewPipe extractor, Qobuz and mirror stages. The parts Zangetsu
+needs are three, and each is a direct port:
+
+| Hikari | Zangetsu | Note |
+|---|---|---|
+| `MusicApi.post()` / `parseShelves` / `parseListItem` / `parseTwoRow` | `YouTubeMusicSource._post` / `_parseShelves` / `_parseListItem` / `_parseTwoRow` | WEB_REMIX InnerTube, same key and client version. The song-only search `params` token is dropped: YouTube answers "No results" for it now, so search runs unfiltered and the parser keeps the songs. |
+| `MusicApi.quickAudioUrlWith` + `quickClients` | `YouTubeMusicSource._resolve` + `_clients` | ANDROID_VR, iOS, Android Music, then MWEB. Native first because they need no token. AAC before Opus, highest bitrate within the container. |
+| `potoken/*` | `potoken.dart` + `potoken_js.dart` | Visitor id, `Create` → challenge → VM → `GenerateIT` → mint. Hikari runs the VM in a hidden WebView; here it runs in the QuickJS runtime the provider packs already use, with the timer-driven glue rewritten as explicit steps. |
+
+Divergences, all deliberate:
+
+- **No NewPipe extractor.** It is a JVM library; the four clients cover the
+  same ground and are what Hikari itself falls back to when the extractor will
+  not start on a television.
+- **No Qobuz / mirror stages.** `LosslessSource` is the user's own endpoint and
+  JioSaavn is the keyless catalogue, so the ladder would only re-try the same
+  two sources.
+- **Albums, artists and playlists are dropped from lists.** Hikari keeps them to
+  open a browse page; this app has no album page, so they would be dead rows.
+- **No bundled Piper models.** See §3.
+
+What is not verified here: playback. This machine is a datacenter address and
+YouTube answers the `player` endpoint with `LOGIN_REQUIRED` ("Sign in to
+confirm you're not a bot") for every client, which is exactly the case the
+token exists for. Browse and search were checked live against the real
+endpoint (17-track carousel, 18-row search); the player path needs a device.
 
 ## 4. Landed in this pass
 

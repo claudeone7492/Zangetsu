@@ -14,6 +14,11 @@ const String kMusicSourceId = 'jiosaavn';
 /// Human-readable catalogue name for the settings row and error messages.
 const String kMusicSourceName = 'JioSaavn';
 
+/// The second catalogue's id, stamped on the tracks it produces. A separate
+/// value from [kMusicSourceId] because the service routes a track back to its
+/// source by this, and two catalogues must never claim the same one.
+const String kYouTubeMusicSourceId = 'youtubemusic';
+
 /// Catalogue root. Overridable at build time because the community mirror this
 /// points at is not operated by us: a dead host must not need a code change.
 const String kMusicApiBaseUrl = String.fromEnvironment(

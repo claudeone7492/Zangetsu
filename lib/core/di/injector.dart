@@ -182,6 +182,7 @@ import '../music/music_player_controller.dart';
 import '../music/music_prefs.dart';
 import '../music/jiosaavn_source.dart';
 import '../music/lossless_source.dart';
+import '../music/youtube_music_source.dart';
 import '../music/music_service.dart';
 import '../supabase/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show OtpType;
@@ -1418,6 +1419,10 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
     () => MusicService(
       sources: [
         JioSaavnSource(),
+        // Second catalogue, ported from Hikari: YouTube Music over InnerTube.
+        // Keyless, and the player endpoint needs no account — only the web
+        // fallback wants a PO token, which it mints on demand.
+        YouTubeMusicSource(dio: sl<Dio>()),
         // Ships unconfigured and the service hides it until Parity tools
         // stores an endpoint, so music mode is unchanged out of the box.
         LosslessSource(sl<Dio>()),
