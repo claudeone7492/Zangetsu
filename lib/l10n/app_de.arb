@@ -3760,5 +3760,13 @@
   "slowConnectionBody": "Verdopple die Netzwerk-Zeitlimits, wenn Streams lange zum Starten brauchen.",
   "performanceMode": "Leistungsmodus",
   "performanceModeBody": "Bild-Cache und Hintergrundarbeit auf Geräten mit wenig Speicher reduzieren.",
-  "memoryReport": "Speicherbericht"
+  "memoryReport": "Speicherbericht",
+  "telegramTdlibUnavailable": "Die Telegram-Bibliothek konnte in diesem Build nicht starten.",
+  "telegramSignInTitle": "Bei Telegram anmelden",
+  "telegramSignInBody": "Nötig für private Kanäle und den vollen Verlauf. Beide Werte stehen auf my.telegram.org → API development tools.",
+  "telegramPhone": "Telefonnummer",
+  "telegramCode": "Anmeldecode",
+  "telegramPassword": "Passwort der Zwei-Schritt-Verifizierung",
+  "telegramSignedIn": "Angemeldet",
+  "telegramSignOut": "Abmelden"
 }

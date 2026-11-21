@@ -3800,5 +3800,13 @@
   "slowConnectionBody": "Gandakan batas waktu jaringan saat streaming lama dimulai.",
   "performanceMode": "Mode performa",
   "performanceModeBody": "Kurangi cache gambar dan kerja latar pada perangkat memori rendah.",
-  "memoryReport": "Laporan memori"
+  "memoryReport": "Laporan memori",
+  "telegramTdlibUnavailable": "Pustaka Telegram tidak dapat dijalankan pada build ini.",
+  "telegramSignInTitle": "Masuk ke Telegram",
+  "telegramSignInBody": "Diperlukan untuk kanal privat dan riwayat lengkap. Kedua nilai ada di my.telegram.org → API development tools.",
+  "telegramPhone": "Nomor telepon",
+  "telegramCode": "Kode masuk",
+  "telegramPassword": "Kata sandi verifikasi dua langkah",
+  "telegramSignedIn": "Sudah masuk",
+  "telegramSignOut": "Keluar"
 }

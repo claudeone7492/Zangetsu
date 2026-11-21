@@ -30,3 +30,9 @@
 -dontwarn com.google.re2j.**
 -dontwarn java.beans.**
 -dontwarn javax.script.**
+
+# TDLib finds its own classes BY NAME at runtime: an incoming update arrives as
+# `TdApi$UpdateNewMessage` and the native side reflects on the field layout, so
+# R8 removing "unused" TdApi classes would break the client only in release.
+-keep class org.drinkless.tdlib.** { *; }
+-dontwarn org.drinkless.tdlib.**

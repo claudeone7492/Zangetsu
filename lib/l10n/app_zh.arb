@@ -3760,5 +3760,13 @@
   "slowConnectionBody": "当流媒体启动较慢时，将网络超时加倍。",
   "performanceMode": "性能模式",
   "performanceModeBody": "在低内存设备上减少图片缓存和后台工作。",
-  "memoryReport": "内存报告"
+  "memoryReport": "内存报告",
+  "telegramTdlibUnavailable": "此版本无法启动 Telegram 库。",
+  "telegramSignInTitle": "登录 Telegram",
+  "telegramSignInBody": "私有频道和完整历史记录需要登录。两个值都在 my.telegram.org → API development tools 中。",
+  "telegramPhone": "电话号码",
+  "telegramCode": "登录验证码",
+  "telegramPassword": "两步验证密码",
+  "telegramSignedIn": "已登录",
+  "telegramSignOut": "退出登录"
 }

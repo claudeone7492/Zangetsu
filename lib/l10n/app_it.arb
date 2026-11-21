@@ -3760,5 +3760,13 @@
   "slowConnectionBody": "Raddoppia i timeout di rete quando gli stream impiegano a partire.",
   "performanceMode": "Modalità prestazioni",
   "performanceModeBody": "Riduci la cache delle immagini e il lavoro in background sui dispositivi con poca memoria.",
-  "memoryReport": "Report memoria"
+  "memoryReport": "Report memoria",
+  "telegramTdlibUnavailable": "La libreria Telegram non è riuscita ad avviarsi in questa build.",
+  "telegramSignInTitle": "Accedi a Telegram",
+  "telegramSignInBody": "Serve per i canali privati e la cronologia completa. Entrambi i valori sono su my.telegram.org → API development tools.",
+  "telegramPhone": "Numero di telefono",
+  "telegramCode": "Codice di accesso",
+  "telegramPassword": "Password della verifica in due passaggi",
+  "telegramSignedIn": "Accesso effettuato",
+  "telegramSignOut": "Esci"
 }

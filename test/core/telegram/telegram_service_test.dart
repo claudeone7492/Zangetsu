@@ -11,19 +11,29 @@ const _nativeStream = TelegramStream(
 const _webStream = TelegramStream(title: 'Web', url: 'https://cdn/web.mp4');
 
 class _FakeBridge extends TelegramBridge {
-  _FakeBridge({this.available = false, this.streams = const [], this.error});
+  _FakeBridge({
+    this.available = false,
+    this.streams = const [],
+    this.error,
+    this.state = 'ready',
+  });
 
   final bool available;
   final List<TelegramStream> streams;
   final Object? error;
+  final String state;
 
   @override
   Future<bool> isAvailable() async => available;
 
   @override
+  Future<String> authState() async => state;
+
+  @override
   Future<List<TelegramStream>> resolveChannel(
     String channel, {
     int? limit,
+    int? messageId,
   }) async {
     if (error != null) throw error!;
     return streams;

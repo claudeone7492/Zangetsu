@@ -3799,5 +3799,13 @@
   "slowConnectionBody": "Yayınlar başlamakta uzun sürdüğünde ağ zaman aşımlarını ikiye katla.",
   "performanceMode": "Performans modu",
   "performanceModeBody": "Düşük bellekli cihazlarda görsel önbelleğini ve arka plan işlerini azalt.",
-  "memoryReport": "Bellek raporu"
+  "memoryReport": "Bellek raporu",
+  "telegramTdlibUnavailable": "Telegram kitaplığı bu derlemede başlatılamadı.",
+  "telegramSignInTitle": "Telegram’a giriş yap",
+  "telegramSignInBody": "Özel kanallar ve tam geçmiş için gerekir. İki değer de my.telegram.org → API development tools sayfasındadır.",
+  "telegramPhone": "Telefon numarası",
+  "telegramCode": "Giriş kodu",
+  "telegramPassword": "İki adımlı doğrulama parolası",
+  "telegramSignedIn": "Giriş yapıldı",
+  "telegramSignOut": "Çıkış yap"
 }

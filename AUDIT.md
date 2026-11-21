@@ -19,18 +19,18 @@ Legend: ✅ present and reachable · ⚠️ partial or deliberately different ·
 
 | Status | Units |
 |---|---:|
-| ✅ | 138 |
-| ⚠️ | 1 |
+| ✅ | 139 |
+| ⚠️ | 0 |
 | ❌ | 0 |
 | ➖ | 2 |
 | **Total** | **141** |
 
 The 33-row ledger is fully closed (33/33 ✅, evidence in §1). Nothing is ❌ or
-⚠️ for a missing feature any more. Offline narration runs on the platform's
-downloaded voice packs (no model is bundled, by choice — a Piper pack is
-60–200 MB per voice) and the YouTube PO token has the source it was built for.
-The one ⚠️ left is TDLib, which is not linked: Telegram streams public channels
-on the Bot API, and the private-channel upgrade is a native dependency. See §3.
+⚠️ any more. Offline narration runs on the platform's downloaded voice packs
+(no model is bundled, by choice — a Piper pack is 60–200 MB per voice), the
+YouTube PO token has the source it was built for, and TDLib is now linked:
+Telegram reads private channels and full history through the vendored client,
+with the web preview kept as the fallback. See §3.
 
 ## 1. Ledger — 33/33 ✅
 
@@ -112,7 +112,7 @@ Every path below was checked to exist at `65b7db3`.
 | Hikari unit | Status | Zangetsu evidence |
 |---|---|---|
 | Public channel streaming | ✅ | `core/telegram/`, web fallback |
-| TDLib private channels | ⚠️ | `zangetsu/parity` `tdlib` answers `false` and Parity tools says so; Telegram runs on the Bot API |
+| TDLib private channels | ✅ | `telegram/TelegramTd.kt` + `TelegramStreamServer.kt` behind the existing `zangetsu/telegram` channel; TDLib vendored in `jniLibs/`, `zangetsu/parity` `tdlib` now answers `true` |
 
 ### Web and network
 
@@ -278,11 +278,16 @@ Every path below was checked to exist at `65b7db3`.
 
 ## 3. What is actually open
 
-One row, and it is not blocked on Dart or Kotlin work:
+Nothing. Every unit in §2 is reachable from the UI.
 
-| Gap | Kind | Why it is open | Effort |
-|---|---|---|---|
-| TDLib private channels | Native | The `zangetsu/parity` `tdlib` call asks the runtime whether TDLib is linked, so it answers `false` today and `true` in a build that links it. Public channels stream on the Bot API. | L |
+Closed since the last pass: **TDLib**. The library is vendored (both ARM ABIs,
+plus its Java bindings and the `libc++_shared.so` staging task), and the client
+behind the existing `zangetsu/telegram` channel does the phone/code/password
+login, resolves a channel's videos, and serves them to mpv through a loopback
+range server. Hikari's player is ExoPlayer and its stream is a media3
+`DataSource`; this one is mpv and needs a URL, which is the only structural
+divergence. §3c of `PARITY.md` has the port table, the build changes and what
+still needs a device to verify.
 
 Closed since the last pass: **the YouTube PO token**, by porting the source it
 was written for. `YouTubeMusicSource` is Hikari's `MusicApi.kt` reduced to what
@@ -370,8 +375,9 @@ endpoint survives a restart) and `test/core/parity/parity_native_test.dart`
 ## 6. Bottom line
 
 - The migration's ledger is complete: **33/33 ✅**, verified by path.
-- Against the whole reference app, Zangetsu is at **138 ✅ / 141 units (98 %)**,
-  or **139/139 applicable (100 %)** counting the partial row as usable.
-- The open set is one unit, blocked on a native library rather than on missing
-  code: TDLib. It says so in the UI instead of pretending.
-- Nothing in the open set blocks an existing workflow.
+- Against the whole reference app, Zangetsu is at **139 ✅ / 141 units (99 %)**,
+  or **139/139 applicable (100 %)**: the two ➖ rows are deliberate choices,
+  not gaps.
+- Nothing is open. The last native unit, TDLib, is linked and reachable.
+- What remains unverified is runtime, not code: Telegram login and playback and
+  YouTube playback all need a device and a real account.

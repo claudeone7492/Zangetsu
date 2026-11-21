@@ -7573,6 +7573,31 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get memoryReport => '内存报告';
+
+  @override
+  String get telegramTdlibUnavailable => '此版本无法启动 Telegram 库。';
+
+  @override
+  String get telegramSignInTitle => '登录 Telegram';
+
+  @override
+  String get telegramSignInBody =>
+      '私有频道和完整历史记录需要登录。两个值都在 my.telegram.org → API development tools 中。';
+
+  @override
+  String get telegramPhone => '电话号码';
+
+  @override
+  String get telegramCode => '登录验证码';
+
+  @override
+  String get telegramPassword => '两步验证密码';
+
+  @override
+  String get telegramSignedIn => '已登录';
+
+  @override
+  String get telegramSignOut => '退出登录';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -15144,4 +15169,29 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get memoryReport => '記憶體報告';
+
+  @override
+  String get telegramTdlibUnavailable => '此版本無法啟動 Telegram 函式庫。';
+
+  @override
+  String get telegramSignInTitle => '登入 Telegram';
+
+  @override
+  String get telegramSignInBody =>
+      '私人頻道與完整歷史記錄需要登入。兩個值都在 my.telegram.org → API development tools 中。';
+
+  @override
+  String get telegramPhone => '電話號碼';
+
+  @override
+  String get telegramCode => '登入驗證碼';
+
+  @override
+  String get telegramPassword => '兩步驟驗證密碼';
+
+  @override
+  String get telegramSignedIn => '已登入';
+
+  @override
+  String get telegramSignOut => '登出';
 }

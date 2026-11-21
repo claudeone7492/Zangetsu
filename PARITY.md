@@ -37,7 +37,7 @@ YouTube Music source it was built for (both ported from Hikari, §3a).
 | A8 | `.hiki` extensions | ✅ | `core/hikari/` + `com/hikari/ext` DexClassLoader host |
 | A9 | `.cs3` native API completeness | ✅ | Bytecode audit: 761 plugins, 0 missing classes/methods |
 | B1 | Music mode | ✅ | `core/music/`, `features/music/`, JioSaavn |
-| B2 | Telegram streaming | ✅ | `core/telegram/`, public channels; TDLib client is the private-channel upgrade |
+| B2 | Telegram streaming | ✅ | `core/telegram/` for public channels, vendored TDLib for private ones and full history (§3c) |
 | B3 | In-app browser + userscripts | ✅ | `features/web/`, `core/web/userscript_store.dart` |
 | B4 | Subtitle sites | ✅ | OpenSubtitles.org mirror + SubtitleCat, keyless |
 | B5 | Trackers (Trakt + MAL) | ✅ | Trakt device-code, MAL connect; Kitsu/Shikimori open (§3) |
@@ -98,7 +98,7 @@ YouTube Music source it was built for (both ported from Hikari, §3a).
 | TMDB stills rail | `TmdbStills.kt` | ✅ | `core/ui/stills_rail.dart` under the synopsis |
 | Userscript manager | `web/UserscriptManager.kt` | ✅ | Parser, matcher, Hive store, injected on page finish. |
 | Player skins / layouts | `PlayerSkins.kt` | ✅ | `features/player/player_skins.dart` picked in the player overlay |
-| l10n wiring | `i18n/` | ✅ | 12 catalogues at 2287 keys each, `untranslated.txt` empty |
+| l10n wiring | `i18n/` | ✅ | 12 catalogues at 2295 keys each, `untranslated.txt` empty |
 
 ## 3. What is still open, and why
 
@@ -156,6 +156,52 @@ YouTube answers the `player` endpoint with `LOGIN_REQUIRED` ("Sign in to
 confirm you're not a bot") for every client, which is exactly the case the
 token exists for. Browse and search were checked live against the real
 endpoint (17-track carousel, 18-row search); the player path needs a device.
+
+## 3c. Telegram, ported
+
+Hikari's `telegram/` is 2,123 lines across six files because its tab is a file
+browser: chat list, in-chat search, album tails, a download manager. Zangetsu's
+tab browses a channel and plays its videos, so the port keeps what serves that.
+
+| Hikari | Zangetsu | Note |
+|---|---|---|
+| `Td.kt` (1,272 lines) | `android/.../telegram/TelegramTd.kt` | Client lifecycle, the phone/code/password login, `SearchPublicChat` + `GetChatHistory` reduced to videos, file state and prefix reads. The chat list, in-chat search, album tails and the search-in-post walk are dropped: no screen here needs them. |
+| `TdStream.kt` (309 lines) | `android/.../telegram/TelegramStreamServer.kt` | Hikari plays Telegram videos through a media3 `DataSource`, because its player is ExoPlayer. This app's player is mpv and wants a URL, so the same waiting logic runs behind a loopback HTTP server with range support, reading through `DownloadFile` and `GetFileDownloadedPrefixSize`. |
+| `jniLibs/` + `org.drinkless.tdlib` | vendored unchanged | 43 MB of prebuilt TDLib (Telegram X's build) for both ARM ABIs, plus the 5 MB Java bindings. Provenance and the `libc++_shared.so` rename are in `jniLibs/README.md`. |
+| `TelegramError.kt`, `TelegramLinks.kt`, `TelegramChannels.kt`, `TelegramWeb.kt` | not ported | Error wording, link parsing and the channel list already exist in Dart (`telegram_source.dart`, `telegram_web.dart`), and the web client is the fallback this port must keep working. Porting them would duplicate both. |
+
+The seam is the one the app already had: the `zangetsu/telegram` channel. It
+now answers `available` truthfully (TDLib is linked), carries the login state
+(`idle` → `starting` → `waitPhone` → `waitCode` → `waitPassword` → `ready`),
+and `resolveChannel` returns the same `{title, url, thumbnail, pageUrl,
+publishedAt}` maps the Dart layer always parsed — `url` is now a
+`127.0.0.1` stream, `thumbnail` a `127.0.0.1` thumbnail. `TelegramService`
+asks the native path only when it is `ready`, and falls back to the web preview
+otherwise, so a build with no TDLib, a signed-out client, or a refused call all
+degrade to the old behaviour.
+
+Build changes this needed:
+
+- `stageTdJniLibs` in `android/app/build.gradle.kts`: the C++ runtime is
+  committed as `libcxx_shared.so` (a `+` cannot live in this workspace's paths)
+  and staged as `libc++_shared.so`, the name the linker resolves.
+- `-keep class org.drinkless.tdlib.**` in `proguard-rules.pro`: TDLib looks its
+  own classes up by name at runtime, so a release build must not strip them.
+
+Divergences, all deliberate:
+
+- **No chat list, no in-chat search.** The tab browses one channel at a time;
+  the pieces that would feed a chat list are not built.
+- **Loopback server instead of a DataSource.** The player is mpv, not ExoPlayer.
+- **Dropped login variants.** Email, Google/Apple sign-in and the premium step
+  are not implemented; the phone flow is the one every account has, and the
+  card says so rather than sitting on a blank state.
+
+What is not verified here: everything at runtime. The Kotlin compiles, the APK
+packages the four libraries per ABI, and the staging task is wired, but a login
+needs a phone with a Telegram account and an `api_id`/`api_hash` pair from
+my.telegram.org, and playback needs a device with mpv. The channel's
+unavailable/fallback paths are the ones exercised on this machine.
 
 ## 4. Landed in this pass
 

@@ -3760,5 +3760,13 @@
   "slowConnectionBody": "Double les délais réseau lorsque les flux mettent du temps à démarrer.",
   "performanceMode": "Mode performance",
   "performanceModeBody": "Réduit le cache d'images et le travail en arrière-plan sur les appareils à faible mémoire.",
-  "memoryReport": "Rapport mémoire"
+  "memoryReport": "Rapport mémoire",
+  "telegramTdlibUnavailable": "La bibliothèque Telegram n'a pas pu démarrer dans cette version.",
+  "telegramSignInTitle": "Se connecter à Telegram",
+  "telegramSignInBody": "Nécessaire pour les canaux privés et l'historique complet. Les deux valeurs se trouvent sur my.telegram.org → API development tools.",
+  "telegramPhone": "Numéro de téléphone",
+  "telegramCode": "Code de connexion",
+  "telegramPassword": "Mot de passe de la validation en deux étapes",
+  "telegramSignedIn": "Connecté",
+  "telegramSignOut": "Se déconnecter"
 }

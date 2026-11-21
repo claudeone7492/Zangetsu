@@ -7921,4 +7921,30 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get memoryReport => 'Report memoria';
+
+  @override
+  String get telegramTdlibUnavailable =>
+      'La libreria Telegram non è riuscita ad avviarsi in questa build.';
+
+  @override
+  String get telegramSignInTitle => 'Accedi a Telegram';
+
+  @override
+  String get telegramSignInBody =>
+      'Serve per i canali privati e la cronologia completa. Entrambi i valori sono su my.telegram.org → API development tools.';
+
+  @override
+  String get telegramPhone => 'Numero di telefono';
+
+  @override
+  String get telegramCode => 'Codice di accesso';
+
+  @override
+  String get telegramPassword => 'Password della verifica in due passaggi';
+
+  @override
+  String get telegramSignedIn => 'Accesso effettuato';
+
+  @override
+  String get telegramSignOut => 'Esci';
 }

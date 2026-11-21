@@ -40,6 +40,19 @@ class TelegramPrefs extends ChangeNotifier {
     ...channels.where((c) => !kDefaultTelegramChannels.contains(c)),
   ];
 
+  /// The `api_id` and `api_hash` from my.telegram.org, as typed. Empty when
+  /// the viewer has not signed in; the native side keeps its own copy so a
+  /// restart can resume the session before Dart is up.
+  String get apiId => _box.get('apiId', defaultValue: '') as String;
+
+  String get apiHash => _box.get('apiHash', defaultValue: '') as String;
+
+  Future<void> saveCredentials(String apiId, String apiHash) async {
+    await _box.put('apiId', apiId.trim());
+    await _box.put('apiHash', apiHash.trim());
+    notifyListeners();
+  }
+
   /// Adds [raw] if it parses. Returns the normalised `@name`, or null.
   Future<String?> addChannel(String raw) async {
     final target = TelegramTarget.parse(raw);

@@ -3761,5 +3761,13 @@
   "slowConnectionBody": "當串流啟動較慢時，將網路逾時加倍。",
   "performanceMode": "效能模式",
   "performanceModeBody": "在低記憶體裝置上減少圖片快取和背景工作。",
-  "memoryReport": "記憶體報告"
+  "memoryReport": "記憶體報告",
+  "telegramTdlibUnavailable": "此版本無法啟動 Telegram 函式庫。",
+  "telegramSignInTitle": "登入 Telegram",
+  "telegramSignInBody": "私人頻道與完整歷史記錄需要登入。兩個值都在 my.telegram.org → API development tools 中。",
+  "telegramPhone": "電話號碼",
+  "telegramCode": "登入驗證碼",
+  "telegramPassword": "兩步驟驗證密碼",
+  "telegramSignedIn": "已登入",
+  "telegramSignOut": "登出"
 }

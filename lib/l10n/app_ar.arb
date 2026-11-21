@@ -3800,5 +3800,13 @@
   "slowConnectionBody": "ضاعف مهلات الشبكة عندما تستغرق البثوث وقتًا طويلًا للبدء.",
   "performanceMode": "وضع الأداء",
   "performanceModeBody": "قلّل التخزين المؤقت للصور والعمل الخلفي على الأجهزة منخفضة الذاكرة.",
-  "memoryReport": "تقرير الذاكرة"
+  "memoryReport": "تقرير الذاكرة",
+  "telegramTdlibUnavailable": "تعذّر تشغيل مكتبة تيليجرام في هذا الإصدار.",
+  "telegramSignInTitle": "تسجيل الدخول إلى تيليجرام",
+  "telegramSignInBody": "مطلوب للقنوات الخاصة والسجل الكامل. القيمتان من my.telegram.org ← أدوات تطوير API.",
+  "telegramPhone": "رقم الهاتف",
+  "telegramCode": "رمز الدخول",
+  "telegramPassword": "كلمة مرور التحقق بخطوتين",
+  "telegramSignedIn": "تم تسجيل الدخول",
+  "telegramSignOut": "تسجيل الخروج"
 }

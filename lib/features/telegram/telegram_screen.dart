@@ -11,6 +11,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../l10n/l10n.dart';
 import '../player/player_screen.dart';
+import 'telegram_sign_in.dart';
 
 /// Browses public Telegram channels.
 ///
@@ -31,7 +32,27 @@ class _TelegramScreenState extends State<TelegramScreen> {
   bool _loading = false;
   String? _error;
 
+  /// The channel on screen, so signing in can reload it through the native
+  /// path without the viewer typing the name again.
+  String? _current;
+
+  /// Whether this build has the TDLib client, and what state it is in. Both
+  /// come from the bridge; on a build without it the card is not drawn at all.
+  bool _native = false;
+
   TelegramPrefs get _prefs => sl<TelegramPrefs>();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNative();
+  }
+
+  Future<void> _loadNative() async {
+    final available = await _service.nativeAvailable();
+    if (!mounted) return;
+    setState(() => _native = available);
+  }
 
   @override
   void dispose() {
@@ -51,6 +72,7 @@ class _TelegramScreenState extends State<TelegramScreen> {
       _loading = true;
       _error = null;
       _page = null;
+      _current = key;
     });
     try {
       final page = await _service.browse(key);
@@ -121,6 +143,15 @@ class _TelegramScreenState extends State<TelegramScreen> {
             style: AppText.caption.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 12),
+          if (_native)
+            TelegramSignInCard(
+              service: _service,
+              prefs: _prefs,
+              onSignedIn: () {
+                final channel = _current;
+                if (channel != null) _open(channel);
+              },
+            ),
           Row(
             children: [
               Expanded(

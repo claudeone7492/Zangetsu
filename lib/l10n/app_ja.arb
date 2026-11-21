@@ -3760,5 +3760,13 @@
   "slowConnectionBody": "ストリームの開始に時間がかかるとき、ネットワークのタイムアウトを 2 倍にします。",
   "performanceMode": "パフォーマンスモード",
   "performanceModeBody": "メモリの少ない端末で画像キャッシュとバックグラウンド処理を抑えます。",
-  "memoryReport": "メモリレポート"
+  "memoryReport": "メモリレポート",
+  "telegramTdlibUnavailable": "このビルドでは Telegram ライブラリを起動できませんでした。",
+  "telegramSignInTitle": "Telegram にサインイン",
+  "telegramSignInBody": "非公開チャンネルと全履歴に必要です。どちらの値も my.telegram.org → API development tools にあります。",
+  "telegramPhone": "電話番号",
+  "telegramCode": "ログインコード",
+  "telegramPassword": "2段階認証のパスワード",
+  "telegramSignedIn": "サインイン済み",
+  "telegramSignOut": "サインアウト"
 }

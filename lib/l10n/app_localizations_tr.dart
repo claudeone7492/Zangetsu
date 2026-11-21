@@ -7874,4 +7874,30 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get memoryReport => 'Bellek raporu';
+
+  @override
+  String get telegramTdlibUnavailable =>
+      'Telegram kitaplığı bu derlemede başlatılamadı.';
+
+  @override
+  String get telegramSignInTitle => 'Telegram’a giriş yap';
+
+  @override
+  String get telegramSignInBody =>
+      'Özel kanallar ve tam geçmiş için gerekir. İki değer de my.telegram.org → API development tools sayfasındadır.';
+
+  @override
+  String get telegramPhone => 'Telefon numarası';
+
+  @override
+  String get telegramCode => 'Giriş kodu';
+
+  @override
+  String get telegramPassword => 'İki adımlı doğrulama parolası';
+
+  @override
+  String get telegramSignedIn => 'Giriş yapıldı';
+
+  @override
+  String get telegramSignOut => 'Çıkış yap';
 }

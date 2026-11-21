@@ -215,7 +215,7 @@ class _ParityToolsScreenState extends State<ParityToolsScreen> {
               _tdlib
                   ? 'Linked — private channels available'
                   : 'Not in this build — Telegram streams public channels '
-                        'through the Bot API',
+                        'through the web preview',
             ),
           ),
           const Divider(height: 32),

@@ -870,10 +870,14 @@ class MainActivity : AppCompatActivity(), FlutterEngineConfigurator {
         dubTts?.dispose()
         dubTts = DubTtsBridge(this, flutterEngine.dartExecutor.binaryMessenger)
 
-        // Telegram streaming seam. Public channels use the Dart web preview;
-        // this is where a TDLib client will be attached.
+        // Telegram streaming seam: TDLib for private channels, full history and
+        // a player that does not depend on the web preview's markup. Dart still
+        // falls back to the preview when the library cannot start.
         telegram?.dispose()
-        telegram = TelegramBridge(flutterEngine.dartExecutor.binaryMessenger)
+        telegram = TelegramBridge(
+            flutterEngine.dartExecutor.binaryMessenger,
+            applicationContext,
+        )
 
         // Voice search (TV): open the system speech dialog and hand the
         // recognised phrase back to Dart. Uses ACTION_RECOGNIZE_SPEECH so no

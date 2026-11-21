@@ -7906,4 +7906,30 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get memoryReport => 'تقرير الذاكرة';
+
+  @override
+  String get telegramTdlibUnavailable =>
+      'تعذّر تشغيل مكتبة تيليجرام في هذا الإصدار.';
+
+  @override
+  String get telegramSignInTitle => 'تسجيل الدخول إلى تيليجرام';
+
+  @override
+  String get telegramSignInBody =>
+      'مطلوب للقنوات الخاصة والسجل الكامل. القيمتان من my.telegram.org ← أدوات تطوير API.';
+
+  @override
+  String get telegramPhone => 'رقم الهاتف';
+
+  @override
+  String get telegramCode => 'رمز الدخول';
+
+  @override
+  String get telegramPassword => 'كلمة مرور التحقق بخطوتين';
+
+  @override
+  String get telegramSignedIn => 'تم تسجيل الدخول';
+
+  @override
+  String get telegramSignOut => 'تسجيل الخروج';
 }

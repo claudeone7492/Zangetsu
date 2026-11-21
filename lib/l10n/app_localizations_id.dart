@@ -7880,4 +7880,30 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get memoryReport => 'Laporan memori';
+
+  @override
+  String get telegramTdlibUnavailable =>
+      'Pustaka Telegram tidak dapat dijalankan pada build ini.';
+
+  @override
+  String get telegramSignInTitle => 'Masuk ke Telegram';
+
+  @override
+  String get telegramSignInBody =>
+      'Diperlukan untuk kanal privat dan riwayat lengkap. Kedua nilai ada di my.telegram.org → API development tools.';
+
+  @override
+  String get telegramPhone => 'Nomor telepon';
+
+  @override
+  String get telegramCode => 'Kode masuk';
+
+  @override
+  String get telegramPassword => 'Kata sandi verifikasi dua langkah';
+
+  @override
+  String get telegramSignedIn => 'Sudah masuk';
+
+  @override
+  String get telegramSignOut => 'Keluar';
 }

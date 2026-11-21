@@ -13844,6 +13844,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Memory report'**
   String get memoryReport;
+
+  /// No description provided for @telegramTdlibUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The Telegram library could not start on this build.'**
+  String get telegramTdlibUnavailable;
+
+  /// No description provided for @telegramSignInTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to Telegram'**
+  String get telegramSignInTitle;
+
+  /// No description provided for @telegramSignInBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Needed for private channels and full history. Both values come from my.telegram.org → API development tools.'**
+  String get telegramSignInBody;
+
+  /// No description provided for @telegramPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number'**
+  String get telegramPhone;
+
+  /// No description provided for @telegramCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Login code'**
+  String get telegramCode;
+
+  /// No description provided for @telegramPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-step password'**
+  String get telegramPassword;
+
+  /// No description provided for @telegramSignedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in'**
+  String get telegramSignedIn;
+
+  /// No description provided for @telegramSignOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get telegramSignOut;
 }
 
 class _AppLocalizationsDelegate

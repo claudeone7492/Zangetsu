@@ -3760,5 +3760,13 @@
   "slowConnectionBody": "Duplica los tiempos de espera cuando los streams tardan en empezar.",
   "performanceMode": "Modo de rendimiento",
   "performanceModeBody": "Reduce la caché de imágenes y el trabajo en segundo plano en dispositivos con poca memoria.",
-  "memoryReport": "Informe de memoria"
+  "memoryReport": "Informe de memoria",
+  "telegramTdlibUnavailable": "La biblioteca de Telegram no pudo iniciarse en esta compilación.",
+  "telegramSignInTitle": "Iniciar sesión en Telegram",
+  "telegramSignInBody": "Hace falta para canales privados y el historial completo. Ambos valores están en my.telegram.org → API development tools.",
+  "telegramPhone": "Número de teléfono",
+  "telegramCode": "Código de acceso",
+  "telegramPassword": "Contraseña de verificación en dos pasos",
+  "telegramSignedIn": "Sesión iniciada",
+  "telegramSignOut": "Cerrar sesión"
 }

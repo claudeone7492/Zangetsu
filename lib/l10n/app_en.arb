@@ -4020,5 +4020,13 @@
   "slowConnectionBody": "Double network timeouts when streams take long to start.",
   "performanceMode": "Performance mode",
   "performanceModeBody": "Trim image caching and background work on low-memory devices.",
-  "memoryReport": "Memory report"
+  "memoryReport": "Memory report",
+  "telegramTdlibUnavailable": "The Telegram library could not start on this build.",
+  "telegramSignInTitle": "Sign in to Telegram",
+  "telegramSignInBody": "Needed for private channels and full history. Both values come from my.telegram.org → API development tools.",
+  "telegramPhone": "Phone number",
+  "telegramCode": "Login code",
+  "telegramPassword": "Two-step password",
+  "telegramSignedIn": "Signed in",
+  "telegramSignOut": "Sign out"
 }

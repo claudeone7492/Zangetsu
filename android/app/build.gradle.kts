@@ -74,6 +74,25 @@ android {
         buildConfig = true
     }
 
+    // TDLib's runtime is packaged as `libc++_shared.so`, and Android's linker
+    // resolves DT_NEEDED by file name — but a `+` cannot live in this workspace's
+    // paths, so the file is committed as `libcxx_shared.so` and staged under its
+    // real name here. The other TDLib libraries are used as committed.
+    val tdJniStageDir =
+        layout.buildDirectory.dir("td-jni").get().asFile.apply { mkdirs() }
+    val stageTdJniLibs = tasks.register<Sync>("stageTdJniLibs") {
+        from(layout.projectDirectory.dir("src/main/jniLibs")) {
+            include("**/libcxx_shared.so")
+        }
+        into(tdJniStageDir)
+        rename { name -> if (name == "libcxx_shared.so") "libc++_shared.so" else name }
+    }
+    sourceSets.getByName("main").jniLibs.srcDir(tdJniStageDir)
+    tasks.matching {
+        it.name.contains("JniLibFolders") || it.name.contains("NativeLibs") ||
+            it.name.contains("NativeDebugMetadata")
+    }.configureEach { dependsOn(stageTdJniLibs) }
+
     // Drop x86/x86_64 (emulator-only) native libs from every output — including
     // the prebuilt plugin lib (libmpv) that abiFilters / --target-platform do
     // NOT strip. This is the reliable lever for the fat APK + AAB, and it's
@@ -81,6 +100,9 @@ android {
     packaging {
         jniLibs {
             excludes += listOf("**/x86/**", "**/x86_64/**")
+            // The staged copy above is the one the linker needs; the committed
+            // spelling would otherwise ship a second 1–1.3 MB C++ runtime.
+            excludes += "**/libcxx_shared.so"
             // Extract native libs to the device's lib dir (extractNativeLibs=true).
             // The modern default (false = libs stay uncompressed inside the APK)
             // makes media_kit's libmpv.so lookup fail on some devices (old Android

@@ -7632,4 +7632,29 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get memoryReport => 'メモリレポート';
+
+  @override
+  String get telegramTdlibUnavailable => 'このビルドでは Telegram ライブラリを起動できませんでした。';
+
+  @override
+  String get telegramSignInTitle => 'Telegram にサインイン';
+
+  @override
+  String get telegramSignInBody =>
+      '非公開チャンネルと全履歴に必要です。どちらの値も my.telegram.org → API development tools にあります。';
+
+  @override
+  String get telegramPhone => '電話番号';
+
+  @override
+  String get telegramCode => 'ログインコード';
+
+  @override
+  String get telegramPassword => '2段階認証のパスワード';
+
+  @override
+  String get telegramSignedIn => 'サインイン済み';
+
+  @override
+  String get telegramSignOut => 'サインアウト';
 }
