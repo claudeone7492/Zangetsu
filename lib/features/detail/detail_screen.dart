@@ -23,6 +23,7 @@ import '../../core/ui/detail_prefs.dart';
 import '../../core/ui/poster_palette.dart';
 import '../../core/ui/mobile_hero_art.dart';
 import '../../core/metadata/donghua_details.dart';
+import '../../core/ui/tmdb_hero_banner.dart';
 import '../../core/metadata/synopsis.dart';
 import '../../core/models/film.dart';
 import '../../core/mode/content_mode_cubit.dart';
@@ -584,6 +585,11 @@ class _DetailViewState extends State<_DetailView>
   /// memory + Hive, so repeat opens don't pop.
   String? _logoUrl;
 
+  /// TMDB backdrop for an AniList anime (keyed by item id), once resolved —
+  /// AniList's own `bannerImage` is often missing or low-res. No entry keeps
+  /// today's banner.
+  final Map<String, String> _tmdbBanners = {};
+
   /// Resolve once; only the hero listens for the result.
   void _resolveTrailer(MediaDetail detail) {
     _trailerFuture ??= sl<TrailerService>().youtubeId(
@@ -600,6 +606,7 @@ class _DetailViewState extends State<_DetailView>
     _tint.addListener(_onTintChanged);
     ThemeController.revision.addListener(_onThemeRevision);
     _loadLogo();
+    _loadTmdbBanner();
     _schedulePlayerWarmup();
     // Discord Rich Presence: "Looking at <title>" while this detail is open.
     if (sl.isRegistered<DiscordRpc>()) {
@@ -711,6 +718,22 @@ class _DetailViewState extends State<_DetailView>
         setState(() => _logoUrl = url);
       }
     } catch (_) {}
+  }
+
+  /// Best-effort TMDB backdrop lookup for an AniList anime. No-op for every
+  /// other provider — their own banner is already good.
+  void _loadTmdbBanner() {
+    final item = widget.item;
+    loadTmdbBanners(
+      [item],
+      _tmdbBanners,
+      context: context,
+      mounted: () =>
+          mounted &&
+          widget.item.id == item.id &&
+          widget.item.sourceId == item.sourceId,
+      onResolved: (id, url) => setState(() => _tmdbBanners[id] = url),
+    );
   }
 
   @override
@@ -2469,18 +2492,24 @@ class _DetailViewState extends State<_DetailView>
                     : context.l10n.continueEpisode(episodeNum))
               : context.l10n.play);
 
+    // AniList anime: the TMDB backdrop we've resolved, if any, over AniList's
+    // own (often missing/low-res) banner. Every other provider is unchanged.
+    final banner = detail.type == ProviderType.anime
+        ? (_tmdbBanners[widget.item.id] ?? detail.banner ?? item.banner)
+        : (detail.banner ?? item.banner);
+
     // Tall phone hero: prefer TMDB's portrait art; other sources stay as-is.
     final coverUrl =
         mobileHeroArt(
           detail.cover ?? item.cover,
-          detail.banner ?? item.banner,
+          banner ?? item.landscapePoster,
         ) ??
         '';
     final coverHeaders = detail.coverHeaders ?? item.coverHeaders;
     final hasCover = coverUrl.isNotEmpty;
 
     final tintPoster = (detail.cover ?? item.cover)?.trim();
-    final tintBackdrop = (detail.banner ?? item.banner)?.trim();
+    final tintBackdrop = banner?.trim();
     final tintArt = adaptiveArtUrl(tintPoster, tintBackdrop);
     if (ThemeController.adaptiveColour &&
         tintArt != null &&
