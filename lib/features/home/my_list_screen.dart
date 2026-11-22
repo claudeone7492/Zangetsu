@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/tracker/tracker_item_url.dart';
@@ -34,6 +33,9 @@ import '../../core/tracker/tracker_switch_prefs.dart';
 import 'tracker_switch_popup.dart';
 import '../../core/ui/buttons.dart';
 import '../../core/ui/list_status_sheet.dart';
+import '../../core/ui/placement_slide.dart';
+import 'animated_library_grid.dart';
+import '../../core/ui/disintegrating_poster.dart';
 import '../../core/ui/poster_card.dart';
 import '../../core/models/provider_info.dart';
 import '../../core/ui/states.dart';
@@ -169,6 +171,73 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
   bool _sortDesc = ListSortPrefs.descending;
   VoidCallback? _shuffleAction;
 
+  /// Keys (plain `sourceId::id`) of own-list posters currently crumbling.
+  /// The entry stays in the cubit state while it animates and is only
+  /// removed from the store in [_commitExiting] — same shape as Nuvio's
+  /// exiting-retention, so the ash plays in place instead of the grid
+  /// snapping shut under the closing sheet.
+  final _exiting = <String>{};
+  final _pendingCommits = <String, Future<void> Function()>{};
+
+  /// Keys committed but not yet confirmed gone by the cubit's reload. The
+  /// grid hides these the instant the commit starts, so the slot glides shut
+  /// the moment the ash ends — instead of flashing the poster (or a hole)
+  /// until the reload lands, which on tracker tabs is a network round-trip
+  /// away. Unhidden by the rule in [_grid] the moment the key is back with
+  /// no commit in flight (re-added).
+  final _gone = <String>{};
+
+  /// Identity for the exiting set. Plain `sourceId::id` — the set only lives
+  /// for the 1.5s of the animation inside one profile's grid, so it needs a
+  /// stable string, not the store's profile-scoped key (which would also
+  /// drag the service locator into every cell build).
+  String _entryKey(MyListEntry e) => '${e.item.sourceId}::${e.item.id}';
+
+  /// Long-press → Remove now plays the Thanos dissolve on the poster, then
+  /// commits the exact removal the sheet used to do immediately.
+  Future<void> _animatedRemove(
+    MyListEntry entry,
+    Future<void> Function() commit,
+  ) async {
+    final key = _entryKey(entry);
+    if (_exiting.contains(key)) {
+      await commit();
+      return;
+    }
+    _exiting.add(key);
+    _pendingCommits[key] = commit;
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _commitExiting(String key) async {
+    // Belt-and-braces against double commits (the store write also syncs to
+    // the tracker over the network): without a pending commit this key
+    // already went through.
+    final commit = _pendingCommits[key];
+    if (commit == null) return;
+    _exiting.remove(key);
+    // Hide the slot NOW — the neighbours glide shut while the store (and
+    // the tracker's network refresh) catch up.
+    _gone.add(key);
+    safeRebuild(this);
+    try {
+      await commit();
+    } catch (e) {
+      // Remote (tracker) removes can fail offline — the entry never left the
+      // store, so it slides back in and the user gets told instead of
+      // watching it vanish and reappear.
+      _gone.remove(key);
+      _pendingCommits.remove(key);
+      if (!mounted) return;
+      safeRebuild(this);
+      showGlobalSnack(context.l10n.removeFailed(e.toString()));
+      return;
+    }
+    _pendingCommits.remove(key);
+    // No rebuild needed: the entry is already hidden by _gone, and the
+    // cubit's reload drops it for good (pruning _gone in _grid on the way).
+  }
+
   ListSort _sortFor({required bool isMyList}) {
     final chosen = _sort;
     // A saved sort that this list can't do (score on your own list, which has
@@ -217,6 +286,13 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _categoryCounts?.store.revision.removeListener(_onCategoriesChanged);
+    // Screen popped mid-dissolve: the delete was already confirmed, so commit
+    // instead of resurrecting the item on the way back in.
+    for (final commit in _pendingCommits.values) {
+      unawaited(commit());
+    }
+    _pendingCommits.clear();
+    _exiting.clear();
     _searchController.dispose();
     super.dispose();
   }
@@ -374,8 +450,7 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
         // Pinned screens name their tracker; the open screen follows the
         // switcher instead (cubit tracker or the own list).
         final pinned = widget.pinnedTracker;
-        final active =
-            pinned ?? context.read<TrackerListCubit>().state.tracker;
+        final active = pinned ?? context.read<TrackerListCubit>().state.tracker;
         // Opened for one tracker: name it. Saying "Library / My List + 3
         // trackers" on a screen showing only AniList was just wrong.
         // Whose list this is: the account name earns its place here, where the
@@ -919,7 +994,10 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
                   alignment: Alignment(
                     kinds.length == 1
                         ? 0
-                        : -1 + 2 * (kinds.indexOf(selected) / (kinds.length - 1)),
+                        : -1 +
+                              2 *
+                                  (kinds.indexOf(selected) /
+                                      (kinds.length - 1)),
                     0,
                   ),
                   child: Container(
@@ -982,8 +1060,11 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
                 context,
                 entries,
                 onTap: (item) => _openItem(context, item),
-                onMore: (entry) =>
-                    showListStatusSheet(context, item: entry.item),
+                onMore: (entry) => showListStatusSheet(
+                  context,
+                  item: entry.item,
+                  onRemove: (item, commit) => _animatedRemove(entry, commit),
+                ),
               );
         return RefreshIndicator(
           color: AppColors.accent,
@@ -1032,6 +1113,7 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
                   score: entry.score,
                   tmdbIsTv: entry.tmdbIsTv,
                   customLists: entry.customLists,
+                  onRemove: (item, commit) => _animatedRemove(entry, commit),
                   onFind: () => _openTrackerItem(context, entry.item),
                   onChanged: () => context.read<TrackerListCubit>().refresh(),
                 ),
@@ -1067,6 +1149,27 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
     void Function(MyListEntry)? onMore,
   }) {
     final cellW = _cellW(context);
+    // Optimistic hiding (see _gone): a committed key stays hidden until the
+    // reload confirms it; a key back in the list with no commit in flight was
+    // re-added — show it again at once. Mutating the set here triggers no
+    // rebuild; it only narrows the hidden set toward correctness for this
+    // frame, and the next build recomputes from scratch.
+    //
+    // Fast path: with nothing hidden the cubit's own list passes straight
+    // through, so identity-based caches below (category counts) keep hitting
+    // instead of recomputing on every rebuild.
+    var live = entries;
+    if (_gone.isNotEmpty) {
+      _gone.removeWhere(
+        (k) => libraryKeyVisible(
+          commitInFlight: _pendingCommits.containsKey(k),
+          presentInStore: entries.any((e) => _entryKey(e) == k),
+        ),
+      );
+      if (_gone.isNotEmpty) {
+        live = entries.where((e) => !_gone.contains(_entryKey(e))).toList();
+      }
+    }
     // Fixed tab order (All is prepended in _statusTabs): Watching first, then
     // Plan to Watch, Completed, Paused, Dropped — regardless of enum order.
     const tabOrder = [
@@ -1087,7 +1190,7 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
     // tabs is seeing all three without leaving the mode you're browsing in.
     // A tracker screen has no tabs and keeps following the app mode.
     final mode = _selectedKind(context);
-    final modeEntries = entries
+    final modeEntries = live
         .where((e) => mode.matchesProvider(e.item.type))
         .toList();
 
@@ -1100,7 +1203,7 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
     final trackerState = context.read<TrackerListCubit>().state;
     final isMyList = trackerState.isMyList;
     final categoryCounts = isMyList
-        ? (_categoryCounts?.forEntries(entries, mode) ?? const <String, int>{})
+        ? (_categoryCounts?.forEntries(live, mode) ?? const <String, int>{})
         : const <String, int>{};
 
     // The account's own list names first — a list created but not yet filled
@@ -1127,10 +1230,7 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
       for (final st in presentStatuses)
         LibraryTab(
           id: 'status:${st.name}',
-          label: shortLabelFor(
-            st,
-            reading: mode.isReading,
-          ),
+          label: shortLabelFor(st, reading: mode.isReading),
           count: modeEntries.where((e) => e.status == st).length,
           test: (e) => e.status == st,
         ),
@@ -1213,11 +1313,22 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
             message: myListFilteredEmptyMessage(context.l10n, mode),
           );
         }
-        return GridView.builder(
-          scrollCacheExtent: ScrollCacheExtent.pixels(800),
+        // Animated membership: the grid flips to its final layout the moment
+        // the commit lands, and every moved card glides from its old slot —
+        // same-row neighbours slide horizontally, row-boundary ones
+        // diagonally. No exit widget, no fade: a collapsing slot can't move
+        // a full row by itself, and anything visible there read as the card
+        // flashing back. Resorting still snaps — the key below remounts the
+        // grid, exactly like today's instant grid.
+        return AnimatedLibraryGrid<MyListEntry>(
+          key: ValueKey('${view.id}|${_sort?.name}|$_sortDesc'),
           // Per view+sort, so switching lists still starts at the top but
           // coming back to one restores the offset.
-          key: ScrollKeeper.keyFor('my-list:${view.id}|${_sort?.name}|$_sortDesc'),
+          scrollKey: ScrollKeeper.keyFor(
+            'my-list:${view.id}|${_sort?.name}|$_sortDesc',
+          ),
+          items: shown,
+          keyOf: _entryKey,
           // Bottom: clear the floating dock, which overlays content
           // (extendBody reserves it no space of its own).
           padding: EdgeInsets.fromLTRB(
@@ -1233,44 +1344,77 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
             crossAxisSpacing: 12,
             mainAxisSpacing: 16,
           ),
-          itemCount: shown.length,
-          itemBuilder: (context, i) {
-            final entry = shown[i];
-            final card = PosterCard(
-                title: entry.item.title,
-                logoItem: entry.item,
-                imageUrl: entry.item.cover,
-                wideImageUrl: entry.item.banner,
-                genres: entry.item.genres,
-                isAdult: entry.item.isAdult,
-                progressBadge: entry.progress == null
-                    ? null
-                    : '${entry.item.type == ProviderType.manga || entry.item.type == ProviderType.novel ? 'Ch' : 'EP'} ${entry.progress}',
-                headers: entry.item.coverHeaders,
-                cellWidth: cellW,
-                onTap: () => entry is SeriesCardEntry
-                    ? Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => SeriesScreen(
-                            group: entry.group,
-                            members: entry.memberItems,
-                          ),
-                        ),
-                      )
-                    : onTap(entry.item),
-                // Long-press opens the per-card edit sheet (own list →
-                // status/remove; tracker → the tracker editor).
-                onLongPress: onMore == null ? null : () => onMore(entry),
-            );
-            return RevealItem(
-              index: i,
-              child: entry is SeriesCardEntry && entry.memberItems.length > 1
-                  ? SeriesStackedCover(covers: entry.memberItems, child: card)
-                  : card,
-            );
-          },
+          itemBuilder: (context, i, entry, slide) => RevealItem(
+            // Keyed by entry: the whole card (image element included) travels
+            // to its new slot instead of a fresh card remounting there with
+            // a fade-in. findChildIndexCallback on the grid makes the match.
+            key: ValueKey('cell:${_entryKey(entry)}'),
+            index: i,
+            child: _posterCell(
+              entry,
+              slide: slide,
+              onTap: onTap,
+              onMore: onMore,
+              cellW: cellW,
+              isMyList: isMyList,
+            ),
+          ),
         );
       },
+    );
+  }
+
+  /// One library poster with its Thanos wrapper. The placement [slide] goes
+  /// INSIDE the RevealItem above (applied by the caller): wrapping outside
+  /// would destroy the entrance state and every moved card would replay its
+  /// fade-in — which reads exactly like appearing out of nowhere. The slide
+  /// is always mounted (zero travel when still) so the subtree shape never
+  /// changes and the cached image never remounts.
+  Widget _posterCell(
+    MyListEntry entry, {
+    required SlideSpec slide,
+    required void Function(MediaItem) onTap,
+    required void Function(MyListEntry)? onMore,
+    required double cellW,
+    required bool isMyList,
+  }) {
+    final exitingKey = _entryKey(entry);
+    final exiting = _exiting.contains(exitingKey);
+    final card = PosterCard(
+      title: entry.item.title,
+      logoItem: entry.item,
+      imageUrl: entry.item.cover,
+      wideImageUrl: entry.item.banner,
+      genres: entry.item.genres,
+      isAdult: entry.item.isAdult,
+      progressBadge: entry.progress == null
+          ? null
+          : '${entry.item.type == ProviderType.manga || entry.item.type == ProviderType.novel ? 'Ch' : 'EP'} ${entry.progress}',
+      headers: entry.item.coverHeaders,
+      cellWidth: cellW,
+      onTap: () => entry is SeriesCardEntry
+          ? Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) =>
+                    SeriesScreen(group: entry.group, members: entry.memberItems),
+              ),
+            )
+          : onTap(entry.item),
+      // Long-press opens the per-card edit sheet (own list →
+      // status/remove; tracker → the tracker editor).
+      onLongPress: onMore == null ? null : () => onMore(entry),
+    );
+    return PlacementSlide(
+      from: slide.from,
+      duration: slide.duration,
+      onDone: slide.unplace,
+      child: DisintegratingPoster(
+        disintegrating: exiting,
+        onDisintegrated: () => _commitExiting(exitingKey),
+        child: entry is SeriesCardEntry && entry.memberItems.length > 1
+            ? SeriesStackedCover(covers: entry.memberItems, child: card)
+            : card,
+      ),
     );
   }
 

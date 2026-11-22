@@ -42,6 +42,11 @@ const String _kSeries = '__series__';
 /// background (resolving the MAL/TMDB id from the detail when the caller doesn't
 /// already have it — e.g. a Home-banner card). [onChanged] fires after the
 /// local update so the caller can rebuild its button.
+/// [onRemove], when provided, takes over the "Remove from list" row: the sheet
+/// pops, then [onRemove] runs with the item and a [commit] that performs the
+/// exact removal below (store + status + tracker sync). Used by grids that
+/// animate the delete (Thanos-style) before committing it. Callers that don't
+/// pass it keep the current remove-it-now behavior.
 Future<void> showListStatusSheet(
   BuildContext context, {
   required MediaItem item,
