@@ -281,6 +281,12 @@ class _DetailScreenTvState extends State<DetailScreenTv> {
     MediaDetail detail,
     String category,
   ) async {
+    // Same as the phone screen: a source that stops short of this episode gets
+    // named, and the viewer chooses the sweep rather than having it imposed.
+    if (index >= 0 && index < episodes.length && !episodes[index].available) {
+      final sweep = await showEpisodeUnavailable(context, episodes[index]);
+      if (!sweep || !mounted) return;
+    }
     // Same as the phone screen: a finished download plays from disk first.
     if (index >= 0 && index < episodes.length) {
       final ep = episodes[index];
