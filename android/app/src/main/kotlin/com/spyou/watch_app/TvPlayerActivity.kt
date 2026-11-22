@@ -383,14 +383,7 @@ class TvPlayerActivity : Activity() {
         // buffering, released on pause — not pinned on for the whole session.
 
         val exo = ExoPlayer.Builder(this, renderersFactory())
-            .setLoadControl(
-                BufferPresets.loadControl(
-                    intent.getIntExtra(EXTRA_BUF_MIN_MS, 0),
-                    intent.getIntExtra(EXTRA_BUF_MAX_MS, 0),
-                    intent.getIntExtra(EXTRA_BUF_BYTES, 0),
-                    intent.getIntExtra(EXTRA_BUF_BACK_MS, 0),
-                ),
-            )
+            .setLoadControl(loadControl())
             .build()
         player = exo
         playerView.player = exo
@@ -2632,6 +2625,14 @@ class TvPlayerActivity : Activity() {
                 .build()
         }
     }
+
+    private fun loadControl() = BufferPresets.loadControl(
+        intent.getIntExtra(EXTRA_BUF_MIN_MS, 0),
+        intent.getIntExtra(EXTRA_BUF_MAX_MS, 0),
+        intent.getIntExtra(EXTRA_BUF_BYTES, 0),
+        intent.getIntExtra(EXTRA_BUF_BACK_MS, 0),
+        maxHeapBytes = Runtime.getRuntime().maxMemory(),
+    )
 
     /** Hardware-first by default; explicit TV decoder choices keep their priority. */
     private fun renderersFactory(): RenderersFactory =
