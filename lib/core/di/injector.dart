@@ -91,6 +91,7 @@ import '../repository/catalogue_repository.dart';
 import '../repository/provider_settings_repository.dart';
 import '../repository/source_domain_overrides.dart';
 import '../stremio/stremio_manager.dart';
+import '../stremio/stremio_home_cache.dart';
 import '../stremio/stremio_provider.dart';
 import '../repository/source_repository.dart';
 import '../state/active_source_cubit.dart';
@@ -1421,6 +1422,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   await stremioManager.init();
   await stremioManager.ensureDefaultMetadata();
   sl.registerSingleton<StremioManager>(stremioManager);
+  sl.registerSingleton<StremioHomeCache>(StremioHomeCache());
   sl.registerSingleton<StremioProvider>(StremioProvider(stremioManager));
 
   sl.registerSingleton<SourceRepository>(
