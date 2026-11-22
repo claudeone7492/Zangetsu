@@ -31,6 +31,7 @@ import 'core/platform/trusted_certificates.dart';
 import 'core/notify/cs_notify.dart';
 import 'core/notify/daily_picks_service.dart';
 import 'core/notify/notification_service.dart';
+import 'core/notify/push_service.dart';
 import 'core/announce/announcement_service.dart';
 import 'core/ui/home_rows_prefs.dart';
 import 'core/ui/route_observer.dart';
@@ -134,6 +135,11 @@ Future<void> main() async {
       } catch (e, st) {
         AppLogger.instance.logError(e, st);
       }
+      // Broadcast notifications: every device subscribes to the `all` topic, so
+      // a message sent from the Firebase Console reaches all installs. Only when
+      // a Firebase app exists — without google-services.json there is no project
+      // to register with, and the topic subscribe would throw.
+      if (Firebase.apps.isNotEmpty) unawaited(PushService.instance.init());
       // Resolve Apple TV before Supabase / media_kit — Dart reports tvOS as iOS,
       // and the version string often has no "tvos" token, so we ask the native
       // runner. Must run before Supabase: its default auth deep-link observer uses
