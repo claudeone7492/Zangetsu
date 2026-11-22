@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watch_app/core/playback/series_groups.dart';
 import 'package:watch_app/core/di/injector.dart';
 import 'package:watch_app/core/mode/content_mode.dart';
 import 'package:watch_app/core/mode/content_mode_cubit.dart';
@@ -46,6 +47,22 @@ class _FakeListStatusStore implements ListStatusStore {
 
   @override
   WatchStatus? statusOf(MediaItem m) => null;
+
+  @override
+  noSuchMethod(Invocation i) => super.noSuchMethod(i);
+}
+
+/// No groups: every entry passes through [MyListCubit] unchanged — this
+/// screen's tests don't exercise series grouping.
+class _FakeSeriesGroupStore implements SeriesGroupStore {
+  @override
+  final ValueNotifier<int> revision = ValueNotifier<int>(0);
+
+  @override
+  List<SeriesGroup> all() => const [];
+
+  @override
+  SeriesGroup? groupOf(String key) => null;
 
   @override
   noSuchMethod(Invocation i) => super.noSuchMethod(i);
@@ -111,8 +128,11 @@ class _SeededTrackerListCubit extends TrackerListCubit {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-MyListCubit _makeCubit(List<MediaItem> items) =>
-    MyListCubit(_FakeMyListStore(items), _FakeListStatusStore());
+MyListCubit _makeCubit(List<MediaItem> items) => MyListCubit(
+  _FakeMyListStore(items),
+  _FakeListStatusStore(),
+  _FakeSeriesGroupStore(),
+);
 
 Widget _pumpTree({
   required MyListCubit myList,

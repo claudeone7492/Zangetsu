@@ -1908,7 +1908,8 @@
   "noSubsResumeSuffix": " ·  no subs/resume",
   "pickWhatShowsOverVideo": "Pick what shows over the video (appears with the controls). Like YouTube's \"Stats for nerds\".",
   "styledSubtitlesLibassSubtitlePlayback": "Real .ass styling — fonts, positions, karaoke, signs. Best for anime. Applies from the next episode.",
-  "aiDub": "AI Dub",  "aiDubSubtitle": "Read subtitles aloud with the device voice",
+  "aiDub": "AI Dub",
+  "aiDubSubtitle": "Read subtitles aloud with the device voice",
   "voiceEngine": "Voice engine",
   "voiceEngineSubtitle": "Device voices are instant and work offline; neural voices sound human but need a connection",
   "voiceEngineDevice": "Device",
@@ -3654,8 +3655,6 @@
       }
     }
   },
-
-
   "contentSongs": "songs",
   "profileCouldNotUpdateAccountName": "Could not update account name",
   "profileSavedOnDeviceCloudRetry": "Saved on this device; cloud sync will retry.",
@@ -3915,14 +3914,36 @@
   "dubReadAloudSubtitle": "Read the subtitle line aloud",
   "playerProvider": "Provider",
   "stop": "Stop",
-  "@collectionsDeleteTitle": {"placeholders": {"name": {"type": "String"}}},
-  "@tvErrorPlaySourceBody": {"placeholders": {"showTitle": {"type": "String"}, "code": {"type": "String"}}},
+  "@collectionsDeleteTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@tvErrorPlaySourceBody": {
+    "placeholders": {
+      "showTitle": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "voiceScanAction": "Scan voices",
   "voiceScanSubtitle": "Find who is talking so each character can use its own voice.",
   "voiceCharactersTitle": "Character voices",
   "voiceCharactersSubtitle": "Each detected character can use a different installed voice. Neural voices follow the spoken language instead.",
   "voiceCharacterLabel": "Character {n}",
-  "@voiceCharacterLabel": {"description": "voiceCharacterLabel", "placeholders": {"n": {"type": "int"}}},
+  "@voiceCharacterLabel": {
+    "description": "voiceCharacterLabel",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "telegramSubtitle": "Browse public Telegram channels. No login needed.",
   "telegramChannelHint": "@channel or t.me/channel",
   "telegramAddChannel": "Add",
@@ -3945,7 +3966,11 @@
   "websitesLoadFailed": "This page could not be loaded",
   "@websitesRemoveBody": {
     "description": "Confirmation body; {name} is the saved site's name.",
-    "placeholders": {"name": {"type": "String"}}
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "livePlaylists": "Playlists",
   "addPlaylist": "Add playlist",
@@ -3963,10 +3988,21 @@
   "playlistRemove": "Remove",
   "@playlistChannels": {
     "description": "Number of channels imported from a playlist.",
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "playlistCount": "{count} playlists",
-  "@playlistCount": {"description": "Number of saved playlists.", "placeholders": {"count": {"type": "int"}}},
+  "@playlistCount": {
+    "description": "Number of saved playlists.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "webProtections": "Web protections",
   "blockAds": "Block ads",
   "blockAdsBody": "Hide known ad and tracker hosts in the in-app browser.",
@@ -3986,7 +4022,14 @@
   "userscriptCode": "Userscript code",
   "userscriptAdded": "Userscript added",
   "userscriptInvalid": "Paste a userscript with an @name or @match header",
-  "@adListUpdated": {"description": "Number of ad-block hosts loaded.", "placeholders": {"count": {"type": "int"}}},
+  "@adListUpdated": {
+    "description": "Number of ad-block hosts loaded.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "slowConnection": "Slow connection mode",
   "slowConnectionBody": "Double network timeouts when streams take long to start.",
   "performanceMode": "Performance mode",
@@ -4021,5 +4064,10 @@
   "tmdbPopularKoreanDramas": "Popular Korean dramas",
   "tmdbPopularHindiMovies": "Popular Hindi movies",
   "tmdbPopularFrenchMovies": "Popular French movies",
-  "tmdbPopularPersianMovies": "Popular Persian movies"
+  "tmdbPopularPersianMovies": "Popular Persian movies",
+  "addToSeries": "Add to series",
+  "noSeries": "No series",
+  "newSeries": "New series",
+  "deleteSeries": "Delete series",
+  "deleteSeriesConfirm": "Delete this series? Your titles stay on My List."
 }

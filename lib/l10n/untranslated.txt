@@ -1,1 +1,89 @@
-{}
+{
+  "ar": [
+    "addToSeries",
+    "noSeries",
+    "newSeries",
+    "deleteSeries",
+    "deleteSeriesConfirm"
+  ],
+
+  "de": [
+    "addToSeries",
+    "noSeries",
+    "newSeries",
+    "deleteSeries",
+    "deleteSeriesConfirm"
+  ],
+
+  "es": [
+    "addToSeries",
+    "noSeries",
+    "newSeries",
+    "deleteSeries",
+    "deleteSeriesConfirm"
+  ],
+
+  "fr": [
+    "addToSeries",
+    "noSeries",
+    "newSeries",
+    "deleteSeries",
+    "deleteSeriesConfirm"
+  ],
+
+  "id": [
+    "addToSeries",
+    "noSeries",
+    "newSeries",
+    "deleteSeries",
+    "deleteSeriesConfirm"
+  ],
+
+  "it": [
+    "addToSeries",
+    "noSeries",
+    "newSeries",
+    "deleteSeries",
+    "deleteSeriesConfirm"
+  ],
+
+  "ja": [
+    "addToSeries",
+    "noSeries",
+    "newSeries",
+    "deleteSeries",
+    "deleteSeriesConfirm"
+  ],
+
+  "pt": [
+    "addToSeries",
+    "noSeries",
+    "newSeries",
+    "deleteSeries",
+    "deleteSeriesConfirm"
+  ],
+
+  "tr": [
+    "addToSeries",
+    "noSeries",
+    "newSeries",
+    "deleteSeries",
+    "deleteSeriesConfirm"
+  ],
+
+  "zh": [
+    "addToSeries",
+    "noSeries",
+    "newSeries",
+    "deleteSeries",
+    "deleteSeriesConfirm"
+  ],
+
+  "zh_TW": [
+    "addToSeries",
+    "noSeries",
+    "newSeries",
+    "deleteSeries",
+    "deleteSeriesConfirm"
+  ]
+}

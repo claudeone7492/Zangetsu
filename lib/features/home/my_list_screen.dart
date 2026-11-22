@@ -22,6 +22,8 @@ import '../../core/ui/anilist_custom_lists_sheet.dart';
 import '../../core/prefs/list_sort.dart';
 import '../../core/models/watch_status.dart';
 import '../../core/playback/my_list.dart';
+import '../../core/playback/series_groups.dart';
+import '../../core/ui/series_stacked_cover.dart';
 import '../../core/playback/list_status_store.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
@@ -40,6 +42,7 @@ import '../auth/auth_cubit.dart';
 import '../auth/auth_screens.dart';
 import '../detail/detail_screen.dart';
 import 'cubit/my_list_cubit.dart';
+import 'series_screen.dart';
 import 'cubit/tracker_list_cubit.dart';
 import 'library_filter.dart';
 import 'library_tabs.dart';
@@ -82,7 +85,11 @@ class MyListScreen extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => MyListCubit(sl<MyListStore>(), sl<ListStatusStore>()),
+          create: (_) => MyListCubit(
+            sl<MyListStore>(),
+            sl<ListStatusStore>(),
+            sl.isRegistered<SeriesGroupStore>() ? sl<SeriesGroupStore>() : null,
+          ),
         ),
         BlocProvider(
           create: (_) {
@@ -982,17 +989,7 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
           color: AppColors.accent,
           backgroundColor: AppColors.surface,
           onRefresh: () => sl<MyListStore>().pullFromCloud(),
-          child: entries.isEmpty
-              ? ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: [
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.6,
-                      child: child,
-                    ),
-                  ],
-                )
-              : child,
+          child: child,
         );
       },
     );
@@ -1202,8 +1199,11 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
       onSelected: _selectTab,
       onAdd: onAdd,
       bodyFor: (view) {
+        final filtered = modeEntries
+            .where((e) => view.test(e) && _matchesQuery(e))
+            .toList();
         final shown = sortLibrary(
-          modeEntries.where((e) => view.test(e) && _matchesQuery(e)).toList(),
+          filtered,
           _sortFor(isMyList: isMyList),
           _sortDesc,
         );
@@ -1236,9 +1236,7 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
           itemCount: shown.length,
           itemBuilder: (context, i) {
             final entry = shown[i];
-            return RevealItem(
-              index: i,
-              child: PosterCard(
+            final card = PosterCard(
                 title: entry.item.title,
                 logoItem: entry.item,
                 imageUrl: entry.item.cover,
@@ -1250,11 +1248,25 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
                     : '${entry.item.type == ProviderType.manga || entry.item.type == ProviderType.novel ? 'Ch' : 'EP'} ${entry.progress}',
                 headers: entry.item.coverHeaders,
                 cellWidth: cellW,
-                onTap: () => onTap(entry.item),
+                onTap: () => entry is SeriesCardEntry
+                    ? Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => SeriesScreen(
+                            group: entry.group,
+                            members: entry.memberItems,
+                          ),
+                        ),
+                      )
+                    : onTap(entry.item),
                 // Long-press opens the per-card edit sheet (own list →
                 // status/remove; tracker → the tracker editor).
                 onLongPress: onMore == null ? null : () => onMore(entry),
-              ),
+            );
+            return RevealItem(
+              index: i,
+              child: entry is SeriesCardEntry && entry.memberItems.length > 1
+                  ? SeriesStackedCover(covers: entry.memberItems, child: card)
+                  : card,
             );
           },
         );
@@ -1412,6 +1424,7 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
     );
   }
 }
+
 
 /// EmptyState message for My List's per-status/type filter turning up
 /// nothing (the mode filter itself is applied before this — see [_grid]).

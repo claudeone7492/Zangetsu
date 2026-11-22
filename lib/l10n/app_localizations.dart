@@ -13850,6 +13850,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Popular Persian movies'**
   String get tmdbPopularPersianMovies;
+
+  /// No description provided for @addToSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to series'**
+  String get addToSeries;
+
+  /// No description provided for @noSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'No series'**
+  String get noSeries;
+
+  /// No description provided for @newSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'New series'**
+  String get newSeries;
+
+  /// No description provided for @deleteSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete series'**
+  String get deleteSeries;
+
+  /// No description provided for @deleteSeriesConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this series? Your titles stay on My List.'**
+  String get deleteSeriesConfirm;
 }
 
 class _AppLocalizationsDelegate
