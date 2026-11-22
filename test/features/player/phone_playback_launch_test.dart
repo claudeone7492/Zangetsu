@@ -133,6 +133,9 @@ void main() {
       int nativeCacheMb = 128,
       bool diskCacheEnabled = false,
       int diskCacheGb = 2,
+      bool autoPip = false,
+      String? loadingArtwork,
+      String? loadingLogo,
     }) => phonePlayerArgs(
       source: source ?? _src(),
       positionMs: positionMs,
@@ -147,6 +150,8 @@ void main() {
       diskCacheEnabled: diskCacheEnabled,
       diskCacheGb: diskCacheGb,
       defaultSpeed: 1.0,
+      loadingArtwork: loadingArtwork,
+      loadingLogo: loadingLogo,
       bufferParams: const {
         'minBufferMs': 15000,
         'maxBufferMs': 50000,
@@ -166,6 +171,17 @@ void main() {
       megaSkip: megaSkip,
       megaSkipSeconds: megaSkipSeconds,
     );
+
+    test('native launch carries optional artwork and logo separately', () {
+      expect(args(), isNot(contains('loadingArtwork')));
+      expect(args(), isNot(contains('loadingLogo')));
+      final payload = args(
+        loadingArtwork: 'https://example.com/still.jpg',
+        loadingLogo: 'https://example.com/logo.png',
+      );
+      expect(payload['loadingArtwork'], 'https://example.com/still.jpg');
+      expect(payload['loadingLogo'], 'https://example.com/logo.png');
+    });
 
     test(
       'MegaSkip preserves its toggle and amount separately from double-tap seeking',

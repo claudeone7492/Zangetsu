@@ -91,8 +91,7 @@ class PlayerWatchPage extends StatefulWidget {
   final bool initialBuffering;
 
   /// First-frame signal (player width; null = latch off). While no frame has
-  /// decoded the spinner holds — even if the loading flag lapses between
-  /// progressive resolves, and no tap can dismiss it.
+  /// decoded, the startup artwork takes the place of transport controls.
   final Stream<int?>? firstFrameStream;
   final int initialFirstFrame;
 
@@ -181,6 +180,16 @@ class _PlayerWatchPageState extends State<PlayerWatchPage> {
 
   late final ScrollController _scroll;
   final ValueNotifier<double> _ambientOpacity = ValueNotifier(1);
+
+  // House pattern (see PlayerSeekBar): the raw position stream fires ~once
+  // per decoded frame, so a StreamBuilder on it rebuilds 60×/s. Sample to
+  // ~4Hz — invisible for a creeping thumb, and scrubbing stays smooth
+  // because it runs off the finger via onSeek, not this stream.
+  late final Stream<Duration> _sampledPosition = widget.positionStream
+      .map((p) => Duration(milliseconds: (p.inMilliseconds ~/ 250) * 250))
+      .distinct()
+      // Broadcast: the subtree can remount (miniplayer switches) and re-listen.
+      .asBroadcastStream();
 
   /// Row keys by real episode index, so scroll-to-current and jump land
   /// on the right row in list and grid alike.
@@ -766,8 +775,8 @@ class _PlayerWatchPageState extends State<PlayerWatchPage> {
                   stream: widget.bufferingStream,
                   initialData: widget.initialBuffering,
                   builder: (context, snapshot) {
-                    final busy =
-                        widget.loading || !_frameUp || snapshot.data == true;
+                    if (!_frameUp) return const SizedBox.shrink();
+                    final busy = widget.loading || snapshot.data == true;
                     return AnimatedOpacity(
                       opacity: _controlsVisible || busy ? 1 : 0,
                       duration: const Duration(milliseconds: 200),
@@ -866,7 +875,7 @@ class _PlayerWatchPageState extends State<PlayerWatchPage> {
             builder: (context, durSnap) {
               final total = durSnap.data ?? Duration.zero;
               return StreamBuilder<Duration>(
-                stream: widget.positionStream,
+                stream: _sampledPosition,
                 initialData: widget.initialPosition,
                 builder: (context, posSnap) {
                   final pos = posSnap.data ?? Duration.zero;

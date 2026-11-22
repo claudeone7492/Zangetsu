@@ -32,6 +32,7 @@ import '../../core/playback/watch_history.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/torrent/torrent_service.dart';
 import '../../core/torrent/torrent_util.dart';
+import 'playback_loading_title.dart' show playbackArtworkHeaders;
 import 'subtitle_font_service.dart';
 import 'tv_progressive_sources.dart';
 
@@ -101,6 +102,9 @@ class TvNativePlayer {
     String? showTitle,
     String? cover,
     Map<String, String>? coverHeaders,
+    String? loadingArtwork,
+    String? loadingLogo,
+    void Function()? onOpeningPlayer,
     String category = 'sub',
     List<String> availableCategories = const [],
     int? malId,
@@ -223,10 +227,23 @@ class TvNativePlayer {
       );
     }
 
+    final startupArtwork = [
+      ep.thumbnail,
+      loadingArtwork,
+      cover,
+    ].whereType<String>().where((url) => url.trim().isNotEmpty).firstOrNull;
+    onOpeningPlayer?.call();
     final launch = _ch.invokeMapMethod<String, dynamic>('launch', {
       ..._streamPayload(src, mark?.position.inMilliseconds ?? 0),
       'url': playUrl, // torrent → local stream URL; otherwise unchanged
       'title': _showTitle,
+      'loadingArtwork': startupArtwork,
+      'loadingLogo': ?loadingLogo,
+      'loadingArtworkHeaders': ?playbackArtworkHeaders(
+        startupArtwork,
+        cover,
+        coverHeaders,
+      ),
       'episodeLabel': _episodeLabel(ep),
       'episodeLabels': [for (final e in _episodes) _episodeLabel(e)],
       'episodeCount': episodes.length,

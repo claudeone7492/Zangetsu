@@ -142,6 +142,15 @@ class _PlayerTvControlsState extends State<PlayerTvControls> {
   // pressed from inside the bar (i.e. move focus out of the bar row).
   late final FocusNode _rootFocus;
 
+  // Display-only bar + skip timing sample the position to whole seconds
+  // (pills precedent): the raw stream fires ~once per decoded frame and
+  // rebuilt this whole bar 60×/s on the weakest GPUs.
+  late final Stream<Duration> _sampledPosition = widget.positionStream
+      .map((p) => Duration(seconds: p.inSeconds))
+      .distinct()
+      // Broadcast: bar + skip button listen simultaneously.
+      .asBroadcastStream();
+
   @override
   void initState() {
     super.initState();
@@ -341,7 +350,7 @@ class _PlayerTvControlsState extends State<PlayerTvControls> {
                                 builder: (context, durSnap) {
                                   final dur = durSnap.data ?? Duration.zero;
                                   return StreamBuilder<Duration>(
-                                    stream: widget.positionStream,
+                                    stream: _sampledPosition,
                                     initialData: widget.initialPosition,
                                     builder: (context, posSnap) {
                                       final pos = posSnap.data ?? Duration.zero;
@@ -453,7 +462,7 @@ class _PlayerTvControlsState extends State<PlayerTvControls> {
             // ── Focusable skip button (outside the bar; auto-focuses when
             //    an AniSkip interval is active — Netflix-style press OK to skip) ──
             StreamBuilder<Duration>(
-              stream: widget.positionStream,
+              stream: _sampledPosition,
               initialData: widget.initialPosition,
               builder: (context, posSnap) {
                 final pos = posSnap.data ?? Duration.zero;
