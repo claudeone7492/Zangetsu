@@ -97,16 +97,24 @@ void main() {
       expect(HomeCataloguePrefs.sourceIdFor(ContentMode.anime), 'stremio');
     });
 
-    test('reading modes keep their own source choice', () async {
-      await HomeCataloguePrefs.setSourceIdFor(ContentMode.manga, 'mihan-a');
-      await HomeCataloguePrefs.setCatalogue(
-        ContentMode.anime,
-        HomeCatalogueKind.stremio,
-      );
+    test(
+      'Stremio overrides reading mode without erasing its source choice',
+      () async {
+        await HomeCataloguePrefs.setSourceIdFor(ContentMode.manga, 'mihan-a');
+        await HomeCataloguePrefs.setCatalogue(
+          ContentMode.anime,
+          HomeCatalogueKind.stremio,
+        );
 
-      expect(HomeCataloguePrefs.sourceIdFor(ContentMode.manga), 'mihan-a');
-      expect(HomeCataloguePrefs.sourceIdFor(ContentMode.anime), 'stremio');
-    });
+        expect(HomeCataloguePrefs.sourceIdFor(ContentMode.manga), 'stremio');
+        expect(HomeCataloguePrefs.sourceIdFor(ContentMode.anime), 'stremio');
+        await HomeCataloguePrefs.setCatalogue(
+          ContentMode.manga,
+          HomeCatalogueKind.source,
+        );
+        expect(HomeCataloguePrefs.sourceIdFor(ContentMode.manga), 'mihan-a');
+      },
+    );
 
     test('switching back does not erase saved source ids', () async {
       await HomeCataloguePrefs.setSourceIdFor(ContentMode.anime, 'source-a');

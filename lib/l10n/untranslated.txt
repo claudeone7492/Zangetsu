@@ -1,5 +1,6 @@
 {
   "ar": [
+    "episodesNotYetAired",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -8,6 +9,7 @@
   ],
 
   "de": [
+    "episodesNotYetAired",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -16,6 +18,7 @@
   ],
 
   "es": [
+    "episodesNotYetAired",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -24,6 +27,7 @@
   ],
 
   "fr": [
+    "episodesNotYetAired",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -32,6 +36,7 @@
   ],
 
   "id": [
+    "episodesNotYetAired",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -40,6 +45,7 @@
   ],
 
   "it": [
+    "episodesNotYetAired",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -48,6 +54,7 @@
   ],
 
   "ja": [
+    "episodesNotYetAired",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -56,6 +63,7 @@
   ],
 
   "pt": [
+    "episodesNotYetAired",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -64,6 +72,7 @@
   ],
 
   "tr": [
+    "episodesNotYetAired",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -72,6 +81,7 @@
   ],
 
   "zh": [
+    "episodesNotYetAired",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -80,6 +90,7 @@
   ],
 
   "zh_TW": [
+    "episodesNotYetAired",
     "addToSeries",
     "noSeries",
     "newSeries",

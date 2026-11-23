@@ -1106,6 +1106,8 @@ class _DetailScreenTvState extends State<DetailScreenTv> {
                                   _openPlayer(eps, i, detail, category),
                               onDownload: (ep) =>
                                   _pickSourceAndDownload(ep, detail, category),
+                              hasScheduledVideos:
+                                  detail.hasScheduledVideos,
                             ),
                             // ── Cast ─────────────────────────────────────────
                             _CastTab(
@@ -1176,6 +1178,7 @@ class _TvEpisodeList extends StatefulWidget {
     required this.onDownload,
     this.trackerProgress,
     this.query = '',
+    this.hasScheduledVideos = false,
   });
 
   final List<Episode> eps;
@@ -1201,6 +1204,10 @@ class _TvEpisodeList extends StatefulWidget {
   /// Episode search query (typed in the left pane's dialog). Same matcher as
   /// the phone: title substring or episode number.
   final String query;
+
+  /// Catalogue knows episodes exist but none released yet — show "not yet
+  /// aired" instead of "no episodes". Defaults off; existing callers unchanged.
+  final bool hasScheduledVideos;
 
   @override
   State<_TvEpisodeList> createState() => _TvEpisodeListState();
@@ -1247,7 +1254,9 @@ class _TvEpisodeListState extends State<_TvEpisodeList> {
     if (widget.seasonEps.isEmpty) {
       return EmptyState(
         icon: Icons.video_library_outlined,
-        message: context.l10n.noEpisodesAvailableFromThisSource,
+        message: widget.hasScheduledVideos
+            ? context.l10n.episodesNotYetAired
+            : context.l10n.noEpisodesAvailableFromThisSource,
       );
     }
     final store = sl<ResumeStore>();

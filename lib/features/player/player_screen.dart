@@ -363,10 +363,13 @@ class PlayerScreen extends StatefulWidget {
       initialSource,
       playerOverride ?? sl<PlaybackPrefs>().externalPlayerPackage,
     );
+    // Not gated on autoPlayerFallback: a torrent must yield native→mpv even
+    // with the toggle off (see tryOtherPlayer), and only this host actually
+    // performs the swap via onEngineChange. Without it that handoff silently
+    // no-ops — the native player closes and nothing replaces it.
     if (engineFallback == null &&
         Platform.isAndroid &&
         !sl<AppMode>().isTv &&
-        sl<PlaybackPrefs>().autoPlayerFallback &&
         (preferred.isEmpty || preferred == PlaybackPrefs.androidPlayerId)) {
       return _PlayerEngineHostState();
     }
@@ -384,7 +387,25 @@ class _PlayerEngineHostState extends State<PlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_changing) return const SizedBox.shrink();
+    // Opaque, not blank: the native Activity already finished by the time
+    // this shows, so an empty widget lets Detail flash through underneath
+    // for a frame. A full-bleed loader reads as "switching player", not
+    // "closed".
+    if (_changing) {
+      return ColoredBox(
+        color: Colors.black,
+        child: Center(
+          child: SizedBox(
+            width: 36,
+            height: 36,
+            child: CircularProgressIndicator(
+              color: AppColors.accent,
+              strokeWidth: 2.5,
+            ),
+          ),
+        ),
+      );
+    }
     final failure = _failure;
     return PlayerScreen(
       key: ValueKey(_generation),
@@ -706,13 +727,22 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   void _initAfterGate() {
-    if (Platform.isAndroid && _chosenPlayer == PlaybackPrefs.androidPlayerId) {
-      _launchExoThenPop();
-      return;
-    }
-    if (Platform.isAndroid && _chosenPlayer.isNotEmpty) {
-      _launchExternalThenPop();
-      return;
+    // Routed through resolvePhonePlayerRoute (unit-tested): the external
+    // branch matches any non-empty id, so the native choice must never fall
+    // through into it — that pops straight back to Detail.
+    switch (resolvePhonePlayerRoute(
+      isAndroid: Platform.isAndroid,
+      chosenPlayer: _chosenPlayer,
+      initialSource: widget.initialSource,
+    )) {
+      case PhonePlayerRoute.exo:
+        _launchExoThenPop();
+        return;
+      case PhonePlayerRoute.external:
+        _launchExternalThenPop();
+        return;
+      case PhonePlayerRoute.inApp:
+        break;
     }
     _initInApp();
     if (Platform.isAndroid && !sl<AppMode>().isTv && _followSensor) {
@@ -1331,7 +1361,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
         tmdbIsTv: widget.tmdbIsTv,
         imdbId: widget.imdbId,
         isMovie: widget.isMovie,
-        engineFallback: _canTryOtherPlayer ? _engineFallback : null,
+        // Passed untoggled: the handler yields torrents to mpv even with the
+        // auto-switch toggle off (native can never play them); everything
+        // else still needs the toggle. See tryOtherPlayer.
+        engineFallback: _engineFallback,
         forceInitialResume: widget.engineRecovery,
         onEngineFallback: (failure) => _nativeEngineFailure = failure,
       );

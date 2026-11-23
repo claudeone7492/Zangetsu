@@ -2278,6 +2278,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get noEpisodesAvailableFromThisSource => 'Bu kaynaktan bölüm yok';
 
   @override
+  String get episodesNotYetAired => 'Episodes not yet aired — check back later';
+
+  @override
   String get noEpisodesMatchYourSearch => 'Aramana uyan bölüm yok';
 
   @override
