@@ -56,7 +56,7 @@ function _json(url) {
 function getInfo() {
   return {
     name: 'StreamFree', lang: 'en', baseUrl: 'https://streamfree.top',
-    logo: EMBED + '/favicon.ico', type: 'movie', version: '1.0.0'
+    logo: EMBED + '/favicon.ico', type: 'movie', version: '1.0.1'
   };
 }
 
@@ -70,8 +70,12 @@ function _status(r, nowSec) {
   var src = r.sources || [];
   var live = false;
   for (var i = 0; i < src.length; i++) if (src[i] && src[i].live) live = true;
-  if (live) return { badge: 'LIVE', live: true };
   var start = r.match_timestamp;
+  // The per-source `live` flag lags kickoff on this API, so a fixture whose
+  // kickoff has passed is still in play even when every source says false.
+  if (live || (start && nowSec >= start && nowSec <= start + 7500)) {
+    return { badge: 'LIVE', live: true };
+  }
   if (!start) return { badge: null, live: false };
   if (nowSec < start - 600) return { badge: _countdown(start - nowSec), live: false };
   if (nowSec <= start + 12600) return { badge: 'SOON', live: false };
@@ -268,12 +272,15 @@ function _embedConstants(html) {
   function grab(re) { var m = String(html).match(re); return m ? m[1] : null; }
   var quality = grab(/const QUALITY = '([^']*)'/);
   var suffix = grab(/const SOURCE_SUFFIX = '([^']*)'/);
+  // Older embeds hard-code VARIANT; newer ones build it from STREAM_KEY.
   var base = grab(/const VARIANT = '([^']*)'/);
+  if (base === null) base = grab(/const STREAM_KEY = '([^']*)'/);
   if (!quality || base === null) return null;
   var tokens = {};
-  var tm = String(html).match(/const _0x = (\{[\s\S]*?\});/);
+  var tm = String(html).match(/const _0x\s*=\s*\(?(\{[\s\S]*?\})\)?;/);
   if (tm) { try { tokens = JSON.parse(tm[1]); } catch (e) { tokens = {}; } }
-  var tok = tokens[quality] || null;
+  var variant = base + quality + (suffix || '');
+  var tok = tokens[variant] || tokens[quality] || null;
   return { quality: quality, suffix: suffix || '', base: base, token: tok };
 }
 
@@ -308,9 +315,12 @@ function _resolveEmbed(embedUrl, key) {
     var url = EMBED + '/' + _serverPath(keyInfo.server_name) + '/' +
       encodeURIComponent(variant) + '/index.m3u8';
     if (c.token && c.token._t) {
-      url += '?_t=' + encodeURIComponent(c.token._t) +
-        '&_e=' + encodeURIComponent(c.token._e) +
-        '&_n=' + encodeURIComponent(c.token._n);
+      var tok = c.token;
+      url += '?_t=' + encodeURIComponent(tok._t) +
+        '&_e=' + encodeURIComponent(tok._e || '');
+      if (tok._ta) url += '&_ta=' + encodeURIComponent(tok._ta);
+      if (tok._s) url += '&_s=' + encodeURIComponent(tok._s);
+      if (tok._sa) url += '&_sa=' + encodeURIComponent(tok._sa);
     }
     return [_source(url, embedHeaders, c.quality)];
   });

@@ -34,7 +34,7 @@ Upgraded / added:
 | `promo_redemptions` (new) | which device used which code, % off, amount before/after |
 | `device_watch_stats` (new) | profiles · titles · minutes per device |
 | `admins` (new) | in-app admin gate (passcode hash, role) |
-| `app_config` | + `stream_launch_discount_pct` (15), `display_currency` (USD) |
+| `app_config` | + `stream_launch_discount_pct` (0), `display_currency` (USD) |
 
 ## 2. Pricing — affordable to African rails, in USD
 

@@ -43,15 +43,78 @@ class SportsLeague {
   }
 }
 
-/// Lowercase, strip punctuation, collapse whitespace. The one comparison the
-/// whole file uses, so "Man Utd" and "man-utd" match.
-String normalise(String raw) => raw
-    .toLowerCase()
-    .replaceAll(RegExp(r'[^a-z0-9 ]'), ' ')
-    .replaceAll(RegExp(r'\s+'), ' ')
-    .trim();
+/// Lowercase, fold accents, strip punctuation, collapse whitespace. The one
+/// comparison the whole file uses, so "Málaga" and "Malaga" match.
+String normalise(String raw) {
+  var text = raw.toLowerCase();
+  for (final entry in _accentFolds.entries) {
+    text = text.replaceAll(entry.key, entry.value);
+  }
+  return text
+      .replaceAll(RegExp(r'[^a-z0-9 ]'), ' ')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+}
 
-/// The catalogue, ordered by [SportsLeague.priority].
+const Map<String, String> _accentFolds = {
+  'á': 'a',
+  'à': 'a',
+  'â': 'a',
+  'ã': 'a',
+  'ä': 'a',
+  'å': 'a',
+  'ā': 'a',
+  'ç': 'c',
+  'ć': 'c',
+  'č': 'c',
+  'ď': 'd',
+  'đ': 'd',
+  'é': 'e',
+  'è': 'e',
+  'ê': 'e',
+  'ë': 'e',
+  'ē': 'e',
+  'ę': 'e',
+  'ğ': 'g',
+  'í': 'i',
+  'ì': 'i',
+  'î': 'i',
+  'ï': 'i',
+  'ī': 'i',
+  'į': 'i',
+  'ł': 'l',
+  'ñ': 'n',
+  'ń': 'n',
+  'ó': 'o',
+  'ò': 'o',
+  'ô': 'o',
+  'õ': 'o',
+  'ö': 'o',
+  'ø': 'o',
+  'ō': 'o',
+  'ř': 'r',
+  'ś': 's',
+  'š': 's',
+  'ş': 's',
+  'ť': 't',
+  'þ': 't',
+  'ú': 'u',
+  'ù': 'u',
+  'û': 'u',
+  'ü': 'u',
+  'ū': 'u',
+  'ý': 'y',
+  'ÿ': 'y',
+  'ž': 'z',
+  'ź': 'z',
+  'ż': 'z',
+  'æ': 'ae',
+  'œ': 'oe',
+  'ß': 'ss',
+};
+
+/// The catalogue. List order is the matching order, so specific
+/// competitions come before the generic Football fallback.
 const List<SportsLeague> kSportsLeagues = [
   SportsLeague(
     id: 'football',
@@ -100,7 +163,141 @@ const List<SportsLeague> kSportsLeagues = [
     name: 'Ligue 1',
     emoji: '🇫🇷',
     priority: 6,
-    keywords: ['french league'],
+    keywords: ['french league', 'ligue one'],
+  ),
+  SportsLeague(
+    id: 'europa-league',
+    name: 'Europa League',
+    emoji: '🏆',
+    priority: 7,
+    keywords: ['uefa europa'],
+  ),
+  SportsLeague(
+    id: 'conference-league',
+    name: 'Conference League',
+    emoji: '🏆',
+    priority: 8,
+    keywords: ['uefa conference', 'europa conference'],
+  ),
+  SportsLeague(
+    id: 'fa-cup',
+    name: 'FA Cup',
+    emoji: '🏴',
+    priority: 9,
+    keywords: ['english fa cup'],
+  ),
+  SportsLeague(
+    id: 'efl-cup',
+    name: 'EFL Cup',
+    emoji: '🏴',
+    priority: 9,
+    keywords: ['carabao', 'efl cup'],
+  ),
+  SportsLeague(
+    id: 'copa-del-rey',
+    name: 'Copa del Rey',
+    emoji: '🇪🇸',
+    priority: 9,
+  ),
+  SportsLeague(
+    id: 'coppa-italia',
+    name: 'Coppa Italia',
+    emoji: '🇮🇹',
+    priority: 9,
+  ),
+  SportsLeague(id: 'dfb-pokal', name: 'DFB Pokal', emoji: '🇩🇪', priority: 9),
+  SportsLeague(
+    id: 'coupe-de-france',
+    name: 'Coupe de France',
+    emoji: '🇫🇷',
+    priority: 9,
+  ),
+  SportsLeague(
+    id: 'eredivisie',
+    name: 'Eredivisie',
+    emoji: '🇳🇱',
+    priority: 21,
+  ),
+  SportsLeague(
+    id: 'primeira-liga',
+    name: 'Primeira Liga',
+    emoji: '🇵🇹',
+    priority: 22,
+  ),
+  SportsLeague(
+    id: 'super-lig',
+    name: 'Süper Lig',
+    emoji: '🇹🇷',
+    priority: 23,
+    keywords: ['turkish super lig', 'super lig'],
+  ),
+  SportsLeague(
+    id: 'mls',
+    name: 'MLS',
+    emoji: '🇺🇸',
+    priority: 24,
+    keywords: ['major league soccer'],
+  ),
+  SportsLeague(id: 'liga-mx', name: 'Liga MX', emoji: '🇲🇽', priority: 25),
+  SportsLeague(
+    id: 'brasileirao',
+    name: 'Brasileirão',
+    emoji: '🇧🇷',
+    priority: 26,
+    keywords: ['brasileirao', 'brazil serie a'],
+  ),
+  SportsLeague(
+    id: 'argentina-primera',
+    name: 'Primera División (ARG)',
+    emoji: '🇦🇷',
+    priority: 27,
+    keywords: ['argentina primera', 'liga profesional'],
+  ),
+  SportsLeague(
+    id: 'saudi-pro-league',
+    name: 'Saudi Pro League',
+    emoji: '🇸🇦',
+    priority: 28,
+  ),
+  SportsLeague(id: 'j1-league', name: 'J1 League', emoji: '🇯🇵', priority: 29),
+  SportsLeague(id: 'a-league', name: 'A-League', emoji: '🇦🇺', priority: 30),
+  SportsLeague(
+    id: 'scottish-premiership',
+    name: 'Scottish Premiership',
+    emoji: '🏴',
+    priority: 31,
+  ),
+  SportsLeague(
+    id: 'championship',
+    name: 'Championship',
+    emoji: '🏴',
+    priority: 32,
+    keywords: ['efl championship', 'english championship'],
+  ),
+  SportsLeague(
+    id: 'caf-champions',
+    name: 'CAF Champions League',
+    emoji: '🌍',
+    priority: 33,
+  ),
+  SportsLeague(
+    id: 'afcon',
+    name: 'Africa Cup of Nations',
+    emoji: '🌍',
+    priority: 34,
+    keywords: ['africa cup', 'afcon'],
+  ),
+  SportsLeague(
+    id: 'copa-libertadores',
+    name: 'Copa Libertadores',
+    emoji: '🏆',
+    priority: 35,
+  ),
+  SportsLeague(
+    id: 'nations-league',
+    name: 'Nations League',
+    emoji: '🏆',
+    priority: 36,
   ),
   SportsLeague(
     id: 'nba',
@@ -184,15 +381,20 @@ const List<SportsLeague> kSportsLeagues = [
 /// The league a title belongs to, or null when nothing matches.
 ///
 /// Checked most-specific first: "Premier League" also contains "football" as a
-/// concept, so the ordering by priority means the named competition wins over
-/// the generic sport.
+/// concept, so a named competition wins over the generic sport row.
 SportsLeague? leagueFor(String text) {
   final hay = normalise(text);
   if (hay.isEmpty) return null;
+  SportsLeague? generic;
   for (final league in kSportsLeagues) {
-    if (league.matches(hay)) return league;
+    if (!league.matches(hay)) continue;
+    if (league.id == 'football') {
+      generic ??= league;
+      continue;
+    }
+    return league;
   }
-  return null;
+  return generic;
 }
 
 /// One fixture, as much as the provider told us.
@@ -243,30 +445,33 @@ class SportsGroup {
 /// live-first, then by league priority, and fixtures within a group by
 /// [SportsFixture.compareTo].
 List<SportsGroup> groupFixtures(
-  Iterable<({
-    String title,
-    String channelName,
-    String channelId,
-    DateTime? start,
-    bool isLive,
-  })>
+  Iterable<
+    ({
+      String title,
+      String channelName,
+      String channelId,
+      DateTime? start,
+      bool isLive,
+    })
+  >
   items,
 ) {
   final byLeague = <String, List<SportsFixture>>{};
   for (final item in items) {
-    final league =
-        leagueFor(item.title) ?? leagueFor(item.channelName);
+    final league = leagueFor(item.title) ?? leagueFor(item.channelName);
     if (league == null) continue;
-    byLeague.putIfAbsent(league.id, () => []).add(
-      SportsFixture(
-        title: item.title,
-        league: league,
-        channelName: item.channelName,
-        channelId: item.channelId,
-        start: item.start,
-        isLive: item.isLive,
-      ),
-    );
+    byLeague
+        .putIfAbsent(league.id, () => [])
+        .add(
+          SportsFixture(
+            title: item.title,
+            league: league,
+            channelName: item.channelName,
+            channelId: item.channelId,
+            start: item.start,
+            isLive: item.isLive,
+          ),
+        );
   }
 
   final groups = <SportsGroup>[

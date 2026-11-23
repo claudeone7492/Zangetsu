@@ -16,14 +16,14 @@ import '../../l10n/l10n.dart';
 /// Opens the subscription card as a frosted modal. Resolves true when the user
 /// unlocked access (trial started, free promo, or a completed payment).
 ///
-/// [dismissible] false makes the card modal: used by the launch gate, which
-/// must not be swiped away before the device is entitled. The in-app entry
-/// points leave it true so a browsing user can back out.
+/// The card is modal by default: it cannot be swiped away, tapped away, or
+/// popped with Back. A caller that is only showing the plans (not gating
+/// content) can opt into dismissal explicitly.
 Future<bool> showPaywall(
   BuildContext context, {
   String? reason,
   VoidCallback? onUnlocked,
-  bool dismissible = true,
+  bool dismissible = false,
 }) async {
   final result = await showModalBottomSheet<bool>(
     context: context,
@@ -35,7 +35,11 @@ Future<bool> showPaywall(
     builder: (_) {
       final sheet = BlocProvider(
         create: (_) => SubscriptionCubit(sl())..load(),
-        child: PaywallSheet(reason: reason, onUnlocked: onUnlocked),
+        child: PaywallSheet(
+          reason: reason,
+          onUnlocked: onUnlocked,
+          canClose: dismissible,
+        ),
       );
       if (dismissible) return sheet;
       return PopScope(canPop: false, child: sheet);
@@ -48,9 +52,18 @@ Future<bool> showPaywall(
 
 /// The subscription card: the premium tier, promo input, live total, trial CTA.
 class PaywallSheet extends StatefulWidget {
-  const PaywallSheet({super.key, this.reason, this.onUnlocked});
+  const PaywallSheet({
+    super.key,
+    this.reason,
+    this.onUnlocked,
+    this.canClose = false,
+  });
 
   final String? reason;
+
+  /// Shows the close control. Off by default so the card cannot be dismissed
+  /// before the device is entitled.
+  final bool canClose;
 
   /// Called once the user unlocks access (trial, free promo or paid), in
   /// addition to the modal resolving true. Lets a host that cannot await the
@@ -147,17 +160,39 @@ class _PaywallSheetState extends State<PaywallSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.hairline,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+            SizedBox(
+              height: 32,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.hairline,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  if (widget.canClose)
+                    Positioned(
+                      right: -10,
+                      top: -8,
+                      child: IconButton(
+                        key: const ValueKey('paywall-close'),
+                        tooltip: MaterialLocalizations.of(
+                          context,
+                        ).closeButtonTooltip,
+                        onPressed: () => Navigator.of(context).pop(false),
+                        icon: Icon(
+                          Icons.close_rounded,
+                          color: AppColors.textTertiary,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
             _hero(state),
             const SizedBox(height: 20),
             _benefits(),
@@ -214,7 +249,10 @@ class _PaywallSheetState extends State<PaywallSheet> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.accentSoft,
                   borderRadius: BorderRadius.circular(8),
@@ -240,7 +278,9 @@ class _PaywallSheetState extends State<PaywallSheet> {
               : 'Keep watching every drama, short and live match, on any device.',
           style: AppText.body.copyWith(color: AppColors.textSecondary),
         ),
-        if (identity != null && identity.daysLeft > 0 && !identity.entitled) ...[
+        if (identity != null &&
+            identity.daysLeft > 0 &&
+            !identity.entitled) ...[
           const SizedBox(height: 8),
           Text(
             'Your access ended ${identity.daysLeft} day'
@@ -453,10 +493,14 @@ class _PaywallSheetState extends State<PaywallSheet> {
     final rows = <Widget>[
       _SummaryRow(
         label: context.l10n.paywallPlan,
-        value: '${plan?.label ?? kPremiumPlanLabel} · '
+        value:
+            '${plan?.label ?? kPremiumPlanLabel} · '
             '${periodWord(plan?.periodDays ?? 30)}',
       ),
-      _SummaryRow(label: context.l10n.paywallPrice, value: money(state.listCents)),
+      _SummaryRow(
+        label: context.l10n.paywallPrice,
+        value: money(state.listCents),
+      ),
     ];
     if (hasOffer) {
       rows.add(
@@ -473,8 +517,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
           label: state.promo!.isFree
               ? context.l10n.freeAccess
               : 'Promo · ${state.promo!.percentOff}% off',
-          value:
-              '−${money(state.offerCents - state.totalCents)}',
+          value: '−${money(state.offerCents - state.totalCents)}',
           accent: true,
         ),
       );
@@ -779,7 +822,9 @@ class _SummaryRow extends StatelessWidget {
             value,
             style: total
                 ? AppText.headline
-                : style.copyWith(color: accent ? AppColors.accent : Colors.white),
+                : style.copyWith(
+                    color: accent ? AppColors.accent : Colors.white,
+                  ),
           ),
         ],
       ),

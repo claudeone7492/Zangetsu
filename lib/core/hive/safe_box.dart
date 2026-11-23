@@ -14,6 +14,9 @@ import '../platform/apple_tv.dart';
 @visibleForTesting
 String? hiveBoxDir;
 
+/// True once [initHiveForApp] has recorded a writable box directory.
+bool get hiveReady => hiveBoxDir != null;
+
 /// Box names whose file couldn't be read this launch and were reopened empty.
 ///
 /// A store that syncs to the cloud should check this after opening: an emptied

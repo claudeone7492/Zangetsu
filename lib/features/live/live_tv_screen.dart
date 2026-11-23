@@ -3,13 +3,12 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/app_config.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
 import '../../core/live/dvr_store.dart';
 import '../../core/live/live_playlist_store.dart';
 import '../../core/live/live_parental.dart';
-import '../../core/live/sports_catalog.dart';
+import '../../core/live/sports_feed.dart';
 import '../../core/live/epg_store.dart';
 import '../../core/live/xtream_account_store.dart';
 import '../../core/live/live_match_enrichment.dart';
@@ -39,6 +38,7 @@ import 'live_tv_guide_screen.dart';
 import 'live_playlists_screen.dart';
 import 'live_parental_screen.dart';
 import 'recordings_screen.dart';
+import 'sports_screen.dart';
 import 'xtream_accounts_screen.dart';
 import '../player/player_screen.dart';
 import '../home/home_screen_tv.dart';
@@ -53,14 +53,8 @@ const String kLiveTvSourceId = 'iptv';
 /// The sources that carry live sports fixtures. Each exposes them through its
 /// optional `getLive` extension (a `live:`-family stream per fixture). The
 /// list itself lives in [kLiveSportsSourceIds] (app_config) because the source
-/// repository shares it for cross-provider resolution.
-
-/// The sport the live-sports rail is kept to. The rail is deliberately soccer
-/// (football) only — every sports source carries a dozen other sports, and
-/// mixing them made the rail a wall of basketball, motorsport and American
-/// football. Each source normalises its own vocabulary onto this slug
-/// ([MediaItem.liveSport]), so the filter never has to match league names.
-const String kLiveSportsSport = 'soccer';
+/// repository shares it for cross-provider resolution. The sport filter and
+/// league grouping live in [SportsFeed].
 
 /// Order the channel rows are shown in. "Default" keeps the catalogue's own
 /// order (usually popularity), which is the only one that means anything for
@@ -164,40 +158,20 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   /// fixtures are regrouped by competition instead of one flat row.
   LiveParental? _parental;
 
-  /// Fills in the score / clock / half-time state on the sports cards, then
-  /// pushes the enriched list (the scoreboard is a network hop, so the rail
-  /// first paints with the sources' own badges). Reset on every load.
   /// Regroup [_sports] by league so the rail reads as competitions rather than
   /// one undifferentiated list.
   ///
-  /// Only used when EVERY fixture names a league and there is more than one —
-  /// otherwise the flat rail is kept. Grouping a list where half the fixtures
-  /// don't map would silently drop those fixtures, and a sports rail that hides
-  /// a live match is worse than an ungrouped one.
+  /// Only used when there is more than one league — otherwise the flat rail is
+  /// kept. Fixtures whose league cannot be inferred land in the "Other
+  /// Football" bucket, so grouping never hides a live match.
   List<HomeSection>? _sportsLeagues(List<MediaItem> sports) {
-    final groups = groupFixtures([
-      for (final item in sports)
-        (
-          title: item.title,
-          channelName: item.liveInfo ?? '',
-          channelId: item.url,
-          start: item.liveStartMs == null
-              ? null
-              : DateTime.fromMillisecondsSinceEpoch(item.liveStartMs!),
-          isLive: (item.liveBadge ?? '').toUpperCase() == 'LIVE',
-        ),
-    ]);
-    final grouped = groups.fold<int>(0, (n, g) => n + g.fixtures.length);
-    if (groups.length < 2 || grouped != sports.length) return null;
-    final byTitle = {for (final item in sports) item.title: item};
+    final groups = SportsFeed.group(sports);
+    if (groups.length < 2) return null;
     return [
-      for (final g in groups)
+      for (final group in groups)
         HomeSection(
-          title: '${g.league.emoji} ${g.league.name}'.trim(),
-          items: [
-            for (final f in g.fixtures)
-              if (byTitle[f.title] != null) byTitle[f.title]!,
-          ],
+          title: '${group.league.emoji} ${group.league.name}'.trim(),
+          items: group.items,
         ),
     ];
   }
@@ -406,66 +380,15 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     }
   }
 
-  /// Every installed sports source's fixtures, merged in
+  /// Every installed sports source's soccer fixtures, merged in
   /// [kLiveSportsSourceIds] order, or an empty list when none is installed or
   /// the feeds answer nothing. Best-effort by design: the IPTV channels are the
   /// page's reason to exist, sports are a bonus rail.
   ///
-  /// In-play fixtures lead the rail, then upcoming ones, then finished ones —
-  /// what a user can watch now should not sit under yesterday's results. The
-  /// order within a rank is the sources' own, which is why the sort is done on
-  /// decorated indices: `List.sort` is not stable, so sorting the items alone
-  /// could shuffle two upcoming fixtures for no reason.
-  ///
   /// Static + repo-parameterised so the launch [preload] can run it before the
   /// screen exists.
-  static Future<List<MediaItem>> _fetchSports(SourceRepository repo) async {
-    final installed = kLiveSportsSourceIds.where(repo.hasSource).toList();
-    if (installed.isEmpty) return const [];
-    // Every installed source's `getLive` in parallel: they are independent
-    // network calls, and run in series they added up to a page-length wait on a
-    // cold cache. The merge below still honours [kLiveSportsSourceIds] order.
-    final perSource = await Future.wait([
-      for (final id in installed)
-        repo.live(sourceId: id).timeout(_timeout).catchError(
-          (_) => const <MediaItem>[],
-        ),
-    ]);
-    final merged = <MediaItem>[];
-    for (final list in perSource) {
-      // Keep the rail to soccer only, and to fixtures that actually have a
-      // video broadcast. A text-only match centre (MovieBox tags it
-      // `PlayTypeText`) carries no stream, so a card for it can only explain
-      // that it will not play — the rail is for what the user can watch, so
-      // those are dropped rather than shown greyed out. A source that reports
-      // no sport at all (a fixture list older than the `liveSport` field) is
-      // left out rather than assumed to be soccer, so the rail never shows
-      // basketball by accident — a blank rail is a far smaller failure than a
-      // wrong one.
-      for (final m in list) {
-        if (m.liveSport != kLiveSportsSport) continue;
-        if (m.liveUnplayable) continue;
-        merged.add(m);
-      }
-    }
-    final indexed = merged.asMap().entries.toList();
-    indexed.sort((a, b) {
-      final byRank = _liveRank(a.value).compareTo(_liveRank(b.value));
-      return byRank != 0 ? byRank : a.key.compareTo(b.key);
-    });
-    return [for (final e in indexed) e.value];
-  }
-
-  /// Ordering rank for a fixture. A playable in-play match leads (0), then a
-  /// playable upcoming one (1), a playable finished one (2). Unplayable
-  /// fixtures never reach here — [_fetchSports] drops them — so this is only
-  /// about what the user can watch: live first, then soon, then results.
-  static int _liveRank(MediaItem m) {
-    final badge = m.liveBadge?.toUpperCase();
-    if (badge == 'LIVE') return 0;
-    if (badge == 'FT') return 2;
-    return 1;
-  }
+  static Future<List<MediaItem>> _fetchSports(SourceRepository repo) =>
+      SportsFeed.fetch(repo);
 
   /// Non-empty category names, in catalogue order. Index 0 of the selector is
   /// the synthetic "All channels"; the rest map here by `index - 1`.
@@ -744,21 +667,19 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
           ),
         );
       case _LiveMenu.sports:
-        await Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => LiveSportsScreen(
-              fixtures: [
-                for (final item in _sports)
-                  LiveFixture(
-                    title: item.title,
-                    time: item.liveInfo ?? item.liveBadge ?? '',
-                    onPlay: () => _open(item),
-                  ),
-              ],
-            ),
-          ),
-        );
+        await _openSports();
     }
+  }
+
+  /// Opens the dedicated football destination. Passing the fixtures already
+  /// fetched by this page means the first frame paints matches instead of a
+  /// skeleton; the screen still refreshes in the background.
+  Future<void> _openSports() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => SportsScreen(initialFixtures: _sports),
+      ),
+    );
   }
 
   /// A channel card with its star. The mark lives in [IptvMarkStore], so a
@@ -933,10 +854,11 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
       height: 40,
       child: Row(
         children: [
+          _phoneSportsChip(),
           Expanded(
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+              padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
               itemCount: categories.length + 1,
               separatorBuilder: (_, _) => const SizedBox(width: 8),
               itemBuilder: (context, i) => _phoneCategoryChip(i),
@@ -945,6 +867,47 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
           _phoneSortButton(),
           const SizedBox(width: 8),
         ],
+      ),
+    );
+  }
+
+  /// The fixed Sports entry that leads the sub-header. It is a destination,
+  /// not a channel filter, so it sits outside the indexed category chips and
+  /// keeps its own key.
+  Widget _phoneSportsChip() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+      child: Center(
+        child: GestureDetector(
+          key: const ValueKey('live-sports-chip'),
+          onTap: _openSports,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            decoration: BoxDecoration(
+              color: AppColors.accentSoft,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.accent.withValues(alpha: 0.6)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.sports_soccer_rounded,
+                  size: 15,
+                  color: AppColors.accent,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  context.l10n.liveSports,
+                  style: AppText.body.copyWith(
+                    color: AppColors.accent,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -1203,6 +1166,10 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
         children: [
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 10),
+            child: _tvSportsPill(l10n),
+          ),
           for (var i = 0; i <= categories.length; i++)
             Padding(
               padding: const EdgeInsetsDirectional.only(end: 10),
@@ -1213,6 +1180,38 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
             child: _tvSortPill(l10n),
           ),
         ],
+      ),
+    );
+  }
+
+  /// TV counterpart of the fixed Sports chip: the first focus stop in the
+  /// sub-header, and the only one that opens a destination instead of
+  /// filtering channels.
+  Widget _tvSportsPill(AppLocalizations l10n) {
+    return TvFocusable(
+      variant: TvFocusVariant.pill,
+      semanticLabel: l10n.liveSports,
+      onTap: _openSports,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.sports_soccer_rounded,
+              size: 16,
+              color: AppColors.accent,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              l10n.liveSports,
+              style: AppText.button.copyWith(
+                color: AppColors.accent,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

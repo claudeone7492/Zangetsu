@@ -183,9 +183,19 @@
       "nsfw": false
     },
     {
+      "id": "nuviotv",
+      "name": "Nuvio Live Sports",
+      "version": "1.0.0",
+      "type": "movie",
+      "lang": "en",
+      "file": "nuvio.js",
+      "logo": "https://nuviosports.xyz/logo.png",
+      "nsfw": false
+    },
+    {
       "id": "streamfree",
       "name": "StreamFree",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "type": "movie",
       "lang": "en",
       "file": "streamfree.js",
@@ -203,9 +213,29 @@
       "nsfw": false
     },
     {
+      "id": "streamsports99",
+      "name": "StreamSports99",
+      "version": "1.0.0",
+      "type": "movie",
+      "lang": "en",
+      "logo": "https://streamsports99.fun/favicon.ico",
+      "nsfw": false,
+      "file": "streamsports99.js"
+    },
+    {
+      "id": "scorezone",
+      "name": "ScoreZone",
+      "version": "1.0.0",
+      "type": "movie",
+      "lang": "en",
+      "logo": "https://scorezonetv.live/favicon.ico",
+      "nsfw": false,
+      "file": "scorezone.js"
+    },
+    {
       "id": "timstreams",
       "name": "TimStreams",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "type": "movie",
       "lang": "en",
       "file": "timstreams.js",

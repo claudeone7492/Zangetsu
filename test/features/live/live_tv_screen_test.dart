@@ -619,7 +619,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repo.liveCalls, 0);
-    expect(find.text('Live Sports'), findsNothing);
+    // The fixed Sports destination stays in the sub-header; only the rail goes.
+    expect(find.byKey(const ValueKey('live-sports-chip')), findsOneWidget);
+    expect(find.text('Live Sports'), findsOneWidget);
     expect(find.text('World News'), findsOneWidget);
   });
 
@@ -666,7 +668,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('World News'), findsOneWidget);
-    expect(find.text('Live Sports'), findsNothing);
+    expect(find.byKey(const ValueKey('live-sports-chip')), findsOneWidget);
+    expect(find.text('Live Sports'), findsOneWidget);
     // No "failed" screen — the page is up, just without sports.
     expect(find.text('Try again'), findsNothing);
   });

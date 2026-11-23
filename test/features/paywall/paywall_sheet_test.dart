@@ -90,9 +90,7 @@ void main() {
   testWidgets('rejects an unknown promo and then applies a real one', (
     t,
   ) async {
-    final api = FakeSubscriptionApi(
-      plansResult: samplePlans(),
-    );
+    final api = FakeSubscriptionApi(plansResult: samplePlans());
     final cubit = await loaded(api, t);
 
     await t.pumpWidget(host(cubit));
@@ -116,10 +114,10 @@ void main() {
     expect(find.text('Promo · 50% off'), findsOneWidget);
     expect(find.text('You save'), findsOneWidget);
     expect(find.text('Total'), findsOneWidget);
-    // One product: standard list 349c, no launch discount, then 50% off -> 175c.
-    expect(find.text('\$1.75'), findsOneWidget);
-    // The promo discount and the "You save" row both read 174c.
-    expect(find.text('\$1.74'), findsWidgets);
+    // One product: standard list 200c, no launch discount, then 50% off -> 100c.
+    expect(find.text('\$1.00'), findsWidgets);
+    // The promo discount and the "You save" row both read 100c.
+    expect(find.text('\$1.00'), findsWidgets);
   });
 
   testWidgets('the plan card price drops when a promo is applied', (t) async {
@@ -134,7 +132,7 @@ void main() {
     final cubit = await loaded(api, t);
 
     // The card quotes the amount and its billing period in one RichText, e.g.
-    // "$1.75/mo". Matching that exact string pins the assertion to the card:
+    // "$2.00/mo". Matching that exact string pins the assertion to the card:
     // the summary rows render bare amounts, and a bare-amount finder would also
     // match the Total row and pass even with the card left stale.
     Finder cardPrice(String amount) => find.byWidgetPredicate(
@@ -146,16 +144,16 @@ void main() {
     await t.pump();
 
     // Before the promo the card quotes the full list price.
-    expect(cardPrice('\$3.49'), findsOneWidget);
-    expect(cardPrice('\$1.75'), findsNothing);
+    expect(cardPrice('\$2.00'), findsOneWidget);
+    expect(cardPrice('\$1.00'), findsNothing);
 
     await t.runAsync(() => cubit.applyPromo('HALF'));
     await t.pump();
 
     // After it, the card headline is the discounted amount — the same figure
     // the summary's Total row quotes.
-    expect(cardPrice('\$1.75'), findsOneWidget);
-    expect(cardPrice('\$3.49'), findsNothing);
+    expect(cardPrice('\$1.00'), findsOneWidget);
+    expect(cardPrice('\$2.00'), findsNothing);
   });
 
   testWidgets('a free promo turns the CTA into free activation', (t) async {
@@ -179,12 +177,8 @@ void main() {
     expect(find.text('\$0.00'), findsWidgets);
   });
 
-  testWidgets('shows the approximate local price on the plan card', (
-    t,
-  ) async {
-    final api = FakeSubscriptionApi(
-      plansResult: samplePlans(),
-    );
+  testWidgets('shows the approximate local price on the plan card', (t) async {
+    final api = FakeSubscriptionApi(plansResult: samplePlans());
     final cubit = await loaded(api, t);
     cubit.emit(
       cubit.state.copyWith(
@@ -195,13 +189,11 @@ void main() {
     await t.pumpWidget(host(cubit));
     await t.pump();
 
-    // Standard list 349c at the current rate -> $3.49 -> ~N4,719.
-    expect(find.textContaining('₦4,719'), findsWidgets);
+    // Standard list 200c at the current rate -> $2.00 -> ~N2,704.
+    expect(find.textContaining('₦2,704'), findsWidgets);
   });
 
-  testWidgets('shows a single plan labelled "Premium subscription"', (
-    t,
-  ) async {
+  testWidgets('shows a single plan labelled "Premium subscription"', (t) async {
     final api = FakeSubscriptionApi(plansResult: samplePlans());
     final cubit = await loaded(api, t);
 
@@ -215,7 +207,7 @@ void main() {
     expect(find.text('Premium'), findsNothing);
     // The price shown is the standard list price, not a discounted offer
     // (it appears on the plan card and again in the summary "Price" row).
-    expect(find.text('\$3.49'), findsWidgets);
+    expect(find.text('\$2.00'), findsWidgets);
     expect(find.textContaining('Launch offer'), findsNothing);
   });
 }

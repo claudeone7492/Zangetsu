@@ -1077,7 +1077,11 @@ void main() {
         );
         await tester.pump(const Duration(seconds: 11));
       }
-      await tester.pump();
+      // Closing the cache info repository flushes and cancels its 3s write
+      // debounce, which can otherwise be armed by a late response after the
+      // last pump and fail the test with a pending timer.
+      await tester.runAsync(() => DefaultCacheManager().dispose());
+      await tester.pump(const Duration(seconds: 11));
     }
 
     testWidgets('a chapter with no pages says so instead of going black', (

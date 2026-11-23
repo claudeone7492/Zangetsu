@@ -5,15 +5,15 @@ import { priceStreamPlan } from "./subscriptions.ts";
 // that. The server must charge the same number the card shows, so these cases
 // pin the arithmetic (and the rounding) against the client's.
 Deno.test("no discount charges the list price", () => {
-  const p = priceStreamPlan(349, 0, 0);
-  assertEquals(p.offerCents, 349);
-  assertEquals(p.amountCents, 349);
+  const p = priceStreamPlan(200, 0, 0);
+  assertEquals(p.offerCents, 200);
+  assertEquals(p.amountCents, 200);
 });
 
 Deno.test("launch discount comes off the list price", () => {
-  const p = priceStreamPlan(349, 15, 0);
-  assertEquals(p.offerCents, 297); // 349 * 0.85 = 296.65 -> 297
-  assertEquals(p.amountCents, 297);
+  const p = priceStreamPlan(200, 15, 0);
+  assertEquals(p.offerCents, 170); // 200 * 0.85 = 170
+  assertEquals(p.amountCents, 170);
   assertEquals(p.launchDiscountPct, 15);
 });
 
@@ -24,20 +24,20 @@ Deno.test("promo stacks on top of the launch discount", () => {
 });
 
 Deno.test("a 100% promo is free regardless of launch discount", () => {
-  const p = priceStreamPlan(199, 15, 100);
+  const p = priceStreamPlan(200, 15, 100);
   assertEquals(p.amountCents, 0);
 });
 
 Deno.test("percentages are clamped to 0..100", () => {
-  assertEquals(priceStreamPlan(199, 250, 0).launchDiscountPct, 100);
-  assertEquals(priceStreamPlan(199, -10, 0).launchDiscountPct, 0);
-  assertEquals(priceStreamPlan(199, 0, 500).promoPercentOff, 100);
+  assertEquals(priceStreamPlan(200, 250, 0).launchDiscountPct, 100);
+  assertEquals(priceStreamPlan(200, -10, 0).launchDiscountPct, 0);
+  assertEquals(priceStreamPlan(200, 0, 500).promoPercentOff, 100);
 });
 
 Deno.test("a 0% launch discount matches the promo-only price", () => {
   // The regression this guards: a card that quoted a launch discount the
   // charge never applied. With the discount honoured, these agree.
-  const withLaunch = priceStreamPlan(349, 15, 0);
-  const listOnly = priceStreamPlan(349, 0, 0);
+  const withLaunch = priceStreamPlan(200, 15, 0);
+  const listOnly = priceStreamPlan(200, 0, 0);
   assertEquals(withLaunch.amountCents < listOnly.amountCents, true);
 });

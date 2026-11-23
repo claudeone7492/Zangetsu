@@ -124,6 +124,21 @@ class DeviceIdentity {
   bool get isActive =>
       entitled || status == 'active' || status == 'grace' || status == 'trial';
 
+  /// Round-trips through [DeviceIdentity.fromMap] for the offline entitlement
+  /// cache. Only fields the gate needs are written.
+  Map<String, dynamic> toMap() => {
+    'session_id': sessionId,
+    'is_new': isNew,
+    'trial_used': trialUsed,
+    'plan_key': planKey,
+    'status': status,
+    'period_end': periodEnd?.toUtc().toIso8601String(),
+    'entitled': entitled,
+    'show_paywall': showPaywall,
+    'trial_available': trialAvailable,
+    'days_left': daysLeft,
+  };
+
   static DeviceIdentity? fromMap(Map<String, dynamic> m) {
     final session = m['session_id'];
     if (session is! String) return null;
@@ -191,6 +206,8 @@ class AdminDeviceRow {
     this.lastSeenAt,
     this.seatOwner,
     this.seats = 1,
+    this.blocked = false,
+    this.adminNote,
   });
 
   final String fingerprint;
@@ -210,6 +227,12 @@ class AdminDeviceRow {
 
   /// Devices on the plan this device is on, itself included. 1 when unshared.
   final int seats;
+
+  /// Operator ban: a blocked device gets no entitlement, even with a live plan.
+  final bool blocked;
+
+  /// Free-text note shown next to the device in the console.
+  final String? adminNote;
 
   /// The Sharing column: who this device rides on, or how many ride on it.
   String get sharingLabel {
@@ -261,6 +284,8 @@ class AdminDeviceRow {
     lastSeenAt: _dt(m['last_seen_at']),
     seatOwner: m['seat_owner'] as String?,
     seats: (m['seats'] as num?)?.toInt() ?? 1,
+    blocked: m['blocked'] == true,
+    adminNote: m['admin_note'] as String?,
   );
 }
 
@@ -317,6 +342,168 @@ class AdminPlanRow {
   );
 }
 
+/// Dashboard totals from `admin_overview`.
+class AdminOverview {
+  const AdminOverview({
+    this.devices = 0,
+    this.devicesActive24h = 0,
+    this.blocked = 0,
+    this.activeSubs = 0,
+    this.trialing = 0,
+    this.expiring7d = 0,
+    this.promosActive = 0,
+    this.redemptions30d = 0,
+    this.mrrCents = 0,
+    this.revenue30dCents = 0,
+    this.admins = 0,
+  });
+
+  final int devices;
+  final int devicesActive24h;
+  final int blocked;
+  final int activeSubs;
+  final int trialing;
+  final int expiring7d;
+  final int promosActive;
+  final int redemptions30d;
+  final int mrrCents;
+  final int revenue30dCents;
+  final int admins;
+
+  static AdminOverview fromMap(Map<String, dynamic> m) => AdminOverview(
+    devices: (m['devices'] as num?)?.toInt() ?? 0,
+    devicesActive24h: (m['devices_active_24h'] as num?)?.toInt() ?? 0,
+    blocked: (m['blocked'] as num?)?.toInt() ?? 0,
+    activeSubs: (m['active_subs'] as num?)?.toInt() ?? 0,
+    trialing: (m['trialing'] as num?)?.toInt() ?? 0,
+    expiring7d: (m['expiring_7d'] as num?)?.toInt() ?? 0,
+    promosActive: (m['promos_active'] as num?)?.toInt() ?? 0,
+    redemptions30d: (m['redemptions_30d'] as num?)?.toInt() ?? 0,
+    mrrCents: (m['mrr_cents'] as num?)?.toInt() ?? 0,
+    revenue30dCents: (m['revenue_30d_cents'] as num?)?.toInt() ?? 0,
+    admins: (m['admins'] as num?)?.toInt() ?? 0,
+  );
+}
+
+/// A row of the admin Plans table, from `admin_plans`. Unlike
+/// [AdminPlanRow], this carries the editable fields as well as the totals.
+class AdminPlanConfig {
+  const AdminPlanConfig({
+    required this.key,
+    required this.label,
+    required this.priceCents,
+    required this.periodDays,
+    required this.trialDays,
+    required this.active,
+    required this.sortOrder,
+    this.subscribers = 0,
+  });
+
+  final String key;
+  final String label;
+  final int priceCents;
+  final int periodDays;
+  final int trialDays;
+  final bool active;
+  final int sortOrder;
+  final int subscribers;
+
+  static AdminPlanConfig fromMap(Map<String, dynamic> m) => AdminPlanConfig(
+    key: '${m['key']}',
+    label: '${m['label']}',
+    priceCents: (m['price_usd_cents'] as num?)?.toInt() ?? 0,
+    periodDays: (m['period_days'] as num?)?.toInt() ?? 30,
+    trialDays: (m['trial_days'] as num?)?.toInt() ?? 0,
+    active: m['active'] == true,
+    sortOrder: (m['sort_order'] as num?)?.toInt() ?? 0,
+    subscribers: (m['subscribers'] as num?)?.toInt() ?? 0,
+  );
+}
+
+/// An operator account, from `admin_admins`.
+class AdminAccountRow {
+  const AdminAccountRow({
+    required this.email,
+    required this.role,
+    required this.active,
+    this.createdAt,
+    this.lastLoginAt,
+  });
+
+  final String email;
+  final String role;
+  final bool active;
+  final DateTime? createdAt;
+  final DateTime? lastLoginAt;
+
+  static AdminAccountRow fromMap(Map<String, dynamic> m) => AdminAccountRow(
+    email: '${m['email']}',
+    role: (m['role'] as String?) ?? 'admin',
+    active: m['active'] == true,
+    createdAt: _dt(m['created_at']),
+    lastLoginAt: _dt(m['last_login_at']),
+  );
+}
+
+/// One entry in `admin_audit_log`.
+class AdminAuditRow {
+  const AdminAuditRow({
+    required this.actor,
+    required this.action,
+    this.target,
+    this.details = const {},
+    this.createdAt,
+  });
+
+  final String actor;
+  final String action;
+  final String? target;
+  final Map<String, dynamic> details;
+  final DateTime? createdAt;
+
+  static AdminAuditRow fromMap(Map<String, dynamic> m) => AdminAuditRow(
+    actor: '${m['actor']}',
+    action: '${m['action']}',
+    target: m['target'] as String?,
+    details: m['details'] is Map
+        ? (m['details'] as Map).cast<String, dynamic>()
+        : const {},
+    createdAt: _dt(m['created_at']),
+  );
+}
+
+/// A promo redemption, from `admin_redemptions`.
+class AdminRedemptionRow {
+  const AdminRedemptionRow({
+    required this.code,
+    required this.fingerprint,
+    this.planKey,
+    this.percentOff = 0,
+    this.amountBefore = 0,
+    this.amountAfter = 0,
+    this.createdAt,
+  });
+
+  final String code;
+  final String fingerprint;
+  final String? planKey;
+  final int percentOff;
+  final int amountBefore;
+  final int amountAfter;
+  final DateTime? createdAt;
+
+  static AdminRedemptionRow fromMap(Map<String, dynamic> m) =>
+      AdminRedemptionRow(
+        code: '${m['code']}',
+        fingerprint: '${m['fingerprint']}',
+        planKey: m['plan_key'] as String?,
+        percentOff: (m['percent_off'] as num?)?.toInt() ?? 0,
+        amountBefore: (m['amount_before'] as num?)?.toInt() ?? 0,
+        amountAfter: (m['amount_after'] as num?)?.toInt() ?? 0,
+        createdAt: _dt(m['created_at']),
+      );
+}
+
 DateTime? _dt(Object? v) => v is String ? DateTime.tryParse(v) : null;
 
 /// Admin-managed paywall display config, from the `subscription_config` RPC.
@@ -332,16 +519,17 @@ class SubscriptionConfig {
   final int launchDiscountPct;
   final String displayCurrency;
 
-  static SubscriptionConfig fromMap(Map<String, dynamic> m) => SubscriptionConfig(
-    launchDiscountPct: ((m['launch_discount_pct'] as num?)?.toInt() ?? 0)
-        .clamp(0, 100),
-    displayCurrency: (m['display_currency'] as String?)?.isNotEmpty == true
-        ? m['display_currency'] as String
-        : 'USD',
-  );
+  static SubscriptionConfig fromMap(Map<String, dynamic> m) =>
+      SubscriptionConfig(
+        launchDiscountPct: ((m['launch_discount_pct'] as num?)?.toInt() ?? 0)
+            .clamp(0, 100),
+        displayCurrency: (m['display_currency'] as String?)?.isNotEmpty == true
+            ? m['display_currency'] as String
+            : 'USD',
+      );
 }
 
-/// Formats USD cents as `$1.99`.
+/// Formats USD cents as `$2.00`.
 String money(int cents) => '\$${(cents / 100).toStringAsFixed(2)}';
 
 /// Compact billing-period suffix for a plan: `/mo` for a ~monthly period,
@@ -489,7 +677,8 @@ class SeatSummary {
     seatLimit: (m['seat_limit'] as num?)?.toInt() ?? 1,
     seatsUsed: (m['seats_used'] as num?)?.toInt() ?? 1,
     isSeat: m['is_seat'] == true,
-    seats: (m['seats'] as List?)
+    seats:
+        (m['seats'] as List?)
             ?.whereType<Map>()
             .map((e) => DeviceSeat.fromMap(e.cast<String, dynamic>()))
             .toList() ??

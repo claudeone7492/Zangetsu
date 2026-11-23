@@ -167,6 +167,7 @@ void _driftGuard() {
       'episode_meta': 'cache',
       'cf_clearance': 'cache',
       'genre_catalog': 'cache',
+      'entitlement_cache': 'cached entitlement verdict, re-read from server',
       // Icon URLs picked back up the next time a repo index is read.
       'source_icons': 'cache',
       'source_health': 'transient',

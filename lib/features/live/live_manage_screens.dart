@@ -108,37 +108,3 @@ class LiveOnDemandScreen extends StatelessWidget {
     );
   }
 }
-
-class LiveFixture {
-  const LiveFixture({required this.title, required this.time, required this.onPlay, this.channel});
-  final String title;
-  final String time;
-  final String? channel;
-  final VoidCallback onPlay;
-}
-
-/// Today's fixtures.
-class LiveSportsScreen extends StatelessWidget {
-  const LiveSportsScreen({super.key, required this.fixtures});
-  final List<LiveFixture> fixtures;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sports')),
-      body: ListView.separated(
-        itemCount: fixtures.length,
-        separatorBuilder: (_, _) => const Divider(height: 1),
-        itemBuilder: (context, index) {
-          final fixture = fixtures[index];
-          return ListTile(
-            leading: const Icon(Icons.sports_soccer),
-            title: Text(fixture.title),
-            subtitle: Text([fixture.time, if (fixture.channel != null) fixture.channel!].join(' · ')),
-            trailing: FilledButton(onPressed: fixture.onPlay, child: const Text('Watch')),
-          );
-        },
-      ),
-    );
-  }
-}

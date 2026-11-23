@@ -14,9 +14,18 @@ class FakeSubscriptionApi implements SubscriptionApi {
     this.trialResult = 'sub-id',
     this.adminConfiguredResult = false,
     this.adminCheckResult = true,
+    this.adminLoginResult = true,
+    this.adminRegisterResult = true,
+    this.adminRefreshTrialResult = true,
     this.configResult = const SubscriptionConfig(),
     this.seatsResult,
     this.linkResult,
+    this.adminOverviewResult,
+    this.adminPlansResult = const [],
+    this.adminConfigResult,
+    this.adminAdminsResult = const [],
+    this.adminAuditResult = const [],
+    this.adminRedemptionsResult = const [],
   });
 
   List<SubscriptionPlan> plansResult;
@@ -31,8 +40,18 @@ class FakeSubscriptionApi implements SubscriptionApi {
   );
   bool adminConfiguredResult;
   bool adminCheckResult;
+  bool adminLoginResult;
+  bool adminRegisterResult;
+  bool adminRefreshTrialResult;
 
   int startTrialCalls = 0;
+  int adminLoginCalls = 0;
+  int adminRegisterCalls = 0;
+  int adminRefreshTrialCalls = 0;
+  String? lastAdminEmail;
+  String? lastAdminPassword;
+  String? lastNewPassword;
+  String? lastRefreshFingerprint;
   int startCheckoutCalls = 0;
   String? lastCheckoutPlan;
   String? lastCheckoutPromo;
@@ -136,6 +155,22 @@ class FakeSubscriptionApi implements SubscriptionApi {
   Future<bool> adminCheck(String passcode) async => adminCheckResult;
 
   @override
+  Future<bool> adminLogin(String email, String password) async {
+    adminLoginCalls++;
+    lastAdminEmail = email;
+    lastAdminPassword = password;
+    return adminLoginResult;
+  }
+
+  @override
+  Future<bool> adminRegister(String email, String password) async {
+    adminRegisterCalls++;
+    lastAdminEmail = email;
+    lastAdminPassword = password;
+    return adminRegisterResult;
+  }
+
+  @override
   Future<bool> adminSetup(String passcode) async => true;
 
   @override
@@ -143,6 +178,17 @@ class FakeSubscriptionApi implements SubscriptionApi {
 
   @override
   Future<List<AdminDeviceRow>> adminDevices(String passcode) async => const [];
+
+  @override
+  Future<bool> adminRefreshTrial({
+    required String passcode,
+    required String fingerprint,
+    int days = 14,
+  }) async {
+    adminRefreshTrialCalls++;
+    lastRefreshFingerprint = fingerprint;
+    return adminRefreshTrialResult;
+  }
 
   @override
   Future<List<AdminPromoRow>> adminPromos(String passcode) async => const [];
@@ -163,6 +209,175 @@ class FakeSubscriptionApi implements SubscriptionApi {
     promoWrites.add({'code': code, 'percentOff': percentOff, 'active': active});
     return true;
   }
+
+  AdminOverview? adminOverviewResult;
+  List<AdminPlanConfig> adminPlansResult = const [];
+  Map<String, dynamic>? adminConfigResult;
+  List<AdminAccountRow> adminAdminsResult = const [];
+  List<AdminAuditRow> adminAuditResult = const [];
+  List<AdminRedemptionRow> adminRedemptionsResult = const [];
+  final List<Map<String, Object?>> adminActions = [];
+
+  @override
+  Future<AdminOverview?> adminOverview(String passcode) async =>
+      adminOverviewResult;
+
+  @override
+  Future<List<AdminPlanConfig>> adminPlans(String passcode) async =>
+      adminPlansResult;
+
+  @override
+  Future<bool> adminUpdatePlan({
+    required String passcode,
+    required String key,
+    required int priceCents,
+    int? trialDays,
+    bool? active,
+  }) async {
+    adminActions.add({
+      'action': 'plan',
+      'key': key,
+      'price': priceCents,
+      'trial': trialDays,
+      'active': active,
+    });
+    return true;
+  }
+
+  @override
+  Future<Map<String, dynamic>?> adminConfig(String passcode) async =>
+      adminConfigResult;
+
+  @override
+  Future<bool> adminUpdateConfig({
+    required String passcode,
+    int? launchDiscountPct,
+    String? displayCurrency,
+  }) async {
+    adminActions.add({
+      'action': 'config',
+      'discount': launchDiscountPct,
+      'currency': displayCurrency,
+    });
+    return true;
+  }
+
+  @override
+  Future<bool> adminSetDeviceBlocked({
+    required String passcode,
+    required String fingerprint,
+    required bool blocked,
+    String? note,
+  }) async {
+    adminActions.add({
+      'action': 'block',
+      'fingerprint': fingerprint,
+      'blocked': blocked,
+      'note': note,
+    });
+    return true;
+  }
+
+  @override
+  Future<bool> adminGrantSubscription({
+    required String passcode,
+    required String fingerprint,
+    int days = 30,
+    String planKey = 'stream_standard',
+    String? note,
+  }) async {
+    adminActions.add({
+      'action': 'grant',
+      'fingerprint': fingerprint,
+      'days': days,
+      'plan': planKey,
+      'note': note,
+    });
+    return true;
+  }
+
+  @override
+  Future<bool> adminRevokeSubscription({
+    required String passcode,
+    required String fingerprint,
+    String? reason,
+  }) async {
+    adminActions.add({
+      'action': 'revoke',
+      'fingerprint': fingerprint,
+      'reason': reason,
+    });
+    return true;
+  }
+
+  @override
+  Future<bool> adminRevokeSeat({
+    required String passcode,
+    required String ownerFingerprint,
+    required String seatFingerprint,
+  }) async {
+    adminActions.add({
+      'action': 'seat',
+      'owner': ownerFingerprint,
+      'seat': seatFingerprint,
+    });
+    return true;
+  }
+
+  @override
+  Future<bool> adminDeletePromo({
+    required String passcode,
+    required String code,
+  }) async {
+    adminActions.add({'action': 'deletePromo', 'code': code});
+    return true;
+  }
+
+  @override
+  Future<List<AdminRedemptionRow>> adminRedemptions(String passcode) async =>
+      adminRedemptionsResult;
+
+  @override
+  Future<List<AdminAccountRow>> adminAdmins(String passcode) async =>
+      adminAdminsResult;
+
+  @override
+  Future<bool> adminCreateAdmin({
+    required String passcode,
+    required String email,
+    required String password,
+  }) async {
+    adminActions.add({'action': 'createAdmin', 'email': email});
+    return true;
+  }
+
+  @override
+  Future<bool> adminSetAdminActive({
+    required String passcode,
+    required String email,
+    required bool active,
+  }) async {
+    adminActions.add({
+      'action': 'adminActive',
+      'email': email,
+      'active': active,
+    });
+    return true;
+  }
+
+  @override
+  Future<bool> adminChangePassword({
+    required String passcode,
+    required String newPassword,
+  }) async {
+    lastNewPassword = newPassword;
+    adminActions.add({'action': 'password'});
+    return true;
+  }
+
+  @override
+  Future<List<AdminAuditRow>> adminAudit(String passcode) async =>
+      adminAuditResult;
 }
 
 /// Three tiers shaped like the seeded Sophie rows (USD cents).
@@ -179,7 +394,7 @@ List<SubscriptionPlan> samplePlans() => const [
   SubscriptionPlan(
     key: 'stream_standard',
     label: 'Standard',
-    priceCents: 349,
+    priceCents: 200,
     periodDays: 30,
     trialDays: 14,
     features: ['Full HD', '2 screens', 'Downloads'],

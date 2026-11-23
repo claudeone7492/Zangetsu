@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../hive/safe_box.dart';
 
 /// Coarse device signals plus the id that survives an uninstall.
@@ -46,6 +47,7 @@ class DeviceFingerprint {
   static const String _boxName = 'device_identity';
   static const String _saltKey = 'salt';
   static const String _fpKey = 'fingerprint';
+  static const String _keychainKey = 'zangetsu_device_id';
 
   /// Bumped only when the derivation changes in a way that must NOT reuse the
   /// previous value. Part of the hash input, never part of the box key.
@@ -126,6 +128,26 @@ class DeviceFingerprint {
     return base64Url.encode(bytes);
   }
 
+  /// iOS keeps Keychain items across an uninstall, unlike Hive. That makes this
+  /// id the iOS equivalent of Android's ANDROID_ID: clear-data and reinstall
+  /// land on the same subscription row, so a used trial stays used.
+  static Future<String?> _keychainStableId() async {
+    try {
+      const storage = FlutterSecureStorage(
+        iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+      );
+      final existing = await storage.read(key: _keychainKey);
+      if (existing != null && existing.length >= 16) return existing;
+
+      final fresh = _randomSalt();
+      await storage.write(key: _keychainKey, value: fresh);
+      return fresh;
+    } catch (_) {
+      // No Keychain (tests, unsupported platform) — fall back to IDFV.
+      return null;
+    }
+  }
+
   /// `unknown`, `null` and `0` are what some OEMs return instead of an id;
   /// taking them at face value would collapse every such device onto one row.
   static String? _usableId(String? id) {
@@ -150,13 +172,20 @@ class DeviceFingerprint {
       }
       if (Platform.isIOS) {
         final i = await plugin.iosInfo;
+        final keychain = await _keychainStableId();
         return DeviceSignals(
           'iOS ${i.systemVersion}',
           i.utsname.machine,
-          stableId: _usableId(i.identifierForVendor),
+          stableId: keychain ?? _usableId(i.identifierForVendor),
         );
       }
-      if (Platform.isMacOS) return const DeviceSignals('macOS', 'Mac');
+      if (Platform.isMacOS) {
+        return DeviceSignals(
+          'macOS',
+          'Mac',
+          stableId: await _keychainStableId(),
+        );
+      }
       if (Platform.isWindows) return const DeviceSignals('Windows', 'PC');
       if (Platform.isLinux) return const DeviceSignals('Linux', 'PC');
     } catch (_) {

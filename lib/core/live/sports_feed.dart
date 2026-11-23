@@ -1,0 +1,261 @@
+import '../app_config.dart';
+import '../models/media_item.dart';
+import '../repository/source_repository.dart';
+import 'sports_catalog.dart';
+
+/// The sport the Sports destination is kept to. Every sports source carries a
+/// dozen sports; the Sports screen is deliberately soccer (football) only, and
+/// each source normalises its own vocabulary onto this slug
+/// ([MediaItem.liveSport]), so the filter never matches league names.
+const String kLiveSportsSport = 'soccer';
+
+/// Fallback bucket for a soccer fixture whose title and metadata name no
+/// league. Keeping these visible (rather than dropping them) means the Sports
+/// screen never hides a live match just because a provider was vague.
+const SportsLeague kOtherFootballLeague = SportsLeague(
+  id: 'other-football',
+  name: 'Other Football',
+  emoji: '⚽',
+  priority: 90,
+);
+
+/// One league row on the Sports screen.
+class SportsSection {
+  const SportsSection({required this.league, required this.items});
+
+  final SportsLeague league;
+  final List<MediaItem> items;
+
+  int get liveCount => items.where(SportsFeed.isLive).length;
+  bool get hasLive => liveCount > 0;
+}
+
+/// The live-sports feed shared by Live TV and the dedicated Sports screen.
+///
+/// Fixtures come from every installed sports provider's optional `getLive`
+/// extension. The merge is best-effort: a missing source, a dead endpoint or a
+/// fixture list older than the `liveSport` field contributes nothing rather
+/// than sinking the page.
+class SportsFeed {
+  const SportsFeed._();
+
+  static const Duration timeout = Duration(seconds: 20);
+
+  static bool isLive(MediaItem item) =>
+      (item.liveBadge ?? '').toUpperCase() == 'LIVE';
+
+  static bool isFinished(MediaItem item) =>
+      (item.liveBadge ?? '').toUpperCase() == 'FT';
+
+  /// Every playable soccer fixture the installed sports sources publish,
+  /// merged in [kLiveSportsSourceIds] order and ranked live → upcoming →
+  /// finished.
+  static Future<List<MediaItem>> fetch(SourceRepository repo) async {
+    final installed = kLiveSportsSourceIds.where(repo.hasSource).toList();
+    if (installed.isEmpty) return const [];
+
+    final perSource = await Future.wait([
+      for (final id in installed)
+        repo
+            .live(sourceId: id)
+            .timeout(timeout)
+            .catchError((_) => const <MediaItem>[]),
+    ]);
+
+    final merged = <MediaItem>[];
+    final seen = <String>{};
+    for (final list in perSource) {
+      for (final item in list) {
+        if (item.liveSport != kLiveSportsSport) continue;
+        if (item.liveUnplayable) continue;
+        // Linear channels are not fixtures; they belong in Live TV, never in
+        // the match centre's league sections.
+        if (item.genres.any((g) => g.toLowerCase() == 'football channels')) {
+          continue;
+        }
+        // The same fixture is usually carried by several sources. Keep the
+        // first (highest-priority source) so the match centre does not show
+        // duplicate rows for one game.
+        if (!seen.add(_dedupeKey(item))) continue;
+        merged.add(item);
+      }
+    }
+
+    // Decorate-sort-undecorate: List.sort is not stable, and the sources'
+    // order should survive ties.
+    final indexed = merged.asMap().entries.toList();
+    indexed.sort((a, b) {
+      final byRank = rank(a.value).compareTo(rank(b.value));
+      return byRank != 0 ? byRank : a.key.compareTo(b.key);
+    });
+    return [for (final entry in indexed) entry.value];
+  }
+
+  /// A key that ignores the provider's spelling of the same fixture: accents,
+  /// punctuation, "v"/"vs"/"@", a league prefix, a scoreline, and the order the
+  /// two teams are printed in. Without the team sort, "Liverpool vs Man Utd"
+  /// and "Man Utd @ Liverpool" would both survive and the page would show the
+  /// same match twice.
+  static String _dedupeKey(MediaItem item) {
+    var key = normalise(item.title);
+    final league = leagueFor(item.title);
+    if (league != null) {
+      final name = normalise(league.name);
+      if (name.isNotEmpty && key.startsWith(name)) {
+        key = key.substring(name.length).trim();
+      }
+    }
+
+    final words =
+        key
+            .split(' ')
+            .where((w) => w.isNotEmpty)
+            .where((w) => !_scoreOrNoise.hasMatch(w))
+            .where((w) => !_clubPrefixes.contains(w))
+            .toList()
+          ..sort();
+    key = words.join(' ');
+
+    final start = item.liveStartMs;
+    if (start != null) {
+      final day = DateTime.fromMillisecondsSinceEpoch(start).toLocal();
+      key = '$key|${day.year}-${day.month}-${day.day}';
+    }
+    return key;
+  }
+
+  static final RegExp _scoreOrNoise = RegExp(
+    r'^(\d+|vs|v|at|live|now|ft|ht|today|tomorrow|upcoming)$',
+  );
+
+  static const Set<String> _clubPrefixes = {
+    'fc',
+    'afc',
+    'ac',
+    'cf',
+    'sc',
+    'as',
+    'ss',
+    'ssc',
+    'rc',
+    'cd',
+    'ud',
+    'ca',
+    'club',
+    'the',
+  };
+
+  /// Live (0) → upcoming (1) → finished (2).
+  static int rank(MediaItem item) {
+    if (isLive(item)) return 0;
+    if (isFinished(item)) return 2;
+    return 1;
+  }
+
+  /// Group [items] into league sections, live leagues first and then by the
+  /// catalogue's priority. Fixtures whose league cannot be inferred land in
+  /// [kOtherFootballLeague] instead of disappearing.
+  static List<SportsSection> group(Iterable<MediaItem> items) {
+    final buckets = <String, List<MediaItem>>{};
+    final leagues = <String, SportsLeague>{};
+
+    for (final item in items) {
+      final league = _leagueFor(item) ?? kOtherFootballLeague;
+      leagues[league.id] = league;
+      buckets.putIfAbsent(league.id, () => []).add(item);
+    }
+
+    final sections = <SportsSection>[
+      for (final entry in buckets.entries)
+        SportsSection(
+          league: leagues[entry.key]!,
+          items: entry.value..sort(compareItems),
+        ),
+    ];
+
+    sections.sort((a, b) {
+      if (a.hasLive != b.hasLive) return a.hasLive ? -1 : 1;
+      final byPriority = a.league.priority.compareTo(b.league.priority);
+      return byPriority != 0
+          ? byPriority
+          : a.league.name.compareTo(b.league.name);
+    });
+    return sections;
+  }
+
+  /// Fixtures in the order a viewer wants them: in play, then soonest, then
+  /// alphabetical, with finished matches last.
+  static int compareItems(MediaItem a, MediaItem b) {
+    final byRank = rank(a).compareTo(rank(b));
+    if (byRank != 0) return byRank;
+
+    final aStart = a.liveStartMs;
+    final bStart = b.liveStartMs;
+    if (aStart != null && bStart != null && aStart != bStart) {
+      return aStart.compareTo(bStart);
+    }
+    if (aStart != null && bStart == null) return -1;
+    if (aStart == null && bStart != null) return 1;
+    return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+  }
+
+  static SportsLeague? _leagueFor(MediaItem item) {
+    // Providers put the competition in any of these places, so try them all
+    // before giving up: title, the "competition · broadcaster" line, the
+    // genres/tags list, and finally the broadcaster name.
+    final candidates = [
+      item.title,
+      item.liveInfo ?? '',
+      item.genres.join(' '),
+      item.description ?? '',
+    ];
+    SportsLeague? generic;
+    for (final text in candidates) {
+      final league = leagueFor(text);
+      if (league == null) continue;
+      // "English Football League" and "Football League One" contain the
+      // generic sport name, so the catalogue's Football row would swallow
+      // them before the real competition gets a chance.
+      if (league.id != 'football') return league;
+      generic ??= league;
+    }
+
+    // The catalogue names the big competitions; the long tail (third tiers,
+    // regional cups, women's and youth leagues) is only known to the provider.
+    // Keep that name as its own row instead of folding every one of them into
+    // "Other Football", which would make the page look like one giant bucket.
+    final raw = _rawLeague(item);
+    if (raw != null) {
+      final slug = normalise(raw).replaceAll(' ', '-');
+      if (slug.isNotEmpty) {
+        return SportsLeague(
+          id: 'provider-$slug',
+          name: raw,
+          emoji: '⚽',
+          priority: 80,
+        );
+      }
+    }
+    return generic;
+  }
+
+  /// The competition a provider printed before its extra metadata, e.g.
+  /// "Ekstraklasa · 2 feeds" or "Greek Super League".
+  static String? _rawLeague(MediaItem item) {
+    final info = item.liveInfo;
+    if (info != null && info.trim().isNotEmpty) {
+      final first = info.split(RegExp(r'\s*[·|•]\s*')).first.trim();
+      if (first.isNotEmpty && !_notALeague.hasMatch(first)) return first;
+    }
+    for (final genre in item.genres) {
+      final value = genre.trim();
+      if (value.isNotEmpty && !_notALeague.hasMatch(value)) return value;
+    }
+    return null;
+  }
+
+  static final RegExp _notALeague = RegExp(
+    r'^(\d{1,2}:\d{2}|live|ft|soon|today|tomorrow|upcoming|soccer|football|football channels)$',
+    caseSensitive: false,
+  );
+}

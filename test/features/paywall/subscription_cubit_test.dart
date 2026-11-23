@@ -14,10 +14,10 @@ void main() {
         );
 
     test('launch offer takes the discount off the list price', () {
-      final state = withPlan(samplePlans()[1]); // Standard, 349c
-      expect(state.listCents, 349);
-      expect(state.offerCents, 297); // 349 * 0.85 = 296.65 -> 297
-      expect(money(state.listCents), '\$3.49');
+      final state = withPlan(samplePlans()[1]); // Standard, 200c
+      expect(state.listCents, 200);
+      expect(state.offerCents, 170); // 200 * 0.85 = 170
+      expect(money(state.listCents), '\$2.00');
     });
 
     test('promo percentage stacks on top of the offer', () {
@@ -38,11 +38,8 @@ void main() {
 
     test('a 100% promo is free access regardless of kind', () {
       final state = withPlan(samplePlans()[1]).copyWith(
-        promo: () => const PromoResult(
-          code: '\$EDGES',
-          percentOff: 100,
-          kind: 'free',
-        ),
+        promo: () =>
+            const PromoResult(code: '\$EDGES', percentOff: 100, kind: 'free'),
       );
       expect(state.totalCents, 0);
       expect(state.isFreeAccess, isTrue);
@@ -50,7 +47,7 @@ void main() {
 
     test('discount is configurable', () {
       final state = withPlan(samplePlans()[1], discountPct: 0);
-      expect(state.offerCents, 349);
+      expect(state.offerCents, 200);
     });
 
     test('the card amount follows the promo, not just the launch offer', () {
@@ -58,31 +55,25 @@ void main() {
       // They must be the same number, or a promo shows one price on the card
       // and charges another at checkout.
       final state = withPlan(samplePlans()[1], discountPct: 0).copyWith(
-        promo: () => const PromoResult(
-          code: 'HALF',
-          percentOff: 50,
-          kind: 'percent',
-        ),
+        promo: () =>
+            const PromoResult(code: 'HALF', percentOff: 50, kind: 'percent'),
       );
-      expect(state.listCents, 349);
-      expect(state.payableCents, 175); // 349 * 0.5 = 174.5 -> 175
+      expect(state.listCents, 200);
+      expect(state.payableCents, 100); // 200 * 0.5 = 100
       expect(state.payableCents, state.totalCents);
     });
 
     test('a free promo makes the card amount zero', () {
       final state = withPlan(samplePlans()[1]).copyWith(
-        promo: () => const PromoResult(
-          code: 'FREEWATCH',
-          percentOff: 100,
-          kind: 'free',
-        ),
+        promo: () =>
+            const PromoResult(code: 'FREEWATCH', percentOff: 100, kind: 'free'),
       );
       expect(state.payableCents, 0);
     });
 
     test('without a promo the card quotes the list price', () {
       final state = withPlan(samplePlans()[1], discountPct: 0);
-      expect(state.payableCents, 349);
+      expect(state.payableCents, 200);
     });
 
     test('defaults to no discount until the server config loads', () {
@@ -110,13 +101,15 @@ void main() {
 
     test('clamps an out-of-range discount', () {
       expect(
-        SubscriptionConfig.fromMap(const {'launch_discount_pct': 250})
-            .launchDiscountPct,
+        SubscriptionConfig.fromMap(const {
+          'launch_discount_pct': 250,
+        }).launchDiscountPct,
         100,
       );
       expect(
-        SubscriptionConfig.fromMap(const {'launch_discount_pct': -5})
-            .launchDiscountPct,
+        SubscriptionConfig.fromMap(const {
+          'launch_discount_pct': -5,
+        }).launchDiscountPct,
         0,
       );
     });
@@ -158,9 +151,34 @@ void main() {
       expect(cubit.state.plans, hasLength(1));
       expect(cubit.state.selectedKey, 'stream_standard');
       expect(cubit.state.selected?.label, kPremiumPlanLabel);
-      expect(cubit.state.selected?.priceCents, 349);
+      expect(cubit.state.selected?.priceCents, 200);
       expect(cubit.state.trialEligible, isTrue);
     });
+
+    test(
+      'the amount is whatever the server quotes, not a client constant',
+      () async {
+        final api = FakeSubscriptionApi(
+          plansResult: const [
+            SubscriptionPlan(
+              key: 'stream_standard',
+              label: 'Standard',
+              priceCents: 350,
+              periodDays: 30,
+              trialDays: 14,
+              features: ['Full HD'],
+              sortOrder: 11,
+            ),
+          ],
+        );
+        final cubit = SubscriptionCubit(api);
+        await cubit.load();
+
+        expect(cubit.state.listCents, 350);
+        expect(cubit.state.payableCents, 350);
+        expect(money(cubit.state.listCents), '\$3.50');
+      },
+    );
 
     test('load reports error when no plans come back', () async {
       final api = FakeSubscriptionApi(plansResult: const []);
@@ -180,8 +198,8 @@ void main() {
       await cubit.load();
 
       expect(cubit.state.discountPct, 20);
-      // Standard is 349c; 20% off -> 279c.
-      expect(cubit.state.offerCents, 279);
+      // Standard is 200c; 20% off -> 160c.
+      expect(cubit.state.offerCents, 160);
     });
 
     test('unknown promo is rejected without clearing the plan', () async {
@@ -258,57 +276,61 @@ void main() {
       expect(cubit.state.trialEligible, isFalse);
     });
 
-    test('startTrial surfaces a refusal when the trial was already used',
-        () async {
-      final api = FakeSubscriptionApi(
-        plansResult: samplePlans(),
-        identityResult: const DeviceIdentity(
-          sessionId: 's1',
-          isNew: false,
-          trialUsed: false,
-        ),
-        trialResult: null,
-      );
-      final cubit = SubscriptionCubit(api);
-      await cubit.load();
+    test(
+      'startTrial surfaces a refusal when the trial was already used',
+      () async {
+        final api = FakeSubscriptionApi(
+          plansResult: samplePlans(),
+          identityResult: const DeviceIdentity(
+            sessionId: 's1',
+            isNew: false,
+            trialUsed: false,
+          ),
+          trialResult: null,
+        );
+        final cubit = SubscriptionCubit(api);
+        await cubit.load();
 
-      final ok = await cubit.startTrial();
+        final ok = await cubit.startTrial();
 
-      expect(ok, isFalse);
-      expect(cubit.state.stage, PaywallStage.ready);
-      expect(cubit.state.message, contains('already used'));
-    });
+        expect(ok, isFalse);
+        expect(cubit.state.stage, PaywallStage.ready);
+        expect(cubit.state.message, contains('already used'));
+      },
+    );
 
-    test('commitPromo records the redemption with list and final amounts',
-        () async {
-      final api = FakeSubscriptionApi(
-        plansResult: samplePlans(),
-        configResult: const SubscriptionConfig(launchDiscountPct: 15),
-        identityResult: const DeviceIdentity(
-          sessionId: 's1',
-          isNew: true,
-          trialUsed: false,
-        ),
-        promoResult: const PromoResult(
-          code: 'PRIME85!',
-          percentOff: 85,
-          kind: 'percent',
-        ),
-      );
-      final cubit = SubscriptionCubit(api);
-      await cubit.load();
-      await cubit.applyPromo('PRIME85!');
-      await cubit.commitPromo();
+    test(
+      'commitPromo records the redemption with list and final amounts',
+      () async {
+        final api = FakeSubscriptionApi(
+          plansResult: samplePlans(),
+          configResult: const SubscriptionConfig(launchDiscountPct: 15),
+          identityResult: const DeviceIdentity(
+            sessionId: 's1',
+            isNew: true,
+            trialUsed: false,
+          ),
+          promoResult: const PromoResult(
+            code: 'PRIME85!',
+            percentOff: 85,
+            kind: 'percent',
+          ),
+        );
+        final cubit = SubscriptionCubit(api);
+        await cubit.load();
+        await cubit.applyPromo('PRIME85!');
+        await cubit.commitPromo();
 
-      expect(api.redemptions, hasLength(1));
-      expect(api.redemptions.single['code'], 'PRIME85!');
-      expect(api.redemptions.single['planKey'], 'stream_standard');
-      // List 349c, 15% launch offer -> 297c, then 85% off -> 45c. The recorded
-      // pair is what the redemption is checked against, so it has to be the
-      // same chain the server charges.
-      expect(api.redemptions.single['before'], 349);
-      expect(api.redemptions.single['after'], 45);
-    });
+        expect(api.redemptions, hasLength(1));
+        expect(api.redemptions.single['code'], 'PRIME85!');
+        expect(api.redemptions.single['planKey'], 'stream_standard');
+        // List 200c, 15% launch offer -> 170c, then 85% off -> 26c. The recorded
+        // pair is what the redemption is checked against, so it has to be the
+        // same chain the server charges.
+        expect(api.redemptions.single['before'], 200);
+        expect(api.redemptions.single['after'], 26);
+      },
+    );
   });
 
   group('SubscriptionCubit checkout', () {
@@ -340,18 +362,20 @@ void main() {
     });
 
     test('beginCheckout surfaces a server failure as a message', () async {
-      final api = FakeSubscriptionApi(
-        plansResult: samplePlans(),
-        identityResult: const DeviceIdentity(
-          sessionId: 's1',
-          isNew: false,
-          trialUsed: true,
-        ),
-      )..checkoutResult = const CheckoutResult(
-        ok: false,
-        free: false,
-        error: 'korapay_init_failed',
-      );
+      final api =
+          FakeSubscriptionApi(
+              plansResult: samplePlans(),
+              identityResult: const DeviceIdentity(
+                sessionId: 's1',
+                isNew: false,
+                trialUsed: true,
+              ),
+            )
+            ..checkoutResult = const CheckoutResult(
+              ok: false,
+              free: false,
+              error: 'korapay_init_failed',
+            );
       final cubit = SubscriptionCubit(api);
       await cubit.load();
 

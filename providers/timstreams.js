@@ -36,7 +36,7 @@ var MAX_LIVE_MS = 4 * 60 * 60 * 1000;
 function getInfo() {
   return {
     name: 'TimStreams', lang: 'en', baseUrl: 'https://tim-streams.com',
-    logo: 'https://tim-streams.com/favicon.ico', type: 'movie', version: '1.0.0'
+    logo: 'https://tim-streams.com/favicon.ico', type: 'movie', version: '1.0.1'
   };
 }
 
@@ -125,6 +125,17 @@ function _genreName(genres, id) {
   return '';
 }
 
+function _subGenreName(genres, genreId, subId) {
+  for (var i = 0; i < genres.length; i++) {
+    if (!genres[i] || genres[i].id !== genreId) continue;
+    var subs = genres[i].sub_categories || [];
+    for (var j = 0; j < subs.length; j++) {
+      if (subs[j] && subs[j].id === subId) return subs[j].name;
+    }
+  }
+  return '';
+}
+
 // The app filters the live rail on one canonical slug, and this feed names the
 // world's game "Football". Fold both spellings onto "soccer" so the fixtures
 // land in the rail instead of being dropped as an unknown sport (the same fold
@@ -150,6 +161,7 @@ function _mapEvent(e, genres) {
   var st2 = _status(start);
   if (st2.skip) return null;
   var genre = _genreName(genres, e.genre);
+  var subGenre = _subGenreName(genres, e.genre, e.sub_genre);
   var item = {
     id: e.url || e.name,
     title: e.name,
@@ -160,9 +172,9 @@ function _mapEvent(e, genres) {
     sourceId: SOURCE_ID,
     liveBadge: st2.badge,
     liveStartMs: start || null,
-    liveInfo: [genre, feeds.length > 1 ? feeds.length + ' feeds' : null].filter(Boolean).join(' \u00B7 ') || null
+    liveInfo: [subGenre, genre, feeds.length > 1 ? feeds.length + ' feeds' : null].filter(Boolean).join(' \u00B7 ') || null
   };
-  if (genre) item.genres = [genre];
+  if (subGenre || genre) item.genres = [subGenre || genre];
   // Canonical sport slug, lowercased and folded onto the one slug the app's
   // rail filters on ('soccer' for football).
   if (genre) item.liveSport = _sportSlug(genre);
@@ -251,16 +263,30 @@ function getEpisodes(url, opts) {
 
 // Rebuild the player script from the page's XOR-obfuscated integer array.
 function _decodeObfuscated(html) {
-  var am = String(html).match(/var\s+\w+\s*=\s*\[([\d,\s]+)\]/);
+  var text = String(html);
+  var am = text.match(/var\s+\w+\s*=\s*\[([\d,\s]+)\]/);
   if (!am) return null;
-  var lm = String(html).match(
-    /String\.fromCharCode\(\s*\(+[^\^]+\^\s*(\w+)\s*\)\s*-\s*(\w+)\s*\+\s*256\s*\)\s*(?:%|&)\s*(?:256|255)\)/);
-  if (!lm) return null;
   var arr = am[1].split(',');
-  var xm = String(html).match(new RegExp(lm[1] + '\\s*=\\s*(\\d+)'));
-  var sm = String(html).match(new RegExp(lm[2] + '\\s*=\\s*(\\d+)'));
-  if (!xm || !sm) return null;
-  var x = parseInt(xm[1], 10), s = parseInt(sm[1], 10), out = '';
+  var x, s;
+  // Current pages pack the constants beside the array:
+  //   var _lr7=[...],_pc2=184,_hl2=49,_wj2="",_oh3;for(...){...((_lr7[i]^_pc2)-_hl2+256)%256}
+  var dm = text.match(
+    /\]\s*,\s*\w+\s*=\s*(\d+)\s*,\s*\w+\s*=\s*(\d+)\s*,\s*\w+\s*=\s*""/);
+  if (dm) {
+    x = parseInt(dm[1], 10);
+    s = parseInt(dm[2], 10);
+  } else {
+    // Legacy pages keep the same constants in a String.fromCharCode call.
+    var lm = text.match(
+      /String\.fromCharCode\(\s*\(+[^\^]+\^\s*(\w+)\s*\)\s*-\s*(\w+)\s*\+\s*256\s*\)\s*(?:%|&)\s*(?:256|255)\)/);
+    if (!lm) return null;
+    var xm = text.match(new RegExp(lm[1] + '\\s*=\\s*(\\d+)'));
+    var sm = text.match(new RegExp(lm[2] + '\\s*=\\s*(\\d+)'));
+    if (!xm || !sm) return null;
+    x = parseInt(xm[1], 10);
+    s = parseInt(sm[1], 10);
+  }
+  var out = '';
   for (var i = 0; i < arr.length; i++) {
     out += String.fromCharCode(((parseInt(arr[i], 10) ^ x) - s + 256) % 256);
   }

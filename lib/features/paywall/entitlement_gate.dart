@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../../core/di/injector.dart';
 import '../../core/logging/app_logger.dart';
+import '../../core/subscription/entitlement_cache.dart';
+import '../../core/subscription/subscription_models.dart';
 import '../../core/subscription/subscription_repository.dart';
 import 'paywall_screen.dart';
 
 /// The server's verdict on whether this device may proceed: entitled, or the
 /// server is not asking for the paywall.
 ///
-/// Fails OPEN when the server cannot be reached ([identify] returns null): a
-/// network blip must not lock a paying viewer out of a stream they already
-/// hold. It fails CLOSED only on an explicit server verdict, which is what
-/// makes the trial gate hold after day 14 and the launch gate hold a new device.
+/// A fresh verdict is authoritative and is cached. When the server cannot be
+/// reached, the last verdict is honoured only while its period is still
+/// running. With no usable cache the gate fails CLOSED, so turning the network
+/// off cannot extend a trial or bypass the paywall.
 Future<bool> deviceEntitled({SubscriptionApi? api}) async {
   final repo =
       api ??
@@ -20,15 +22,15 @@ Future<bool> deviceEntitled({SubscriptionApi? api}) async {
           : null);
   if (repo == null) return true;
 
+  DeviceIdentity? identity;
   try {
-    final identity = await repo.identify();
-    if (identity == null) {
-      // No verdict: the device is offline, or the RPC failed (logged by the
-      // repository). Allowing access is deliberate — a paying viewer must not
-      // be locked out by a network blip.
-      AppLogger.instance.log('[paywall] no server verdict — allowing access');
-      return true;
-    }
+    identity = await repo.identify();
+  } catch (_) {
+    identity = null;
+  }
+
+  if (identity != null) {
+    await EntitlementCache.save(identity);
     final allowed = identity.entitled || !identity.showPaywall;
     if (!allowed) {
       AppLogger.instance.log(
@@ -38,9 +40,53 @@ Future<bool> deviceEntitled({SubscriptionApi? api}) async {
       );
     }
     return allowed;
-  } catch (_) {
-    return true;
   }
+
+  return _cachedVerdict();
+}
+
+/// Offline path: trust only a still-running cached entitlement.
+Future<bool> _cachedVerdict() async {
+  final cached = await EntitlementCache.read();
+  if (cached == null) {
+    AppLogger.instance.log(
+      '[paywall] no server verdict and no cached entitlement — blocking',
+    );
+    return false;
+  }
+
+  final now = DateTime.now().toUtc();
+  if (cached.checkedAt.isAfter(now.add(const Duration(hours: 1)))) {
+    // A clock moved backwards must not resurrect a lapsed period.
+    AppLogger.instance.log(
+      '[paywall] cached verdict timestamp is in the future',
+    );
+    return false;
+  }
+
+  final identity = cached.identity;
+  if (!identity.entitled && identity.showPaywall) {
+    AppLogger.instance.log('[paywall] cached verdict says unentitled');
+    return false;
+  }
+
+  final end = identity.periodEnd?.toUtc();
+  if (end != null) {
+    final stillRunning = now.isBefore(end);
+    AppLogger.instance.log(
+      '[paywall] cached verdict ${stillRunning ? "allows" : "denies"} access '
+      'until ${end.toIso8601String()}',
+    );
+    return stillRunning;
+  }
+
+  // No period end (older server shape): allow a short offline window only.
+  final fresh = now.difference(cached.checkedAt) <= const Duration(hours: 24);
+  AppLogger.instance.log(
+    '[paywall] cached verdict without period_end — '
+    '${fresh ? "allowing" : "blocking"} after 24h',
+  );
+  return fresh;
 }
 
 /// Ensures this device is entitled before playback starts.

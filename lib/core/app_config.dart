@@ -92,16 +92,20 @@ const List<String> kDramaOnlyHomeSourceIds = <String>[
 /// The sports sources the Live TV rail merges, in the order their fixtures
 /// read. MovieBox carries a full fixture list (a `PlayTypeText` match centre
 /// plus live broadcasts), CDNLive/TimStreams publish a broadcaster schedule,
-/// StreamFree adds per-sport fixtures (24/7 channels plus matches). All are
-/// asked and merged so an installed-but-empty source simply contributes
-/// nothing; a source that isn't installed is skipped before the call.
+/// StreamFree adds per-sport fixtures (24/7 channels plus matches), and
+/// StreamSports99 is the VIP tenant of the CDNLive API with its own
+/// domain-bound player pages. All are asked and merged so an installed-but-empty
+/// source simply contributes nothing; a source that isn't installed is skipped
+/// before the call.
 ///
 /// Shared with the source repository's cross-provider live resolution: a
 /// fixture's own provider may no longer mint a URL for it, so the same fixture
 /// is looked up on the others.
 const List<String> kLiveSportsSourceIds = <String>[
+  'nuviotv',
   'moviebox',
   'cdnlivetv',
+  'streamsports99',
   'timstreams',
   'streamfree',
 ];

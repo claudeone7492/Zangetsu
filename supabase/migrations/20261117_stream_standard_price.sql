@@ -3,7 +3,7 @@
 --
 -- The paywall collapses the catalogue to one card ("Premium subscription"),
 -- which is `stream_standard` (see SubscriptionCubit._singlePremiumPlan). Its
--- seeded price was 349c; the launch price is 100c ($1). Kept in a migration
+-- seeded price was 349c; the launch price is 200c ($2). Kept in a migration
 -- rather than edited in place so a fresh project seeds the same price the
 -- running one sells.
 --
@@ -13,5 +13,5 @@
 -- =============================================================================
 
 update public.subscription_plans
-   set price_usd_cents = 100
+   set price_usd_cents = 200
  where key = 'stream_standard';
