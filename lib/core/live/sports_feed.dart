@@ -39,7 +39,7 @@ class SportsSection {
 class SportsFeed {
   const SportsFeed._();
 
-  static const Duration timeout = Duration(seconds: 20);
+  static const Duration timeout = Duration(seconds: 10);
 
   static bool isLive(MediaItem item) =>
       (item.liveBadge ?? '').toUpperCase() == 'LIVE';
@@ -148,8 +148,12 @@ class SportsFeed {
     ];
   }
 
-  static const int _playableWorkers = 4;
-  static const Duration _playableTimeout = Duration(seconds: 15);
+  // A Saturday card can carry 15+ live fixtures. Four workers at 15s each made
+  // the page feel stuck; the provider lists are cached now, so twelve workers
+  // at four seconds keeps a normal card under one wave and a busy card under
+  // two.
+  static const int _playableWorkers = 12;
+  static const Duration _playableTimeout = Duration(seconds: 4);
 
   /// A key that ignores the provider's spelling of the same fixture: accents,
   /// punctuation, "v"/"vs"/"@", a league prefix, a scoreline, and the order the

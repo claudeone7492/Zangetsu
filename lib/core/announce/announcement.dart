@@ -16,6 +16,7 @@ class Announcement {
     this.actionUrl,
     this.date,
     this.imageUrl,
+    this.payload,
   });
 
   /// Unique, stable id. Drives "show once" — never reuse an id for new content.
@@ -36,6 +37,11 @@ class Announcement {
   /// Optional image — shown full-width in the sheet and as the list thumbnail.
   final String? imageUrl;
 
+  /// Optional in-app deep link. Daily-pick cards carry the same
+  /// `daily:<slot>:<base64url-json>` payload as their tray notification, so a
+  /// tap in the Notifications list opens the movie/series Detail screen.
+  final String? payload;
+
   /// Parse one entry from the fetched JSON. Returns null when it's missing the
   /// required id/title, or when the action is malformed (so bad data is skipped
   /// rather than crashing the fetch).
@@ -51,13 +57,15 @@ class Announcement {
       final l = (action['label'] ?? '').toString().trim();
       final u = (action['url'] ?? '').toString().trim();
       // Only honour real web links; anything else is dropped (no code exec).
-      if (l.isNotEmpty && (u.startsWith('http://') || u.startsWith('https://'))) {
+      if (l.isNotEmpty &&
+          (u.startsWith('http://') || u.startsWith('https://'))) {
         label = l;
         url = u;
       }
     }
 
     final img = (m['imageUrl'] ?? m['image'] ?? '').toString().trim();
+    final payload = (m['payload'] ?? '').toString().trim();
     return Announcement(
       id: id,
       title: title,
@@ -67,6 +75,7 @@ class Announcement {
       actionUrl: url,
       date: (m['date'] as String?)?.trim(),
       imageUrl: img.isEmpty ? null : img,
+      payload: payload.isEmpty ? null : payload,
     );
   }
 
@@ -79,6 +88,7 @@ class Announcement {
     'actionUrl': actionUrl,
     'date': date,
     'imageUrl': imageUrl,
+    'payload': payload,
   };
 
   static Announcement fromMap(Map m) => Announcement(
@@ -90,6 +100,7 @@ class Announcement {
     actionUrl: m['actionUrl'] as String?,
     date: m['date'] as String?,
     imageUrl: m['imageUrl'] as String?,
+    payload: m['payload'] as String?,
   );
 }
 
@@ -112,7 +123,11 @@ class AnnouncementStore {
   /// a monotonic stamp used only for ordering the history list.
   Future<void> saveNew(Announcement a, int receivedAt) async {
     if (_box.containsKey(a.id)) return;
-    await _box.put(a.id, {...a.toMap(), 'seen': false, 'receivedAt': receivedAt});
+    await _box.put(a.id, {
+      ...a.toMap(),
+      'seen': false,
+      'receivedAt': receivedAt,
+    });
   }
 
   Future<void> markSeen(String id) async {
@@ -135,8 +150,9 @@ class AnnouncementStore {
   List<Announcement> all() {
     final rows = _box.values.whereType<Map>().toList()
       ..sort(
-        (a, b) => ((b['receivedAt'] as num?) ?? 0)
-            .compareTo((a['receivedAt'] as num?) ?? 0),
+        (a, b) => ((b['receivedAt'] as num?) ?? 0).compareTo(
+          (a['receivedAt'] as num?) ?? 0,
+        ),
       );
     return rows.map(Announcement.fromMap).toList();
   }

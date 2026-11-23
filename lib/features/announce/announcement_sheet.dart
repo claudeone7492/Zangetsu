@@ -5,6 +5,7 @@ import '../../core/announce/announcement.dart';
 import '../../core/announce/announcement_service.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
+import '../../core/notify/notification_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/tv/tv_list_focusable.dart';
@@ -159,6 +160,20 @@ class _AnnouncementSheet extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
+                  if (a.payload?.startsWith('daily:') ?? false) ...[
+                    _sheetButton(
+                      context,
+                      label: context.l10n.playNow,
+                      filled: false,
+                      autofocus: false,
+                      isTv: isTv,
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        openShowFromNotification(a.payload);
+                      },
+                    ),
+                    const SizedBox(width: 12),
+                  ],
                   if (a.actionLabel != null && a.actionUrl != null) ...[
                     _sheetButton(
                       context,
@@ -218,6 +233,6 @@ class _AnnouncementSheet extends StatelessWidget {
           );
     if (!isTv) return button;
     // On TV the D-pad drives focus; TvFocusable handles OK-key activation.
-    return TvListFocusable( autofocus: autofocus, onTap: onTap, child: button);
+    return TvListFocusable(autofocus: autofocus, onTap: onTap, child: button);
   }
 }

@@ -92,15 +92,14 @@ class _DailyPicksScreenState extends State<DailyPicksScreen> {
     DailyPickKind.recommended => Icons.recommend_rounded,
   };
 
-  /// The window the slot lands in, e.g. `07:30–09:30`. The exact minute is
-  /// drawn at random inside this window each day, so showing a single time
-  /// would be a lie.
+  /// The time the slot lands at. With the fixed schedule this is one clock
+  /// time; a slot with a jitter window still shows its full range.
   String _window(DailyPickSlot slot) {
     final start = slot.baseMinuteOfDay - slot.jitterMinutes;
     final end = slot.baseMinuteOfDay + slot.jitterMinutes;
     String hhmm(int m) =>
         '${(m ~/ 60).toString().padLeft(2, '0')}:'
         '${(m % 60).toString().padLeft(2, '0')}';
-    return '${hhmm(start)}–${hhmm(end)}';
+    return start == end ? hhmm(start) : '${hhmm(start)}–${hhmm(end)}';
   }
 }

@@ -43,6 +43,13 @@ void main() {
       });
     });
 
+    test('the cards fire at 06:00, 13:00, 15:00, 19:00 and 23:00', () {
+      expect(
+        [for (final s in DailyPickSlot.values) s.hour * 60 + s.minute],
+        [6 * 60, 13 * 60, 15 * 60, 19 * 60, 23 * 60],
+      );
+    });
+
     test('the slots are spread across the day and strictly ordered', () {
       final minutes = [
         for (final s in DailyPickSlot.values) s.hour * 60 + s.minute,

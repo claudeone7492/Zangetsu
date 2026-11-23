@@ -27,6 +27,7 @@ import '../models/provider_info.dart';
 import '../models/video_source.dart';
 import '../zmode/metadata_filters.dart';
 import '../playback/playback_prefs.dart';
+import '../playback/relay_proxy.dart';
 import '../playback/source_health_store.dart';
 import '../provider/base_provider.dart';
 import '../i18n/source_languages.dart';
@@ -139,6 +140,18 @@ class SourceRepository implements CatalogueRepository {
   final Map<String, ({DateTime at, List<VideoSource> sources})> _resolved = {};
   static const Duration _resolvedTtl = Duration(minutes: 20);
 
+  /// Live fixture lists are fetched once per screen paint, then re-read by the
+  /// playable preflight and its cross-provider fallback. Without this cache the
+  /// same provider's `getLive` ran once for the grid and again for every failed
+  /// fixture, which is what made a busy Sports page crawl.
+  final Map<String, ({DateTime at, List<MediaItem> items})> _liveCache = {};
+  static const Duration _liveTtl = Duration(seconds: 20);
+
+  /// A live fixture's provider can hang on a dead CDN. The player should fall
+  /// through to the next provider (or the relay) instead of sitting on a black
+  /// screen, so each live resolve is bounded.
+  static const Duration _liveResolveTimeout = Duration(seconds: 8);
+
   /// Search result cache (opt-in via [searchStatus]'s `cache` flag) + in-flight
   /// dedup, so a repeat search or a scope/filter toggle doesn't re-hit every
   /// source. Keyed PER SOURCE (id + query + category + filters), so a newly
@@ -211,7 +224,8 @@ class SourceRepository implements CatalogueRepository {
 
   /// True for config-driven universal scrapers (`us:<configId>`). Pure Dart —
   /// no runtime, no native channel — so it resolves on every platform.
-  static bool _isUniversal(String id) => id.startsWith(UniversalProvider.idPrefix);
+  static bool _isUniversal(String id) =>
+      id.startsWith(UniversalProvider.idPrefix);
 
   /// True for a JS plugin-pack source (`nuvio:`, `vega:`, …).
   bool _isPack(String id) => JsPackEngine.forSourceId(id) != null;
@@ -996,7 +1010,8 @@ class SourceRepository implements CatalogueRepository {
           query.trim().isEmpty &&
           filtersJson != null &&
           filtersJson.isNotEmpty) {
-        final filtered = await provider.browseFilter(filtersJson, page) ??
+        final filtered =
+            await provider.browseFilter(filtersJson, page) ??
             const <MediaItem>[];
         return (
           items: filtered,
@@ -1113,9 +1128,7 @@ class SourceRepository implements CatalogueRepository {
       // Providers disagree on order (Aniyomi/Tachiyomi extensions are
       // newest-first); the toggle only flips, so normalize here, once.
       final ordered = normalizeEpisodeOrder(d.episodes);
-      return identical(ordered, d.episodes)
-          ? d
-          : d.copyWith(episodes: ordered);
+      return identical(ordered, d.episodes) ? d : d.copyWith(episodes: ordered);
     } catch (e, st) {
       AppLogger.instance.log(
         '[detail] source fetch failed ${sw.elapsedMilliseconds}ms: $e',
@@ -1244,8 +1257,12 @@ class SourceRepository implements CatalogueRepository {
       return sources(episodeUrl, sourceId: sourceId, fast: true);
     }
     try {
-      final own = await sources(episodeUrl, sourceId: sourceId, fast: true);
-      if (own.isNotEmpty) return own;
+      final own = await sources(
+        episodeUrl,
+        sourceId: sourceId,
+        fast: true,
+      ).timeout(_liveResolveTimeout);
+      if (own.isNotEmpty) return _relayFallback(own);
     } catch (_) {
       // Fall through to the other sports sources.
     }
@@ -1254,21 +1271,31 @@ class SourceRepository implements CatalogueRepository {
     for (final id in kLiveSportsSourceIds) {
       if (id == ownId || !hasSource(id)) continue;
       try {
-        final list = await live(sourceId: id);
+        final list = await live(sourceId: id).timeout(_liveResolveTimeout);
         final match = _findFixture(list, title);
         if (match == null) continue;
         final resolved = await sources(
           match.url,
           sourceId: match.sourceId,
           fast: true,
-        );
-        if (resolved.isNotEmpty) return resolved;
+        ).timeout(_liveResolveTimeout);
+        if (resolved.isNotEmpty) return _relayFallback(resolved);
       } catch (_) {
         // Try the next provider.
       }
     }
     return const [];
   }
+
+  /// Attach the public relay as a hidden fallback to live sources. The player
+  /// only swaps to it when the direct URL fails, so a normal connection never
+  /// pays the relay round-trip.
+  List<VideoSource> _relayFallback(List<VideoSource> sources) => [
+    for (final source in sources)
+      source.proxyUrl != null
+          ? source
+          : source.withProxyUrl(RelayProxy.wrapIfPossible(source.url)),
+  ];
 
   /// The fixture in [list] whose title names the same match as [title], or null
   /// when none does. Reuses the scoreboard's team-token matcher, so a fixture
@@ -1285,13 +1312,21 @@ class SourceRepository implements CatalogueRepository {
   /// take the home screen down with it.
   @override
   Future<List<MediaItem>> live({String? sourceId}) async {
+    final id = sourceId ?? _active.state;
+    final hit = _liveCache[id];
+    if (hit != null && DateTime.now().difference(hit.at) < _liveTtl) {
+      return hit.items;
+    }
     final provider = await _providerReady(sourceId);
     if (provider is! JsProvider) return const [];
+    List<MediaItem> items;
     try {
-      return await provider.getLive() ?? const [];
+      items = await provider.getLive() ?? const [];
     } catch (_) {
-      return const [];
+      items = const [];
     }
+    _liveCache[id] = (at: DateTime.now(), items: items);
+    return items;
   }
 
   /// Short-drama feed — an optional provider extension. Only the JS runtime
@@ -1368,7 +1403,10 @@ class SourceRepository implements CatalogueRepository {
       if (start >= pool.length) break;
       final end = (start + _shortsRowSize).clamp(0, pool.length);
       out.add(
-        HomeSection(title: kShortsHomeRowTitles[i], items: pool.sublist(start, end)),
+        HomeSection(
+          title: kShortsHomeRowTitles[i],
+          items: pool.sublist(start, end),
+        ),
       );
     }
     return out;
@@ -1410,9 +1448,7 @@ class SourceRepository implements CatalogueRepository {
     if (!kDramaOnlyHomeSourceIds.contains(sourceId)) return const [];
     try {
       final sections = await home(sourceId: sourceId);
-      return [
-        for (final section in sections) ..._titlesOnly(section.items),
-      ];
+      return [for (final section in sections) ..._titlesOnly(section.items)];
     } catch (_) {
       return const [];
     }
@@ -1427,8 +1463,7 @@ class SourceRepository implements CatalogueRepository {
   List<MediaItem> _titlesOnly(List<MediaItem> items) {
     final out = <MediaItem>[];
     for (final item in items) {
-      if (item.type == ProviderType.manga ||
-          item.type == ProviderType.novel) {
+      if (item.type == ProviderType.manga || item.type == ProviderType.novel) {
         continue;
       }
       final url = item.url;

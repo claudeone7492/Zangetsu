@@ -8,7 +8,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../app_config.dart';
+import '../theme/app_colors.dart';
 import 'daily_picks_prefs.dart';
+import 'notification_art.dart';
 import 'notification_router.dart';
 
 /// Requests the runtime notification permission (Android POST_NOTIFICATIONS,
@@ -54,6 +56,17 @@ class NotificationService {
   static const MethodChannel _notifChannel = MethodChannel(
     'zangetsu/notifications',
   );
+
+  /// The star that fills Android's large-icon slot. Without it the expanded
+  /// notification shows an empty square beside the title. A failure here must
+  /// never cost the user the notification itself.
+  Future<AndroidBitmap<Object>?> _starIcon() async {
+    try {
+      return FilePathAndroidBitmap(await NotificationArt.starIcon());
+    } catch (_) {
+      return null;
+    }
+  }
 
   // A new id, not the old 'daily_picks': Android freezes a channel's importance
   // at creation, so reusing it would keep the old default-importance behaviour.
@@ -142,6 +155,8 @@ class NotificationService {
             : 'Alerts when a subscribed show has a new episode available',
         importance: Importance.high,
         priority: Priority.high,
+        color: AppColors.accent,
+        largeIcon: await _starIcon(),
       ),
     );
     await _plugin.show(
@@ -163,7 +178,7 @@ class NotificationService {
   Future<void> showSourceUpdates({required int count}) async {
     if (!Platform.isAndroid || count <= 0) return;
     if (!_inited) await init();
-    const details = NotificationDetails(
+    final details = NotificationDetails(
       android: AndroidNotificationDetails(
         'source_updates',
         'Source updates',
@@ -171,6 +186,8 @@ class NotificationService {
             'Alerts when installed sources have updates available',
         importance: Importance.defaultImportance,
         priority: Priority.defaultPriority,
+        color: AppColors.accent,
+        largeIcon: await _starIcon(),
       ),
     );
     await _plugin.show(
@@ -189,22 +206,18 @@ class NotificationService {
     required String title,
     required String body,
     String? imageUrl,
+    String? posterUrl,
     String? payload,
   }) async {
     if (!Platform.isAndroid) return;
     if (!_inited) await init();
-    StyleInformation? style;
-    if (imageUrl != null && imageUrl.isNotEmpty) {
-      final picture = await _downloadBitmap(imageUrl);
-      if (picture != null) {
-        style = BigPictureStyleInformation(
-          picture,
-          contentTitle: title,
-          summaryText: body,
-          hideExpandedLargeIcon: true,
-        );
-      }
-    }
+    final style = await _richStyle(
+      title: title,
+      body: body,
+      bannerUrl: imageUrl,
+      posterUrl: posterUrl,
+      eyebrow: 'Announcement',
+    );
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
         'announcements',
@@ -212,6 +225,8 @@ class NotificationService {
         channelDescription: 'News and updates from $kAppName — $kAppTagline',
         importance: Importance.high,
         priority: Priority.high,
+        color: AppColors.accent,
+        largeIcon: await _starIcon(),
         styleInformation: style,
       ),
     );
@@ -233,6 +248,7 @@ class NotificationService {
     required String body,
     required DailyPickStyle style,
     String? imageUrl,
+    String? posterUrl,
     List<String>? lines,
     String? payload,
   }) async {
@@ -243,6 +259,7 @@ class NotificationService {
       title,
       body,
       imageUrl,
+      posterUrl,
       lines,
     );
     final details = NotificationDetails(
@@ -253,6 +270,8 @@ class NotificationService {
             'Five suggestions a day — movies, football, anime and more',
         importance: Importance.high,
         priority: Priority.high,
+        color: AppColors.accent,
+        largeIcon: await _starIcon(),
         styleInformation: styleInfo,
       ),
     );
@@ -274,6 +293,7 @@ class NotificationService {
     required DailyPickStyle style,
     required tz.TZDateTime when,
     String? imageUrl,
+    String? posterUrl,
     List<String>? lines,
     String? payload,
   }) async {
@@ -284,6 +304,7 @@ class NotificationService {
       title,
       body,
       imageUrl,
+      posterUrl,
       lines,
     );
     final details = NotificationDetails(
@@ -294,6 +315,8 @@ class NotificationService {
             'Five suggestions a day — movies, football, anime and more',
         importance: Importance.high,
         priority: Priority.high,
+        color: AppColors.accent,
+        largeIcon: await _starIcon(),
         styleInformation: styleInfo,
       ),
     );
@@ -329,20 +352,23 @@ class NotificationService {
     if (!Platform.isAndroid) return;
     if (!when.isAfter(tz.TZDateTime.now(tz.local))) return;
     if (!_inited) await init();
+    final details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'dvr_reminders',
+        'Recordings & reminders',
+        channelDescription: 'Reminders for scheduled live programmes',
+        importance: Importance.high,
+        priority: Priority.high,
+        color: AppColors.accent,
+        largeIcon: await _starIcon(),
+      ),
+    );
     await _plugin.zonedSchedule(
       id,
       title,
       body,
       when,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'dvr_reminders',
-          'Recordings & reminders',
-          channelDescription: 'Reminders for scheduled live programmes',
-          importance: Importance.high,
-          priority: Priority.high,
-        ),
-      ),
+      details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
@@ -357,28 +383,71 @@ class NotificationService {
     String title,
     String body,
     String? imageUrl,
+    String? posterUrl,
     List<String>? lines,
   ) async {
+    // Every slot gets the approved art card when its lead item has artwork.
+    // The original text/inbox layouts remain as the no-artwork fallback.
+    final rich = await _richStyle(
+      title: title,
+      body: body,
+      bannerUrl: imageUrl,
+      posterUrl: posterUrl,
+      eyebrow: 'Daily pick',
+    );
+    if (rich != null) return rich;
     switch (style) {
       case DailyPickStyle.bigText:
         return BigTextStyleInformation(body, summaryText: title);
       case DailyPickStyle.bigPicture:
-        final url = imageUrl;
-        if (url == null || url.isEmpty) return null;
-        final picture = await _downloadBitmap(url);
-        if (picture == null) return null;
-        return BigPictureStyleInformation(
-          picture,
-          contentTitle: title,
-          summaryText: body,
-          hideExpandedLargeIcon: true,
-        );
+        return null;
       case DailyPickStyle.inbox:
         return InboxStyleInformation(
           lines ?? const [],
           contentTitle: title,
           summaryText: body,
         );
+    }
+  }
+
+  /// Big-picture style using the composite banner + poster + star card. Falls
+  /// back to the banner alone when the card cannot be built.
+  Future<StyleInformation?> _richStyle({
+    required String title,
+    required String body,
+    String? bannerUrl,
+    String? posterUrl,
+    String? eyebrow,
+  }) async {
+    try {
+      final card = await NotificationArt.card(
+        dio: _dio,
+        bannerUrl: bannerUrl,
+        posterUrl: posterUrl,
+        eyebrow: eyebrow,
+      );
+      final star = await _starIcon();
+      if (card != null) {
+        return BigPictureStyleInformation(
+          FilePathAndroidBitmap(card),
+          contentTitle: title,
+          summaryText: body,
+          largeIcon: star,
+          hideExpandedLargeIcon: false,
+        );
+      }
+      if (bannerUrl == null || bannerUrl.isEmpty) return null;
+      final picture = await _downloadBitmap(bannerUrl);
+      if (picture == null) return null;
+      return BigPictureStyleInformation(
+        picture,
+        contentTitle: title,
+        summaryText: body,
+        largeIcon: star,
+        hideExpandedLargeIcon: false,
+      );
+    } catch (_) {
+      return null;
     }
   }
 

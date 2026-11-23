@@ -5,6 +5,11 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Path
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -13,6 +18,9 @@ import androidx.work.WorkerParameters
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
  * Background "new episode" check for CloudStream sources — CloudStream's own
@@ -89,13 +97,43 @@ class SubscriptionWorker(ctx: Context, params: WorkerParameters) :
         )
         val n = NotificationCompat.Builder(ctx, CHANNEL)
             .setSmallIcon(ctx.applicationInfo.icon)
+            .setLargeIcon(starIcon())
+            .setColor(0xFFFF4D57.toInt())
             .setContentTitle(title)
             .setContentText("Episode $episode is out")
+            .setStyle(NotificationCompat.BigTextStyle().bigText("Episode $episode is out"))
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pi)
             .build()
         runCatching { NotificationManagerCompat.from(ctx).notify(id, n) }
+    }
+
+    /// The same star the Dart notifications use, so the expanded card never
+    /// shows an empty large-icon slot.
+    private fun starIcon(): Bitmap {
+        val size = 192
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val center = size / 2f
+        canvas.drawCircle(center, center, center, Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = 0xFFFF4D57.toInt()
+        })
+        val path = Path()
+        val outer = 58f
+        val inner = 24f
+        for (i in 0 until 10) {
+            val radius = if (i % 2 == 0) outer else inner
+            val angle = -PI / 2 + i * PI / 5
+            val x = center + radius * cos(angle).toFloat()
+            val y = center + radius * sin(angle).toFloat()
+            if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+        }
+        path.close()
+        canvas.drawPath(path, Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+        })
+        return bitmap
     }
 
     companion object {

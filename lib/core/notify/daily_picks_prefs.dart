@@ -38,41 +38,41 @@ enum DailyPickKind {
 /// order even with the jitter.
 enum DailyPickSlot {
   morning(
-    hour: 8,
-    minute: 15,
-    jitterMinutes: 45,
+    hour: 6,
+    minute: 0,
+    jitterMinutes: 0,
     style: DailyPickStyle.bigPicture,
     kind: DailyPickKind.trendingMovies,
     titleKey: 'dailyPicksMorning',
   ),
   midday(
-    hour: 11,
-    minute: 45,
-    jitterMinutes: 45,
+    hour: 13,
+    minute: 0,
+    jitterMinutes: 0,
     style: DailyPickStyle.bigText,
     kind: DailyPickKind.football,
     titleKey: 'dailyPicksMidday',
   ),
   afternoon(
-    hour: 14,
-    minute: 45,
-    jitterMinutes: 45,
+    hour: 15,
+    minute: 0,
+    jitterMinutes: 0,
     style: DailyPickStyle.inbox,
     kind: DailyPickKind.trendingAnime,
     titleKey: 'dailyPicksAfternoon',
   ),
   evening(
-    hour: 18,
-    minute: 15,
-    jitterMinutes: 45,
+    hour: 19,
+    minute: 0,
+    jitterMinutes: 0,
     style: DailyPickStyle.bigPicture,
     kind: DailyPickKind.newRelease,
     titleKey: 'dailyPicksEvening',
   ),
   night(
-    hour: 21,
-    minute: 15,
-    jitterMinutes: 45,
+    hour: 23,
+    minute: 0,
+    jitterMinutes: 0,
     style: DailyPickStyle.bigText,
     kind: DailyPickKind.recommended,
     titleKey: 'dailyPicksNight',
@@ -92,9 +92,8 @@ enum DailyPickSlot {
   final int minute;
 
   /// How far either side of the base time the per-day random offset may fall.
-  /// Chosen so the five windows stay disjoint and leave breathing room
-  /// between cards: 07:30–09:00, 11:00–12:30, 14:00–15:30, 17:30–19:00 and
-  /// 20:30–22:00.
+  /// The product wants fixed wall-clock cards (06:00, 13:00, 15:00, 19:00,
+  /// 23:00), so the offset is zero; the field stays for per-slot tuning.
   final int jitterMinutes;
 
   final DailyPickStyle style;

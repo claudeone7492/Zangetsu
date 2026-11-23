@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_colors.dart';
+
 Map<String, String>? playbackArtworkHeaders(
   String? artwork,
   String? cover,
@@ -75,7 +77,16 @@ class PlaybackLoadingTitle extends StatelessWidget {
           children: [
             if (title.isNotEmpty || logo?.trim().isNotEmpty == true)
               titleWidget,
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: AppColors.accent,
+              ),
+            ),
+            const SizedBox(height: 12),
             Text(
               status,
               textAlign: TextAlign.center,

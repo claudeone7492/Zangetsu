@@ -2044,9 +2044,7 @@ class PlayerCubit extends Cubit<PlayerState> {
     final dir = await getTemporaryDirectory();
     final out = File('${dir.path}/generated_${state.currentIndex}.srt');
     await out.writeAsString(SubtitleExporter.toSrt(cues), flush: true);
-    await player.setSubtitleTrack(
-      SubtitleTrack.uri(out.path, title: label),
-    );
+    await player.setSubtitleTrack(SubtitleTrack.uri(out.path, title: label));
     _wantedSubId = out.path;
     _subApplied = true;
     _toast('Subtitle ready');
@@ -2210,7 +2208,8 @@ class PlayerCubit extends Cubit<PlayerState> {
     if (prefRaw.isEmpty) {
       if (softSubs.isNotEmpty) {
         final en = languageByPref('en');
-        final pick = (en == null ? null : pickPreferredSub(softSubs, en)) ??
+        final pick =
+            (en == null ? null : pickPreferredSub(softSubs, en)) ??
             softSubs.first;
         unawaited(
           _setRemoteSub(
@@ -3096,8 +3095,10 @@ class PlayerCubit extends Cubit<PlayerState> {
         !trimmedLocal &&
         s.container == SourceContainer.hls &&
         playUrl.startsWith('http')) {
-      final proxied =
-          await HlsSegmentProxy.instance.rewrite(playUrl, headers: s.headers);
+      final proxied = await HlsSegmentProxy.instance.rewrite(
+        playUrl,
+        headers: s.headers,
+      );
       if (g != _gen || isClosed || !_lifecycle.canContinue(openToken)) return;
       if (proxied != null) playUrl = proxied;
     }
@@ -3163,16 +3164,15 @@ class PlayerCubit extends Cubit<PlayerState> {
         ),
       );
     }
-    _isProxiedStream = playUrl.startsWith('http://127.0.0.1');
-    // A direct Aniyomi stream can hang on Cloudflare without a clean mpv error —
+    _isProxiedStream =
+        playUrl.startsWith('http://127.0.0.1') || playUrl == s.proxyUrl;
+    // A direct stream can hang on a regional block without a clean mpv error —
     // arm a start watchdog to swap to its hidden proxy fallback if it never
-    // starts. Aniyomi-only + direct-only, so other sources are untouched.
+    // starts. Live sports attach the public relay here; other sources are
+    // untouched unless they also set a fallback.
     _startTimer?.cancel();
-    if (playUrlOverride == null &&
-        sourceId.startsWith('ani:') &&
-        !_isProxiedStream &&
-        s.proxyUrl != null) {
-      _startTimer = Timer(const Duration(seconds: 10), () {
+    if (playUrlOverride == null && !_isProxiedStream && s.proxyUrl != null) {
+      _startTimer = Timer(const Duration(seconds: 6), () {
         if (g == _gen &&
             !isClosed &&
             _lifecycle.canContinue(openToken) &&
@@ -3371,12 +3371,10 @@ class PlayerCubit extends Cubit<PlayerState> {
       }
       return;
     }
-    // A direct Aniyomi stream that failed on Cloudflare → swap to its hidden
+    // A direct stream that failed on a regional block → swap to its hidden
     // proxy fallback (same quality) rather than cycling through other qualities.
     final act = state.active;
-    if (sourceId.startsWith('ani:') &&
-        !_isProxiedStream &&
-        act?.proxyUrl != null) {
+    if (!_isProxiedStream && act?.proxyUrl != null) {
       await _open(act!, seekTo: _lastPos, playUrlOverride: act.proxyUrl);
       return;
     }
@@ -4075,11 +4073,7 @@ class PlayerCubit extends Cubit<PlayerState> {
   Future<void> setSubtitleTrackUrl(String url) async {
     final sub = softSubs.where((s) => s.url == url).firstOrNull;
     await player.setSubtitleTrack(
-      SubtitleTrack.uri(
-        url,
-        title: sub?.label,
-        language: sub?.lang,
-      ),
+      SubtitleTrack.uri(url, title: sub?.label, language: sub?.lang),
     );
     _wantedSubId = url;
   }

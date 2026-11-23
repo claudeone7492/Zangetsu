@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:timezone/data/latest_all.dart' as tzdata;
@@ -120,6 +121,7 @@ class DailyPicksService {
           style: slot.style,
           when: _nextInstanceOf(slot, await _minuteOfDay(slot, today)),
           imageUrl: lead.banner ?? lead.cover,
+          posterUrl: lead.cover,
           lines: [for (final p in picks) p.title],
           payload: _payload(slot, lead),
         );
@@ -197,6 +199,7 @@ class DailyPicksService {
       body: body,
       style: slot.style,
       imageUrl: lead.banner ?? lead.cover,
+      posterUrl: lead.cover,
       lines: [for (final p in picks) p.title],
       payload: _payload(slot, lead),
     );
@@ -226,6 +229,7 @@ class DailyPicksService {
           type: 'update',
           date: day,
           imageUrl: lead.banner ?? lead.cover,
+          payload: _payload(slot, lead),
         ),
         DateTime.now().millisecondsSinceEpoch,
       );
@@ -258,13 +262,26 @@ class DailyPicksService {
         : _shortBody(picks);
   }
 
-  /// `"daily:<slot>:<sourceId>|<url>"` — the router strips the slot and opens
-  /// the lead item's Detail screen. Falls back to a bare `"daily:<slot>"` when
-  /// the lead has no openable url, so a tap is a harmless no-op rather than a
-  /// crash.
+  /// `"daily:<slot>:<base64url-json>"` — the router strips the slot and opens
+  /// the lead item's Detail screen with its title/art. Falls back to a bare
+  /// `"daily:<slot>"` when the lead has no openable url, so a tap is a
+  /// harmless no-op rather than a crash.
   String _payload(DailyPickSlot slot, MediaItem lead) {
     if (lead.url.isEmpty || lead.sourceId.isEmpty) return 'daily:${slot.name}';
-    return 'daily:${slot.name}:${lead.sourceId}|${lead.url}';
+    // Carry the card's own title/art so a tap opens Detail with the right
+    // poster immediately, even when the app was killed and has no subscription
+    // row to look the item up from. Base64 keeps titles with '|' intact.
+    final data = <String, Object?>{
+      's': lead.sourceId,
+      'u': lead.url,
+      't': lead.title,
+      'c': lead.cover,
+      'b': lead.banner,
+      'y': lead.type.name,
+      'h': lead.coverHeaders,
+    };
+    final encoded = base64Url.encode(utf8.encode(jsonEncode(data)));
+    return 'daily:${slot.name}:$encoded';
   }
 
   String _bigTextBody(List<MediaItem> picks) {

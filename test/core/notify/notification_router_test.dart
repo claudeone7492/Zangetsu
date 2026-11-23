@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watch_app/core/notify/notification_router.dart';
 
@@ -30,16 +32,34 @@ void main() {
       await openShowFromNotification('daily:morning');
     });
 
+    test('a base64 daily-pick payload parses without throwing', () async {
+      final data = base64Url.encode(
+        utf8.encode(
+          jsonEncode({
+            's': 'moviebox',
+            'u': 'https://x.tld/movie/1',
+            't': 'Dune: Part Two',
+            'c': 'https://x.tld/poster.jpg',
+            'b': 'https://x.tld/banner.jpg',
+            'y': 'movie',
+          }),
+        ),
+      );
+      await openShowFromNotification('daily:morning:$data');
+    });
+
     test('null and empty payloads are no-ops', () async {
       await openShowFromNotification(null);
       await openShowFromNotification('');
     });
 
-    test('a url containing "|" keeps everything after the first split',
-        () async {
-      // No throw: the router only needs the first '|' to find sourceId.
-      await openShowFromNotification('ani:1|https://x.tld/a|b?c=d');
-      await openShowFromNotification('daily:evening:ani:1|https://x.tld/a|b');
-    });
+    test(
+      'a url containing "|" keeps everything after the first split',
+      () async {
+        // No throw: the router only needs the first '|' to find sourceId.
+        await openShowFromNotification('ani:1|https://x.tld/a|b?c=d');
+        await openShowFromNotification('daily:evening:ani:1|https://x.tld/a|b');
+      },
+    );
   });
 }

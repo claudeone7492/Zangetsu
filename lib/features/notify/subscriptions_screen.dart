@@ -8,6 +8,7 @@ import '../../core/di/injector.dart';
 import '../../core/models/media_item.dart';
 import '../../core/models/provider_info.dart';
 import '../../core/notify/cs_notify.dart';
+import '../../core/notify/notification_router.dart';
 import '../../core/notify/subscription_checker.dart';
 import '../../core/notify/subscription_store.dart';
 import '../../core/theme/app_colors.dart';
@@ -141,8 +142,15 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
     );
     final hasImage = a.imageUrl != null && a.imageUrl!.isNotEmpty;
     return ListTile(
-      // Re-open the full message (with its action button) in the sheet.
-      onTap: () => showAnnouncementSheet(context, a),
+      // Daily picks carry a Detail deep link; everything else opens the sheet.
+      onTap: () {
+        final payload = a.payload;
+        if (payload != null && payload.startsWith('daily:')) {
+          openShowFromNotification(payload);
+        } else {
+          showAnnouncementSheet(context, a);
+        }
+      },
       leading: hasImage
           ? ClipRRect(
               borderRadius: BorderRadius.circular(8),
