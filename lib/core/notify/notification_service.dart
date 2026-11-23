@@ -54,6 +54,10 @@ class NotificationService {
   static const MethodChannel _notifChannel = MethodChannel(
     'zangetsu/notifications',
   );
+
+  // A new id, not the old 'daily_picks': Android freezes a channel's importance
+  // at creation, so reusing it would keep the old default-importance behaviour.
+  static const String _dailyPicksChannelId = 'daily_picks_v2';
   bool _inited = false;
 
   Future<bool> get canShowAlerts async {
@@ -215,7 +219,7 @@ class NotificationService {
   }
 
   /// Show one of the daily-pick cards, choosing the Android expanded layout by
-  /// [style] so the three slots across a day are three distinct designs:
+  /// [style] so the five slots across a day rotate distinct designs:
   ///
   ///   • [DailyPickStyle.bigText]    — title + a long single body.
   ///   • [DailyPickStyle.bigPicture] — title + [imageUrl] as a large image.
@@ -243,12 +247,12 @@ class NotificationService {
     );
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
-        'daily_picks',
+        _dailyPicksChannelId,
         'Daily picks',
         channelDescription:
-            'Three suggestions a day — new episodes and things to watch',
-        importance: Importance.defaultImportance,
-        priority: Priority.defaultPriority,
+            'Five suggestions a day — movies, football, anime and more',
+        importance: Importance.high,
+        priority: Priority.high,
         styleInformation: styleInfo,
       ),
     );
@@ -284,12 +288,12 @@ class NotificationService {
     );
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
-        'daily_picks',
+        _dailyPicksChannelId,
         'Daily picks',
         channelDescription:
-            'Three suggestions a day — new episodes and things to watch',
-        importance: Importance.defaultImportance,
-        priority: Priority.defaultPriority,
+            'Five suggestions a day — movies, football, anime and more',
+        importance: Importance.high,
+        priority: Priority.high,
         styleInformation: styleInfo,
       ),
     );

@@ -10507,7 +10507,7 @@ abstract class AppLocalizations {
   /// No description provided for @dailyPicksSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Three suggestions a day — new episodes and things to watch'**
+  /// **'Five notifications a day — movies, football, anime and more'**
   String get dailyPicksSubtitle;
 
   /// No description provided for @dailyPicksEnable.
@@ -10522,6 +10522,12 @@ abstract class AppLocalizations {
   /// **'Morning'**
   String get dailyPicksMorning;
 
+  /// No description provided for @dailyPicksMidday.
+  ///
+  /// In en, this message translates to:
+  /// **'Midday'**
+  String get dailyPicksMidday;
+
   /// No description provided for @dailyPicksAfternoon.
   ///
   /// In en, this message translates to:
@@ -10533,6 +10539,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Evening'**
   String get dailyPicksEvening;
+
+  /// No description provided for @dailyPicksNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Night'**
+  String get dailyPicksNight;
 
   /// No description provided for @dailyPicksNow.
   ///

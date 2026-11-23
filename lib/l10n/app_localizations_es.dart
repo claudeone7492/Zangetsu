@@ -6082,10 +6082,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dailyPicksMorning => 'Mañana';
 
   @override
+  String get dailyPicksMidday => 'Midday';
+
+  @override
   String get dailyPicksAfternoon => 'Tarde';
 
   @override
   String get dailyPicksEvening => 'Noche';
+
+  @override
+  String get dailyPicksNight => 'Night';
 
   @override
   String get dailyPicksNow => 'Enviar las sugerencias de hoy ahora';

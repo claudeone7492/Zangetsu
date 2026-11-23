@@ -6051,10 +6051,16 @@ class AppLocalizationsTr extends AppLocalizations {
   String get dailyPicksMorning => 'Sabah';
 
   @override
+  String get dailyPicksMidday => 'Midday';
+
+  @override
   String get dailyPicksAfternoon => 'Öğleden sonra';
 
   @override
   String get dailyPicksEvening => 'Akşam';
+
+  @override
+  String get dailyPicksNight => 'Night';
 
   @override
   String get dailyPicksNow => 'Bugünün önerilerini şimdi gönder';

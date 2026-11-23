@@ -40,23 +40,28 @@ void main() {
     if (dir.existsSync()) await dir.delete(recursive: true);
   });
 
-  testWidgets('opens with the switch off and no slots listed', (tester) async {
+  testWidgets('opens with the switch on and lists all five slots', (
+    tester,
+  ) async {
     await _pump(tester);
-    expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
-    // Slots only appear once the feature is on — off is a single, quiet row.
-    expect(find.text('Morning'), findsNothing);
-    expect(find.text('Afternoon'), findsNothing);
-    expect(find.text('Evening'), findsNothing);
+    expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
+    expect(find.text('Morning'), findsOneWidget);
+    expect(find.text('Midday'), findsOneWidget);
+    expect(find.text('Afternoon'), findsOneWidget);
+    expect(find.text('Evening'), findsOneWidget);
+    expect(find.text('Night'), findsOneWidget);
   });
 
-  testWidgets('lists all three slots when the feature is on', (tester) async {
+  testWidgets('lists all five slots when the feature is on', (tester) async {
     await tester.runAsync(() => DailyPicksPrefs.setEnabled(true));
     await _pump(tester);
 
     expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
     expect(find.text('Morning'), findsOneWidget);
+    expect(find.text('Midday'), findsOneWidget);
     expect(find.text('Afternoon'), findsOneWidget);
     expect(find.text('Evening'), findsOneWidget);
+    expect(find.text('Night'), findsOneWidget);
     // The manual trigger sits under the slot list.
     expect(find.text("Send the day's picks now"), findsOneWidget);
   });

@@ -1496,7 +1496,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   await AnnouncementStore.init();
   sl.registerSingleton<AnnouncementStore>(AnnouncementStore());
 
-  // Daily picks: three-a-day digest notifications (one per slot, each a
+  // Daily picks: five-a-day digest notifications (one per slot, each a
   // different card design). Opt-in, so this only opens the box — the scheduler
   // itself is poked from the app lifecycle and no-ops while disabled.
   await DailyPicksPrefs.init();

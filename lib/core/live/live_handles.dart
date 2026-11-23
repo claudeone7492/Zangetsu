@@ -5,13 +5,15 @@
 ///   • `live:<id>|<path>`      — MovieBox, StreamFree
 ///   • `ev:<title>|<channels>` — CDNLive TV
 ///   • `ts:<json{feeds}>`      — TimStreams
+///   • `nuviotv:<id>`          — Nuvio Live Sports
 ///
 /// These are not titles: a handle has no detail page and its provider resolves
 /// it straight to a signed stream URL. Recognizing only `live:` left CDNLive's
 /// and TimStreams' fixtures looking like ordinary titles, so a tap routed them
 /// through the metadata catalogue / detail page and the player reported "no
-/// source to play".
-const List<String> kLiveHandleSchemes = ['live:', 'ev:', 'ts:'];
+/// source to play". Nuvio had the same problem with its own scheme, which is
+/// why its fixtures were the bulk of the "no playable sources" reports.
+const List<String> kLiveHandleSchemes = ['live:', 'ev:', 'ts:', 'nuviotv:'];
 
 /// True when [url] is a live-sports fixture handle (see [kLiveHandleSchemes]).
 bool isLiveHandle(String url) {

@@ -6111,10 +6111,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dailyPicksMorning => 'الصباح';
 
   @override
+  String get dailyPicksMidday => 'Midday';
+
+  @override
   String get dailyPicksAfternoon => 'بعد الظهر';
 
   @override
   String get dailyPicksEvening => 'المساء';
+
+  @override
+  String get dailyPicksNight => 'Night';
 
   @override
   String get dailyPicksNow => 'إرسال اختيارات اليوم الآن';

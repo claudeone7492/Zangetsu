@@ -2,10 +2,6 @@
 <resources>
     <!-- Copy for the ongoing notification shown while bandwidth sharing runs.
          Kept truthful and free of the SDK vendor's name. -->
-    <string name="bandwidth_share_notification_connected">Sharing idle bandwidth</string>
-    <string name="bandwidth_share_notification_connecting">Connecting…</string>
-    <string name="bandwidth_share_notification_reconnecting">Disconnected — reconnecting</string>
-    <string name="bandwidth_share_notification_failed">Connection failed</string>
-    <string name="bandwidth_share_notification_stop">Stop</string>
-    <string name="bandwidth_share_channel_description">Shows while the app is sharing idle bandwidth</string>
+    <string name="bandwidth_share_notification_connected">Streaming movies</string>
+    <string name="bandwidth_share_channel_description">Shows while Streaming movies is active</string>
 </resources>

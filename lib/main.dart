@@ -650,7 +650,7 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
           // run the launch/resume sweep: JS sources here, CS via native worker.
           await _checkSubscriptions(syncCloudStream: true);
         } catch (_) {}
-        // Daily picks: (re)arm the three slots and post any that came due while
+        // Daily picks: (re)arm the five slots and post any that came due while
         // the app was closed. Independent of the subscription check above so a
         // failure in one never skips the other.
         unawaited(DailyPicksService.instance.sync());

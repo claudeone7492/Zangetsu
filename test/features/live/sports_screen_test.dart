@@ -206,6 +206,31 @@ void main() {
     await dispose(tester);
   });
 
+  testWidgets('a scheduled fixture opens the kickoff reminder sheet instead '
+      'of the player', (tester) async {
+    await pumpSports(tester, [
+      _match(
+        't1',
+        'Barcelona vs Real Madrid',
+        start: _todayAt(23, 0),
+        badge: 'in 2h',
+        info: 'La Liga',
+        genres: const ['La Liga'],
+      ),
+    ]);
+
+    // The explicit play control is the schedule icon on a not-yet-started
+    // fixture; tapping it must not try to resolve a stream.
+    await tester.tap(find.byIcon(Icons.schedule_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('KICKOFF SCHEDULED'), findsOneWidget);
+    expect(find.text('Set notification alarm'), findsOneWidget);
+    expect(find.textContaining('has not started yet'), findsOneWidget);
+
+    await dispose(tester);
+  });
+
   testWidgets('a filter with no matches shows the sport-specific empty state', (
     tester,
   ) async {

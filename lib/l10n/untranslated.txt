@@ -1,6 +1,8 @@
 {
   "ar": [
     "episodesNotYetAired",
+    "dailyPicksMidday",
+    "dailyPicksNight",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -10,6 +12,8 @@
 
   "de": [
     "episodesNotYetAired",
+    "dailyPicksMidday",
+    "dailyPicksNight",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -19,6 +23,8 @@
 
   "es": [
     "episodesNotYetAired",
+    "dailyPicksMidday",
+    "dailyPicksNight",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -28,6 +34,8 @@
 
   "fr": [
     "episodesNotYetAired",
+    "dailyPicksMidday",
+    "dailyPicksNight",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -37,6 +45,8 @@
 
   "id": [
     "episodesNotYetAired",
+    "dailyPicksMidday",
+    "dailyPicksNight",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -46,6 +56,8 @@
 
   "it": [
     "episodesNotYetAired",
+    "dailyPicksMidday",
+    "dailyPicksNight",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -55,6 +67,8 @@
 
   "ja": [
     "episodesNotYetAired",
+    "dailyPicksMidday",
+    "dailyPicksNight",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -64,6 +78,8 @@
 
   "pt": [
     "episodesNotYetAired",
+    "dailyPicksMidday",
+    "dailyPicksNight",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -73,6 +89,8 @@
 
   "tr": [
     "episodesNotYetAired",
+    "dailyPicksMidday",
+    "dailyPicksNight",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -82,6 +100,8 @@
 
   "zh": [
     "episodesNotYetAired",
+    "dailyPicksMidday",
+    "dailyPicksNight",
     "addToSeries",
     "noSeries",
     "newSeries",
@@ -91,6 +111,8 @@
 
   "zh_TW": [
     "episodesNotYetAired",
+    "dailyPicksMidday",
+    "dailyPicksNight",
     "addToSeries",
     "noSeries",
     "newSeries",

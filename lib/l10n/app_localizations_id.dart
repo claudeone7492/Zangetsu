@@ -6059,10 +6059,16 @@ class AppLocalizationsId extends AppLocalizations {
   String get dailyPicksMorning => 'Pagi';
 
   @override
+  String get dailyPicksMidday => 'Midday';
+
+  @override
   String get dailyPicksAfternoon => 'Siang';
 
   @override
   String get dailyPicksEvening => 'Malam';
+
+  @override
+  String get dailyPicksNight => 'Night';
 
   @override
   String get dailyPicksNow => 'Kirim pilihan hari ini sekarang';

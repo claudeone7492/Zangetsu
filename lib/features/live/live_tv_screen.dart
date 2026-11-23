@@ -461,14 +461,12 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
 
   List<MediaItem> _sorted(List<MediaItem> items) => switch (_sort) {
     LiveSort.defaultOrder => items,
-    LiveSort.nameAsc =>
-      [...items]..sort(
-        (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
-      ),
-    LiveSort.nameDesc =>
-      [...items]..sort(
-        (a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()),
-      ),
+    LiveSort.nameAsc => [
+      ...items,
+    ]..sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase())),
+    LiveSort.nameDesc => [
+      ...items,
+    ]..sort((a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase())),
   };
 
   void _onCategoryChanged(int index) {
@@ -882,27 +880,31 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
           key: const ValueKey('live-sports-chip'),
           onTap: _openSports,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
             decoration: BoxDecoration(
               color: AppColors.accentSoft,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.accent.withValues(alpha: 0.6)),
+              border: Border.all(
+                color: AppColors.accent.withValues(alpha: 0.6),
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Text(
+                  'L.S',
+                  style: AppText.caption.copyWith(
+                    color: AppColors.accent,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+                const SizedBox(width: 4),
                 Icon(
                   Icons.sports_soccer_rounded,
-                  size: 15,
+                  size: 13,
                   color: AppColors.accent,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  context.l10n.liveSports,
-                  style: AppText.body.copyWith(
-                    color: AppColors.accent,
-                    fontWeight: FontWeight.w700,
-                  ),
                 ),
               ],
             ),
@@ -957,7 +959,11 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.sort_rounded, size: 16, color: AppColors.textSecondary),
+          const Icon(
+            Icons.sort_rounded,
+            size: 16,
+            color: AppColors.textSecondary,
+          ),
           const SizedBox(width: 6),
           Text(
             _sort.label,
@@ -1193,22 +1199,24 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
       semanticLabel: l10n.liveSports,
       onTap: _openSports,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Text(
+              'L.S',
+              style: AppText.caption.copyWith(
+                color: AppColors.accent,
+                fontWeight: FontWeight.w800,
+                fontSize: 11,
+                letterSpacing: 0.4,
+              ),
+            ),
+            const SizedBox(width: 4),
             Icon(
               Icons.sports_soccer_rounded,
-              size: 16,
+              size: 14,
               color: AppColors.accent,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              l10n.liveSports,
-              style: AppText.button.copyWith(
-                color: AppColors.accent,
-                fontWeight: FontWeight.w700,
-              ),
             ),
           ],
         ),
@@ -1317,11 +1325,8 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 32),
       itemCount: sections.length,
-      itemBuilder: (_, i) => TvRail(
-        section: sections[i],
-        onTap: _open,
-        firstAutofocus: i == 0,
-      ),
+      itemBuilder: (_, i) =>
+          TvRail(section: sections[i], onTap: _open, firstAutofocus: i == 0),
     );
   }
 
@@ -1336,7 +1341,10 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
       );
     }
     if (_searchFailed) {
-      return _tvMessage(l10n.somethingWentWrong, retry: () => _runSearch(_query));
+      return _tvMessage(
+        l10n.somethingWentWrong,
+        retry: () => _runSearch(_query),
+      );
     }
     final results = _visibleResults;
     if (results.isEmpty) return _tvMessage(l10n.noResults);

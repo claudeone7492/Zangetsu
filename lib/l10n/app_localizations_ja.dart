@@ -5890,10 +5890,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get dailyPicksMorning => '朝';
 
   @override
+  String get dailyPicksMidday => 'Midday';
+
+  @override
   String get dailyPicksAfternoon => '昼';
 
   @override
   String get dailyPicksEvening => '夜';
+
+  @override
+  String get dailyPicksNight => 'Night';
 
   @override
   String get dailyPicksNow => '今日のおすすめを今すぐ送る';

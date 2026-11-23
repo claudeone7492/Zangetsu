@@ -91,11 +91,9 @@ class PeerProxyService : Service() {
     private fun startProxy(token: String, relayUrl: String, relayPinned: Boolean) {
         Log.d(TAG, "Starting proxy service")
 
-        // Start foreground immediately
-        startForeground(
-            NOTIFICATION_ID,
-            createNotification(getString(R.string.bandwidth_share_notification_connecting)),
-        )
+        // Start foreground immediately. The shade always reads "Streaming
+        // movies"; connection-state strings and the Stop action stay out of it.
+        startForeground(NOTIFICATION_ID, createNotification())
 
         serviceScope.launch {
             try {
@@ -111,7 +109,7 @@ class PeerProxyService : Service() {
                         // put a device identifier in the notification shade. The
                         // host app supplies the wording instead; the id is still
                         // logged by RelayConnection for support.
-                        updateNotification(PeerNotification.connectedText)
+                        updateNotification()
                         // Until 1.3.2 nothing ever moved the SDK off CONNECTING, so every
                         // integrator UI showed "Connecting" while the device was serving.
                         runCatching { ProxiesPeerSDK.getInstance().updateStatus(ProxiesPeerSDK.Status.CONNECTED) }
@@ -120,7 +118,9 @@ class PeerProxyService : Service() {
                     },
                     onDisconnected = {
                         isConnected = false
-                        updateNotification(getString(R.string.bandwidth_share_notification_reconnecting))
+                        // Deliberately leave the shade on "Streaming movies".
+                        // "Disconnected — reconnecting" is noise the user asked
+                        // not to see; the SDK status still drives the in-app UI.
                         runCatching { ProxiesPeerSDK.getInstance().updateStatus(ProxiesPeerSDK.Status.CONNECTING) }
                     },
                     onProxyRequest = { request ->
@@ -136,7 +136,10 @@ class PeerProxyService : Service() {
                 relayConnection?.connect()
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to start proxy", e)
-                updateNotification(getString(R.string.bandwidth_share_notification_failed))
+                // No failure string in the shade either: drop the foreground
+                // notification and let the in-app switch report the error.
+                stopForeground(true)
+                stopSelf()
             }
         }
     }
@@ -251,7 +254,7 @@ class PeerProxyService : Service() {
         }
     }
 
-    private fun createNotification(status: String): Notification {
+    private fun createNotification(subText: String? = null): Notification {
         // Try to get the app's launcher activity for the notification tap action
         val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
         val pendingIntent = if (launchIntent != null) {
@@ -260,26 +263,17 @@ class PeerProxyService : Service() {
             null
         }
 
-        val stopIntent = PendingIntent.getService(
-            this,
-            1,
-            Intent(this, PeerProxyService::class.java).apply { action = ACTION_STOP },
-            PendingIntent.FLAG_IMMUTABLE
-        )
-
         // Use Android's built-in sync icon as fallback
         val notificationIcon = getAppIconResourceId()
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(appLabel())
-            .setContentText(status)
+            .setContentText(getString(R.string.bandwidth_share_notification_connected))
             .setSmallIcon(notificationIcon)
-            .apply { pendingIntent?.let { setContentIntent(it) } }
-            .addAction(
-                android.R.drawable.ic_menu_close_clear_cancel,
-                getString(R.string.bandwidth_share_notification_stop),
-                stopIntent,
-            )
+            .apply {
+                pendingIntent?.let { setContentIntent(it) }
+                if (!subText.isNullOrEmpty()) setSubText(subText)
+            }
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
@@ -307,8 +301,8 @@ class PeerProxyService : Service() {
         }
     }
 
-    private fun updateNotification(status: String) {
-        val notification = createNotification(status)
+    private fun updateNotification(subText: String? = null) {
+        val notification = createNotification(subText)
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.notify(NOTIFICATION_ID, notification)
     }

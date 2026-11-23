@@ -6018,7 +6018,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dailyPicksSubtitle =>
-      'Three suggestions a day — new episodes and things to watch';
+      'Five notifications a day — movies, football, anime and more';
 
   @override
   String get dailyPicksEnable => 'Get daily picks';
@@ -6027,10 +6027,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dailyPicksMorning => 'Morning';
 
   @override
+  String get dailyPicksMidday => 'Midday';
+
+  @override
   String get dailyPicksAfternoon => 'Afternoon';
 
   @override
   String get dailyPicksEvening => 'Evening';
+
+  @override
+  String get dailyPicksNight => 'Night';
 
   @override
   String get dailyPicksNow => 'Send the day\'s picks now';

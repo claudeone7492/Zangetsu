@@ -8,8 +8,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/ui/settings_widgets.dart';
 import '../../l10n/l10n.dart';
 
-/// Settings → Daily picks. One switch turns the three-a-day digest on or off;
-/// the rows below spell out the three slots and the card design each one uses,
+/// Settings → Daily picks. One switch turns the five-a-day digest on or off;
+/// the rows below spell out the five slots and the card design each one uses,
 /// so it is clear the three are deliberately different rather than a bug.
 class DailyPicksScreen extends StatefulWidget {
   const DailyPicksScreen({super.key, this.onEnabled});
@@ -78,14 +78,18 @@ class _DailyPicksScreenState extends State<DailyPicksScreen> {
 
   String _label(AppLocalizations l10n, DailyPickSlot slot) => switch (slot) {
     DailyPickSlot.morning => l10n.dailyPicksMorning,
+    DailyPickSlot.midday => l10n.dailyPicksMidday,
     DailyPickSlot.afternoon => l10n.dailyPicksAfternoon,
     DailyPickSlot.evening => l10n.dailyPicksEvening,
+    DailyPickSlot.night => l10n.dailyPicksNight,
   };
 
   IconData _iconFor(DailyPickKind kind) => switch (kind) {
-    DailyPickKind.trending => Icons.local_fire_department_rounded,
-    DailyPickKind.recommended => Icons.recommend_rounded,
+    DailyPickKind.trendingMovies => Icons.movie_rounded,
+    DailyPickKind.football => Icons.sports_soccer_rounded,
+    DailyPickKind.trendingAnime => Icons.auto_awesome_rounded,
     DailyPickKind.newRelease => Icons.fiber_new_rounded,
+    DailyPickKind.recommended => Icons.recommend_rounded,
   };
 
   /// The window the slot lands in, e.g. `07:30–09:30`. The exact minute is

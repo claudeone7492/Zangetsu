@@ -6,53 +6,76 @@ import '../hive/safe_box.dart';
 
 /// What a daily-pick slot is about, and therefore how its card is built.
 ///
-/// The three-a-day digest mirrors the three cards Netflix sends: something
-/// everyone is watching, something picked for you, and something just added.
-/// Each kind draws from a different part of what the app already knows, so the
-/// three cards a user gets in a day are genuinely different suggestions rather
-/// than the same list relabelled.
+/// The five-a-day digest covers the five things a viewer opens the app for:
+/// trending movies, the next football fixture, trending anime, new TV/film
+/// arrivals, and something from the shows they already follow. Each kind draws
+/// from a different part of what the app already knows, so the five cards a
+/// user gets in a day are genuinely different suggestions rather than the same
+/// list relabelled.
 enum DailyPickKind {
-  /// What the catalogue's trending rows are pushing right now.
-  trending,
+  /// What the movie/TV catalogue is pushing right now.
+  trendingMovies,
+
+  /// The next football fixture, with its kickoff time.
+  football,
+
+  /// What the anime catalogue is pushing right now.
+  trendingAnime,
+
+  /// The newest TV series and movie arrivals.
+  newRelease,
 
   /// Drawn from the user's own subscriptions — a show they already follow.
   recommended,
-
-  /// The newest arrivals in the catalogue.
-  newRelease,
 }
 
-/// One of the three daily-pick slots and the card design that fills it.
+/// One of the five daily-pick slots and the card design that fills it.
 ///
 /// Each slot has a *window* rather than a fixed clock time: the service picks a
 /// random minute inside the window once per day (see [DailyPicksPrefs]), so the
-/// three land at different times each day instead of on a metronome. The windows
-/// are disjoint and ordered, so the three never collide and never arrive out of
+/// five land at different times each day instead of on a metronome. The windows
+/// are disjoint and ordered, so they never collide and never arrive out of
 /// order even with the jitter.
 enum DailyPickSlot {
   morning(
     hour: 8,
-    minute: 30,
-    jitterMinutes: 60,
+    minute: 15,
+    jitterMinutes: 45,
     style: DailyPickStyle.bigPicture,
-    kind: DailyPickKind.trending,
+    kind: DailyPickKind.trendingMovies,
     titleKey: 'dailyPicksMorning',
+  ),
+  midday(
+    hour: 11,
+    minute: 45,
+    jitterMinutes: 45,
+    style: DailyPickStyle.bigText,
+    kind: DailyPickKind.football,
+    titleKey: 'dailyPicksMidday',
   ),
   afternoon(
     hour: 14,
-    minute: 0,
-    jitterMinutes: 90,
-    style: DailyPickStyle.bigText,
-    kind: DailyPickKind.recommended,
+    minute: 45,
+    jitterMinutes: 45,
+    style: DailyPickStyle.inbox,
+    kind: DailyPickKind.trendingAnime,
     titleKey: 'dailyPicksAfternoon',
   ),
   evening(
-    hour: 20,
-    minute: 0,
-    jitterMinutes: 90,
-    style: DailyPickStyle.inbox,
+    hour: 18,
+    minute: 15,
+    jitterMinutes: 45,
+    style: DailyPickStyle.bigPicture,
     kind: DailyPickKind.newRelease,
     titleKey: 'dailyPicksEvening',
+  ),
+  night(
+    hour: 21,
+    minute: 15,
+    jitterMinutes: 45,
+    style: DailyPickStyle.bigText,
+    kind: DailyPickKind.recommended,
+    titleKey: 'dailyPicksNight',
   );
 
   const DailyPickSlot({
@@ -69,9 +92,9 @@ enum DailyPickSlot {
   final int minute;
 
   /// How far either side of the base time the per-day random offset may fall.
-  /// Chosen so the three windows stay disjoint: morning ±60m ends at 09:30,
-  /// afternoon ±90m starts at 12:30, afternoon ends at 15:30 and evening starts
-  /// at 18:30.
+  /// Chosen so the five windows stay disjoint and leave breathing room
+  /// between cards: 07:30–09:00, 11:00–12:30, 14:00–15:30, 17:30–19:00 and
+  /// 20:30–22:00.
   final int jitterMinutes;
 
   final DailyPickStyle style;
@@ -87,7 +110,7 @@ enum DailyPickSlot {
   int get baseMinuteOfDay => hour * 60 + minute;
 }
 
-/// The three notification-card designs the daily picks rotate through. These
+/// The notification-card designs the daily picks rotate through. These
 /// map to Android's standard expanded layouts, so each is a recognised system
 /// pattern rather than a custom view:
 ///
@@ -106,11 +129,11 @@ abstract final class DailyPicksPrefs {
   static const String boxName = 'daily_picks_prefs';
   static const String _enabledKey = 'enabled';
 
-  /// Whether the user turned the daily picks on. Defaults off — the app never
-  /// schedules notifications a user did not ask for.
+  /// Whether the daily picks are on. Defaults on: the five cards are the
+  /// app's in-app notification feed, and the Settings switch is the opt-out.
   static bool get enabled {
     if (!Hive.isBoxOpen(boxName)) return false;
-    return Hive.box(boxName).get(_enabledKey, defaultValue: false) as bool;
+    return Hive.box(boxName).get(_enabledKey, defaultValue: true) as bool;
   }
 
   static Future<void> init() async {
@@ -140,7 +163,7 @@ abstract final class DailyPicksPrefs {
 
   /// Whether [slot] still needs a card for [day]. A slot that already fired
   /// today — because the app happened to be open, or because the user hit
-  /// "send now" — is skipped, so the three-a-day promise holds even though the
+  /// "send now" — is skipped, so the five-a-day promise holds even though the
   /// trigger is opportunistic rather than a precise alarm.
   static bool needsFill(DailyPickSlot slot, String day) =>
       lastFilledDay(slot) != day;

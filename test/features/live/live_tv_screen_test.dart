@@ -329,7 +329,9 @@ void main() {
     expect(find.text('World News'), findsOneWidget);
   });
 
-  testWidgets('clearing the search returns to the browse rails', (tester) async {
+  testWidgets('clearing the search returns to the browse rails', (
+    tester,
+  ) async {
     final repo = _FakeSourceRepository(
       sections: [
         HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
@@ -423,26 +425,27 @@ void main() {
     expect(find.text('Djokovic vs Alcaraz'), findsNothing);
   });
 
-  testWidgets('a fixture with no sport is left out rather than assumed soccer', (
-    tester,
-  ) async {
-    final repo = _FakeSourceRepository(
-      sections: [
-        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
-      ],
-      liveMatches: [
-        _match('s1', 'England vs Croatia'),
-        _match('x1', 'Unknown Fixture', sport: null),
-      ],
-    );
-    sl.registerSingleton<SourceRepository>(repo);
+  testWidgets(
+    'a fixture with no sport is left out rather than assumed soccer',
+    (tester) async {
+      final repo = _FakeSourceRepository(
+        sections: [
+          HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+        ],
+        liveMatches: [
+          _match('s1', 'England vs Croatia'),
+          _match('x1', 'Unknown Fixture', sport: null),
+        ],
+      );
+      sl.registerSingleton<SourceRepository>(repo);
 
-    await pumpLive(tester);
-    await tester.pumpAndSettle();
+      await pumpLive(tester);
+      await tester.pumpAndSettle();
 
-    expect(find.text('England vs Croatia'), findsOneWidget);
-    expect(find.text('Unknown Fixture'), findsNothing);
-  });
+      expect(find.text('England vs Croatia'), findsOneWidget);
+      expect(find.text('Unknown Fixture'), findsNothing);
+    },
+  );
 
   testWidgets('a spinner never shows: the loading state is a row preloader', (
     tester,
@@ -562,7 +565,12 @@ void main() {
     final repo = _FakeSourceRepository(
       sections: const [],
       liveMatches: [
-        _match('l1', 'England vs Croatia', badge: 'LIVE', info: 'Premier · 63\''),
+        _match(
+          'l1',
+          'England vs Croatia',
+          badge: 'LIVE',
+          info: 'Premier · 63\'',
+        ),
         _match('u1', 'Italy vs France', badge: 'in 2h', info: 'Serie A'),
       ],
     );
@@ -621,37 +629,38 @@ void main() {
     expect(repo.liveCalls, 0);
     // The fixed Sports destination stays in the sub-header; only the rail goes.
     expect(find.byKey(const ValueKey('live-sports-chip')), findsOneWidget);
-    expect(find.text('Live Sports'), findsOneWidget);
+    expect(find.text('L.S'), findsOneWidget);
     expect(find.text('World News'), findsOneWidget);
   });
 
-  testWidgets('picking a channel category focuses on channels, dropping sports', (
-    tester,
-  ) async {
-    final repo = _FakeSourceRepository(
-      sections: [
-        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
-      ],
-      liveMatches: [_match('m1', 'England vs Croatia')],
-    );
-    sl.registerSingleton<SourceRepository>(repo);
+  testWidgets(
+    'picking a channel category focuses on channels, dropping sports',
+    (tester) async {
+      final repo = _FakeSourceRepository(
+        sections: [
+          HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+        ],
+        liveMatches: [_match('m1', 'England vs Croatia')],
+      );
+      sl.registerSingleton<SourceRepository>(repo);
 
-    await pumpLive(tester);
-    await tester.pumpAndSettle();
-    expect(find.text('England vs Croatia'), findsOneWidget);
+      await pumpLive(tester);
+      await tester.pumpAndSettle();
+      expect(find.text('England vs Croatia'), findsOneWidget);
 
-    // Category index 1 is the first real IPTV category ("News").
-    await tester.tap(find.byKey(const ValueKey('live-category-1')));
-    await tester.pumpAndSettle();
+      // Category index 1 is the first real IPTV category ("News").
+      await tester.tap(find.byKey(const ValueKey('live-category-1')));
+      await tester.pumpAndSettle();
 
-    expect(find.text('England vs Croatia'), findsNothing);
-    expect(find.text('World News'), findsOneWidget);
+      expect(find.text('England vs Croatia'), findsNothing);
+      expect(find.text('World News'), findsOneWidget);
 
-    // Back to All brings the sports rail back.
-    await tester.tap(find.byKey(const ValueKey('live-category-0')));
-    await tester.pumpAndSettle();
-    expect(find.text('England vs Croatia'), findsOneWidget);
-  });
+      // Back to All brings the sports rail back.
+      await tester.tap(find.byKey(const ValueKey('live-category-0')));
+      await tester.pumpAndSettle();
+      expect(find.text('England vs Croatia'), findsOneWidget);
+    },
+  );
 
   testWidgets('a dead sports endpoint does not sink the channels page', (
     tester,
@@ -669,7 +678,7 @@ void main() {
 
     expect(find.text('World News'), findsOneWidget);
     expect(find.byKey(const ValueKey('live-sports-chip')), findsOneWidget);
-    expect(find.text('Live Sports'), findsOneWidget);
+    expect(find.text('L.S'), findsOneWidget);
     // No "failed" screen — the page is up, just without sports.
     expect(find.text('Try again'), findsNothing);
   });

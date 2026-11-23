@@ -3,7 +3,9 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:timezone/timezone.dart' as tz;
 
+import '../../core/app_config.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
 import '../../core/live/live_match_enrichment.dart';
@@ -11,6 +13,7 @@ import '../../core/live/live_match_format.dart';
 import '../../core/live/sports_catalog.dart';
 import '../../core/live/sports_feed.dart';
 import '../../core/models/media_item.dart';
+import '../../core/notify/notification_service.dart';
 import '../../core/repository/source_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
@@ -139,10 +142,37 @@ class _SportsScreenState extends State<SportsScreen> {
     ];
   }
 
-  Future<void> _open(MediaItem item) async {
+  Future<void> _open(MediaItem item, [SportsLeague? league]) async {
     final repo = _repo;
     if (repo == null) return;
-    await openProviderExtensionItem(context, item, repository: repo);
+    // Only an in-play fixture has a stream to open. A scheduled fixture gets
+    // the kickoff sheet instead, with a reminder the user can arm; opening the
+    // player there could only end in "no playable sources".
+    if (SportsFeed.isLive(item)) {
+      await openProviderExtensionItem(context, item, repository: repo);
+      return;
+    }
+    if (SportsFeed.isFinished(item)) {
+      ScaffoldMessenger.maybeOf(context)
+        ?..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text(
+              'This match has finished. Its replay is not available.',
+            ),
+          ),
+        );
+      return;
+    }
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _UpcomingMatchSheet(
+        item: item,
+        league: league ?? kOtherFootballLeague,
+      ),
+    );
   }
 
   @override
@@ -775,11 +805,16 @@ class _SportsScreenState extends State<SportsScreen> {
   }
 
   Widget _matchRow(MediaItem item, SportsLeague league) {
-    final row = _MatchRow(item: item, league: league, onTap: () => _open(item));
+    final row = _MatchRow(
+      item: item,
+      league: league,
+      onTap: () => _open(item, league),
+      onPlay: () => _open(item, league),
+    );
     if (!_isTv) return row;
     return TvFocusable(
       variant: TvFocusVariant.float,
-      onTap: () => _open(item),
+      onTap: () => _open(item, league),
       borderRadius: 12,
       child: row,
     );
@@ -792,11 +827,13 @@ class _MatchRow extends StatelessWidget {
     required this.item,
     required this.league,
     required this.onTap,
+    required this.onPlay,
   });
 
   final MediaItem item;
   final SportsLeague league;
   final VoidCallback onTap;
+  final VoidCallback onPlay;
 
   @override
   Widget build(BuildContext context) {
@@ -925,41 +962,49 @@ class _MatchRow extends StatelessWidget {
                 ),
               ],
               const SizedBox(width: 10),
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  gradient: live
-                      ? LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            AppColors.accent,
-                            Color.lerp(AppColors.accent, Colors.white, 0.3)!,
-                          ],
-                        )
-                      : null,
-                  color: live ? null : AppColors.surface2,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: live
-                        ? Colors.transparent
-                        : AppColors.hairline.withValues(alpha: 0.8),
+              // The circle is the explicit play control. For a live fixture it
+              // opens the player; for a scheduled one it opens the kickoff sheet
+              // instead of handing the player an empty handle.
+              InkResponse(
+                onTap: onPlay,
+                radius: 22,
+                containedInkWell: true,
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    gradient: live
+                        ? LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppColors.accent,
+                              Color.lerp(AppColors.accent, Colors.white, 0.3)!,
+                            ],
+                          )
+                        : null,
+                    color: live ? null : AppColors.surface2,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: live
+                          ? Colors.transparent
+                          : AppColors.hairline.withValues(alpha: 0.8),
+                    ),
+                    boxShadow: live
+                        ? [
+                            BoxShadow(
+                              color: AppColors.accent.withValues(alpha: 0.30),
+                              blurRadius: 14,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : null,
                   ),
-                  boxShadow: live
-                      ? [
-                          BoxShadow(
-                            color: AppColors.accent.withValues(alpha: 0.30),
-                            blurRadius: 14,
-                            offset: const Offset(0, 4),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Icon(
-                  Icons.play_arrow_rounded,
-                  color: live ? Colors.black : AppColors.textPrimary,
-                  size: 21,
+                  child: Icon(
+                    live ? Icons.play_arrow_rounded : Icons.schedule_rounded,
+                    color: live ? Colors.black : AppColors.textPrimary,
+                    size: live ? 21 : 18,
+                  ),
                 ),
               ),
             ],
@@ -1457,3 +1502,325 @@ String _dayName(DateTime day) {
   if (diff == -1) return 'Yesterday';
   return _weekdays[day.weekday - 1];
 }
+
+/// The kickoff card for a fixture that has not started yet.
+///
+/// The play control deliberately does not open the player here: a scheduled
+/// fixture has no signed stream to resolve, so the useful action is a reminder.
+/// The sheet says when the match is due and arms a local notification at that
+/// time.
+class _UpcomingMatchSheet extends StatefulWidget {
+  const _UpcomingMatchSheet({required this.item, required this.league});
+
+  final MediaItem item;
+  final SportsLeague league;
+
+  @override
+  State<_UpcomingMatchSheet> createState() => _UpcomingMatchSheetState();
+}
+
+class _UpcomingMatchSheetState extends State<_UpcomingMatchSheet> {
+  bool _saving = false;
+  bool _saved = false;
+  String? _note;
+
+  DateTime? get _kickoff {
+    final ms = widget.item.liveStartMs;
+    return ms == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(ms).toLocal();
+  }
+
+  Future<void> _setReminder() async {
+    final kickoff = _kickoff;
+    if (kickoff == null) {
+      setState(() => _note = 'The kickoff time is not confirmed yet.');
+      return;
+    }
+    if (!kickoff.isAfter(DateTime.now())) {
+      setState(
+        () => _note =
+            'The scheduled kickoff has passed. Pull to refresh the fixtures.',
+      );
+      return;
+    }
+    setState(() {
+      _saving = true;
+      _note = null;
+    });
+    try {
+      await NotificationService.instance.init();
+      final allowed = await NotificationService.instance.canShowAlerts;
+      if (!allowed) {
+        if (!mounted) return;
+        setState(() {
+          _saving = false;
+          _note = 'Notifications are off. Turn them on in Settings first.';
+        });
+        return;
+      }
+      final id =
+          ('sports_${widget.item.sourceId}_${widget.item.id}').hashCode &
+          0x7fffffff;
+      final countdown = liveCountdown(
+        kickoff.millisecondsSinceEpoch,
+        DateTime.now(),
+      );
+      await NotificationService.instance.scheduleOnce(
+        id: id,
+        title: '⚽ ${widget.item.title}',
+        body:
+            'Kickoff ${_kickoffWhen(kickoff)}'
+            '${countdown == null ? '' : ' ($countdown)'}. '
+            'Open $kAppName to watch.',
+        when: tz.TZDateTime.from(kickoff, tz.local),
+      );
+      if (!mounted) return;
+      setState(() {
+        _saving = false;
+        _saved = true;
+        _note = 'Reminder set for ${_kickoffWhen(kickoff)}.';
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _saving = false;
+        _note = 'Could not set the reminder. Please try again.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final kickoff = _kickoff;
+    final countdown = kickoff == null
+        ? null
+        : liveCountdown(kickoff.millisecondsSinceEpoch, DateTime.now());
+    final info = [
+      widget.league.name,
+      if ((widget.item.liveInfo ?? '').trim().isNotEmpty)
+        widget.item.liveInfo!.trim(),
+    ].where((s) => s.isNotEmpty).join(' · ');
+
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          14,
+          0,
+          14,
+          14 + MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: _GlassPanel(
+          radius: 28,
+          padding: EdgeInsets.zero,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.accent.withValues(alpha: 0.26),
+              AppColors.surface.withValues(alpha: 0.94),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: AppColors.accent.withValues(alpha: 0.28),
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.sports_soccer_rounded,
+                        color: AppColors.accent,
+                        size: 24,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close_rounded),
+                      color: AppColors.textSecondary,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'KICKOFF SCHEDULED',
+                  style: AppText.caption.copyWith(
+                    color: AppColors.accent,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 10,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  widget.item.title,
+                  style: AppText.largeTitle.copyWith(
+                    fontSize: 24,
+                    height: 1.08,
+                  ),
+                ),
+                if (info.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    info,
+                    style: AppText.caption.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.hairline),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.schedule_rounded,
+                        color: AppColors.accent,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              kickoff == null
+                                  ? 'Kickoff time to be confirmed'
+                                  : '${_kickoffDay(kickoff)} · ${_kickoffTime(kickoff)}',
+                              style: AppText.body.copyWith(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            if (countdown != null)
+                              Text(
+                                'Starts $countdown',
+                                style: AppText.caption.copyWith(
+                                  color: AppColors.accent,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  'This match has not started yet. The play button will open '
+                  'the stream once it is live. Set a notification alarm and '
+                  'we will remind you at kickoff.',
+                  style: AppText.caption.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+                if (_note != null) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    _note!,
+                    style: AppText.caption.copyWith(
+                      color: _saved ? AppColors.accent : AppColors.textTertiary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.textSecondary,
+                          side: BorderSide(color: AppColors.hairline),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text('Not now'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 2,
+                      child: FilledButton.icon(
+                        onPressed: kickoff == null || _saving || _saved
+                            ? null
+                            : _setReminder,
+                        icon: Icon(
+                          _saved
+                              ? Icons.notifications_active_rounded
+                              : Icons.notification_add_rounded,
+                          size: 19,
+                        ),
+                        label: Text(
+                          _saved
+                              ? 'Reminder set'
+                              : _saving
+                              ? 'Setting…'
+                              : 'Set notification alarm',
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.accent,
+                          foregroundColor: Colors.black,
+                          disabledBackgroundColor: AppColors.accent.withValues(
+                            alpha: 0.35,
+                          ),
+                          disabledForegroundColor: Colors.black54,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String _kickoffTime(DateTime dt) =>
+    '${dt.hour.toString().padLeft(2, '0')}:'
+    '${dt.minute.toString().padLeft(2, '0')}';
+
+String _kickoffDay(DateTime dt) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final day = DateTime(dt.year, dt.month, dt.day);
+  final diff = day.difference(today).inDays;
+  if (diff == 0) return 'Today';
+  if (diff == 1) return 'Tomorrow';
+  return _longDate(dt);
+}
+
+String _kickoffWhen(DateTime dt) => '${_kickoffDay(dt)} at ${_kickoffTime(dt)}';

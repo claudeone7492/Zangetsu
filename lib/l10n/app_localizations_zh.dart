@@ -5840,10 +5840,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dailyPicksMorning => '早上';
 
   @override
+  String get dailyPicksMidday => 'Midday';
+
+  @override
   String get dailyPicksAfternoon => '下午';
 
   @override
   String get dailyPicksEvening => '晚上';
+
+  @override
+  String get dailyPicksNight => 'Night';
 
   @override
   String get dailyPicksNow => '立即发送今日推荐';

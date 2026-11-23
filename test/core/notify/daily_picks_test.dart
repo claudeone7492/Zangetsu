@@ -6,34 +6,40 @@ import 'package:watch_app/core/notify/daily_picks_prefs.dart';
 
 void main() {
   group('Daily picks slots', () {
-    test('there are exactly three, one per time of day', () {
-      expect(DailyPickSlot.values.length, 3);
+    test('there are exactly five, spread across the day', () {
+      expect(DailyPickSlot.values.length, 5);
       expect(DailyPickSlot.values.map((s) => s.name), [
         'morning',
+        'midday',
         'afternoon',
         'evening',
+        'night',
       ]);
     });
 
-    test('each slot uses a different card design', () {
-      // The whole point of the feature: three notifications a day, each a
-      // different industry-standard layout — big-picture, big-text, inbox.
+    test('the five slots rotate the three card designs', () {
+      // The feature has five cards but three industry-standard layouts;
+      // the layouts alternate so consecutive cards never look identical.
       final styles = DailyPickSlot.values.map((s) => s.style).toSet();
-      expect(styles.length, 3);
       expect(styles, {
         DailyPickStyle.bigPicture,
         DailyPickStyle.bigText,
         DailyPickStyle.inbox,
       });
+      expect(
+        DailyPickSlot.values.first.style,
+        isNot(DailyPickSlot.values[1].style),
+      );
     });
 
     test('each slot is a different kind of suggestion', () {
-      // One trending, one picked-for-you, one new — the Netflix trio.
       final kinds = DailyPickSlot.values.map((s) => s.kind).toSet();
       expect(kinds, {
-        DailyPickKind.trending,
-        DailyPickKind.recommended,
+        DailyPickKind.trendingMovies,
+        DailyPickKind.football,
+        DailyPickKind.trendingAnime,
         DailyPickKind.newRelease,
+        DailyPickKind.recommended,
       });
     });
 
@@ -44,7 +50,7 @@ void main() {
       expect(minutes, orderedEquals([...minutes]..sort()));
       expect(minutes.first, lessThan(minutes.last));
       // No two slots share a time, so they never replace one another.
-      expect(minutes.toSet().length, 3);
+      expect(minutes.toSet().length, 5);
     });
 
     test('the jitter windows never overlap', () {
@@ -131,8 +137,8 @@ void main() {
       if (dir.existsSync()) await dir.delete(recursive: true);
     });
 
-    test('the switch defaults off', () {
-      expect(DailyPicksPrefs.enabled, isFalse);
+    test('the switch defaults on', () {
+      expect(DailyPicksPrefs.enabled, isTrue);
     });
 
     test('the switch round-trips', () async {
@@ -169,6 +175,10 @@ void main() {
       );
       expect(
         DailyPicksPrefs.needsFill(DailyPickSlot.evening, '2026-01-01'),
+        isTrue,
+      );
+      expect(
+        DailyPicksPrefs.needsFill(DailyPickSlot.night, '2026-01-01'),
         isTrue,
       );
     });

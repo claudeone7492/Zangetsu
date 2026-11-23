@@ -121,33 +121,36 @@ void main() {
 
       expect(out.single.url, 'https://cdn.test/sf1.m3u8');
       // The fallback resolved the OTHER provider's own handle, not the stale one.
-      expect(repo.askedSources, contains(
-        'streamfree|live:sf1|https://streamfree.test/sf1.m3u8',
-      ));
+      expect(
+        repo.askedSources,
+        contains('streamfree|live:sf1|https://streamfree.test/sf1.m3u8'),
+      );
     });
 
-    test('matches a fixture the two providers title slightly differently',
-        () async {
-      final repo = _StubRepo(
-        installed: const ['moviebox', 'streamfree'],
-        fixturesBySource: {
-          'streamfree': [_fixture('streamfree', 'sf9', 'France v Germany')],
-        },
-        sourcesByKey: {
-          'streamfree|live:sf9|https://streamfree.test/sf9.m3u8': [
-            _src('https://cdn.test/sf9.m3u8'),
-          ],
-        },
-      );
+    test(
+      'matches a fixture the two providers title slightly differently',
+      () async {
+        final repo = _StubRepo(
+          installed: const ['moviebox', 'streamfree'],
+          fixturesBySource: {
+            'streamfree': [_fixture('streamfree', 'sf9', 'France v Germany')],
+          },
+          sourcesByKey: {
+            'streamfree|live:sf9|https://streamfree.test/sf9.m3u8': [
+              _src('https://cdn.test/sf9.m3u8'),
+            ],
+          },
+        );
 
-      final out = await repo.liveSources(
-        'live:mb9|',
-        sourceId: 'moviebox',
-        title: 'France vs Germany',
-      );
+        final out = await repo.liveSources(
+          'live:mb9|',
+          sourceId: 'moviebox',
+          title: 'France vs Germany',
+        );
 
-      expect(out.single.url, 'https://cdn.test/sf9.m3u8');
-    });
+        expect(out.single.url, 'https://cdn.test/sf9.m3u8');
+      },
+    );
 
     test('does not match a different fixture', () async {
       final repo = _StubRepo(
@@ -195,6 +198,28 @@ void main() {
         repo.askedSources.where((k) => k.startsWith('streamfree|')),
         isEmpty,
       );
+    });
+
+    test('a Nuvio handle resolves through its own provider', () async {
+      final repo = _StubRepo(
+        installed: const ['nuviotv', 'moviebox'],
+        sourcesByKey: {
+          'nuviotv|nuviotv:nuvio_sport_1': [
+            _src('https://cdn.test/nuvio.m3u8'),
+          ],
+        },
+      );
+
+      final out = await repo.liveSources(
+        'nuviotv:nuvio_sport_1',
+        sourceId: 'nuviotv',
+        title: 'Arsenal vs Chelsea',
+      );
+
+      expect(out.single.url, 'https://cdn.test/nuvio.m3u8');
+      // If `nuviotv:` were not a live handle, liveSources would delegate to
+      // sources with the same key and the fallback would never be reached.
+      expect(repo.askedSources, ['nuviotv|nuviotv:nuvio_sport_1']);
     });
 
     test('an ordinary title delegates to sources unchanged', () async {
