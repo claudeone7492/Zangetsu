@@ -98,7 +98,9 @@ class _SportsScreenState extends State<SportsScreen> {
       });
     }
     try {
-      var items = await SportsFeed.fetch(repo);
+      // Preflight live fixtures so a provider that lists a match but has no
+      // stream cannot send the viewer into "No playable sources".
+      var items = await SportsFeed.fetch(repo, playableOnly: true);
       if (!mounted) return;
       setState(() {
         _fixtures = items;

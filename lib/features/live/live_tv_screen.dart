@@ -381,14 +381,15 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   }
 
   /// Every installed sports source's soccer fixtures, merged in
-  /// [kLiveSportsSourceIds] order, or an empty list when none is installed or
-  /// the feeds answer nothing. Best-effort by design: the IPTV channels are the
+  /// [kLiveSportsSourceIds] order, preflighted so only in-play rows with a
+  /// resolvable stream survive, or an empty list when none is installed or the
+  /// feeds answer nothing. Best-effort by design: the IPTV channels are the
   /// page's reason to exist, sports are a bonus rail.
   ///
   /// Static + repo-parameterised so the launch [preload] can run it before the
   /// screen exists.
   static Future<List<MediaItem>> _fetchSports(SourceRepository repo) =>
-      SportsFeed.fetch(repo);
+      SportsFeed.fetch(repo, playableOnly: true);
 
   /// Non-empty category names, in catalogue order. Index 0 of the selector is
   /// the synthetic "All channels"; the rest map here by `index - 1`.

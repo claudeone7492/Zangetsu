@@ -7,6 +7,7 @@ import 'package:watch_app/core/di/injector.dart';
 import 'package:watch_app/core/live/sports_feed.dart';
 import 'package:watch_app/core/models/media_item.dart';
 import 'package:watch_app/core/models/provider_info.dart';
+import 'package:watch_app/core/models/video_source.dart';
 import 'package:watch_app/core/repository/source_repository.dart';
 import 'package:watch_app/features/live/sports_screen.dart';
 
@@ -31,9 +32,12 @@ MediaItem _match(
 );
 
 class _FakeSportsRepository implements SourceRepository {
-  _FakeSportsRepository(this.items);
+  _FakeSportsRepository(this.items, {this.playableIds});
 
   final List<MediaItem> items;
+
+  /// Fixture ids that resolve to a stream. Null means every fixture resolves.
+  final Set<String>? playableIds;
 
   @override
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -44,6 +48,19 @@ class _FakeSportsRepository implements SourceRepository {
   @override
   Future<List<MediaItem>> live({String? sourceId}) async =>
       sourceId == kLiveSportsSourceIds.first ? items : const [];
+
+  @override
+  Future<List<VideoSource>> liveSources(
+    String episodeUrl, {
+    String? sourceId,
+    String? title,
+  }) async {
+    final id = episodeUrl.startsWith('live:')
+        ? episodeUrl.substring('live:'.length).split('|').first
+        : episodeUrl;
+    if (playableIds != null && !playableIds!.contains(id)) return const [];
+    return const [VideoSource(url: 'https://sports.test/live.m3u8')];
+  }
 }
 
 class _MultiSportsRepository implements SourceRepository {
@@ -60,6 +77,13 @@ class _MultiSportsRepository implements SourceRepository {
   @override
   Future<List<MediaItem>> live({String? sourceId}) async =>
       bySource[sourceId] ?? const [];
+
+  @override
+  Future<List<VideoSource>> liveSources(
+    String episodeUrl, {
+    String? sourceId,
+    String? title,
+  }) async => const [VideoSource(url: 'https://sports.test/live.m3u8')];
 }
 
 DateTime _todayAt(int hour, int minute) {
@@ -86,11 +110,17 @@ void main() {
     await GetIt.instance.reset();
   });
 
-  Future<void> pumpSports(WidgetTester tester, List<MediaItem> items) async {
+  Future<void> pumpSports(
+    WidgetTester tester,
+    List<MediaItem> items, {
+    Set<String>? playableIds,
+  }) async {
     tester.view.physicalSize = const Size(1100, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    sl.registerSingleton<SourceRepository>(_FakeSportsRepository(items));
+    sl.registerSingleton<SourceRepository>(
+      _FakeSportsRepository(items, playableIds: playableIds),
+    );
     await tester.pumpWidget(
       const MaterialApp(home: SportsScreen(showBack: true)),
     );
@@ -202,6 +232,49 @@ void main() {
     expect(find.text('Arsenal'), findsOneWidget);
     expect(find.text('Barcelona'), findsNothing);
     expect(find.text('TODAY'), findsNothing);
+
+    await dispose(tester);
+  });
+
+  testWidgets('a live fixture no provider can resolve is hidden from the '
+      'match centre', (tester) async {
+    final items = [
+      _match(
+        'l1',
+        'Arsenal vs Chelsea',
+        start: _todayAt(15, 0),
+        badge: 'LIVE',
+        info: 'Premier League · 63\'',
+      ),
+      _match(
+        'l2',
+        'Wadi Degla vs Al Ittihad',
+        start: _todayAt(15, 0),
+        badge: 'LIVE',
+        info: 'Egypt Premier League · 20\'',
+        genres: const ['Egypt Premier League'],
+      ),
+      _match(
+        't1',
+        'Barcelona vs Real Madrid',
+        start: _todayAt(23, 0),
+        badge: 'in 2h',
+        info: 'La Liga',
+        genres: const ['La Liga'],
+      ),
+    ];
+
+    await pumpSports(tester, items, playableIds: const {'l1'});
+
+    expect(find.text('Arsenal'), findsOneWidget);
+    expect(find.text('Wadi Degla'), findsNothing);
+    expect(find.text('Barcelona'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('sports-filter-live')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Arsenal'), findsOneWidget);
+    expect(find.text('Wadi Degla'), findsNothing);
 
     await dispose(tester);
   });

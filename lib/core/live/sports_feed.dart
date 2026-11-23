@@ -47,10 +47,19 @@ class SportsFeed {
   static bool isFinished(MediaItem item) =>
       (item.liveBadge ?? '').toUpperCase() == 'FT';
 
-  /// Every playable soccer fixture the installed sports sources publish,
-  /// merged in [kLiveSportsSourceIds] order and ranked live → upcoming →
-  /// finished.
-  static Future<List<MediaItem>> fetch(SourceRepository repo) async {
+  /// Every soccer fixture the installed sports sources publish, merged in
+  /// [kLiveSportsSourceIds] order and ranked live → upcoming → finished.
+  ///
+  /// [playableOnly] preflights every in-play fixture through
+  /// [SourceRepository.liveSources] and drops the ones no source can resolve.
+  /// A provider can list a match as live while its stream endpoint returns
+  /// nothing (or the broadcast has moved), and showing that row only sends the
+  /// viewer into "No playable sources for this episode". Scheduled and finished
+  /// rows are left alone: they never open the player.
+  static Future<List<MediaItem>> fetch(
+    SourceRepository repo, {
+    bool playableOnly = false,
+  }) async {
     final installed = kLiveSportsSourceIds.where(repo.hasSource).toList();
     if (installed.isEmpty) return const [];
 
@@ -88,8 +97,59 @@ class SportsFeed {
       final byRank = rank(a.value).compareTo(rank(b.value));
       return byRank != 0 ? byRank : a.key.compareTo(b.key);
     });
-    return [for (final entry in indexed) entry.value];
+    final sorted = [for (final entry in indexed) entry.value];
+    return playableOnly ? _keepPlayable(repo, sorted) : sorted;
   }
+
+  /// Resolve every in-play fixture and keep only those with at least one
+  /// source. The work is capped at [_playableWorkers] at a time so a busy
+  /// Saturday does not open dozens of provider requests at once, and each
+  /// fixture is bounded by [_playableTimeout] so one dead endpoint cannot hold
+  /// the whole page.
+  static Future<List<MediaItem>> _keepPlayable(
+    SourceRepository repo,
+    List<MediaItem> items,
+  ) async {
+    final live = <int, MediaItem>{
+      for (var i = 0; i < items.length; i++)
+        if (isLive(items[i])) i: items[i],
+    };
+    if (live.isEmpty) return items;
+
+    final entries = live.entries.toList();
+    final playable = <int, bool>{};
+    var next = 0;
+
+    Future<void> worker() async {
+      while (next < entries.length) {
+        final entry = entries[next++];
+        try {
+          final sources = await repo
+              .liveSources(
+                entry.value.url,
+                sourceId: entry.value.sourceId,
+                title: entry.value.title,
+              )
+              .timeout(_playableTimeout);
+          playable[entry.key] = sources.isNotEmpty;
+        } catch (_) {
+          playable[entry.key] = false;
+        }
+      }
+    }
+
+    await Future.wait([
+      for (var i = 0; i < _playableWorkers && i < entries.length; i++) worker(),
+    ]);
+
+    return [
+      for (var i = 0; i < items.length; i++)
+        if (!live.containsKey(i) || playable[i] == true) items[i],
+    ];
+  }
+
+  static const int _playableWorkers = 4;
+  static const Duration _playableTimeout = Duration(seconds: 15);
 
   /// A key that ignores the provider's spelling of the same fixture: accents,
   /// punctuation, "v"/"vs"/"@", a league prefix, a scoreline, and the order the

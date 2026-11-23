@@ -15,6 +15,7 @@ import 'package:watch_app/core/di/injector.dart';
 import 'package:watch_app/core/models/home_section.dart';
 import 'package:watch_app/core/models/media_item.dart';
 import 'package:watch_app/core/models/provider_info.dart';
+import 'package:watch_app/core/models/video_source.dart';
 import 'package:watch_app/core/playback/playback_prefs.dart';
 import 'package:watch_app/core/repository/source_repository.dart';
 import 'package:watch_app/core/ui/row_skeleton.dart';
@@ -123,6 +124,13 @@ class _FakeSourceRepository implements SourceRepository {
     }
     return const [];
   }
+
+  @override
+  Future<List<VideoSource>> liveSources(
+    String episodeUrl, {
+    String? sourceId,
+    String? title,
+  }) async => const [VideoSource(url: 'https://sports.test/live.m3u8')];
 
   @override
   Future<List<MediaItem>> search(
