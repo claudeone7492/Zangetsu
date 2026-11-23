@@ -5,6 +5,7 @@ import '../../core/logging/app_logger.dart';
 import '../../core/subscription/entitlement_cache.dart';
 import '../../core/subscription/subscription_models.dart';
 import '../../core/subscription/subscription_repository.dart';
+import '../../core/subscription/trial_countdown.dart';
 import 'paywall_screen.dart';
 
 /// The server's verdict on whether this device may proceed: entitled, or the
@@ -31,6 +32,7 @@ Future<bool> deviceEntitled({SubscriptionApi? api}) async {
 
   if (identity != null) {
     await EntitlementCache.save(identity);
+    TrialCountdownController.instance.update(identity);
     final allowed = identity.entitled || !identity.showPaywall;
     if (!allowed) {
       AppLogger.instance.log(
@@ -49,6 +51,7 @@ Future<bool> deviceEntitled({SubscriptionApi? api}) async {
 Future<bool> _cachedVerdict() async {
   final cached = await EntitlementCache.read();
   if (cached == null) {
+    TrialCountdownController.instance.update(null);
     AppLogger.instance.log(
       '[paywall] no server verdict and no cached entitlement — blocking',
     );
@@ -56,8 +59,10 @@ Future<bool> _cachedVerdict() async {
   }
 
   final now = DateTime.now().toUtc();
-  if (cached.checkedAt.isAfter(now.add(const Duration(hours: 1)))) {
-    // A clock moved backwards must not resurrect a lapsed period.
+  if (cached.checkedAt.isAfter(now.add(const Duration(minutes: 2)))) {
+    // A clock moved backwards must not resurrect a lapsed period. Two minutes
+    // tolerates normal NTP drift without allowing a meaningful rollback.
+    TrialCountdownController.instance.update(null);
     AppLogger.instance.log(
       '[paywall] cached verdict timestamp is in the future',
     );
@@ -66,6 +71,7 @@ Future<bool> _cachedVerdict() async {
 
   final identity = cached.identity;
   if (!identity.entitled && identity.showPaywall) {
+    TrialCountdownController.instance.update(null);
     AppLogger.instance.log('[paywall] cached verdict says unentitled');
     return false;
   }
@@ -73,6 +79,15 @@ Future<bool> _cachedVerdict() async {
   final end = identity.periodEnd?.toUtc();
   if (end != null) {
     final stillRunning = now.isBefore(end);
+    if (stillRunning) {
+      TrialCountdownController.instance.update(
+        identity,
+        checkedAt: cached.checkedAt,
+        notifyExpiry: false,
+      );
+    } else {
+      TrialCountdownController.instance.update(null);
+    }
     AppLogger.instance.log(
       '[paywall] cached verdict ${stillRunning ? "allows" : "denies"} access '
       'until ${end.toIso8601String()}',
@@ -82,6 +97,15 @@ Future<bool> _cachedVerdict() async {
 
   // No period end (older server shape): allow a short offline window only.
   final fresh = now.difference(cached.checkedAt) <= const Duration(hours: 24);
+  if (fresh) {
+    TrialCountdownController.instance.update(
+      identity,
+      checkedAt: cached.checkedAt,
+      notifyExpiry: false,
+    );
+  } else {
+    TrialCountdownController.instance.update(null);
+  }
   AppLogger.instance.log(
     '[paywall] cached verdict without period_end — '
     '${fresh ? "allowing" : "blocking"} after 24h',

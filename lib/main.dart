@@ -67,6 +67,7 @@ import 'features/live/live_tv_screen.dart';
 import 'features/onboarding/boot_error_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/paywall/subscription_gate.dart';
+import 'features/paywall/trial_countdown_badge.dart';
 import 'features/privacy/app_lock_gate.dart';
 import 'features/profiles/profile_launch_gate.dart';
 import 'features/shell/root_shell.dart';
@@ -875,6 +876,7 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
         ],
         home: _buildHome(),
         builder: (_, child) {
+          final isTv = sl.isRegistered<AppMode>() && sl<AppMode>().isTv;
           final content = shellFeatures
               ? Stack(
                   children: [
@@ -891,10 +893,26 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
                           ),
                         ),
                       ),
+                    // One global position, so every screen and every pushed
+                    // route sees the same trial clock. It is absent for paid
+                    // subscribers because the controller only publishes a
+                    // countdown when the active entitlement is a trial.
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      child: SafeArea(
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            top: 8,
+                            left: isTv ? 88 : 10,
+                          ),
+                          child: const TrialCountdownBadge(),
+                        ),
+                      ),
+                    ),
                   ],
                 )
               : (child ?? const SizedBox.shrink());
-          final isTv = sl.isRegistered<AppMode>() && sl<AppMode>().isTv;
           final framed = PosterCardScope(
             child: isTv ? TvViewport(child: content) : content,
           );

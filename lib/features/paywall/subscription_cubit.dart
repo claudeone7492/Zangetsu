@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/subscription/geo_pricing.dart';
 import '../../core/subscription/subscription_models.dart';
 import '../../core/subscription/subscription_repository.dart';
+import '../../core/subscription/trial_countdown.dart';
 
 /// Where the user is in the subscribe flow.
 enum PaywallStage { loading, ready, activating, error }
@@ -68,8 +69,7 @@ class SubscriptionState extends Equatable {
   int get listCents => selected?.priceCents ?? 0;
 
   /// Launch-offer price (list minus [discountPct]).
-  int get offerCents =>
-      (listCents * (100 - discountPct) / 100).round();
+  int get offerCents => (listCents * (100 - discountPct) / 100).round();
 
   /// Price after the promo, floored at 0.
   int get totalCents {
@@ -92,7 +92,7 @@ class SubscriptionState extends Equatable {
   /// price. Null when the device is not on African rails or no rate is known.
   String? get geoApprox => geoQuote?.format(payableCents / 100);
 
-    SubscriptionState copyWith({
+  SubscriptionState copyWith({
     PaywallStage? stage,
     List<SubscriptionPlan>? plans,
     DeviceIdentity? identity,
@@ -127,6 +127,8 @@ class SubscriptionState extends Equatable {
     identity?.showPaywall,
     identity?.status,
     identity?.daysLeft,
+    identity?.isTrial,
+    identity?.periodEnd,
     selectedKey,
     promo?.code,
     message,
@@ -157,6 +159,9 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     final identity = results[1] as DeviceIdentity?;
     final geoQuote = results[2] as GeoQuote?;
     final config = results[3] as SubscriptionConfig;
+    if (identity != null) {
+      TrialCountdownController.instance.update(identity);
+    }
 
     // One product: the premium subscription at the standard price. The backend
     // still carries a tiered catalogue, so collapse it to a single card rather
@@ -214,7 +219,10 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       return;
     }
 
-    final result = await _repo.resolvePromo(trimmed, planKey: state.selectedKey);
+    final result = await _repo.resolvePromo(
+      trimmed,
+      planKey: state.selectedKey,
+    );
     if (result == null) {
       emit(
         state.copyWith(
@@ -237,7 +245,11 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   }
 
   void clearPromo() => emit(
-    state.copyWith(promo: () => null, message: () => null, promoRejected: false),
+    state.copyWith(
+      promo: () => null,
+      message: () => null,
+      promoRejected: false,
+    ),
   );
 
   /// Activates the free trial for a first-time device. Returns true on success.
@@ -257,6 +269,9 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       return false;
     }
     final identity = await _repo.identify();
+    if (identity != null) {
+      TrialCountdownController.instance.update(identity);
+    }
     emit(
       state.copyWith(
         stage: PaywallStage.ready,
@@ -298,6 +313,9 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   /// the server's verdict rather than the WebView's return.
   Future<bool> refreshEntitlement() async {
     final identity = await _repo.identify();
+    if (identity != null) {
+      TrialCountdownController.instance.update(identity);
+    }
     emit(state.copyWith(identity: identity));
     return identity?.entitled ?? false;
   }
@@ -309,6 +327,9 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     final result = await _repo.linkDevice(code);
     if (result?.ok == true) {
       final identity = await _repo.identify();
+      if (identity != null) {
+        TrialCountdownController.instance.update(identity);
+      }
       emit(state.copyWith(stage: PaywallStage.ready, identity: identity));
     } else {
       emit(state.copyWith(stage: PaywallStage.ready));

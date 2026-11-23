@@ -100,6 +100,8 @@ class DeviceIdentity {
     this.showPaywall = true,
     this.trialAvailable = false,
     this.daysLeft = 0,
+    this.isTrial = false,
+    this.serverNow,
   });
 
   final String sessionId;
@@ -121,6 +123,16 @@ class DeviceIdentity {
   /// Whole days left in the current period.
   final int daysLeft;
 
+  /// True only while the current entitlement is the one-time free trial.
+  /// Paid plans and admin-paid grants are false, so the app never shows a
+  /// trial countdown to a paying subscriber.
+  final bool isTrial;
+
+  /// Server clock at the moment this identity was read. The countdown uses
+  /// this instead of the device clock, so moving the device clock back cannot
+  /// stretch a trial.
+  final DateTime? serverNow;
+
   bool get isActive =>
       entitled || status == 'active' || status == 'grace' || status == 'trial';
 
@@ -137,12 +149,15 @@ class DeviceIdentity {
     'show_paywall': showPaywall,
     'trial_available': trialAvailable,
     'days_left': daysLeft,
+    'is_trial': isTrial,
+    'server_now': serverNow?.toUtc().toIso8601String(),
   };
 
   static DeviceIdentity? fromMap(Map<String, dynamic> m) {
     final session = m['session_id'];
     if (session is! String) return null;
     final end = m['period_end'];
+    final server = m['server_now'];
     return DeviceIdentity(
       sessionId: session,
       isNew: m['is_new'] == true,
@@ -154,6 +169,8 @@ class DeviceIdentity {
       showPaywall: m['show_paywall'] != false,
       trialAvailable: m['trial_available'] == true,
       daysLeft: (m['days_left'] as num?)?.toInt() ?? 0,
+      isTrial: m['is_trial'] == true,
+      serverNow: server is String ? DateTime.tryParse(server) : null,
     );
   }
 }

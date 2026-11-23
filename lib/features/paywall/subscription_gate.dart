@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../core/di/injector.dart';
 import '../../core/subscription/subscription_repository.dart';
+import '../../core/subscription/trial_countdown.dart';
 import '../../core/theme/app_colors.dart';
 import 'entitlement_gate.dart';
 import 'paywall_screen.dart';
@@ -29,15 +32,35 @@ class SubscriptionGate extends StatefulWidget {
   State<SubscriptionGate> createState() => _SubscriptionGateState();
 }
 
-class _SubscriptionGateState extends State<SubscriptionGate> {
+class _SubscriptionGateState extends State<SubscriptionGate>
+    with WidgetsBindingObserver {
   bool _allowed = false;
   bool _paywallOpen = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    TrialCountdownController.instance.attach(this);
+    TrialCountdownController.instance.expired.addListener(_onTrialExpired);
+    unawaited(TrialCountdownController.instance.start(api: _api));
     // After the first frame so a modal has a Navigator/Overlay to attach to.
     WidgetsBinding.instance.addPostFrameCallback((_) => _evaluate());
+  }
+
+  @override
+  void dispose() {
+    TrialCountdownController.instance.expired.removeListener(_onTrialExpired);
+    TrialCountdownController.instance.detach(this);
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_evaluate());
+    }
   }
 
   SubscriptionApi? get _api {
@@ -53,7 +76,8 @@ class _SubscriptionGateState extends State<SubscriptionGate> {
       _allow();
       return;
     }
-    _openPaywall();
+    _deny();
+    unawaited(_openPaywall());
   }
 
   void _allow() {
@@ -61,12 +85,31 @@ class _SubscriptionGateState extends State<SubscriptionGate> {
     setState(() => _allowed = true);
   }
 
-  Future<void> _openPaywall() async {
+  /// Takes the app content away when a server verdict or the local trial clock
+  /// says access has ended. The paywall is then opened over the spinner.
+  void _deny() {
+    if (!mounted || !_allowed) return;
+    setState(() => _allowed = false);
+  }
+
+  void _onTrialExpired() {
+    if (!mounted) return;
+    _deny();
+    unawaited(
+      _openPaywall(
+        reason: 'Your free trial has ended — subscribe to keep watching',
+      ),
+    );
+  }
+
+  Future<void> _openPaywall({
+    String reason = 'Subscribe to start watching',
+  }) async {
     if (_paywallOpen || !mounted) return;
     _paywallOpen = true;
     final unlocked = await showPaywall(
       context,
-      reason: 'Subscribe to start watching',
+      reason: reason,
       onUnlocked: _allow,
       dismissible: false,
     );
@@ -74,6 +117,10 @@ class _SubscriptionGateState extends State<SubscriptionGate> {
     if (!mounted) return;
     if (unlocked) {
       _allow();
+      // The unlock may have been a trial or a paid charge. Drop the old
+      // countdown and let the server say which one it is before showing it.
+      TrialCountdownController.instance.update(null);
+      unawaited(TrialCountdownController.instance.refresh(api: _api));
     } else {
       // Not unlocked: re-read the server verdict (a promo or charge may have
       // settled) and, if still shut, bring the card back. Home stays hidden.
