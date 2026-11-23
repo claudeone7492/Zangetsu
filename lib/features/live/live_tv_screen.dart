@@ -230,12 +230,32 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   int _category = 0;
   LiveSort _sort = LiveSort.defaultOrder;
 
+  /// IPTV category keys, keyed by the section title the provider returns. The
+  /// search passes the key to the source so it sweeps only that category's
+  /// playlist; a user-imported group with a different name has no key and is
+  /// filtered client-side instead.
+  static const Map<String, String> _categoryKeys = {
+    'animation': 'animation',
+    'movies': 'movies',
+    'series': 'series',
+    'news': 'news',
+    'sports': 'sports',
+    'kids': 'kids',
+    'documentary': 'documentary',
+    'music': 'music',
+  };
+
   final TextEditingController _queryController = TextEditingController();
   Timer? _debounce;
   String _query = '';
   bool _searching = false;
   bool _searchFailed = false;
   List<MediaItem> _results = const [];
+
+  /// Bumped whenever a search is superseded (new query, new pill, cleared
+  /// field). A slower earlier request checks this before writing its hits, so
+  /// changing the category pill mid-search cannot paint the old pill's hits.
+  int _searchGen = 0;
 
   /// Recomputes upcoming-fixture countdowns, so "in 12m" becomes "in 11m" as
   /// the page sits open rather than freezing at whatever the source returned.
@@ -405,6 +425,14 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
       ? _categories[_category - 1]
       : null;
 
+  /// The selected pill's IPTV category key, or null for "All" and for a
+  /// user-imported group the bundled provider doesn't know.
+  String? get _selectedCategoryKey {
+    final selected = _selectedCategory;
+    if (selected == null) return null;
+    return _categoryKeys[selected.trim().toLowerCase()];
+  }
+
   /// The rows the browse view actually paints, after the category filter and
   /// the chosen sort. Empty rows are dropped so a filter never leaves a
   /// titled-but-empty rail.
@@ -416,29 +444,56 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     final selected = _selectedCategory;
     final out = <HomeSection>[];
     final visibleSports = _parentalFilter(_sports);
-    if (selected == null && visibleSports.isNotEmpty) {
-      // Grouped by competition when the fixtures name one, else the flat rail.
-      final leagues = _sportsLeagues(visibleSports);
-      if (leagues != null) {
-        out.addAll(leagues);
-      } else {
-        out.add(
-          HomeSection(
-            title: context.l10n.liveSports,
-            items: _sorted(visibleSports),
-          ),
-        );
+    if (selected == null) {
+      if (visibleSports.isNotEmpty) {
+        // Grouped by competition when the fixtures name one, else the flat rail.
+        final leagues = _sportsLeagues(visibleSports);
+        if (leagues != null) {
+          out.addAll(leagues);
+        } else {
+          out.add(
+            HomeSection(
+              title: context.l10n.liveSports,
+              items: _sorted(visibleSports),
+            ),
+          );
+        }
       }
+      for (final s in _sections) {
+        if (s.items.isEmpty) continue;
+        final items = _parentalFilter(s.items);
+        if (items.isEmpty) continue;
+        out.add(HomeSection(title: s.title, items: _sorted(items)));
+      }
+      return out;
     }
+
+    // A selected pill is a focused category. Collect every channel that
+    // belongs to it, not only the section whose title happens to match
+    // byte-for-byte: imported playlists and IPTV both spell categories
+    // differently ("News", "News HD", "news"), and an exact-title filter
+    // left those pills looking broken (an empty grid for a category that
+    // clearly had channels). Title matches are still preferred; item-level
+    // matching is the fallback.
+    final wanted = _normaliseCategory(selected);
+    final items = <MediaItem>[];
     for (final s in _sections) {
       if (s.items.isEmpty) continue;
-      if (selected != null && s.title != selected) continue;
-      final items = _parentalFilter(s.items);
-      if (items.isEmpty) continue;
-      out.add(HomeSection(title: s.title, items: _sorted(items)));
+      final filtered = _parentalFilter(s.items);
+      if (_normaliseCategory(s.title) == wanted) {
+        items.addAll(filtered);
+        continue;
+      }
+      items.addAll(filtered.where((i) => _matchesCategory(i, selected)));
+    }
+    if (items.isNotEmpty) {
+      out.add(HomeSection(title: selected, items: _sorted(items)));
     }
     return out;
   }
+
+  String _normaliseCategory(String value) =>
+      value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
 
   /// Search hits, narrowed by the same category selector and sort. The hits
   /// only carry a title/url — not the IPTV category they came from — so the
@@ -453,11 +508,26 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     final hits = selected == null
         ? _results
         : _results
-              .where(
-                (m) => m.title.toLowerCase().contains(selected.toLowerCase()),
-              )
+              .where((m) => _matchesCategory(m, selected))
               .toList(growable: false);
     return _sorted(hits);
+  }
+
+  /// Whether [item] belongs to [category]. IPTV category hits carry the pill's
+  /// title in `genres`; imported-playlist hits carry their `group-title` in
+  /// `liveInfo`. Title containment is deliberately not used: "Sky Sports" is
+  /// not in the "News" pill just because the word appears in another channel.
+  bool _matchesCategory(MediaItem item, String category) {
+    final wanted = _normaliseCategory(category);
+    if (wanted.isEmpty) return true;
+    final info = _normaliseCategory(item.liveInfo ?? '');
+    if (info == wanted ||
+        info.startsWith('$wanted ') ||
+        info.endsWith(' $wanted') ||
+        info.contains(' $wanted ')) {
+      return true;
+    }
+    return item.genres.any((g) => _normaliseCategory(g) == wanted);
   }
 
   List<MediaItem> _sorted(List<MediaItem> items) => switch (_sort) {
@@ -473,6 +543,14 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   void _onCategoryChanged(int index) {
     if (index == _category) return;
     setState(() => _category = index);
+    if (_query.isNotEmpty) {
+      _debounce?.cancel();
+      setState(() {
+        _searching = true;
+        _searchFailed = false;
+      });
+      _runSearch(_query);
+    }
   }
 
   void _onSortChanged(LiveSort sort) {
@@ -484,6 +562,8 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     final query = value.trim();
     _debounce?.cancel();
     if (query == _query) return;
+    // Invalidate any request still in flight for the previous text.
+    _searchGen++;
     setState(() => _query = query);
     if (query.isEmpty) {
       setState(() {
@@ -501,21 +581,27 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   }
 
   Future<void> _runSearch(String query) async {
+    final gen = ++_searchGen;
     final localFuture = _localSearch(query);
     try {
       final hits = await _repo
-          .search(query, sourceId: kLiveTvSourceId)
+          .search(
+            query,
+            sourceId: kLiveTvSourceId,
+            category: _selectedCategoryKey ?? '',
+          )
           .timeout(_timeout);
       final local = await localFuture;
-      // A slower earlier query must never overwrite a newer one's results.
-      if (!mounted || query != _query) return;
+      // A slower earlier query or a previous category pill must never
+      // overwrite the current search's results.
+      if (!mounted || gen != _searchGen || query != _query) return;
       setState(() {
         _results = [...local, ...hits];
         _searching = false;
         _searchFailed = false;
       });
     } catch (_) {
-      if (!mounted || query != _query) return;
+      if (!mounted || gen != _searchGen || query != _query) return;
       setState(() {
         _results = const [];
         _searching = false;
@@ -893,7 +979,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'L.S',
+                  'Sports',
                   style: AppText.caption.copyWith(
                     color: AppColors.accent,
                     fontWeight: FontWeight.w800,
@@ -975,6 +1061,78 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     ),
   );
 
+  Widget _phoneChannelCard(MediaItem item) => _markable(
+    item,
+    PosterCard(
+      title: item.title,
+      logoItem: item,
+      imageUrl: item.cover,
+      headers: item.coverHeaders,
+      genres: item.genres,
+      liveBadge: item.liveBadge,
+      liveInfo: item.liveInfo,
+      liveUnplayable: item.liveUnplayable,
+      onTap: () => _open(item),
+    ),
+  );
+
+  /// A selected pill is a focused category, so its channels fill a grid
+  /// instead of one long horizontal rail. The "All" view keeps the rails.
+  Widget _phoneCategoryGrid(List<HomeSection> sections) {
+    final items = [for (final section in sections) ...section.items];
+    return CustomScrollView(
+      key: const ValueKey('live-category-grid'),
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          sliver: SliverToBoxAdapter(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedCategory ?? '',
+                    style: AppText.headline.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${items.length}',
+                  style: AppText.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
+          sliver: SliverGrid(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: _phoneSearchColumns,
+              childAspectRatio: posterCellAspect(
+                _phoneSearchCellWidth(context),
+                textScaler: MediaQuery.textScalerOf(context),
+                wide: posterLayout(context) == PosterCardLayout.wide,
+                titleInside: posterTitleInside(
+                  context,
+                  wide: posterLayout(context) == PosterCardLayout.wide,
+                ),
+              ),
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 16,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, i) => _phoneChannelCard(items[i]),
+              childCount: items.length,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _phoneBrowse() {
     if (_loading) {
       // Preloader, not a spinner: the page is warmed at boot (see [preload])
@@ -1009,6 +1167,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
         onAction: _load,
       );
     }
+    if (_selectedCategory != null) return _phoneCategoryGrid(sections);
     return ListView.builder(
       padding: const EdgeInsets.only(top: 8, bottom: 96),
       itemCount: sections.length,
@@ -1086,23 +1245,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
         mainAxisSpacing: 16,
       ),
       itemCount: results.length,
-      itemBuilder: (context, i) {
-        final item = results[i];
-        return _markable(
-          item,
-          PosterCard(
-            title: item.title,
-            logoItem: item,
-            imageUrl: item.cover,
-            headers: item.coverHeaders,
-            genres: item.genres,
-            liveBadge: item.liveBadge,
-            liveInfo: item.liveInfo,
-            liveUnplayable: item.liveUnplayable,
-            onTap: () => _open(item),
-          ),
-        );
-      },
+      itemBuilder: (context, i) => _phoneChannelCard(results[i]),
     );
   }
 
@@ -1205,7 +1348,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'L.S',
+              'Sports',
               style: AppText.caption.copyWith(
                 color: AppColors.accent,
                 fontWeight: FontWeight.w800,
@@ -1229,6 +1372,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     final selected = _category == index;
     final label = index == 0 ? context.l10n.all : categories[index - 1];
     return TvFocusable(
+      key: ValueKey('live-category-$index'),
       variant: TvFocusVariant.pill,
       semanticLabel: label,
       onTap: () => _onCategoryChanged(index),
@@ -1310,6 +1454,71 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     );
   }
 
+  /// TV counterpart of the phone category grid: a D-pad-focusable grid for a
+  /// selected pill, while "All" keeps the horizontal rails.
+  Widget _tvCategoryGrid(List<HomeSection> sections) {
+    final items = [for (final section in sections) ...section.items];
+    return CustomScrollView(
+      key: const ValueKey('live-category-grid'),
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(40, 0, 40, 16),
+          sliver: SliverToBoxAdapter(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedCategory ?? '',
+                    style: AppText.headline.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${items.length}',
+                  style: AppText.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(40, 0, 40, 40),
+          sliver: SliverGrid(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: tvPosterGridColumns(context),
+              childAspectRatio: tvPosterGridAspect(context),
+              crossAxisSpacing: 18,
+              mainAxisSpacing: 22,
+            ),
+            delegate: SliverChildBuilderDelegate((_, i) {
+              final item = items[i];
+              return TvPosterTile(
+                autofocus: i == 0,
+                title: item.title,
+                logoItem: item,
+                imageUrl: item.cover,
+                wideImageUrl: item.banner,
+                headers: item.coverHeaders,
+                genres: item.genres,
+                isAdult: item.isAdult,
+                scoreBadge: item.score,
+                qualityBadge: item.quality,
+                dubBadge: item.dubBadge,
+                liveBadge: item.liveBadge,
+                liveInfo: item.liveInfo,
+                liveUnplayable: item.liveUnplayable,
+                onTap: () => _open(item),
+              );
+            }, childCount: items.length),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _tvBrowse(AppLocalizations l10n) {
     if (_loading) {
       return Padding(
@@ -1323,6 +1532,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     if (_failed) return _tvMessage(l10n.somethingWentWrong, retry: _load);
     final sections = _visibleSections;
     if (sections.isEmpty) return _tvMessage(l10n.noResults, retry: _load);
+    if (_selectedCategory != null) return _tvCategoryGrid(sections);
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 32),
       itemCount: sections.length,

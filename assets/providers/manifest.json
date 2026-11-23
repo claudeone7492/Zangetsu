@@ -133,6 +133,86 @@
       "nsfw": false
     },
     {
+      "id": "mangadex",
+      "name": "MangaDex",
+      "version": "1.0.0",
+      "type": "manga",
+      "lang": "en",
+      "file": "mangadex.js",
+      "logo": "https://mangadex.org/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "mangaread",
+      "name": "MangaRead",
+      "version": "1.0.0",
+      "type": "manga",
+      "lang": "en",
+      "file": "mangaread.js",
+      "logo": "https://www.mangaread.org/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "mangadna",
+      "name": "MangaDNA",
+      "version": "1.0.0",
+      "type": "manga",
+      "lang": "en",
+      "file": "mangadna.js",
+      "logo": "https://mangadna.com/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "mangafreak",
+      "name": "MangaFreak",
+      "version": "1.0.0",
+      "type": "manga",
+      "lang": "en",
+      "file": "mangafreak.js",
+      "logo": "https://ww3.mangafreak.me/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "mangahub",
+      "name": "MangaHub",
+      "version": "1.0.0",
+      "type": "manga",
+      "lang": "en",
+      "file": "mangahub.js",
+      "logo": "https://mangahub.io/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "mangapanda",
+      "name": "MangaPanda",
+      "version": "1.0.0",
+      "type": "manga",
+      "lang": "en",
+      "file": "mangapanda.js",
+      "logo": "https://mangapanda.onl/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "mangakakalotgg",
+      "name": "Mangakakalot.gg",
+      "version": "1.0.0",
+      "type": "manga",
+      "lang": "en",
+      "file": "mangakakalotgg.js",
+      "logo": "https://www.mangakakalot.gg/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "manganato",
+      "name": "MangaNato",
+      "version": "1.0.0",
+      "type": "manga",
+      "lang": "en",
+      "file": "manganato.js",
+      "logo": "https://www.manganato.gg/favicon.ico",
+      "nsfw": false
+    },
+    {
       "id": "gutenberg",
       "name": "Project Gutenberg",
       "version": "1.0.2",

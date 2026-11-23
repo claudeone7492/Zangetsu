@@ -6,7 +6,7 @@
 // is a no-op.
 
 var SOURCE_ID = 'freewebnovel';
-var SITE = 'https://freewebnovel.com';
+var SITE = 'https://freewebnovel.net';
 var REFERER = SITE + '/';
 
 function getInfo() {
@@ -14,7 +14,7 @@ function getInfo() {
     name: 'FreeWebNovel',
     lang: 'en',
     baseUrl: SITE,
-    logo: SITE + '/files/article/image/logo.png',
+    logo: SITE + '/images/logo.png',
     type: 'novel',
     version: '1.1.0'
   };
@@ -38,9 +38,9 @@ function _allMatches(html, regex) {
 function _idFromUrl(url) {
   // /novel/<slug>           -> "<slug>"
   // /novel/<slug>/chapter-N -> "<slug>__chapter-N"
-  var m = String(url).match(/\/novel\/([^\/?#]+)(?:\/([^?#]+))?/);
+  var m = String(url).match(/\/([^\/?#]+?)(?:\.html)?(?:\/([^?#]+))?$/);
   if (!m) return String(url);
-  return m[2] ? m[1] + '__' + m[2] : m[1];
+  return m[2] ? m[1] + '__' + m[2].replace(/\.html$/, '') : m[1];
 }
 
 function _normalizeStatus(s) {
@@ -58,7 +58,7 @@ function _normalizeStatus(s) {
 function _parseCards(html) {
   var results = [];
   var seen = {};
-  var titleRe = /<h3\s+class="tit">\s*<a[^>]+href="(\/novel\/[^"]+)"[^>]*(?:title="([^"]*)")?[^>]*>([^<]+)<\/a>/g;
+  var titleRe = /<h3\s+class="tit">\s*<a[^>]+href="(\/[^"\/]+\.html)"[^>]*(?:title="([^"]*)")?[^>]*>([^<]+)<\/a>/g;
   var titleMatches = _allMatches(html, titleRe);
 
   for (var i = 0; i < titleMatches.length; i++) {
@@ -170,7 +170,7 @@ function _parseMetaField(html, label) {
   //   <span class="glyphicon glyphicon-user" title="Author"></span>
   //   <div class="right"><a ...>Guiltythree</a></div>
   var re = new RegExp(
-    'title="' + label + '">\\s*</span>\\s*<div class="right">([\\s\\S]*?)</div>',
+    'title="' + label + '"[^>]*>\\s*</span>\\s*<div class="right">([\\s\\S]*?)</div>',
     'i'
   );
   var m = html.match(re);
@@ -203,20 +203,64 @@ function getDetail(url) {
     if (genres.length === 0) genres = _parseLinks(_parseMetaField(html, 'Genres'));
     if (genres.length === 0) genres = _parseLinks(_parseMetaField(html, 'Tags'));
 
-    var chapters = _parseChapters(html);
-    console.log('freewebnovel detail: title=' + title + ' chapters=' + chapters.length + ' status=' + status);
-    return {
-      id: _idFromUrl(url),
-      title: title,
-      cover: cover,
-      url: url,
-      description: description,
-      status: status,
-      genres: genres,
-      authors: authors,
-      chapters: chapters,
-      type: 'novel'
-    };
+    return _allChapters(html, url).then(function(chapters) {
+      console.log('freewebnovel detail: title=' + title + ' chapters=' + chapters.length + ' status=' + status);
+      return {
+        id: _idFromUrl(url),
+        title: title,
+        cover: cover,
+        url: url,
+        description: description,
+        status: status,
+        genres: genres,
+        authors: authors,
+        chapters: chapters,
+        type: 'novel'
+      };
+    });
+  });
+}
+
+// The detail page renders only the first 40 chapters; the pager carries the
+// rest as ?page=N (36 pages for a 1,400-chapter novel). Fetch them together
+// so the reader gets the full run instead of stopping at chapter 40.
+function _allChapters(html, url) {
+  var first = _parseChapters(html);
+  var totalM = html.match(/data-total-page="(\d+)"/i);
+  var total = totalM ? parseInt(totalM[1], 10) : 1;
+  if (!total || total <= 1) return Promise.resolve(first);
+  var base = String(url).split('?')[0];
+  var pages = [first];
+  var chain = Promise.resolve();
+  // Sequential, not parallel: the site throttles a burst of page requests and
+  // silently returns the challenge page for most of them, which truncated a
+  // 1,400-chapter novel to 500. One request at a time is slower but complete.
+  for (var p = 2; p <= total; p++) {
+    (function(page) {
+      chain = chain.then(function() {
+        return fetch(base + '?page=' + page, { headers: { 'Referer': url } })
+          .then(function(r) { pages.push(_parseChapters(r.body || '')); })
+          .catch(function() {});
+      });
+    })(p);
+  }
+  return chain.then(function() {
+    var seen = {}, out = [];
+    for (var i = 0; i < pages.length; i++) {
+      for (var j = 0; j < pages[i].length; j++) {
+        var c = pages[i][j];
+        if (seen[c.url]) continue;
+        seen[c.url] = true;
+        out.push(c);
+      }
+    }
+    out.sort(function(a, b) {
+      if (a.number == null && b.number == null) return 0;
+      if (a.number == null) return -1;
+      if (b.number == null) return 1;
+      return a.number - b.number;
+    });
+    return out;
   });
 }
 
@@ -225,16 +269,16 @@ function _parseChapters(html) {
   var seen = {};
   // FreeWebNovel renders the full chapter list inline; URLs look like
   //   /novel/<slug>/chapter-<n>
-  var re = /<a[^>]+href="(\/novel\/[^"]+\/chapter-[0-9]+(?:-[a-z0-9]+)?)"[^>]*(?:title="([^"]+)")?[^>]*>([\s\S]*?)<\/a>/gi;
+  var re = /<a[^>]+href="(\/[^"\/]+\/chapter-[^"]+\.html)"[^>]*(?:title="([^"]+)")?[^>]*>([\s\S]*?)<\/a>/gi;
   var matches = _allMatches(html, re);
   for (var i = 0; i < matches.length; i++) {
     var link = absUrl(matches[i][1], SITE);
     if (seen[link]) continue;
     seen[link] = true;
     var rawTitle = _cleanText(matches[i][2] || matches[i][3] || '');
-    if (!rawTitle) {
-      var fromUrl = matches[i][1].match(/chapter-([0-9]+(?:-[a-z0-9]+)?)/i);
-      rawTitle = fromUrl ? 'Chapter ' + fromUrl[1].replace(/-/g, ' ') : '';
+    var fromUrl = matches[i][1].match(/chapter-([0-9]+(?:-[a-z0-9]+)?)/i);
+    if (!rawTitle || !/chapter\s*[0-9]/i.test(rawTitle)) {
+      rawTitle = fromUrl ? 'Chapter ' + fromUrl[1].replace(/-/g, ' ') : rawTitle;
     }
     var numMatch = rawTitle.match(/chapter\s*([0-9]+(?:\.[0-9]+)?)/i);
     if (!numMatch) numMatch = (matches[i][1].match(/chapter-([0-9]+)/i) || [null, null]);
@@ -260,7 +304,7 @@ function _parseChapters(html) {
 
 function getChapters(url) {
   return fetch(url, { headers: { 'Referer': REFERER } }).then(function(r) {
-    return _parseChapters(r.body || '');
+    return _allChapters(r.body || '', url);
   });
 }
 
@@ -273,7 +317,8 @@ function getChapterContent(chapterUrl) {
   return fetch(chapterUrl, { headers: { 'Referer': REFERER } }).then(function(r) {
     var html = r.body || '';
     // The text sits between two marker divs.
-    var bodyM = html.match(/<div\s+class="chapter-start"[^>]*><\/div>([\s\S]*?)<div\s+class="chapter-end"/i);
+    var bodyM = html.match(/<div[^>]+id="chapter-content"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i)
+             || html.match(/<div\s+class="chapter-start"[^>]*><\/div>([\s\S]*?)<div\s+class="chapter-end"/i);
     var content = bodyM ? bodyM[1] : '';
 
     // Strip ads/scripts.
@@ -301,7 +346,7 @@ function getChapterContent(chapterUrl) {
     var nextUrl = null;
     var nextMatches = _allMatches(
       html,
-      /<a[^>]+href="(\/novel\/[^"]+\/chapter-[^"]+)"[^>]*>[^<]*(?:Next|next)[^<]*<\/a>/g
+      /<a[^>]+href="(\/[^"]+\/chapter-[^"]+\.html)"[^>]*>[^<]*(?:Next|next)[^<]*<\/a>/g
     );
     if (nextMatches.length > 0) {
       nextUrl = absUrl(nextMatches[0][1], SITE);

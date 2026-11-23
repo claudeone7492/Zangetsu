@@ -21,13 +21,15 @@ import 'package:watch_app/core/repository/source_repository.dart';
 import 'package:watch_app/core/ui/row_skeleton.dart';
 import 'package:watch_app/features/live/live_tv_screen.dart';
 
-MediaItem _channel(String id, String title) => MediaItem(
-  id: id,
-  title: title,
-  url: 'https://iptv.test/$id',
-  type: ProviderType.movie,
-  sourceId: kLiveTvSourceId,
-);
+MediaItem _channel(String id, String title, {List<String> genres = const []}) =>
+    MediaItem(
+      id: id,
+      title: title,
+      url: 'https://iptv.test/$id',
+      type: ProviderType.movie,
+      sourceId: kLiveTvSourceId,
+      genres: genres,
+    );
 
 MediaItem _match(
   String id,
@@ -77,6 +79,7 @@ class _FakeSourceRepository implements SourceRepository {
   int searchCalls = 0;
   int liveCalls = 0;
   String? lastSearchQuery;
+  String? lastSearchCategory;
   String? lastSourceId;
 
   @override
@@ -140,6 +143,7 @@ class _FakeSourceRepository implements SourceRepository {
   }) async {
     searchCalls++;
     lastSearchQuery = query;
+    lastSearchCategory = category;
     if (fail) throw StateError('iptv search down');
     return searchHits ?? const [];
   }
@@ -250,6 +254,132 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('World News'), findsOneWidget);
     expect(find.text('Football'), findsOneWidget);
+  });
+
+  testWidgets('picking a category lays its channels out as a grid', (
+    tester,
+  ) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(
+          title: 'News',
+          items: [_channel('n1', 'World News'), _channel('n2', 'Local News')],
+        ),
+        HomeSection(title: 'Sports', items: [_channel('s1', 'Football')]),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    // "All" keeps the horizontal rails.
+    expect(find.byKey(const ValueKey('live-category-grid')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('live-category-1')));
+    await tester.pumpAndSettle();
+
+    // A focused category fills a grid, not one long rail.
+    expect(find.byKey(const ValueKey('live-category-grid')), findsOneWidget);
+    expect(find.text('World News'), findsOneWidget);
+    expect(find.text('Local News'), findsOneWidget);
+    expect(find.text('Football'), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('live-category-0')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('live-category-grid')), findsNothing);
+  });
+
+  testWidgets('a TV category pill opens a focusable grid', (tester) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+        HomeSection(title: 'Sports', items: [_channel('s1', 'Football')]),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+    sl.unregister<AppMode>();
+    sl.registerSingleton<AppMode>(const AppMode(isTv: true));
+
+    await tester.binding.setSurfaceSize(const Size(1280, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      const MaterialApp(home: LiveTvScreen(showBack: true)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('live-category-1')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('live-category-grid')), findsOneWidget);
+    expect(find.text('World News'), findsOneWidget);
+    expect(find.text('Football'), findsNothing);
+  });
+
+  testWidgets('search is scoped to the selected category pill', (tester) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+        HomeSection(title: 'Sports', items: [_channel('s1', 'Sky Sports')]),
+      ],
+      // The fake returns both categories; the screen must keep only the
+      // selected pill's hit and pass that pill's key to the source.
+      searchHits: [
+        _channel('n1', 'World News', genres: const ['News']),
+        _channel('s1', 'Sky Sports', genres: const ['Sports']),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('live-category-1')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'sports');
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pumpAndSettle();
+
+    expect(repo.lastSearchCategory, 'news');
+    expect(find.text('World News'), findsOneWidget);
+    expect(find.text('Sky Sports'), findsNothing);
+  });
+
+  testWidgets('switching pill during a search re-scopes the query', (
+    tester,
+  ) async {
+    final repo = _FakeSourceRepository(
+      sections: [
+        HomeSection(title: 'News', items: [_channel('n1', 'World News')]),
+        HomeSection(title: 'Sports', items: [_channel('s1', 'Sky Sports')]),
+      ],
+      searchHits: [
+        _channel('n1', 'World News', genres: const ['News']),
+        _channel('s1', 'Sky Sports', genres: const ['Sports']),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'sports');
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pumpAndSettle();
+    // "All" keeps both hits.
+    expect(repo.lastSearchCategory, '');
+    expect(find.text('World News'), findsOneWidget);
+    expect(find.text('Sky Sports'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('live-category-1')));
+    await tester.pumpAndSettle();
+
+    // The query is re-run against the new pill, not merely filtered.
+    expect(repo.lastSearchCategory, 'news');
+    expect(repo.searchCalls, 2);
+    expect(find.text('World News'), findsOneWidget);
+    expect(find.text('Sky Sports'), findsNothing);
   });
 
   testWidgets('the sort control reorders the channels', (tester) async {
@@ -637,7 +767,7 @@ void main() {
     expect(repo.liveCalls, 0);
     // The fixed Sports destination stays in the sub-header; only the rail goes.
     expect(find.byKey(const ValueKey('live-sports-chip')), findsOneWidget);
-    expect(find.text('L.S'), findsOneWidget);
+    expect(find.text('Sports'), findsOneWidget);
     expect(find.text('World News'), findsOneWidget);
   });
 
@@ -686,7 +816,7 @@ void main() {
 
     expect(find.text('World News'), findsOneWidget);
     expect(find.byKey(const ValueKey('live-sports-chip')), findsOneWidget);
-    expect(find.text('L.S'), findsOneWidget);
+    expect(find.text('Sports'), findsOneWidget);
     // No "failed" screen — the page is up, just without sports.
     expect(find.text('Try again'), findsNothing);
   });
