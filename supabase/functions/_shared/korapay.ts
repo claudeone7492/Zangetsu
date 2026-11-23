@@ -51,6 +51,8 @@ export interface ChargeInit {
   customerName: string;
   customerEmail: string;
   notificationUrl: string;
+  redirectUrl?: string;
+  narration?: string;
 }
 
 export interface ChargeResult {
@@ -68,11 +70,10 @@ export async function initializeCharge(input: ChargeInit): Promise<ChargeResult>
     amount: input.amountCents,
     currency: input.currency ?? "USD",
     reference: input.reference,
+    narration: input.narration ?? "Zangetsu subscription",
     customer: { name: input.customerName, email: input.customerEmail },
     notification_url: input.notificationUrl,
-    // No redirect_url: checkout runs in the app's embedded WebView and the
-    // result comes back through the webhook, so a post-payment bounce would
-    // only take the user somewhere we cannot read.
+    ...(input.redirectUrl ? { redirect_url: input.redirectUrl } : {}),
   };
 
   const res = await fetch(`${baseUrl()}/charges/initialize`, {

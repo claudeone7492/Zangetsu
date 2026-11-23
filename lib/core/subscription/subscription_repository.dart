@@ -12,13 +12,10 @@ abstract class SubscriptionApi {
   Future<List<SubscriptionPlan>> plans();
   Future<SubscriptionConfig> config();
   Future<DeviceIdentity?> identify();
+
+  /// Resolves a typed code for this device. The result carries `alreadyUsed`
+  /// so the paywall can explain that the code has expired for this device.
   Future<PromoResult?> resolvePromo(String code, {String? planKey});
-  Future<int?> redeemPromo({
-    required String code,
-    required String planKey,
-    required int beforeCents,
-    required int afterCents,
-  });
   Future<String?> startTrial(String planKey);
 
   /// Mints a short code this device's plan can be joined with. Null when the
@@ -41,6 +38,10 @@ abstract class SubscriptionApi {
     required String planKey,
     String? promoCode,
   });
+
+  /// Payments initiated by this device, newest first. A shared-plan guest gets
+  /// its own (usually empty) history, not the payer's card history.
+  Future<List<DeviceTransaction>?> transactions() async => const [];
 
   Future<bool> adminConfigured();
   Future<bool> adminCheck(String passcode);
@@ -248,30 +249,19 @@ class SubscriptionRepository implements SubscriptionApi {
     return identity;
   }
 
-  /// Resolves a typed code. Returns null when unknown/inactive/expired.
+  /// Resolves a typed code for this device. The result carries `alreadyUsed`
+  /// so the paywall can explain that the code has expired for this device.
   @override
-  Future<PromoResult?> resolvePromo(String code, {String? planKey}) =>
-      _rpc('resolve_promo', {'p_code': code, 'p_plan': planKey}, (d) {
+  Future<PromoResult?> resolvePromo(String code, {String? planKey}) async {
+    final fp = await _fingerprint();
+    return _rpc(
+      'resolve_promo',
+      {'p_code': code, 'p_plan': planKey, 'p_fingerprint': fp},
+      (d) {
         final rows = _rows(d);
         return rows.isEmpty ? null : PromoResult.fromMap(rows.first);
-      });
-
-  /// Records a redemption against this device and bumps the counter.
-  @override
-  Future<int?> redeemPromo({
-    required String code,
-    required String planKey,
-    required int beforeCents,
-    required int afterCents,
-  }) async {
-    final fp = await _fingerprint();
-    return _rpc('redeem_promo', {
-      'p_code': code,
-      'p_fingerprint': fp,
-      'p_plan': planKey,
-      'p_before': beforeCents,
-      'p_after': afterCents,
-    }, (d) => (d as num?)?.toInt());
+      },
+    );
   }
 
   /// Grants the one-time trial for a first-time device. Returns the new
@@ -362,6 +352,16 @@ class SubscriptionRepository implements SubscriptionApi {
     } catch (e) {
       return CheckoutResult(ok: false, free: false, error: '$e');
     }
+  }
+
+  @override
+  Future<List<DeviceTransaction>?> transactions() async {
+    final fp = await _fingerprint();
+    return _rpc('device_transactions', {'p_fingerprint': fp}, (d) {
+      return _rows(
+        d,
+      ).map(DeviceTransaction.fromMap).whereType<DeviceTransaction>().toList();
+    });
   }
 
   // ---- Admin -------------------------------------------------------------

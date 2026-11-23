@@ -109,7 +109,7 @@ import 'cubit/settings_cubit.dart';
 import '../../core/tv/tv_focusable.dart';
 import '../admin/admin_screen.dart';
 import '../paywall/device_seats_screen.dart';
-import '../paywall/paywall_screen.dart';
+import '../paywall/subscription_history_screen.dart';
 
 part 'settings_playback.dart';
 part 'settings_storage.dart';
@@ -935,9 +935,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       section: SettingsSection.account,
       icon: Icons.workspace_premium_outlined,
       title: l10n.settingsSubscription,
-      subtitle: l10n.settingsSubscriptionSubtitle,
-      keywords: 'subscription plan premium pay promo upgrade billing',
-      onTap: () => showPaywall(context),
+      subtitle: 'Your plan and this device\'s payment history',
+      keywords:
+          'subscription plan premium pay promo upgrade billing payments '
+          'transactions receipts reference invoice history',
+      onTap: () => _push(const SubscriptionHistoryScreen()),
     ),
     _SettingsEntry(
       section: SettingsSection.account,

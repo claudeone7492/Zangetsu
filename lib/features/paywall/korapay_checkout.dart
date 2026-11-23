@@ -58,7 +58,8 @@ class _KoraPayCheckoutState extends State<KoraPayCheckout> {
             // the "did my card go through?" dead end this screen exists to
             // avoid. Only ordinary web navigation is followed.
             final uri = Uri.tryParse(url);
-            if (uri == null || !(uri.isScheme('https') || uri.isScheme('http'))) {
+            if (uri == null ||
+                !(uri.isScheme('https') || uri.isScheme('http'))) {
               return NavigationDecision.prevent;
             }
             return NavigationDecision.navigate;
@@ -76,7 +77,7 @@ class _KoraPayCheckoutState extends State<KoraPayCheckout> {
       elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.close),
-        onPressed: () => Navigator.of(context).pop(false),
+        onPressed: () => Navigator.of(context).pop(),
       ),
       title: Text(context.l10n.paywallCheckout, style: AppText.title),
     ),

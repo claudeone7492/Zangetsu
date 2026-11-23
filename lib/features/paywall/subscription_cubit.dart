@@ -234,11 +234,38 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       return;
     }
 
+    if (result.alreadyUsed) {
+      emit(
+        state.copyWith(
+          promo: () => null,
+          message: () => 'This code has expired for this device.',
+          promoRejected: true,
+        ),
+      );
+      return;
+    }
+
+    if (!result.usable) {
+      emit(
+        state.copyWith(
+          promo: () => null,
+          message: () => 'That code is not valid or has expired.',
+          promoRejected: true,
+        ),
+      );
+      return;
+    }
+
     final off = result.isFree ? 100 : result.percentOff;
+    final renewalCents = state.selected?.priceCents;
+    final renewalNote = renewalCents == null
+        ? 'then the normal price.'
+        : 'then \$${(renewalCents / 100).toStringAsFixed(2)}/mo.';
     emit(
       state.copyWith(
         promo: () => result,
-        message: () => '🎉 ${result.code} — $off% off applied.',
+        message: () =>
+            '🎉 ${result.code} — $off% off applied for 30 days, $renewalNote',
         promoRejected: false,
       ),
     );
@@ -296,10 +323,19 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       promoCode: state.promo?.code,
     );
     if (!result.ok) {
+      final promoError =
+          result.error == 'promo_already_used' ||
+          result.error == 'promo_unavailable';
+      final message = switch (result.error) {
+        'promo_already_used' => 'This code has expired for this device.',
+        'promo_unavailable' => 'That code is not valid or has expired.',
+        _ => 'Could not start checkout. Please try again.',
+      };
       emit(
         state.copyWith(
           stage: PaywallStage.ready,
-          message: () => 'Could not start checkout. Please try again.',
+          promo: promoError ? () => null : null,
+          message: () => message,
           promoRejected: true,
         ),
       );
@@ -335,19 +371,5 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       emit(state.copyWith(stage: PaywallStage.ready));
     }
     return result;
-  }
-
-  /// Redeems the current promo (if any) against this device. Best-effort: a
-  /// failure never blocks the unlock the caller already decided on.
-  Future<void> commitPromo() async {
-    final promo = state.promo;
-    final plan = state.selected;
-    if (promo == null || plan == null) return;
-    await _repo.redeemPromo(
-      code: promo.code,
-      planKey: plan.key,
-      beforeCents: state.listCents,
-      afterCents: state.totalCents,
-    );
   }
 }

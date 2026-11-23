@@ -115,6 +115,30 @@ void main() {
     });
   });
 
+  group('PromoResult', () {
+    test('reads the one-time flags from resolve_promo', () {
+      final used = PromoResult.fromMap(const {
+        'code': 'STARZ_85',
+        'percent_off': 85,
+        'kind': 'percent',
+        'already_used': true,
+        'usable': true,
+      });
+      expect(used?.alreadyUsed, isTrue);
+      expect(used?.usable, isTrue);
+
+      final expired = PromoResult.fromMap(const {
+        'code': 'STARZ_85',
+        'percent_off': 85,
+        'kind': 'percent',
+        'already_used': false,
+        'usable': false,
+      });
+      expect(expired?.alreadyUsed, isFalse);
+      expect(expired?.usable, isFalse);
+    });
+  });
+
   group('period labels', () {
     test('a 30-day plan reads as monthly', () {
       expect(periodSuffix(30), '/mo');
@@ -216,6 +240,28 @@ void main() {
       expect(cubit.state.message, contains('not valid'));
     });
 
+    test(
+      'a promo already used by this device is rejected as expired',
+      () async {
+        final api = FakeSubscriptionApi(
+          plansResult: samplePlans(),
+          promoResult: const PromoResult(
+            code: 'STARZ_85',
+            percentOff: 85,
+            kind: 'percent',
+            alreadyUsed: true,
+          ),
+        );
+        final cubit = SubscriptionCubit(api);
+        await cubit.load();
+        await cubit.applyPromo('STARZ_85');
+
+        expect(cubit.state.promo, isNull);
+        expect(cubit.state.promoRejected, isTrue);
+        expect(cubit.state.message, contains('expired for this device'));
+      },
+    );
+
     test('valid promo is applied', () async {
       final api = FakeSubscriptionApi(
         plansResult: samplePlans(),
@@ -298,39 +344,6 @@ void main() {
         expect(cubit.state.message, contains('already used'));
       },
     );
-
-    test(
-      'commitPromo records the redemption with list and final amounts',
-      () async {
-        final api = FakeSubscriptionApi(
-          plansResult: samplePlans(),
-          configResult: const SubscriptionConfig(launchDiscountPct: 15),
-          identityResult: const DeviceIdentity(
-            sessionId: 's1',
-            isNew: true,
-            trialUsed: false,
-          ),
-          promoResult: const PromoResult(
-            code: 'PRIME85!',
-            percentOff: 85,
-            kind: 'percent',
-          ),
-        );
-        final cubit = SubscriptionCubit(api);
-        await cubit.load();
-        await cubit.applyPromo('PRIME85!');
-        await cubit.commitPromo();
-
-        expect(api.redemptions, hasLength(1));
-        expect(api.redemptions.single['code'], 'PRIME85!');
-        expect(api.redemptions.single['planKey'], 'stream_standard');
-        // List 200c, 15% launch offer -> 170c, then 85% off -> 26c. The recorded
-        // pair is what the redemption is checked against, so it has to be the
-        // same chain the server charges.
-        expect(api.redemptions.single['before'], 200);
-        expect(api.redemptions.single['after'], 26);
-      },
-    );
   });
 
   group('SubscriptionCubit checkout', () {
@@ -385,6 +398,38 @@ void main() {
       expect(cubit.state.stage, PaywallStage.ready);
       expect(cubit.state.promoRejected, isTrue);
       expect(cubit.state.message, contains('Could not start checkout'));
+    });
+
+    test('beginCheckout maps a reused promo to the expired notice', () async {
+      final api =
+          FakeSubscriptionApi(
+              plansResult: samplePlans(),
+              identityResult: const DeviceIdentity(
+                sessionId: 's1',
+                isNew: false,
+                trialUsed: true,
+              ),
+              promoResult: const PromoResult(
+                code: 'STARZ_85',
+                percentOff: 85,
+                kind: 'percent',
+              ),
+            )
+            ..checkoutResult = const CheckoutResult(
+              ok: false,
+              free: false,
+              error: 'promo_already_used',
+            );
+      final cubit = SubscriptionCubit(api);
+      await cubit.load();
+      await cubit.applyPromo('STARZ_85');
+
+      final result = await cubit.beginCheckout();
+
+      expect(result?.ok, isFalse);
+      expect(cubit.state.promo, isNull);
+      expect(cubit.state.promoRejected, isTrue);
+      expect(cubit.state.message, 'This code has expired for this device.');
     });
 
     test('a free checkout needs no URL', () async {

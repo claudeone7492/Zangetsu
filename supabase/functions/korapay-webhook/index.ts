@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
   // the same reference would be dropped as a duplicate.
   const { data: payment } = await db
     .from("payments")
-    .select("id, payer_session_id, receiver_session_id, product_type, amount, status, subscription_id")
+    .select("id, payer_session_id, receiver_session_id, product_type, amount, status, subscription_id, promo_code_used")
     .eq("korapay_reference", reference)
     .maybeSingle();
 
@@ -115,6 +115,36 @@ Deno.serve(async (req) => {
 });
 
 /**
+ * Records a paid promo against the device that started the checkout. The
+ * redemption is idempotent, so a replay or a second settled charge cannot
+ * create a second use. This runs only after the charge succeeded, which keeps
+ * an abandoned checkout from consuming the code.
+ */
+async function recordPromoUse(
+  db: ReturnType<typeof adminClient>,
+  payment: { payer_session_id: string; promo_code_used: string | null; amount: number },
+  planKey: string,
+) {
+  if (!payment.promo_code_used) return;
+
+  const { data: device } = await db
+    .from("devices")
+    .select("fingerprint")
+    .eq("session_id", payment.payer_session_id)
+    .limit(1)
+    .maybeSingle();
+  if (!device?.fingerprint) return;
+
+  await db.rpc("redeem_promo", {
+    p_code: payment.promo_code_used,
+    p_fingerprint: device.fingerprint,
+    p_plan: planKey,
+    p_before: null,
+    p_after: payment.amount,
+  });
+}
+
+/**
  * Settles a subscription charge. The first successful charge starts (or
  * restarts) the period; a later charge for the same subscription renews it.
  */
@@ -125,6 +155,7 @@ async function settleSubscription(
     payer_session_id: string;
     product_type: string;
     amount: number;
+    promo_code_used: string | null;
   },
   reference: string,
 ) {
@@ -146,6 +177,7 @@ async function settleSubscription(
       p_plan_key: sub.plan_key,
       p_reference: reference,
     });
+    await recordPromoUse(db, payment, sub.plan_key);
     await db.from("notification_log").insert({
       session_id: payment.payer_session_id,
       kind: "transactional",

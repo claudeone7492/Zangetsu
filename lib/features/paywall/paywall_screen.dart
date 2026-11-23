@@ -418,12 +418,64 @@ class _PaywallSheetState extends State<PaywallSheet> {
         ),
         if (state.message != null && state.promoRejected) ...[
           const SizedBox(height: 8),
-          Text(
-            state.message!,
-            style: AppText.caption.copyWith(color: AppColors.accent),
-          ),
+          _promoNoticePill(state.message!),
         ],
       ],
+    );
+  }
+
+  Widget _promoNoticePill(String message) {
+    final expired = message.toLowerCase().contains('expired');
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        key: const ValueKey('promo-notice-pill'),
+        padding: const EdgeInsets.fromLTRB(12, 9, 14, 9),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.accent.withValues(alpha: 0.18),
+              AppColors.surface.withValues(alpha: 0.55),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: AppColors.accent.withValues(alpha: 0.35)),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.accent.withValues(alpha: 0.12),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.accent.withValues(alpha: 0.18),
+              ),
+              child: Icon(
+                expired ? Icons.timer_off_rounded : Icons.error_outline_rounded,
+                size: 14,
+                color: AppColors.accent,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                message,
+                style: AppText.caption.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.25,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -624,7 +676,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
       return;
     }
 
-    final paid = await Navigator.of(context).push<bool>(
+    final returned = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) => KoraPayCheckout(checkoutUrl: url),
         fullscreenDialog: true,
@@ -633,10 +685,21 @@ class _PaywallSheetState extends State<PaywallSheet> {
     if (!context.mounted) return;
 
     // The WebView returning only means the user came back. Entitlement is
-    // re-read from the server, which the webhook settles independently.
-    if (paid == true && await cubit.refreshEntitlement()) {
-      if (context.mounted) Navigator.of(context).pop(true);
+    // re-read from the server, which the webhook settles independently. Poll
+    // briefly after a redirect or a manual close, because the webhook can
+    // arrive just after the browser lands on the success URL.
+    var unlocked = await cubit.refreshEntitlement();
+    final attempts = switch (returned) {
+      true => 5,
+      null => 3,
+      _ => 0,
+    };
+    for (var attempt = 0; attempt < attempts && !unlocked; attempt++) {
+      await Future<void>.delayed(const Duration(seconds: 2));
+      if (!context.mounted) return;
+      unlocked = await cubit.refreshEntitlement();
     }
+    if (unlocked && context.mounted) Navigator.of(context).pop(true);
   }
 }
 

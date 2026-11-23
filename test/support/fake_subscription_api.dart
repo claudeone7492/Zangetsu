@@ -26,6 +26,7 @@ class FakeSubscriptionApi implements SubscriptionApi {
     this.adminAdminsResult = const [],
     this.adminAuditResult = const [],
     this.adminRedemptionsResult = const [],
+    this.transactionsResult = const [],
   });
 
   List<SubscriptionPlan> plansResult;
@@ -63,8 +64,8 @@ class FakeSubscriptionApi implements SubscriptionApi {
   bool revokeResult = true;
   final List<String> linkedCodes = [];
   final List<String> revokedSeats = [];
-  final List<Map<String, Object?>> redemptions = [];
   final List<Map<String, Object?>> promoWrites = [];
+  List<DeviceTransaction>? transactionsResult = const [];
 
   @override
   Future<List<SubscriptionPlan>> plans() async => plansResult;
@@ -81,22 +82,6 @@ class FakeSubscriptionApi implements SubscriptionApi {
   @override
   Future<PromoResult?> resolvePromo(String code, {String? planKey}) async =>
       promoResult;
-
-  @override
-  Future<int?> redeemPromo({
-    required String code,
-    required String planKey,
-    required int beforeCents,
-    required int afterCents,
-  }) async {
-    redemptions.add({
-      'code': code,
-      'planKey': planKey,
-      'before': beforeCents,
-      'after': afterCents,
-    });
-    return promoResult?.percentOff ?? 0;
-  }
 
   @override
   Future<String?> startTrial(String planKey) async {
@@ -147,6 +132,9 @@ class FakeSubscriptionApi implements SubscriptionApi {
     lastCheckoutPromo = promoCode;
     return checkoutResult;
   }
+
+  @override
+  Future<List<DeviceTransaction>?> transactions() async => transactionsResult;
 
   @override
   Future<bool> adminConfigured() async => adminConfiguredResult;

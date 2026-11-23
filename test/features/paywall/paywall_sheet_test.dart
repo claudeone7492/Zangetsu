@@ -120,6 +120,29 @@ void main() {
     expect(find.text('\$1.00'), findsWidgets);
   });
 
+  testWidgets('a reused promo shows the expired notification pill', (t) async {
+    final api = FakeSubscriptionApi(
+      plansResult: samplePlans(),
+      promoResult: const PromoResult(
+        code: 'EDGE50',
+        percentOff: 50,
+        kind: 'percent',
+        alreadyUsed: true,
+      ),
+    );
+    final cubit = await loaded(api, t);
+
+    await t.pumpWidget(host(cubit));
+    await t.pump();
+
+    await t.runAsync(() => cubit.applyPromo('EDGE50'));
+    await t.pump();
+
+    expect(find.byKey(const ValueKey('promo-notice-pill')), findsOneWidget);
+    expect(find.text('This code has expired for this device.'), findsOneWidget);
+    expect(find.textContaining('50% off applied'), findsNothing);
+  });
+
   testWidgets('the plan card price drops when a promo is applied', (t) async {
     final api = FakeSubscriptionApi(
       plansResult: samplePlans(),

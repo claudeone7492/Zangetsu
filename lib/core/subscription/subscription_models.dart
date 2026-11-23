@@ -66,12 +66,21 @@ class PromoResult {
     required this.percentOff,
     required this.kind,
     this.label,
+    this.alreadyUsed = false,
+    this.usable = true,
   });
 
   final String code;
   final int percentOff;
   final String kind; // 'free' | 'percent'
   final String? label;
+
+  /// True when this device has already redeemed the code. The redemption row
+  /// is kept after the one-month access window, so reuse is refused forever.
+  final bool alreadyUsed;
+
+  /// False when the code is inactive, expired or exhausted.
+  final bool usable;
 
   bool get isFree => kind == 'free' || percentOff >= 100;
 
@@ -83,6 +92,8 @@ class PromoResult {
       percentOff: (m['percent_off'] as num?)?.toInt() ?? 0,
       kind: (m['kind'] as String?) ?? 'percent',
       label: m['label'] as String?,
+      alreadyUsed: m['already_used'] == true,
+      usable: m['usable'] != false,
     );
   }
 }
@@ -206,6 +217,65 @@ class CheckoutResult {
     amountCents: (m['amountUsdCents'] as num?)?.toInt() ?? 0,
     error: m['error'] as String?,
   );
+}
+
+/// One payment row from `device_transactions`, scoped to this device's own
+/// session. The Korapay reference is the link between the merchant-billed
+/// charge and the device that initiated it.
+class DeviceTransaction {
+  const DeviceTransaction({
+    required this.reference,
+    required this.productType,
+    required this.amountCents,
+    required this.currency,
+    required this.status,
+    this.planKey,
+    this.planLabel,
+    this.promoCode,
+    this.createdAt,
+    this.completedAt,
+    this.periodEnd,
+  });
+
+  final String reference;
+  final String productType;
+  final String? planKey;
+  final String? planLabel;
+  final int amountCents;
+  final String currency;
+  final String status;
+  final String? promoCode;
+  final DateTime? createdAt;
+  final DateTime? completedAt;
+  final DateTime? periodEnd;
+
+  bool get completed => status == 'completed';
+  bool get failed => status == 'failed' || status == 'refunded';
+
+  String get title {
+    if (planKey == 'stream_standard') return kPremiumPlanLabel;
+    return planLabel ?? 'Subscription';
+  }
+
+  static DeviceTransaction? fromMap(Map<String, dynamic> m) {
+    final reference = m['reference'];
+    if (reference is! String || reference.isEmpty) return null;
+    DateTime? date(Object? value) =>
+        value is String ? DateTime.tryParse(value) : null;
+    return DeviceTransaction(
+      reference: reference,
+      productType: (m['product_type'] as String?) ?? 'subscription_stream',
+      planKey: m['plan_key'] as String?,
+      planLabel: m['plan_label'] as String?,
+      amountCents: (m['amount_cents'] as num?)?.toInt() ?? 0,
+      currency: (m['currency'] as String?) ?? 'USD',
+      status: (m['status'] as String?) ?? 'pending',
+      promoCode: m['promo_code'] as String?,
+      createdAt: date(m['created_at']),
+      completedAt: date(m['completed_at']),
+      periodEnd: date(m['period_end']),
+    );
+  }
 }
 
 /// A row of the admin Devices table, from `admin_devices`.

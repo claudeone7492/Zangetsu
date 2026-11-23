@@ -99,7 +99,11 @@ export function buildSubscriptionReference(planKey: string, kind: "sub" | "trial
   return `sx_${kind}_${slug}_${id}`;
 }
 
-/** Customer email for Korapay. Sessions are anonymous, so synthesise one. */
-export function sessionEmail(sessionId: string): string {
-  return `${sessionId}@users.sophie.app`;
+/** Merchant contact used for every stream charge. Sessions are anonymous, so
+ * Kora's required customer.email is the merchant address, not the viewer's.
+ * The payment reference remains the link back to the initiating device. */
+export const MERCHANT_EMAIL = "edgesenterprise@outlook.com";
+
+export function merchantEmail(): string {
+  return Deno.env.get("KORAPAY_MERCHANT_EMAIL")?.trim() || MERCHANT_EMAIL;
 }

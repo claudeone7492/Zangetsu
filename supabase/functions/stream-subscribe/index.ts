@@ -18,8 +18,8 @@ import {
   buildSubscriptionReference,
   loadLaunchDiscountPct,
   loadPlan,
+  merchantEmail,
   priceStreamPlan,
-  sessionEmail,
 } from "../_shared/subscriptions.ts";
 import { handleOptions, json } from "../_shared/cors.ts";
 
@@ -27,10 +27,8 @@ interface PromoRow {
   code: string;
   percent_off: number | null;
   kind: string | null;
-  max_uses: number | null;
-  used_count: number | null;
-  expires_at: string | null;
-  active: boolean;
+  already_used: boolean;
+  usable: boolean;
 }
 
 Deno.serve(async (req) => {
@@ -68,24 +66,27 @@ Deno.serve(async (req) => {
   const plan = await loadPlan(db, body.planKey);
   if (!plan) return json({ error: "unknown_plan" }, 404);
 
-  // Resolve the promo server-side; the client's copy is only a preview.
+  // Resolve the promo server-side; the client's copy is only a preview. The
+  // RPC is the same one the app calls, so both sides agree on the canonical
+  // code, its discount, and whether this device has already consumed it.
   let percentOff = 0;
   let promoCode: string | null = null;
   if (body.promoCode) {
-    const { data: promo } = await db
-      .from("promo_codes")
-      .select("code, percent_off, kind, max_uses, used_count, expires_at, active")
-      .eq("code", body.promoCode)
-      .eq("valid_for", "stream")
-      .maybeSingle();
-    const p = promo as PromoRow | null;
-    const usable = p && p.active &&
-      (!p.expires_at || new Date(p.expires_at) > new Date()) &&
-      (p.max_uses === null || (p.used_count ?? 0) < p.max_uses);
-    if (usable) {
-      percentOff = p.kind === "free" ? 100 : (p.percent_off ?? 0);
-      promoCode = p.code;
+    const { data: rows, error: promoError } = await db.rpc("resolve_promo", {
+      p_code: body.promoCode,
+      p_plan: plan.key,
+      p_fingerprint: fingerprint,
+    });
+    if (promoError) {
+      return json({ error: "promo_lookup_failed", detail: promoError.message }, 500);
     }
+    const p = ((rows as PromoRow[] | null) ?? [])[0];
+    if (!p) return json({ error: "promo_unavailable" }, 409);
+    if (p.already_used) return json({ error: "promo_already_used" }, 409);
+    if (!p.usable) return json({ error: "promo_unavailable" }, 409);
+
+    percentOff = p.kind === "free" ? 100 : (p.percent_off ?? 0);
+    promoCode = p.code;
   }
 
   const launchDiscountPct = await loadLaunchDiscountPct(db);
@@ -98,9 +99,26 @@ Deno.serve(async (req) => {
   const amountCents = pricing.amountCents;
   const reference = buildSubscriptionReference(plan.key, "sub");
 
-  // A fully-discounted plan needs no charge: grant it outright and record the
-  // redemption so the code's usage counter still moves.
+  // A fully-discounted plan needs no charge. Consume the code first so two
+  // simultaneous requests cannot both activate a free month; the redemption
+  // row is what makes the code one-time-per-device.
   if (amountCents === 0) {
+    if (promoCode) {
+      const { data: redeemed, error: redeemError } = await db.rpc("redeem_promo", {
+        p_code: promoCode,
+        p_fingerprint: fingerprint,
+        p_plan: plan.key,
+        p_before: listCents,
+        p_after: 0,
+      });
+      if (redeemError) {
+        return json({ error: "promo_redeem_failed", detail: redeemError.message }, 500);
+      }
+      if (redeemed === null) {
+        return json({ error: "promo_already_used" }, 409);
+      }
+    }
+
     const { error: activateError } = await db.rpc("activate_stream_subscription", {
       p_session: session,
       p_plan_key: plan.key,
@@ -108,15 +126,6 @@ Deno.serve(async (req) => {
     });
     if (activateError) {
       return json({ error: "activation_failed", detail: activateError.message }, 500);
-    }
-    if (promoCode) {
-      await db.rpc("redeem_promo", {
-        p_code: promoCode,
-        p_fingerprint: fingerprint,
-        p_plan: plan.key,
-        p_before: listCents,
-        p_after: 0,
-      });
     }
     return json({
       ok: true,
@@ -135,6 +144,7 @@ Deno.serve(async (req) => {
   }
 
   const fee = platformFee(amountCents);
+  const billingEmail = merchantEmail();
 
   // A pending subscription row is what the webhook settles. Re-subscribing the
   // same plan reuses the row rather than stacking a second one.
@@ -164,6 +174,7 @@ Deno.serve(async (req) => {
       receiver_session_id: session,
       product_type: plan.product_type,
       amount: amountCents,
+      customer_email: billingEmail,
       korapay_reference: reference,
       platform_fee: fee,
       promo_code_used: promoCode,
@@ -179,9 +190,11 @@ Deno.serve(async (req) => {
   const charge = await initializeCharge({
     amountCents,
     reference,
+    narration: "Zangetsu subscription",
     customerName: profile?.display_name ?? "Zangetsu User",
-    customerEmail: sessionEmail(session),
+    customerEmail: billingEmail,
     notificationUrl: `${Deno.env.get("SUPABASE_URL")}/functions/v1/korapay-webhook`,
+    redirectUrl: "https://zangetsu.online/payment/success",
   });
 
   if (!charge.ok) {
