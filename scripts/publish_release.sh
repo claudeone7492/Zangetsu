@@ -9,7 +9,7 @@
 # Add --dry-run to print the API calls without making them.
 set -uo pipefail
 
-PRODUCTION_CERT=db5787f2bece9c9cdf4288b680495c81a536b6b7eb73ad398320038c2421ed08
+PRODUCTION_CERT=805c450aedab52b2c93b8f68f12a8a9070cfd2439b3c43f12e570a76b800b344
 REPO= TAG= APK= NOTES= EXPECT=$PRODUCTION_CERT DRY_RUN=0
 
 die() { printf '%s\n' "$*" >&2; exit 1; }
