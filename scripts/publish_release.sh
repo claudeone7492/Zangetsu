@@ -4,13 +4,14 @@
 # `releases/latest`, so publishing is all it takes for the site to follow.
 #
 #   scripts/publish_release.sh --repo Spyou/Zangetsu --tag v2.3.7 \
-#       --apk build/app/outputs/flutter-apk/app-release.apk --notes notes.md
+#       --apk build/app/outputs/flutter-apk/app-release.apk \
+#       --asset-name Zangetsu.apk --notes notes.md
 #
 # Add --dry-run to print the API calls without making them.
 set -uo pipefail
 
 PRODUCTION_CERT=805c450aedab52b2c93b8f68f12a8a9070cfd2439b3c43f12e570a76b800b344
-REPO= TAG= APK= NOTES= EXPECT=$PRODUCTION_CERT DRY_RUN=0
+REPO= TAG= APK= ASSET_NAME= NOTES= EXPECT=$PRODUCTION_CERT DRY_RUN=0
 
 die() { printf '%s\n' "$*" >&2; exit 1; }
 
@@ -19,6 +20,7 @@ while [ $# -gt 0 ]; do
         --repo) REPO=$2; shift 2 ;;
         --tag) TAG=$2; shift 2 ;;
         --apk) APK=$2; shift 2 ;;
+        --asset-name) ASSET_NAME=$2; shift 2 ;;
         --notes) NOTES=$2; shift 2 ;;
         --expect) EXPECT=$2; shift 2 ;;
         --dry-run) DRY_RUN=1; shift ;;
@@ -26,8 +28,9 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-[ -n "$REPO" ] && [ -n "$TAG" ] && [ -n "$APK" ] || die "usage: $0 --repo owner/name --tag vX --apk file.apk [--notes file] [--expect sha256] [--dry-run]"
+[ -n "$REPO" ] && [ -n "$TAG" ] && [ -n "$APK" ] || die "usage: $0 --repo owner/name --tag vX --apk file.apk [--asset-name name.apk] [--notes file] [--expect sha256] [--dry-run]"
 [ -f "$APK" ] || die "no such APK: $APK"
+[ -n "$ASSET_NAME" ] || ASSET_NAME=$(basename "$APK")
 [ -n "$NOTES" ] && [ -f "$NOTES" ] || NOTES=/dev/null
 
 find_apksigner() {
@@ -56,7 +59,7 @@ if [ "$DRY_RUN" = 1 ]; then
     printf 'dry run: would publish %s to %s as %s\n' "$APK" "$REPO" "$TAG"
     printf '  POST /repos/%s/releases  {"tag_name":"%s","name":"%s"}\n' "$REPO" "$TAG" "$NAME"
     printf '  POST https://uploads.github.com/repos/%s/releases/<id>/assets?name=%s\n' \
-        "$REPO" "$(basename "$APK")"
+        "$REPO" "$ASSET_NAME"
     exit 0
 fi
 
@@ -87,5 +90,5 @@ fi
 curl -sS -X POST -H "Authorization: Bearer $GITHUB_TOKEN" \
     -H "Content-Type: application/vnd.android.package-archive" \
     --data-binary "@$APK" \
-    "https://uploads.github.com/repos/$REPO/releases/$release_id/assets?name=$(basename "$APK")" \
+    "https://uploads.github.com/repos/$REPO/releases/$release_id/assets?name=$ASSET_NAME" \
     | json "['browser_download_url']"
