@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/di/injector.dart';
@@ -19,7 +20,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/ui/settings_widgets.dart';
 import '../auth/auth_cubit.dart';
-import '../auth/auth_screens.dart' show requireLogin;
 import 'klipy_gif_picker.dart';
 import '../../l10n/l10n.dart';
 
@@ -73,7 +73,9 @@ Future<void> openViewerProfileEditor(
     if (syncAccountName && !await auth.updateName(result.name)) {
       if (context.mounted) {
         ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-          SnackBar(content: Text(context.l10n.profileCouldNotUpdateAccountName)),
+          SnackBar(
+            content: Text(context.l10n.profileCouldNotUpdateAccountName),
+          ),
         );
       }
       return;
@@ -108,9 +110,7 @@ Future<void> openViewerProfileEditor(
     );
     if (!synced && context.mounted) {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.profileSavedOnDeviceCloudRetry),
-        ),
+        SnackBar(content: Text(context.l10n.profileSavedOnDeviceCloudRetry)),
       );
     }
     if (synced &&
@@ -260,8 +260,26 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
     super.dispose();
   }
 
+  bool _ensureUploadAvailable() {
+    var signedIn = true;
+    try {
+      signedIn = context.read<AuthCubit>().state.isLoggedIn;
+    } catch (_) {
+      // No auth scope (widget tests, previews): let the upload path decide.
+    }
+    if (signedIn) return true;
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Photo upload needs a connection. Try again when online.',
+        ),
+      ),
+    );
+    return false;
+  }
+
   Future<void> _pickPhoto() async {
-    if (!requireLogin(context, action: 'change a profile avatar')) return;
+    if (!_ensureUploadAvailable()) return;
     final source = await showModalBottomSheet<_PhotoSource>(
       context: context,
       isScrollControlled: true,
@@ -281,7 +299,10 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(4, 0, 4, 14),
-                child: Text(context.l10n.profileChooseAvatar, style: AppText.title),
+                child: Text(
+                  context.l10n.profileChooseAvatar,
+                  style: AppText.title,
+                ),
               ),
               ListTile(
                 tileColor: AppColors.surface2,
@@ -390,7 +411,6 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
     Uint8List bytes, {
     String failureMessage = "Couldn't upload photo",
   }) async {
-    if (!requireLogin(context, action: 'upload a profile avatar')) return;
     final token = sl<SupabaseService>().client.auth.currentSession?.accessToken;
     if (token == null) {
       setState(() => _photoError = failureMessage);
@@ -429,7 +449,7 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
   }
 
   Future<void> _pickCover() async {
-    if (!requireLogin(context, action: 'upload a profile cover')) return;
+    if (!_ensureUploadAvailable()) return;
     final picked = await ImagePicker().pickImage(
       source: ImageSource.gallery,
       maxWidth: 1600,
@@ -439,10 +459,9 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
     if (picked == null || !mounted) return;
     final bytes = await picked.readAsBytes();
     if (!mounted) return;
-    if (!requireLogin(context, action: 'upload a profile cover')) return;
     final token = sl<SupabaseService>().client.auth.currentSession?.accessToken;
     if (token == null) {
-      setState(() => _coverError = 'Sign in to upload a cover');
+      setState(() => _coverError = 'Couldn’t upload cover. Try another image.');
       return;
     }
     setState(() {
@@ -709,7 +728,10 @@ class _ViewerProfileEditorScreenState extends State<ViewerProfileEditorScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(context.l10n.profileCover, style: AppText.headline),
+                              Text(
+                                context.l10n.profileCover,
+                                style: AppText.headline,
+                              ),
                               const SizedBox(height: 2),
                               Text(
                                 context.l10n.profileOptionalImage,

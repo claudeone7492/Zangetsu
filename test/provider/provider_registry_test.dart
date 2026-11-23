@@ -40,13 +40,12 @@ class _FakeFetcher implements ProviderJsFetcher {
     required String name,
     required String url,
     bool force = false,
-  }) async =>
-      CachedProvider(
-        name: name,
-        jsCode: '// $name',
-        url: url,
-        fetchedAt: DateTime.now(),
-      );
+  }) async => CachedProvider(
+    name: name,
+    jsCode: '// $name',
+    url: url,
+    fetchedAt: DateTime.now(),
+  );
 
   @override
   Future<void> remove(String name) async {}
@@ -62,10 +61,7 @@ void main() {
     Hive.init(tempDir.path);
     await ProviderRegistry.init();
     manager = _FakeManager();
-    registry = ProviderRegistry(
-      downloader: _FakeFetcher(),
-      manager: manager,
-    );
+    registry = ProviderRegistry(downloader: _FakeFetcher(), manager: manager);
   });
 
   tearDown(() async {
@@ -107,26 +103,27 @@ void main() {
     expect(registry.entryFor('allanime')?.name, 'allanime');
   });
 
-  test('setEnabled(false) flips the flag and drops it from the runtime',
-      () async {
-    await registry.installFromBundled(
-      name: 'allanime',
-      jsSource: '// allanime js',
-    );
-    final key = ProviderRegistry.providerKey(kBundledRepoUrl, 'allanime');
+  test(
+    'setEnabled(false) flips the flag and drops it from the runtime',
+    () async {
+      await registry.installFromBundled(
+        name: 'allanime',
+        jsSource: '// allanime js',
+      );
+      final key = ProviderRegistry.providerKey(kBundledRepoUrl, 'allanime');
 
-    await registry.setEnabled(key, false);
-    expect(registry.getAll().single.enabled, isFalse);
-    expect(manager.loaded, isNot(contains('allanime')));
+      await registry.setEnabled(key, false);
+      expect(registry.getAll().single.enabled, isFalse);
+      expect(manager.loaded, isNot(contains('allanime')));
 
-    // Re-enabling reloads it from the cached bundled JS.
-    await registry.setEnabled(key, true);
-    expect(registry.getAll().single.enabled, isTrue);
-    expect(manager.loaded, contains('allanime'));
-  });
+      // Re-enabling reloads it from the cached bundled JS.
+      await registry.setEnabled(key, true);
+      expect(registry.getAll().single.enabled, isTrue);
+      expect(manager.loaded, contains('allanime'));
+    },
+  );
 
-  test('loadAll reloads enabled bundled entries from the cached JS',
-      () async {
+  test('loadAll reloads enabled bundled entries from the cached JS', () async {
     await registry.installFromBundled(name: 'allanime', jsSource: '// a');
     await registry.installFromBundled(name: 'netmirror_nf', jsSource: '// nm');
     manager.loaded.clear();
@@ -136,51 +133,78 @@ void main() {
     expect(manager.loaded, containsAll(['allanime', 'netmirror_nf']));
   });
 
-  test('pruneSupersededByPack drops a stale repo copy of a pack source',
-      () async {
-    // A device that installed `anikoto` from a community repo before the pack
-    // shipped it: the pack entry AND the repo entry both exist. Only one can
-    // be live in the runtime, and the repo copy used to win (its key sorts
-    // later), so Auto Resolve ran stale JS.
-    await registry.install(
-      sourceId: 'anikoto',
-      fileUrl: 'https://example.test/anikoto.js',
-      repoUrl: 'https://raw.githubusercontent.com/Spyou/zangetsu-providers/main/index.json',
-      displayName: 'AniKoto (old)',
-    );
-    await registry.installFromBundled(
-      name: 'anikoto',
-      jsSource: '// anikoto v2',
-      repoUrl: 'bundled://official-pack',
-    );
+  test(
+    'pruneSupersededByPack drops a stale repo copy of a pack source',
+    () async {
+      // A device that installed `anikoto` from a community repo before the pack
+      // shipped it: the pack entry AND the repo entry both exist. Only one can
+      // be live in the runtime, and the repo copy used to win (its key sorts
+      // later), so Auto Resolve ran stale JS.
+      await registry.install(
+        sourceId: 'anikoto',
+        fileUrl: 'https://example.test/anikoto.js',
+        repoUrl:
+            'https://raw.githubusercontent.com/Spyou/zangetsu-providers/main/index.json',
+        displayName: 'AniKoto (old)',
+      );
+      await registry.installFromBundled(
+        name: 'anikoto',
+        jsSource: '// anikoto v2',
+        repoUrl: 'bundled://official-pack',
+      );
 
-    expect(registry.getAll().length, 2);
+      expect(registry.getAll().length, 2);
 
-    final removed = await registry.pruneSupersededByPack(['anikoto']);
+      final removed = await registry.pruneSupersededByPack(['anikoto']);
 
-    expect(removed, 1);
-    final left = registry.getAll();
-    expect(left.length, 1);
-    expect(left.single.isBundled, isTrue);
-    expect(left.single.originRepoUrl, 'bundled://official-pack');
-  });
+      expect(removed, 1);
+      final left = registry.getAll();
+      expect(left.length, 1);
+      expect(left.single.isBundled, isTrue);
+      expect(left.single.originRepoUrl, 'bundled://official-pack');
+    },
+  );
 
-  test('pruneSupersededByPack leaves user sources the pack does not provide',
-      () async {
-    await registry.install(
-      sourceId: 'customsource',
-      fileUrl: 'https://example.test/custom.js',
-      repoUrl: 'https://example.test/repo/index.json',
-    );
-    await registry.installFromBundled(
-      name: 'anikoto',
-      jsSource: '// anikoto',
-      repoUrl: 'bundled://official-pack',
-    );
+  test(
+    'pruneBundledRemovedFromPack drops a source the pack no longer ships',
+    () async {
+      await registry.installFromBundled(
+        name: 'novelfire',
+        jsSource: '// old novelfire',
+        repoUrl: 'bundled://official-pack',
+      );
+      await registry.installFromBundled(
+        name: 'novelbin',
+        jsSource: '// novelbin',
+        repoUrl: 'bundled://official-pack',
+      );
 
-    final removed = await registry.pruneSupersededByPack(['anikoto']);
+      final removed = await registry.pruneBundledRemovedFromPack(['novelbin']);
 
-    expect(removed, 0);
-    expect(registry.entryFor('customsource'), isNotNull);
-  });
+      expect(removed, 1);
+      expect(registry.entryFor('novelfire'), isNull);
+      expect(registry.entryFor('novelbin'), isNotNull);
+    },
+  );
+
+  test(
+    'pruneSupersededByPack leaves user sources the pack does not provide',
+    () async {
+      await registry.install(
+        sourceId: 'customsource',
+        fileUrl: 'https://example.test/custom.js',
+        repoUrl: 'https://example.test/repo/index.json',
+      );
+      await registry.installFromBundled(
+        name: 'anikoto',
+        jsSource: '// anikoto',
+        repoUrl: 'bundled://official-pack',
+      );
+
+      final removed = await registry.pruneSupersededByPack(['anikoto']);
+
+      expect(removed, 0);
+      expect(registry.entryFor('customsource'), isNotNull);
+    },
+  );
 }

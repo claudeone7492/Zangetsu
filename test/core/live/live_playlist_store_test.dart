@@ -54,7 +54,11 @@ https://stream.example/sky.m3u8
   test('search matches channel names and groups', () async {
     await store.addText(name: 'Test', text: m3u);
     expect((await store.search('bbc', dio)), hasLength(2));
-    expect((await store.search('sports', dio)).single.title, 'Sky Sports');
+    final sports = (await store.search('sports', dio)).single;
+    expect(sports.title, 'Sky Sports');
+    // The group-title is carried on the hit, so Live TV can keep a search
+    // scoped to the selected category pill.
+    expect(sports.liveInfo, 'Sports');
     expect(await store.search('missing', dio), isEmpty);
   });
 

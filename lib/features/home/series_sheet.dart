@@ -73,43 +73,44 @@ class _SeriesSheetState extends State<SeriesSheet> {
             ),
           ),
           Flexible(
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                RadioListTile<String?>(
-                  value: null,
-                  groupValue: currentGroupId,
-                  activeColor: AppColors.accent,
-                  title: Text(
-                    context.l10n.noSeries,
-                    style: AppText.body.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  onChanged: (_) async {
-                    if (currentGroupId != null) {
-                      await store.removeMember(currentGroupId, widget.titleKey);
-                    }
-                    if (mounted) setState(() {});
-                  },
-                ),
-                for (final group in groups)
+            child: RadioGroup<String?>(
+              groupValue: currentGroupId,
+              onChanged: (picked) async {
+                if (picked == null) {
+                  if (currentGroupId != null) {
+                    await store.removeMember(currentGroupId, widget.titleKey);
+                  }
+                } else {
+                  await store.addMember(picked, widget.titleKey);
+                }
+                if (mounted) setState(() {});
+              },
+              child: ListView(
+                shrinkWrap: true,
+                children: [
                   RadioListTile<String?>(
-                    value: group.id,
-                    groupValue: currentGroupId,
+                    value: null,
                     activeColor: AppColors.accent,
                     title: Text(
-                      group.title,
+                      context.l10n.noSeries,
                       style: AppText.body.copyWith(
-                        color: AppColors.textPrimary,
+                        color: AppColors.textSecondary,
                       ),
                     ),
-                    onChanged: (_) async {
-                      await store.addMember(group.id, widget.titleKey);
-                      if (mounted) setState(() {});
-                    },
                   ),
-              ],
+                  for (final group in groups)
+                    RadioListTile<String?>(
+                      value: group.id,
+                      activeColor: AppColors.accent,
+                      title: Text(
+                        group.title,
+                        style: AppText.body.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
           Padding(

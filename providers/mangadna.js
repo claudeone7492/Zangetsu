@@ -39,6 +39,25 @@ function _cards(html) {
   return out;
 }
 
+
+function _fallbackCards(html) {
+  var out = [], seen = {};
+  var re = /<a[^>]+href="([^"]*\/manga\/[^"]+)"[^>]*(?:title="([^"]*)")?[^>]*>([\s\S]*?)<\/a>/g;
+  var list = _all(html, re);
+  for (var i = 0; i < list.length; i++) {
+    var url = _abs(list[i][1]);
+    if (/\/chapter[-\/]/i.test(url) || seen[url]) continue;
+    var title = _clean(list[i][2] || list[i][3]);
+    if (!title || /^chapter\b/i.test(title)) continue;
+    seen[url] = true;
+    var at = html.indexOf(list[i][0]);
+    var back = at > 0 ? html.substring(Math.max(0, at - 900), at) : '';
+    var img = back.match(/<img[^>]+(?:data-src|src)="([^"]+)"/i);
+    out.push({ id: _slug(url), title: title, cover: img ? _abs(img[1]) : null, url: url, type: 'manga' });
+  }
+  return out;
+}
+
 function search(query, page) {
   page = page || 1;
   var url = SITE + '/search?q=' + encodeURIComponent(String(query || '').trim()) + (page > 1 ? '&page=' + page : '');
@@ -51,7 +70,11 @@ function search(query, page) {
 
 function getHome() {
   return fetch(SITE + '/', { headers: { 'Referer': REFERER } })
-    .then(function (r) { return [{ title: 'Latest', items: _cards(r.body || '') }]; });
+    .then(function (r) {
+      var html = r.body || '', items = _cards(html);
+      if (!items.length) items = _fallbackCards(html);
+      return items.length ? [{ title: 'Latest', items: items }] : [];
+    });
 }
 
 function _chapters(html) {
@@ -106,8 +129,18 @@ function getChapters(url) {
   return fetch(url, { headers: { 'Referer': REFERER } }).then(function (r) { return _chapters(r.body || ''); });
 }
 
+function _sleep(ms) { return new Promise(function (resolve) { setTimeout(resolve, ms); }); }
+
+function _fetchRetry(url, headers, tries) {
+  tries = tries || 3;
+  return fetch(url, { headers: headers }).catch(function (e) {
+    if (tries <= 1) throw e;
+    return _sleep(700).then(function () { return _fetchRetry(url, headers, tries - 1); });
+  });
+}
+
 function getPages(chapterUrl) {
-  return fetch(chapterUrl, { headers: { 'Referer': REFERER } }).then(function (r) {
+  return _fetchRetry(chapterUrl, { 'Referer': REFERER }, 3).then(function (r) {
     var html = r.body || '';
     var out = [], seen = {};
     var list = _all(html, /<img[^>]+src="([^"]+\.(?:jpg|jpeg|png|webp))"/gi);

@@ -243,16 +243,6 @@
       "nsfw": false
     },
     {
-      "id": "novelfire",
-      "name": "NovelFire",
-      "version": "1.0.0",
-      "type": "novel",
-      "lang": "en",
-      "file": "../providers/novelfire.js",
-      "logo": "https://novelfire.net/frontend/img/logo.png",
-      "nsfw": false
-    },
-    {
       "id": "weebcentral",
       "name": "WeebCentral",
       "version": "1.0.5",
@@ -305,31 +295,11 @@
     {
       "id": "novelbin",
       "name": "NovelBin",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "type": "novel",
       "lang": "en",
       "file": "../providers/novelbin.js",
-      "logo": "https://novelbin.cc/favicon.ico",
-      "nsfw": false
-    },
-    {
-      "id": "novelight",
-      "name": "Novelight",
-      "version": "1.0.0",
-      "type": "novel",
-      "lang": "en",
-      "file": "../providers/novelight.js",
-      "logo": "https://novelight.net/static/core/img/favicon.ico",
-      "nsfw": false
-    },
-    {
-      "id": "inkitt",
-      "name": "Inkitt",
-      "version": "1.0.0",
-      "type": "novel",
-      "lang": "en",
-      "file": "../providers/inkitt.js",
-      "logo": "https://www.inkitt.com/favicon.ico",
+      "logo": "https://novelbin.xyz/favicon.ico",
       "nsfw": false
     },
     {

@@ -8,8 +8,10 @@ void main() {
 
   const style = TextStyle(fontSize: 14, height: 1.4);
 
-  TextSpan plainChapter(String text) =>
-      TextSpan(style: style, children: [TextSpan(text: text)]);
+  TextSpan plainChapter(String text) => TextSpan(
+    style: style,
+    children: [TextSpan(text: text)],
+  );
 
   final longText = List.generate(
     200,
@@ -75,6 +77,24 @@ void main() {
       expect(pages.single.toPlainText(), 'Just a short line.');
     });
 
+    test('a 100k-character chapter paginates without quadratic freeze', () {
+      final text = List.generate(
+        2500,
+        (i) =>
+            'Paragraph $i has enough words to make a realistic chapter body.',
+      ).join(' ');
+      final watch = Stopwatch()..start();
+      final pages = paginateSpans(
+        plainChapter(text),
+        pageSize: const Size(180, 200),
+        style: style,
+      );
+      watch.stop();
+
+      expect(pages.length, greaterThan(50));
+      expect(watch.elapsed, lessThan(const Duration(seconds: 10)));
+    });
+
     test('inline styling is preserved: a bold sub-span stays bold on whatever '
         'page it lands on', () {
       final chapter = TextSpan(
@@ -95,10 +115,7 @@ void main() {
       );
 
       // Whole text is still there.
-      expect(
-        pages.map((p) => p.toPlainText()).join(),
-        chapter.toPlainText(),
-      );
+      expect(pages.map((p) => p.toPlainText()).join(), chapter.toPlainText());
 
       var foundBold = false;
       for (final page in pages) {

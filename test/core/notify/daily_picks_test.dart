@@ -2,7 +2,11 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:watch_app/core/models/media_item.dart';
+import 'package:watch_app/core/models/provider_info.dart';
 import 'package:watch_app/core/notify/daily_picks_prefs.dart';
+import 'package:watch_app/core/notify/daily_picks_service.dart';
+import 'package:watch_app/core/notify/notification_art.dart';
 
 void main() {
   group('Daily picks slots', () {
@@ -36,11 +40,19 @@ void main() {
       final kinds = DailyPickSlot.values.map((s) => s.kind).toSet();
       expect(kinds, {
         DailyPickKind.trendingMovies,
-        DailyPickKind.football,
+        DailyPickKind.sports,
         DailyPickKind.trendingAnime,
         DailyPickKind.newRelease,
         DailyPickKind.recommended,
       });
+    });
+
+    test('exactly one card uses the three-poster layout', () {
+      expect(
+        DailyPickSlot.values.where((s) => s.usesThreePosterCard).length,
+        1,
+      );
+      expect(DailyPickSlot.afternoon.usesThreePosterCard, isTrue);
     });
 
     test('the cards fire at 06:00, 13:00, 15:00, 19:00 and 23:00', () {
@@ -187,6 +199,135 @@ void main() {
       expect(
         DailyPicksPrefs.needsFill(DailyPickSlot.night, '2026-01-01'),
         isTrue,
+      );
+    });
+  });
+
+  group('Daily pick headlines match the selected items', () {
+    MediaItem item(
+      String id, {
+      required ProviderType type,
+      int? malId,
+      bool tmdbIsTv = false,
+      String? badge,
+    }) => MediaItem(
+      id: id,
+      title: id,
+      url: 'https://example.test/$id',
+      type: type,
+      sourceId: 'test',
+      malId: malId,
+      tmdbIsTv: tmdbIsTv,
+      liveBadge: badge,
+    );
+
+    test('an anime headline is only used when every pick is anime', () {
+      final anime = item('anime', type: ProviderType.anime);
+      final movie = item('movie', type: ProviderType.movie);
+
+      expect(
+        DailyPicksService.titleForKind(DailyPickKind.trendingAnime, [anime]),
+        'Trending anime on Zangetsu',
+      );
+      expect(
+        DailyPicksService.titleForKind(DailyPickKind.trendingAnime, [movie]),
+        'Trending now on Zangetsu',
+      );
+    });
+
+    test('movie, series and mixed headlines are specific', () {
+      final movie = item('movie', type: ProviderType.movie);
+      final series = item('series', type: ProviderType.movie, tmdbIsTv: true);
+      final anime = item('anime', type: ProviderType.anime);
+
+      expect(
+        DailyPicksService.titleForKind(DailyPickKind.trendingMovies, [movie]),
+        'Trending movies on Zangetsu',
+      );
+      expect(
+        DailyPicksService.titleForKind(DailyPickKind.trendingMovies, [series]),
+        'Trending series on Zangetsu',
+      );
+      expect(
+        DailyPicksService.titleForKind(DailyPickKind.trendingMovies, [
+          movie,
+          series,
+        ]),
+        'Trending now on Zangetsu',
+      );
+      expect(
+        DailyPicksService.titleForKind(DailyPickKind.trendingMovies, [anime]),
+        'Trending anime on Zangetsu',
+      );
+    });
+
+    test('the poster row carries one, two or three cards, never more', () {
+      final movies = [
+        for (var i = 0; i < 5; i++) item('movie$i', type: ProviderType.movie),
+      ];
+
+      expect(
+        DailyPicksService.postersFor(
+          DailyPickKind.trendingMovies,
+          movies.take(1).toList(),
+        ).length,
+        1,
+      );
+      expect(
+        DailyPicksService.postersFor(
+          DailyPickKind.trendingMovies,
+          movies.take(2).toList(),
+        ).length,
+        2,
+      );
+      expect(
+        DailyPicksService.postersFor(
+          DailyPickKind.trendingMovies,
+          movies.take(3).toList(),
+        ).length,
+        3,
+      );
+      expect(
+        DailyPicksService.postersFor(
+          DailyPickKind.trendingMovies,
+          movies,
+        ).length,
+        3,
+      );
+    });
+
+    test('sports cards are match cards with the live badge', () {
+      final live = item(
+        'Arsenal vs Chelsea',
+        type: ProviderType.movie,
+        badge: 'LIVE',
+      );
+      final cards = DailyPicksService.postersFor(DailyPickKind.sports, [live]);
+
+      expect(cards, hasLength(1));
+      expect(cards.single.kind, NotificationArtKind.match);
+      expect(cards.single.badge, 'LIVE');
+    });
+
+    test('sports uses live wording when a fixture is in play', () {
+      final live = item(
+        'Arsenal vs Chelsea',
+        type: ProviderType.movie,
+        badge: 'LIVE',
+      );
+      final upcoming = item(
+        'Liverpool vs Everton',
+        type: ProviderType.movie,
+        badge: 'in 2h',
+      );
+
+      expect(
+        DailyPicksService.titleForKind(DailyPickKind.sports, [live]),
+        'Live sports on Zangetsu',
+      );
+      expect(
+        DailyPicksService.titleForKind(DailyPickKind.sports, [upcoming]),
+        'Sports on Zangetsu',
       );
     });
   });

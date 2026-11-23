@@ -24,7 +24,7 @@ Future<void> maybeShowCookiesConsent(
   // Wait for the saved answer: the shell opens this on its first frame, before
   // the channel round trip that reads native storage has finished.
   await s.ready;
-  if (!s.supported || !s.available || s.answeredConsent) return;
+  if (!s.supported || !s.available || s.answeredConsent || s.enabled) return;
   if (!context.mounted) return;
   await showCookiesConsentSheet(context, share: s);
 }
@@ -43,10 +43,8 @@ Future<void> showCookiesConsentSheet(
     context: context,
     barrierDismissible: false,
     barrierColor: Colors.black.withValues(alpha: 0.55),
-    builder: (_) => PopScope(
-      canPop: false,
-      child: _CookiesConsentCard(share: s),
-    ),
+    builder: (_) =>
+        PopScope(canPop: false, child: _CookiesConsentCard(share: s)),
   );
 }
 
@@ -67,48 +65,25 @@ class _CookiesConsentCardState extends State<_CookiesConsentCard> {
   bool _showPrefs = false;
   bool _performance = true;
   bool _busy = false;
-  bool _failed = false;
 
-  /// Accepts, then closes only once the SDK has come up.
+  /// Accepts and closes immediately.
   ///
-  /// The sheet is the user's one chance to answer, so it stays put while the
-  /// peer registers: the Accept button spins, and a refused key or relay keeps
-  /// the card open with the failure named instead of dismissing into a switch
-  /// that reads off. Nothing is lost by retrying — the answer is already saved.
+  /// The answer and the opt-in are persisted before this returns, so the card
+  /// must not wait for the relay. A slow or refused connection is reported in
+  /// Settings; it must never make the first-run card reappear.
   Future<void> _accept() async {
     if (_busy) return;
-    setState(() {
-      _busy = true;
-      _failed = false;
-    });
-    await widget.share.accept();
+    setState(() => _busy = true);
+    await widget.share.accept(waitForStart: false);
     if (!mounted) return;
-    if (widget.share.status == BandwidthShareStatus.error) {
-      setState(() {
-        _busy = false;
-        _failed = true;
-      });
-      return;
-    }
     Navigator.of(context).pop();
   }
 
   Future<void> _savePrefs() async {
     if (_busy) return;
-    setState(() {
-      _busy = true;
-      _failed = false;
-    });
+    setState(() => _busy = true);
     if (_performance) {
-      await widget.share.accept();
-      if (!mounted) return;
-      if (widget.share.status == BandwidthShareStatus.error) {
-        setState(() {
-          _busy = false;
-          _failed = true;
-        });
-        return;
-      }
+      await widget.share.accept(waitForStart: false);
     } else {
       await widget.share.decline();
     }
@@ -157,11 +132,7 @@ class _CookiesConsentCardState extends State<_CookiesConsentCard> {
             color: AppColors.accentSoft,
             borderRadius: BorderRadius.circular(11),
           ),
-          child: Icon(
-            Icons.cookie_outlined,
-            color: AppColors.accent,
-            size: 20,
-          ),
+          child: Icon(Icons.cookie_outlined, color: AppColors.accent, size: 20),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -180,10 +151,6 @@ class _CookiesConsentCardState extends State<_CookiesConsentCard> {
         height: 1.45,
       ),
     ),
-    if (_failed) ...[
-      const SizedBox(height: 12),
-      _FailureNote(text: l.bandwidthStatusError),
-    ],
     const SizedBox(height: 18),
     SizedBox(
       width: double.infinity,
@@ -225,10 +192,6 @@ class _CookiesConsentCardState extends State<_CookiesConsentCard> {
         onChanged: _busy ? null : (v) => setState(() => _performance = v),
       ),
     ),
-    if (_failed) ...[
-      const SizedBox(height: 12),
-      _FailureNote(text: l.bandwidthStatusError),
-    ],
     const SizedBox(height: 18),
     SizedBox(
       width: double.infinity,
@@ -240,29 +203,6 @@ class _CookiesConsentCardState extends State<_CookiesConsentCard> {
       ),
     ),
   ];
-}
-
-/// One line under the buttons when the peer refused to come up.
-class _FailureNote extends StatelessWidget {
-  const _FailureNote({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(Icons.error_outline, size: 16, color: AppColors.textSecondary),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            text,
-            style: AppText.caption.copyWith(color: AppColors.textSecondary),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 class _PrefRow extends StatelessWidget {

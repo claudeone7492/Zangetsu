@@ -130,10 +130,7 @@ class LivePlaylistStore {
 
   /// Parsed channels for one playlist. A remote fetch failure yields an empty
   /// list, so one dead playlist never blanks the rest of Live TV.
-  Future<List<M3uChannel>> channelsFor(
-    LivePlaylistEntry entry,
-    Dio dio,
-  ) async {
+  Future<List<M3uChannel>> channelsFor(LivePlaylistEntry entry, Dio dio) async {
     final cached = _cache[entry.id];
     if (cached != null) return cached;
     final List<M3uChannel> channels;
@@ -188,7 +185,10 @@ class LivePlaylistStore {
           channel.tvgName ?? '',
         ].join(' ').toLowerCase();
         if (!haystack.contains(q) || !seen.add(channel.url)) continue;
-        out.add(_item(entry, channel, i, entry.name));
+        final group = (channel.group?.trim().isNotEmpty ?? false)
+            ? channel.group!.trim()
+            : entry.name;
+        out.add(_item(entry, channel, i, group));
       }
     }
     return out;

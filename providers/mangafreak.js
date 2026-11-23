@@ -45,12 +45,12 @@ function search(query, page) {
 }
 
 function getHome() {
-  return fetch(SITE + '/MangaList/Hot', { headers: { 'Referer': REFERER } }).then(function (r) {
+  return fetch(SITE + '/', { headers: { 'Referer': REFERER } }).then(function (r) {
     var html = r.body || '', out = [], seen = {};
-    var list = _all(html, /<div class="manga_search_item">([\s\S]*?)<\/div>\s*<\/div>/g);
+    var list = _all(html, /<div class="(?:featured_item|latest_item)"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/g);
     for (var i = 0; i < list.length; i++) {
       var b = list[i][1];
-      var a = b.match(/<h3>\s*<a href="([^"]+)">([\s\S]*?)<\/a>/i);
+      var a = b.match(/<a[^>]+href="(\/Manga\/[^"]+)"[^>]*>([^<]+)<\/a>/i);
       if (!a) continue;
       var u = _abs(a[1]);
       if (seen[u]) continue;
@@ -58,7 +58,8 @@ function getHome() {
       var img = b.match(/<img[^>]+src="([^"]+)"/i);
       out.push({ id: _slug(u), title: _clean(a[2]), cover: img ? _abs(img[1]) : null, url: u, type: 'manga' });
     }
-    return [{ title: 'Hot', items: out }];
+    if (!out.length) out = _fallbackCards(html);
+    return out.length ? [{ title: 'Featured', items: out }] : [];
   });
 }
 

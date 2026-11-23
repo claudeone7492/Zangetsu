@@ -1,0 +1,1 @@
+../../providers/mangaread.js

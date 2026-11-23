@@ -75,6 +75,25 @@ function _cards(html) {
   return out;
 }
 
+
+function _fallbackCards(html) {
+  var out = [], seen = {};
+  var re = /<a[^>]+href="([^"]*\/manga\/[^"]+)"[^>]*(?:title="([^"]*)")?[^>]*>([\s\S]*?)<\/a>/g;
+  var list = _all(html, re);
+  for (var i = 0; i < list.length; i++) {
+    var url = _abs(list[i][1]);
+    if (/\/chapter[-\/]/i.test(url) || seen[url]) continue;
+    var title = _clean(list[i][2] || list[i][3]);
+    if (!title || /^chapter\b/i.test(title)) continue;
+    seen[url] = true;
+    var at = html.indexOf(list[i][0]);
+    var back = at > 0 ? html.substring(Math.max(0, at - 900), at) : '';
+    var img = back.match(/<img[^>]+(?:data-src|src)="([^"]+)"/i);
+    out.push({ id: _slug(url), title: title, cover: img ? _abs(img[1]) : null, url: url, type: 'manga' });
+  }
+  return out;
+}
+
 function search(query, page) {
   page = page || 1;
   var q = String(query || '').trim();
@@ -91,7 +110,11 @@ function search(query, page) {
 
 function getHome() {
   return fetch(SITE + '/manga/?m_orderby=views', { headers: { 'Referer': REFERER } })
-    .then(function (r) { return [{ title: 'Popular', items: _cards(r.body || '') }]; });
+    .then(function (r) {
+      var html = r.body || '', items = _cards(html);
+      if (!items.length) items = _fallbackCards(html);
+      return items.length ? [{ title: 'Popular', items: items }] : [];
+    });
 }
 
 function _chapters(html) {

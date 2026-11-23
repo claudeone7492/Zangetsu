@@ -81,6 +81,10 @@ class BandwidthShare extends ChangeNotifier {
   bool _answeredConsent = false;
   bool _available = true;
 
+  /// Incremented whenever the user changes the opt-in. A snapshot that was
+  /// already in flight when the user acted must not overwrite the newer state.
+  int _generation = 0;
+
   /// Whether the native SDK reports itself running. Distinct from [_enabled]
   /// (the stored opt-in): a device can be opted in while the relay is still
   /// dialling, or opted in with the SDK having failed to come up.
@@ -112,34 +116,35 @@ class BandwidthShare extends ChangeNotifier {
   bool get available => _available;
 
   /// Whether sharing is on or coming up. A device that is opted in but whose
-  /// SDK failed to start is deliberately NOT active — the status line and the
-  /// switch must not claim something that is not happening.
+  /// SDK failed to start is deliberately NOT active — the status line must not
+  /// claim something that is not happening.
   bool get isActive =>
       _running ||
       _status == BandwidthShareStatus.connected ||
       _status == BandwidthShareStatus.connecting;
 
   void _listen() {
-    _sub = _events.receiveBroadcastStream().listen(
-      (event) {
-        final next = _statusFromName(event as String?);
-        final active = next == BandwidthShareStatus.connected;
-        if (next == _status && active == _running) return;
-        _status = next;
-        _running = active;
-        notifyListeners();
-      },
-      onError: (_) {},
-    );
+    _sub = _events.receiveBroadcastStream().listen((event) {
+      final next = _statusFromName(event as String?);
+      final active = next == BandwidthShareStatus.connected;
+      if (next == _status && active == _running) return;
+      _status = next;
+      _running = active;
+      notifyListeners();
+    }, onError: (_) {});
   }
 
   Future<void> _refresh() async {
+    final generation = _generation;
     try {
       final result =
           await _method.invokeMapMethod<String, dynamic>('snapshot') ??
           const <String, dynamic>{};
+      if (generation != _generation) return;
       _enabled = result['enabled'] == true;
-      _answeredConsent = result['answeredConsent'] == true;
+      // Consent is monotonic: once answered, a slow or stale snapshot must not
+      // make the first-run card return.
+      if (result['answeredConsent'] == true) _answeredConsent = true;
       _running = result['running'] == true;
       _available = result['available'] as bool? ?? true;
       _batteryExempt = result['batteryExempt'] as bool? ?? true;
@@ -169,15 +174,16 @@ class BandwidthShare extends ChangeNotifier {
 
   /// The user accepted the sheet: remember the choice and start sharing.
   ///
-  /// The opt-in is only recorded once the native side confirms the SDK came up.
-  /// Previously this set `enabled = true` and fired the channel without waiting,
-  /// so a device with no peer SDK key (or a refused relay) still showed the
-  /// switch on and the Settings card "active" while nothing was running — the
-  /// exact "accept does nothing" report. Now a failed start surfaces as
-  /// [BandwidthShareStatus.error] and leaves the switch off.
-  Future<void> accept() async {
+  /// The answer and the opt-in are written before the SDK is asked to start, so
+  /// the consent card cannot return because a relay is slow or refuses. The
+  /// start then runs in the background; Settings reports its eventual status.
+  ///
+  /// Pass [waitForStart] false from the first-run card so it closes immediately.
+  Future<void> accept({bool waitForStart = true}) async {
     if (!supported) return;
+    final generation = ++_generation;
     _answeredConsent = true;
+    _enabled = true;
     _status = BandwidthShareStatus.connecting;
     notifyListeners();
     // Record the answer before starting: the sheet must never return because
@@ -185,31 +191,39 @@ class BandwidthShare extends ChangeNotifier {
     try {
       await _method.invokeMethod<void>('markAnswered');
     } catch (_) {}
+    final started = _start(generation);
+    if (waitForStart) await started;
+  }
+
+  /// Asks native to start the SDK and folds its answer back into the state.
+  ///
+  /// The opt-in stays set even when the relay refuses: the user's answer is
+  /// final, and the next resume retries instead of asking again.
+  Future<void> _start(int generation) async {
     try {
       final result =
           await _method.invokeMapMethod<String, dynamic>('enable') ??
           const <String, dynamic>{};
+      if (generation != _generation) return;
       final started = result['started'] == true;
-      _enabled = result['enabled'] == true;
+      _enabled = result['enabled'] as bool? ?? true;
       _running = result['running'] == true;
-      _available = result['available'] as bool? ?? true;
+      _available = result['available'] as bool? ?? _available;
       _batteryExempt = result['batteryExempt'] as bool? ?? _batteryExempt;
-      _status = _statusFromName(result['status'] as String?);
-      if (!started) {
-        _enabled = false;
-        _running = false;
-        _status = BandwidthShareStatus.error;
-      }
+      _status = started
+          ? _statusFromName(result['status'] as String?)
+          : BandwidthShareStatus.error;
+      if (!started) _running = false;
       notifyListeners();
     } catch (_) {
-      _enabled = false;
+      if (generation != _generation) return;
       _running = false;
       _status = BandwidthShareStatus.error;
       notifyListeners();
     }
   }
 
-  /// The user declined the sheet: remember that too, so it does not reappear.
+  /// The user declined the sheet: remember that too, and stop sharing.
   Future<void> decline() async {
     if (!supported) return;
     _answeredConsent = true;
@@ -217,6 +231,7 @@ class BandwidthShare extends ChangeNotifier {
     try {
       await _method.invokeMethod<void>('markAnswered');
     } catch (_) {}
+    await disable();
   }
 
   /// Turn sharing on (from Settings). Same path as [accept].
@@ -225,6 +240,7 @@ class BandwidthShare extends ChangeNotifier {
   /// Turn sharing off: stop the service and clear the opt-in flag.
   Future<void> disable() async {
     if (!supported) return;
+    _generation++;
     _enabled = false;
     _running = false;
     _status = BandwidthShareStatus.stopped;

@@ -658,7 +658,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           final profile = active ?? profiles.activeProfile;
           final accountStatus = auth.isLoggedIn
               ? (auth.user?.email ?? auth.displayName)
-              : context.l10n.notSignedIn;
+              : (auth.displayName.isNotEmpty
+                    ? auth.displayName
+                    : 'This device');
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: SettingsCard(
@@ -870,22 +872,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
           if (mounted) setState(() {});
         },
       ),
-      _SettingsEntry(
-        section: SettingsSection.account,
-        icon: Icons.groups_2_outlined,
-        title: l10n.watchParty,
-        subtitle: l10n.watchPartySubtitle,
-        keywords: 'watch party together',
-        onTap: () {
-          if (sl<AuthCubit>().state.user == null) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(l10n.signInToWatchTogether)));
-            return;
-          }
-          _push(const WatchPartyLobbyScreen());
-        },
-      ),
+    _SettingsEntry(
+      section: SettingsSection.account,
+      icon: Icons.groups_2_outlined,
+      title: l10n.watchParty,
+      subtitle: l10n.watchPartySubtitle,
+      keywords: 'watch party together',
+      onTap: () {
+        if (sl<AuthCubit>().state.user == null) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.signInToWatchTogether)));
+          return;
+        }
+        _push(const WatchPartyLobbyScreen());
+      },
+    ),
     _SettingsEntry(
       section: SettingsSection.account,
       icon: Icons.cloud_upload_outlined,
@@ -1399,8 +1401,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       icon: Icons.bug_report_outlined,
       title: l10n.logsAndDiagnostics,
       subtitle: l10n.logsSubtitle,
-      keywords:
-          'logs share diagnostic debug bug report crash view clear save',
+      keywords: 'logs share diagnostic debug bug report crash view clear save',
       onTap: () => _push(const LogsScreen()),
     ),
     // About — a single destination holding the app info, contributors,

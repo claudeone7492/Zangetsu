@@ -12,7 +12,6 @@ import '../../core/profiles/viewer_profile_avatar.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../auth/auth_cubit.dart';
-import '../auth/auth_screens.dart' show ProfileAccountSection;
 import '../auth/pair_tv_screen.dart';
 import '../settings/settings_screen.dart';
 import '../settings/donate_screen.dart';
@@ -101,10 +100,6 @@ class ViewerProfileHomeScreen extends StatelessWidget {
         body: Center(child: CircularProgressIndicator(color: AppColors.accent)),
       );
     }
-    if (!auth.isLoggedIn) {
-      return Scaffold(backgroundColor: AppColors.bg, body: _signedOut(context));
-    }
-
     final myList = sl.isRegistered<MyListStore>() ? sl<MyListStore>() : null;
     final statuses = sl.isRegistered<ListStatusStore>()
         ? sl<ListStatusStore>()
@@ -191,7 +186,10 @@ class ViewerProfileHomeScreen extends StatelessWidget {
                                 ],
                               ),
                               if (profile.isKids)
-                                Text(context.l10n.profileKidsProfile, style: AppText.caption),
+                                Text(
+                                  context.l10n.profileKidsProfile,
+                                  style: AppText.caption,
+                                ),
                               GestureDetector(
                                 onTap: () => openViewerProfileEditor(
                                   context,
@@ -230,43 +228,6 @@ class ViewerProfileHomeScreen extends StatelessWidget {
       ),
     );
   }
-
-  Widget _signedOut(BuildContext context) => SafeArea(
-    child: Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 12, 0),
-          child: Row(
-            children: [
-              Text(context.l10n.profile, style: AppText.title),
-              const Spacer(),
-              IconButton(
-                tooltip: context.l10n.profileMenu,
-                onPressed: () => _openMenu(context),
-                style: IconButton.styleFrom(
-                  foregroundColor: AppColors.textPrimary,
-                  backgroundColor: AppColors.surface,
-                  shape: const CircleBorder(),
-                ),
-                icon: const Icon(Icons.more_horiz_rounded),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: const ProfileAccountSection(),
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
 
   Widget _cover(BuildContext context, ViewerProfile profile) {
     final photo = profilePhotoForFace(

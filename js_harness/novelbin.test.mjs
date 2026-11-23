@@ -25,7 +25,7 @@ live('getHome returns rails of novels', async () => {
   const sections = JSON.parse(await callProvider('novelbin', 'getHome', [{}]));
   assert.ok(Array.isArray(sections) && sections.length >= 1, 'expected rails');
   assert.ok(sections[0].items.length > 0, 'rail has items');
-  assert.ok(sections[0].items[0].url.includes('/book/'), 'cards link to books');
+  assert.ok(sections[0].items[0].url.includes('/novel/'), 'cards link to books');
 });
 
 live('search finds novels by title', async () => {

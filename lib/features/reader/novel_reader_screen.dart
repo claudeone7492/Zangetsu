@@ -19,6 +19,7 @@ import '../../core/theme/app_text.dart';
 import '../../core/tracker/tracker.dart';
 import '../../core/tracker/tracker_hub.dart';
 import 'novel_paginator.dart';
+import 'bionic_reading.dart';
 import 'reader_chrome.dart';
 import 'reader_auto_scroll.dart';
 import 'reader_auto_scroll_ui.dart';
@@ -226,7 +227,9 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
   /// tests boot the reader without it). Reading a chapter must not depend on
   /// highlights being available — a null store just means nothing to paint.
   ReaderHighlightStore? get _highlightStore =>
-      sl.isRegistered<ReaderHighlightStore>() ? sl<ReaderHighlightStore>() : null;
+      sl.isRegistered<ReaderHighlightStore>()
+      ? sl<ReaderHighlightStore>()
+      : null;
 
   /// Re-reads the chapter's highlights from the store and repaints. Called by
   /// the selection menu after it adds/removes/recolours one, so the page
@@ -475,8 +478,7 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
   /// ways). Only long-press-and-drag behaves differently.
   Widget _selectionArea(Widget child) {
     return SelectionArea(
-      onSelectionChanged: (value) =>
-          _selectedText = value?.plainText ?? '',
+      onSelectionChanged: (value) => _selectedText = value?.plainText ?? '',
       contextMenuBuilder: (ctx, state) => buildReaderSelectionMenu(
         context: ctx,
         state: state,
@@ -643,7 +645,12 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
                 vertical: 32,
               ),
               sliver: HtmlWidget(
-                applyHighlightsToHtml(cleanNovelHtml(text.html), _highlights),
+                applyHighlightsToHtml(
+                  prefs.bionicReading
+                      ? applyBionicReading(cleanNovelHtml(text.html))
+                      : cleanNovelHtml(text.html),
+                  _highlights,
+                ),
                 renderMode: RenderMode.sliverList,
                 // Only a downloaded chapter carries a folder — resolves an
                 // image's relative `src` (the download saves them bare, e.g.
@@ -666,6 +673,7 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
                   theme.text,
                   prefs.paragraphSpacing,
                   prefs.textAlignJustify,
+                  prefs.bionicReading,
                   direction,
                 ],
                 customStylesBuilder: (element) {
@@ -773,7 +781,10 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
               ),
               (constraints.maxHeight - 64).clamp(1.0, double.infinity),
             );
-            _ensurePaginated(text.html, base, pageSize);
+            final chapterHtml = prefs.bionicReading
+                ? applyBionicReading(text.html)
+                : text.html;
+            _ensurePaginated(chapterHtml, base, pageSize, prefs.bionicReading);
             final pages = _pages;
             return GestureDetector(
               behavior: HitTestBehavior.opaque,
@@ -818,12 +829,18 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
   /// resume/carry-over page. A never-read chapter with empty `_pages` uses its
   /// saved permille (0 → page 0); a re-paginate (font/size/rotation) carries
   /// the live position so the reader stays roughly in place.
-  void _ensurePaginated(String html, TextStyle base, Size pageSize) {
+  void _ensurePaginated(
+    String html,
+    TextStyle base,
+    Size pageSize,
+    bool bionic,
+  ) {
     final key =
         '${identityHashCode(_text)}|${base.fontSize}|${base.fontFamily}'
         '|${base.height}|${base.letterSpacing}|${base.wordSpacing}'
         '|${pageSize.width.toStringAsFixed(1)}'
-        '|${pageSize.height.toStringAsFixed(1)}';
+        '|${pageSize.height.toStringAsFixed(1)}'
+        '|$bionic';
     if (key == _paginationKey) return;
     final carry = _pages.isEmpty ? _savedPermille() : _pagedPermille();
     _paginationKey = key;
@@ -969,6 +986,26 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
     );
   }
 
+  /// Switches between the continuous scroll and the book-style paged layout.
+  /// Persists the spot in the current mode first, so the other mode resumes
+  /// from the same permille (see [_ensurePaginated] /
+  /// [_restoreScrollPosition]).
+  void _setPaginated(bool value) {
+    final prefs = sl<ReaderPrefs>();
+    if (prefs.novelPaginated == value) return;
+    _saveProgress(flush: false);
+    prefs.setNovelPaginated(value);
+    _paginationKey = null;
+    _pages = const [];
+    _pageIndex = 0;
+    if (!value) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _restoreScrollPosition();
+      });
+    }
+    if (mounted) setState(() {});
+  }
+
   /// Start/stop hands-free reading. Both modes: scroll mode creeps, paged mode
   /// turns a page every so often.
   void _setAutoScroll(bool on) {
@@ -1087,6 +1124,16 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
                       color: Colors.white,
                     ),
                     onPressed: _openTextSizeSheet,
+                  ),
+                  // One tap between scroll and book pages — the same switch as
+                  // Settings → Page, without leaving the chapter.
+                  IconButton(
+                    tooltip: context.l10n.paginated,
+                    icon: Icon(
+                      paged ? Icons.swap_vert_rounded : Icons.menu_book_rounded,
+                      color: Colors.white,
+                    ),
+                    onPressed: () => _setPaginated(!paged),
                   ),
                   readerBarButton(
                     Icons.skip_next_rounded,
@@ -1366,7 +1413,10 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
                             ),
                           ),
                         ),
-                        Text(context.l10n.readerSettings, style: AppText.headline),
+                        Text(
+                          context.l10n.readerSettings,
+                          style: AppText.headline,
+                        ),
                         readerSheetSection('Text'),
                         readerSheetGroup([
                           readerSheetRow(
@@ -1474,6 +1524,27 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
                                   apply(() => prefs.setParagraphSpacing(v)),
                             ),
                           ),
+                          readerSheetRow(
+                            icon: Icons.bolt_rounded,
+                            label: 'Bionic reading',
+                            trailing: Switch(
+                              key: const ValueKey('reader-bionic-toggle'),
+                              value: prefs.bionicReading,
+                              activeThumbColor: AppColors.accent,
+                              onChanged: (v) => apply(() {
+                                // Paged mode caches its page split by a key that
+                                // includes this pref; drop it so the next build
+                                // re-splits with (or without) the bold anchors.
+                                if (prefs.novelPaginated) {
+                                  _saveProgress(flush: false);
+                                  _paginationKey = null;
+                                  _pages = const [];
+                                  _pageIndex = 0;
+                                }
+                                prefs.setBionicReading(v);
+                              }),
+                            ),
+                          ),
                         ]),
                         readerSheetSection('Page'),
                         readerSheetGroup([
@@ -1493,26 +1564,10 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
                             icon: Icons.menu_book_rounded,
                             label: context.l10n.paginated,
                             trailing: Switch(
+                              key: const ValueKey('reader-paginated-toggle'),
                               value: prefs.novelPaginated,
                               activeThumbColor: AppColors.accent,
-                              onChanged: (v) => apply(() {
-                                // Persist the spot in the CURRENT mode first,
-                                // then switch — so the other mode resumes from
-                                // the same permille (see _ensurePaginated /
-                                // _restoreScrollPosition).
-                                _saveProgress(flush: false);
-                                prefs.setNovelPaginated(v);
-                                _paginationKey = null;
-                                _pages = const [];
-                                _pageIndex = 0;
-                                if (!v) {
-                                  WidgetsBinding.instance.addPostFrameCallback((
-                                    _,
-                                  ) {
-                                    if (mounted) _restoreScrollPosition();
-                                  });
-                                }
-                              }),
+                              onChanged: (v) => apply(() => _setPaginated(v)),
                             ),
                           ),
                         ]),
@@ -1597,7 +1652,9 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
                             ),
                           ),
                         ]),
-                        readerSheetSection(context.l10n.mangaTranslationSection),
+                        readerSheetSection(
+                          context.l10n.mangaTranslationSection,
+                        ),
                         readerSheetGroup([
                           readerSheetRow(
                             icon: Icons.translate_rounded,
@@ -1704,10 +1761,7 @@ class _NovelReaderScreenState extends State<NovelReaderScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      sheetContext.l10n.translated,
-                      style: AppText.headline,
-                    ),
+                    Text(sheetContext.l10n.translated, style: AppText.headline),
                     const SizedBox(height: 12),
                     SelectableText(
                       translated,

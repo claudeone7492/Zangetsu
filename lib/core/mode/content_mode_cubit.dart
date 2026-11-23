@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
 
+import '../app_config.dart';
 import '../di/injector.dart';
 import '../repository/source_repository.dart';
 import '../state/active_source_cubit.dart';
@@ -59,6 +60,17 @@ class ContentModeCubit extends Cubit<ContentMode> {
     // One manifest pass for the whole scan instead of one per candidate.
     final types = manifestSourceTypes();
     if (sourceInMode(_active.state, m, types)) return; // fits — keep it
+    // A reading mode with no remembered pick should land on its curated
+    // default, not whichever source happens to sort first (Manga mode was
+    // defaulting to MangaBat because of registry order).
+    final preferred = switch (m) {
+      ContentMode.manga => kDefaultMangaSourceId,
+      _ => null,
+    };
+    if (preferred != null && sources.any((s) => s.id == preferred)) {
+      _active.setSource(preferred);
+      return;
+    }
     for (final s in sources) {
       if (sourceInMode(s.id, m, types)) {
         _active.setSource(s.id);
@@ -109,7 +121,7 @@ class ContentModeCubit extends Cubit<ContentMode> {
             (e) => debugPrint(
               '[ContentModeCubit] failed to park $outgoingSource: $e',
             ),
-      ),
+          ),
     );
     unawaited(
       _box
@@ -118,7 +130,7 @@ class ContentModeCubit extends Cubit<ContentMode> {
             (e) => debugPrint(
               '[ContentModeCubit] failed to persist mode ${m.name}: $e',
             ),
-      ),
+          ),
     );
   }
 }

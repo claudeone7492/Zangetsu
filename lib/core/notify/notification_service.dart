@@ -57,20 +57,10 @@ class NotificationService {
     'zangetsu/notifications',
   );
 
-  /// The star that fills Android's large-icon slot. Without it the expanded
-  /// notification shows an empty square beside the title. A failure here must
-  /// never cost the user the notification itself.
-  Future<AndroidBitmap<Object>?> _starIcon() async {
-    try {
-      return FilePathAndroidBitmap(await NotificationArt.starIcon());
-    } catch (_) {
-      return null;
-    }
-  }
-
   // A new id, not the old 'daily_picks': Android freezes a channel's importance
   // at creation, so reusing it would keep the old default-importance behaviour.
   static const String _dailyPicksChannelId = 'daily_picks_v2';
+  static const String _smallIcon = 'ic_stat_zangetsu_star';
   bool _inited = false;
 
   Future<bool> get canShowAlerts async {
@@ -89,7 +79,7 @@ class NotificationService {
     // the app's single notification prompt: alerts are drawn locally, so
     // nothing else needs to own it.
     await ensureNotificationPermission();
-    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const android = AndroidInitializationSettings(_smallIcon);
     const darwin = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -156,7 +146,7 @@ class NotificationService {
         importance: Importance.high,
         priority: Priority.high,
         color: AppColors.accent,
-        largeIcon: await _starIcon(),
+        icon: _smallIcon,
       ),
     );
     await _plugin.show(
@@ -187,7 +177,7 @@ class NotificationService {
         importance: Importance.defaultImportance,
         priority: Priority.defaultPriority,
         color: AppColors.accent,
-        largeIcon: await _starIcon(),
+        icon: _smallIcon,
       ),
     );
     await _plugin.show(
@@ -226,7 +216,7 @@ class NotificationService {
         importance: Importance.high,
         priority: Priority.high,
         color: AppColors.accent,
-        largeIcon: await _starIcon(),
+        icon: _smallIcon,
         styleInformation: style,
       ),
     );
@@ -248,7 +238,7 @@ class NotificationService {
     required String body,
     required DailyPickStyle style,
     String? imageUrl,
-    String? posterUrl,
+    List<NotificationArtItem>? posters,
     List<String>? lines,
     String? payload,
   }) async {
@@ -259,7 +249,7 @@ class NotificationService {
       title,
       body,
       imageUrl,
-      posterUrl,
+      posters,
       lines,
     );
     final details = NotificationDetails(
@@ -267,11 +257,11 @@ class NotificationService {
         _dailyPicksChannelId,
         'Daily picks',
         channelDescription:
-            'Five suggestions a day — movies, football, anime and more',
+            'Five suggestions a day — movies, sports, anime and more',
         importance: Importance.high,
         priority: Priority.high,
         color: AppColors.accent,
-        largeIcon: await _starIcon(),
+        icon: _smallIcon,
         styleInformation: styleInfo,
       ),
     );
@@ -293,7 +283,7 @@ class NotificationService {
     required DailyPickStyle style,
     required tz.TZDateTime when,
     String? imageUrl,
-    String? posterUrl,
+    List<NotificationArtItem>? posters,
     List<String>? lines,
     String? payload,
   }) async {
@@ -304,7 +294,7 @@ class NotificationService {
       title,
       body,
       imageUrl,
-      posterUrl,
+      posters,
       lines,
     );
     final details = NotificationDetails(
@@ -312,11 +302,11 @@ class NotificationService {
         _dailyPicksChannelId,
         'Daily picks',
         channelDescription:
-            'Five suggestions a day — movies, football, anime and more',
+            'Five suggestions a day — movies, sports, anime and more',
         importance: Importance.high,
         priority: Priority.high,
         color: AppColors.accent,
-        largeIcon: await _starIcon(),
+        icon: _smallIcon,
         styleInformation: styleInfo,
       ),
     );
@@ -360,7 +350,7 @@ class NotificationService {
         importance: Importance.high,
         priority: Priority.high,
         color: AppColors.accent,
-        largeIcon: await _starIcon(),
+        icon: _smallIcon,
       ),
     );
     await _plugin.zonedSchedule(
@@ -383,7 +373,7 @@ class NotificationService {
     String title,
     String body,
     String? imageUrl,
-    String? posterUrl,
+    List<NotificationArtItem>? posters,
     List<String>? lines,
   ) async {
     // Every slot gets the approved art card when its lead item has artwork.
@@ -392,7 +382,7 @@ class NotificationService {
       title: title,
       body: body,
       bannerUrl: imageUrl,
-      posterUrl: posterUrl,
+      posters: posters,
       eyebrow: 'Daily pick',
     );
     if (rich != null) return rich;
@@ -410,30 +400,39 @@ class NotificationService {
     }
   }
 
-  /// Big-picture style using the composite banner + poster + star card. Falls
-  /// back to the banner alone when the card cannot be built.
+  /// Big-picture style using the composite poster row, or the single
+  /// banner + poster announcement card. Falls back to the banner alone when
+  /// the card cannot be built.
   Future<StyleInformation?> _richStyle({
     required String title,
     required String body,
     String? bannerUrl,
     String? posterUrl,
+    List<NotificationArtItem>? posters,
     String? eyebrow,
   }) async {
     try {
+      if (posters != null && posters.isNotEmpty) {
+        final row = await NotificationArt.posterRow(dio: _dio, items: posters);
+        if (row != null) {
+          return BigPictureStyleInformation(
+            FilePathAndroidBitmap(row),
+            contentTitle: title,
+            summaryText: body,
+          );
+        }
+      }
       final card = await NotificationArt.card(
         dio: _dio,
         bannerUrl: bannerUrl,
         posterUrl: posterUrl,
         eyebrow: eyebrow,
       );
-      final star = await _starIcon();
       if (card != null) {
         return BigPictureStyleInformation(
           FilePathAndroidBitmap(card),
           contentTitle: title,
           summaryText: body,
-          largeIcon: star,
-          hideExpandedLargeIcon: false,
         );
       }
       if (bannerUrl == null || bannerUrl.isEmpty) return null;
@@ -443,8 +442,6 @@ class NotificationService {
         picture,
         contentTitle: title,
         summaryText: body,
-        largeIcon: star,
-        hideExpandedLargeIcon: false,
       );
     } catch (_) {
       return null;

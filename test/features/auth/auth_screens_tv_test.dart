@@ -12,16 +12,16 @@ import 'package:watch_app/features/auth/migration_bridge.dart';
 // ── Minimal fakes ─────────────────────────────────────────────────────────────
 
 MigrationBridge _fakeBridge() => MigrationBridge(
-      invoke: (_, _) async => const {'ok': false},
-      signInPassword: (_, _) async => false,
-      verifyOtp: (_, _) async => false,
-    );
+  invoke: (_, _) async => const {'ok': false},
+  signInPassword: (_, _) async => false,
+  verifyOtp: (_, _) async => false,
+);
 
 /// Extends [AuthCubit] with stub dependencies and a preset initial state.
 /// Overrides [login], [logout], and [signUp] so no network calls are made.
 class _FakeAuthCubit extends AuthCubit {
   _FakeAuthCubit(AuthState preset)
-      : super(SupabaseService(), AppwriteService(), _fakeBridge()) {
+    : super(SupabaseService(), AppwriteService(), _fakeBridge()) {
     emit(preset);
   }
 
@@ -39,40 +39,40 @@ class _FakeAuthCubit extends AuthCubit {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 Widget _buildLogin(_FakeAuthCubit cubit) => BlocProvider<AuthCubit>.value(
-      value: cubit,
-      child: const MaterialApp(home: LoginScreenTv()),
-    );
+  value: cubit,
+  child: const MaterialApp(home: LoginScreenTv()),
+);
 
 Widget _buildProfile(_FakeAuthCubit cubit) => BlocProvider<AuthCubit>.value(
-      value: cubit,
-      child: const MaterialApp(home: ProfileScreenTv()),
-    );
+  value: cubit,
+  child: const MaterialApp(home: ProfileScreenTv()),
+);
 
 Widget _buildSignup(_FakeAuthCubit cubit) => BlocProvider<AuthCubit>.value(
-      value: cubit,
-      child: const MaterialApp(home: SignupScreenTv()),
-    );
+  value: cubit,
+  child: const MaterialApp(home: SignupScreenTv()),
+);
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 void main() {
   // ── LoginScreenTv ──────────────────────────────────────────────────────────
 
-  testWidgets(
-    'LoginScreenTv renders email and password fields',
-    (tester) async {
-      final cubit = _FakeAuthCubit(const AuthState());
-      addTearDown(cubit.close);
+  testWidgets('LoginScreenTv renders email and password fields', (
+    tester,
+  ) async {
+    final cubit = _FakeAuthCubit(const AuthState());
+    addTearDown(cubit.close);
 
-      await tester.pumpWidget(_buildLogin(cubit));
-      await tester.pump();
+    await tester.pumpWidget(_buildLogin(cubit));
+    await tester.pump();
 
-      // Both input fields are present.
-      final fields =
-          tester.widgetList<TextField>(find.byType(TextField)).toList();
-      expect(fields.length, greaterThanOrEqualTo(2));
-    },
-  );
+    // Both input fields are present.
+    final fields = tester
+        .widgetList<TextField>(find.byType(TextField))
+        .toList();
+    expect(fields.length, greaterThanOrEqualTo(2));
+  });
 
   testWidgets(
     'LoginScreenTv email field autofocuses chrome without opening the IME',
@@ -85,8 +85,9 @@ void main() {
 
       // Nav chrome autofocuses; the edit node stays unfocused so leanback
       // does not trap D-pad on push. OK later opens the keyboard inline.
-      final fields =
-          tester.widgetList<TextField>(find.byType(TextField)).toList();
+      final fields = tester
+          .widgetList<TextField>(find.byType(TextField))
+          .toList();
       expect(fields.first.autofocus, isFalse);
       expect(fields.first.focusNode!.hasFocus, isFalse);
       expect(find.byType(TvTextField), findsWidgets);
@@ -95,28 +96,26 @@ void main() {
     },
   );
 
-  testWidgets(
-    'LoginScreenTv shows a TvFocusable login button',
-    (tester) async {
-      final cubit = _FakeAuthCubit(const AuthState());
-      addTearDown(cubit.close);
+  testWidgets('LoginScreenTv shows a TvFocusable login button', (tester) async {
+    final cubit = _FakeAuthCubit(const AuthState());
+    addTearDown(cubit.close);
 
-      await tester.pumpWidget(_buildLogin(cubit));
-      await tester.pump();
+    await tester.pumpWidget(_buildLogin(cubit));
+    await tester.pump();
 
-      // At least one TvFocusable is present (the login button + the signup link).
-      expect(find.byType(TvFocusable), findsWidgets);
+    // At least one TvFocusable is present (the login button + the signup link).
+    expect(find.byType(TvFocusable), findsWidgets);
 
-      // The "Log in" label is rendered inside a TvFocusable.
-      expect(find.text('Log in'), findsOneWidget);
-    },
-  );
+    // The "Log in" label is rendered inside a TvFocusable.
+    expect(find.text('Log in'), findsOneWidget);
+  });
 
   testWidgets(
     'LoginScreenTv shows an error message when AuthState has an error',
     (tester) async {
-      final cubit =
-          _FakeAuthCubit(const AuthState(error: 'Invalid credentials'));
+      final cubit = _FakeAuthCubit(
+        const AuthState(error: 'Invalid credentials'),
+      );
       addTearDown(cubit.close);
 
       await tester.pumpWidget(_buildLogin(cubit));
@@ -126,25 +125,24 @@ void main() {
     },
   );
 
-  testWidgets(
-    'LoginScreenTv shows a spinner when AuthState is busy',
-    (tester) async {
-      final cubit = _FakeAuthCubit(const AuthState(busy: true));
-      addTearDown(cubit.close);
+  testWidgets('LoginScreenTv shows a spinner when AuthState is busy', (
+    tester,
+  ) async {
+    final cubit = _FakeAuthCubit(const AuthState(busy: true));
+    addTearDown(cubit.close);
 
-      await tester.pumpWidget(_buildLogin(cubit));
-      await tester.pump();
+    await tester.pumpWidget(_buildLogin(cubit));
+    await tester.pump();
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      // Login button hidden while busy — no TvFocusable submit button.
-      expect(find.text('Log in'), findsNothing);
-    },
-  );
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    // Login button hidden while busy — no TvFocusable submit button.
+    expect(find.text('Log in'), findsNothing);
+  });
 
   // ── ProfileScreenTv ────────────────────────────────────────────────────────
 
   testWidgets(
-    'ProfileScreenTv shows "Not signed in" when user is unauthenticated',
+    'ProfileScreenTv shows the device identity when no cloud session exists',
     (tester) async {
       final cubit = _FakeAuthCubit(
         const AuthState(status: AuthStatus.unauthenticated),
@@ -154,57 +152,42 @@ void main() {
       await tester.pumpWidget(_buildProfile(cubit));
       await tester.pump();
 
-      expect(find.text('Not signed in'), findsOneWidget);
+      expect(find.text('This device'), findsOneWidget);
       // TvBackButton is always present (adds exactly one TvFocusable) even in
       // the unauthenticated branch — the user still needs a way back.
       expect(find.byType(TvFocusable), findsOneWidget);
     },
   );
 
-  testWidgets(
-    'ProfileScreenTv renders a focusable logout button when logged in',
-    (tester) async {
-      // Build an authenticated state without a real User object; we just need
-      // the isLoggedIn getter to return true. isLoggedIn checks
-      // status == authenticated && user != null, so we can't fake it without
-      // a real User. Instead, verify that the "Not signed in" branch is
-      // the gate — and that a focusable button IS shown for a logged-in state
-      // via a direct check on the widget tree shape.
-      //
-      // Since constructing a real appwrite User is non-trivial in a unit test,
-      // we verify the unauthenticated guard and the TvFocusable count for an
-      // unauthenticated state here. The logged-in path is covered in
-      // integration tests that use a mocked Appwrite session.
-      final cubit = _FakeAuthCubit(
-        const AuthState(status: AuthStatus.unauthenticated),
-      );
-      addTearDown(cubit.close);
+  testWidgets('ProfileScreenTv has no logout action', (tester) async {
+    final cubit = _FakeAuthCubit(
+      const AuthState(status: AuthStatus.unauthenticated),
+    );
+    addTearDown(cubit.close);
 
-      await tester.pumpWidget(_buildProfile(cubit));
-      await tester.pump();
+    await tester.pumpWidget(_buildProfile(cubit));
+    await tester.pump();
 
-      // Unauthenticated path — no logout button.
-      expect(find.text('Log out'), findsNothing);
-    },
-  );
+    expect(find.text('Log out'), findsNothing);
+  });
 
   // ── SignupScreenTv ─────────────────────────────────────────────────────────
 
-  testWidgets(
-    'SignupScreenTv renders name, email, and password fields',
-    (tester) async {
-      final cubit = _FakeAuthCubit(const AuthState());
-      addTearDown(cubit.close);
+  testWidgets('SignupScreenTv renders name, email, and password fields', (
+    tester,
+  ) async {
+    final cubit = _FakeAuthCubit(const AuthState());
+    addTearDown(cubit.close);
 
-      await tester.pumpWidget(_buildSignup(cubit));
-      await tester.pump();
+    await tester.pumpWidget(_buildSignup(cubit));
+    await tester.pump();
 
-      final fields =
-          tester.widgetList<TextField>(find.byType(TextField)).toList();
-      // Name + email + password = 3 fields.
-      expect(fields.length, greaterThanOrEqualTo(3));
-    },
-  );
+    final fields = tester
+        .widgetList<TextField>(find.byType(TextField))
+        .toList();
+    // Name + email + password = 3 fields.
+    expect(fields.length, greaterThanOrEqualTo(3));
+  });
 
   testWidgets(
     'SignupScreenTv first field (name) autofocuses chrome without opening the IME',
@@ -215,8 +198,9 @@ void main() {
       await tester.pumpWidget(_buildSignup(cubit));
       await tester.pump();
 
-      final fields =
-          tester.widgetList<TextField>(find.byType(TextField)).toList();
+      final fields = tester
+          .widgetList<TextField>(find.byType(TextField))
+          .toList();
       expect(fields.first.autofocus, isFalse);
       expect(fields.first.focusNode!.hasFocus, isFalse);
       expect(tester.binding.focusManager.primaryFocus, isNotNull);
@@ -224,18 +208,17 @@ void main() {
     },
   );
 
-  testWidgets(
-    'SignupScreenTv shows a TvFocusable submit button',
-    (tester) async {
-      final cubit = _FakeAuthCubit(const AuthState());
-      addTearDown(cubit.close);
+  testWidgets('SignupScreenTv shows a TvFocusable submit button', (
+    tester,
+  ) async {
+    final cubit = _FakeAuthCubit(const AuthState());
+    addTearDown(cubit.close);
 
-      await tester.pumpWidget(_buildSignup(cubit));
-      await tester.pump();
+    await tester.pumpWidget(_buildSignup(cubit));
+    await tester.pump();
 
-      expect(find.byType(TvFocusable), findsWidgets);
-      // Title + button label both say "Create account" — verify at least one.
-      expect(find.text('Create account'), findsWidgets);
-    },
-  );
+    expect(find.byType(TvFocusable), findsWidgets);
+    // Title + button label both say "Create account" — verify at least one.
+    expect(find.text('Create account'), findsWidgets);
+  });
 }

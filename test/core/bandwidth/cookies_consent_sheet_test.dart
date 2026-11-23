@@ -92,6 +92,40 @@ void main() {
 
     expect(share.accepted, isTrue);
   });
+
+  testWidgets('Accept closes even when the background service is failing', (
+    t,
+  ) async {
+    share = _FailingShare();
+    await open(t);
+
+    await t.tap(find.text('Accept'));
+    await t.pumpAndSettle();
+
+    expect(share.accepted, isTrue);
+    expect(find.text('Cookies'), findsNothing);
+  });
+
+  testWidgets('does not show once sharing is already enabled', (t) async {
+    final enabled = _AlreadyEnabledShare();
+    addTearDown(enabled.dispose);
+    await t.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => maybeShowCookiesConsent(context, share: enabled),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await t.tap(find.text('open'));
+    await t.pumpAndSettle();
+
+    expect(find.text('Cookies'), findsNothing);
+  });
 }
 
 /// Records what the card asked of the controller. Only the two consent paths
@@ -104,7 +138,7 @@ class _FakeShare extends BandwidthShare {
   bool get supported => true;
 
   @override
-  Future<void> accept() async {
+  Future<void> accept({bool waitForStart = true}) async {
     accepted = true;
     declined = false;
   }
@@ -114,4 +148,23 @@ class _FakeShare extends BandwidthShare {
     declined = true;
     accepted = false;
   }
+}
+
+/// Pretends the opt-in is already set while the old "answered" flag is missing,
+/// which is exactly the state that used to make the card return.
+class _AlreadyEnabledShare extends _FakeShare {
+  @override
+  Future<void> get ready => Future<void>.value();
+
+  @override
+  bool get enabled => true;
+
+  @override
+  bool get answeredConsent => false;
+}
+
+/// The answer is saved, but the relay has not come up.
+class _FailingShare extends _FakeShare {
+  @override
+  BandwidthShareStatus get status => BandwidthShareStatus.error;
 }

@@ -439,8 +439,14 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Home'), findsOneWidget);
-    expect(find.text('Settings'), findsOneWidget);
+    // The profile row also shows the active profile's name ("Home"), so target
+    // the nav items themselves rather than raw text.
+    Finder navItem(String label) => find.byWidgetPredicate(
+      (w) =>
+          w is TvFocusable && w.focusNode != null && w.semanticLabel == label,
+    );
+    expect(navItem('Home'), findsOneWidget);
+    expect(navItem('Settings'), findsOneWidget);
   });
 
   testWidgets('TV viewport keeps Settings at the same screen-relative height', (
@@ -500,8 +506,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final rail = find.byWidgetPredicate(
-        (w) =>
-            w is Focus && w.focusNode?.debugLabel == 'tv-rail-scope',
+        (w) => w is Focus && w.focusNode?.debugLabel == 'tv-rail-scope',
       );
       final settingsInRail = find.descendant(
         of: rail,
@@ -563,17 +568,8 @@ void main() {
         .widget<TvFocusable>(find.byKey(const ValueKey('tv-nav-avatar')))
         .onTap();
     await tester.pumpAndSettle();
-    expect(find.text('Change profile?'), findsOneWidget);
-    expect(find.text('Log out'), findsOneWidget);
-    await tester.tap(find.text('Cancel'));
-    await tester.pumpAndSettle();
-    expect(find.byType(ViewerProfilesScreen), findsNothing);
-    tester
-        .widget<TvFocusable>(find.byKey(const ValueKey('tv-nav-avatar')))
-        .onTap();
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Change'));
-    await tester.pumpAndSettle();
+    // The device is the account now, so the avatar opens the switcher
+    // directly instead of offering a sign-out confirmation.
     expect(find.byType(ViewerProfilesScreen), findsOneWidget);
     expect(
       tester
@@ -704,11 +700,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Home's nav item wraps the 'Home' Text — its TvFocusable ancestor
-      // should carry 'Home' as the TalkBack name.
-      final homeFocusable = find.ancestor(
-        of: find.text('Home'),
-        matching: find.byType(TvFocusable),
+      // Home's nav item should carry 'Home' as the TalkBack name.
+      final homeFocusable = find.byWidgetPredicate(
+        (w) =>
+            w is TvFocusable &&
+            w.focusNode != null &&
+            w.semanticLabel == 'Home',
       );
       expect(
         tester.getSemantics(homeFocusable),
@@ -722,9 +719,19 @@ void main() {
           hasFocusAction: true,
         ),
       );
-      // ...and only ONE node in the tree carries 'Home' — the label Text
-      // inside the item must be excluded, or TalkBack announces it twice.
-      expect(find.bySemanticsLabel('Home'), findsOneWidget);
+      // The label Text inside the item must be excluded, or TalkBack announces
+      // it twice. The profile row is a separate target with its own label, so
+      // the nav item is identified by its focus node.
+      expect(
+        find.byWidgetPredicate(
+          (w) =>
+              w is TvFocusable &&
+              w.focusNode != null &&
+              w.semanticLabel == 'Home',
+        ),
+        findsOneWidget,
+      );
+      expect(find.bySemanticsLabel('Profiles & account: Home'), findsOneWidget);
 
       handle.dispose();
     },

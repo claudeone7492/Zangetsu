@@ -160,20 +160,18 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('signed-out profile asks the user to log in', (tester) async {
+  testWidgets('a device with no cloud session keeps its profile usable', (
+    tester,
+  ) async {
     await tester.pumpWidget(_app(auth));
     expect(find.text('Home'), findsWidgets);
 
     auth.signOut();
     await tester.pumpAndSettle();
 
-    expect(find.text('Sign in'), findsOneWidget);
-    expect(find.text('Home'), findsNothing);
-    expect(find.byTooltip('Edit profile'), findsNothing);
-
-    await tester.tap(find.text('Sign in'));
-    await tester.pumpAndSettle();
-    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.text('Sign in'), findsNothing);
+    expect(find.text('Home'), findsWidgets);
+    expect(find.byTooltip('Edit profile'), findsOneWidget);
   });
 }
 

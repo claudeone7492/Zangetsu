@@ -23,7 +23,6 @@ import '../../core/tv/tv_list_focusable.dart';
 import '../../core/ui/app_dialog.dart';
 import '../../core/ui/settings_widgets.dart';
 import '../auth/auth_cubit.dart';
-import '../auth/auth_screens.dart';
 import '../../l10n/l10n.dart';
 
 class BackupScreen extends StatefulWidget {
@@ -75,11 +74,13 @@ class _BackupScreenState extends State<BackupScreen> {
   }
 
   Future<void> _backupToCloud() async {
-    if (!requireLogin(context, action: context.l10n.signInToBackUpToCloud)) {
+    final uid = context.read<AuthCubit>().state.user?.id;
+    if (uid == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.somethingWentWrong)));
       return;
     }
-    final uid = context.read<AuthCubit>().state.user?.id;
-    if (uid == null) return;
     setState(() => _busy = true);
     try {
       if (!await _authorizeBackup()) return;
@@ -137,11 +138,7 @@ class _BackupScreenState extends State<BackupScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.commonBackupSaveFailed,
-            ),
-          ),
+          SnackBar(content: Text(context.l10n.commonBackupSaveFailed)),
         );
       }
     } finally {
@@ -150,11 +147,13 @@ class _BackupScreenState extends State<BackupScreen> {
   }
 
   Future<void> _restoreFromCloud() async {
-    if (!requireLogin(context, action: context.l10n.signInToRestoreFromCloud)) {
+    final uid = context.read<AuthCubit>().state.user?.id;
+    if (uid == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.somethingWentWrong)));
       return;
     }
-    final uid = context.read<AuthCubit>().state.user?.id;
-    if (uid == null) return;
     setState(() => _busy = true);
     late final RestoreReport report;
     try {

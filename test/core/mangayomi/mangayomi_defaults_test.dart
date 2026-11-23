@@ -63,14 +63,14 @@ void main() {
     if (dir.existsSync()) await dir.delete(recursive: true);
   });
 
-  MangayomiManager managerFor(http.Client client) => MangayomiManager(
-    MangayomiExtensionService(dir, client: client),
-  );
+  MangayomiManager managerFor(http.Client client) =>
+      MangayomiManager(MangayomiExtensionService(dir, client: client));
 
   test('seeds every default repo on a fresh install', () async {
     final client = _StubClient({
       kDefaultMangayomiRepoUrls[0]: _indexFor(2),
       kDefaultMangayomiRepoUrls[1]: _indexFor(3, itemType: 1),
+      kDefaultMangayomiRepoUrls[2]: _indexFor(1),
     });
     final manager = managerFor(client);
     await manager.init();
@@ -88,11 +88,15 @@ void main() {
     final client = _StubClient({
       kDefaultMangayomiRepoUrls[0]: _indexFor(2),
       kDefaultMangayomiRepoUrls[1]: _indexFor(3, itemType: 1),
+      kDefaultMangayomiRepoUrls[2]: _indexFor(1),
     });
     final manager = managerFor(client);
     await manager.init();
 
-    expect(await seedDefaultMangayomiRepos(manager), kDefaultMangayomiRepoUrls.length);
+    expect(
+      await seedDefaultMangayomiRepos(manager),
+      kDefaultMangayomiRepoUrls.length,
+    );
     expect(await seedDefaultMangayomiRepos(manager), 0);
   });
 
@@ -105,16 +109,16 @@ void main() {
     final added = await seedDefaultMangayomiRepos(manager);
 
     expect(added, 1);
-    expect(
-      manager.repositories.map((u) => u.toString()),
-      [kDefaultMangayomiRepoUrls[0]],
-    );
+    expect(manager.repositories.map((u) => u.toString()), [
+      kDefaultMangayomiRepoUrls[0],
+    ]);
   });
 
   test('a repo already added by the user is left untouched', () async {
     final client = _StubClient({
       kDefaultMangayomiRepoUrls[0]: _indexFor(1),
       kDefaultMangayomiRepoUrls[1]: _indexFor(1, itemType: 1),
+      kDefaultMangayomiRepoUrls[2]: _indexFor(1),
     });
     final manager = managerFor(client);
     await manager.init();
@@ -123,16 +127,17 @@ void main() {
 
     final added = await seedDefaultMangayomiRepos(manager);
 
-    expect(added, 1);
-    // Only the missing repo was fetched again.
-    expect(client.requested.length - before, 1);
-    expect(client.requested.last, kDefaultMangayomiRepoUrls[1]);
+    expect(added, 2);
+    // Only the missing repos were fetched again.
+    expect(client.requested.length - before, 2);
+    expect(client.requested.last, kDefaultMangayomiRepoUrls[2]);
   });
 
   test('the seeded list survives a restart', () async {
     final client = _StubClient({
       kDefaultMangayomiRepoUrls[0]: _indexFor(1),
       kDefaultMangayomiRepoUrls[1]: _indexFor(1, itemType: 1),
+      kDefaultMangayomiRepoUrls[2]: _indexFor(1),
     });
     final first = managerFor(client);
     await first.init();
@@ -152,6 +157,24 @@ void main() {
     );
   });
 
+  test('provisioning installs English manga and novel sources', () async {
+    final client = _StubClient({
+      kDefaultMangayomiRepoUrls[0]: _indexFor(2),
+      kDefaultMangayomiRepoUrls[1]: _indexFor(1, itemType: 1),
+      kDefaultMangayomiRepoUrls[2]: _indexFor(1, itemType: 2),
+      'https://cdn.example.com/1.dart': 'class Source {}',
+      'https://cdn.example.com/2.dart': 'class Source {}',
+    });
+    final manager = managerFor(client);
+    await manager.init();
+    await seedDefaultMangayomiRepos(manager);
+
+    final added = await provisionDefaultMangayomiSources(manager);
+
+    expect(added, 3);
+    expect(manager.installed, hasLength(3));
+  });
+
   test('a malformed index does not stop the other repo', () async {
     final client = _StubClient({
       kDefaultMangayomiRepoUrls[0]: '{"not":"a list"}',
@@ -163,9 +186,8 @@ void main() {
     final added = await seedDefaultMangayomiRepos(manager);
 
     expect(added, 1);
-    expect(
-      manager.repositories.map((u) => u.toString()),
-      [kDefaultMangayomiRepoUrls[1]],
-    );
+    expect(manager.repositories.map((u) => u.toString()), [
+      kDefaultMangayomiRepoUrls[1],
+    ]);
   });
 }

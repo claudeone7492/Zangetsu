@@ -113,11 +113,29 @@ int _pageEnd(
       _height(_slice(runs, start, end, style), pageSize.width) <=
       pageSize.height;
 
-  if (fits(total)) return total; // whole remainder fits: last page
-
+  // Grow the probe until it overflows instead of laying out the whole
+  // remaining chapter first. A 100k-character chapter made the old
+  // `fits(total)` + binary-search version lay out tens of thousands of
+  // characters per page — quadratic work that froze the UI when the reader
+  // layout was switched to paginated mode.
   var lo = start + 1;
-  var hi = total; // known not to fit
-  var best = start + 1; // guarantees forward progress
+  var best = start + 1;
+  var probe = start + 256;
+  var step = 256;
+  while (true) {
+    if (probe >= total) probe = total;
+    if (fits(probe)) {
+      best = probe;
+      if (probe == total) return total;
+      lo = probe + 1;
+      step *= 2;
+      probe = best + step;
+    } else {
+      break;
+    }
+  }
+
+  var hi = probe;
   while (lo < hi) {
     final mid = lo + ((hi - lo) >> 1);
     if (fits(mid)) {

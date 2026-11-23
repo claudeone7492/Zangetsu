@@ -394,7 +394,10 @@ class ProviderRegistry {
   Future<void> purgeBundled() async {
     final keys = _box.keys
         .map((k) => k.toString())
-        .where((k) => repoUrlOf(k) == kBundledRepoUrl || !k.contains(kProviderKeySep))
+        .where(
+          (k) =>
+              repoUrlOf(k) == kBundledRepoUrl || !k.contains(kProviderKeySep),
+        )
         .toList();
     for (final k in keys) {
       final sourceId = sourceIdOf(k);
@@ -441,6 +444,29 @@ class ProviderRegistry {
     return removed;
   }
 
+  /// Drops bundled entries the current pack no longer ships. Without this, a
+  /// source removed from the manifest (because a maintained replacement took
+  /// over) keeps running from the copy cached on the device.
+  Future<int> pruneBundledRemovedFromPack(
+    Iterable<String> packSourceIds,
+  ) async {
+    final keep = packSourceIds.toSet();
+    final stale = [
+      for (final entry in getAll())
+        if (entry.isBundled && !keep.contains(entry.name)) entry,
+    ];
+    for (final entry in stale) {
+      await uninstall(providerKey(entry.originRepoUrl, entry.name));
+    }
+    if (stale.isNotEmpty) {
+      debugPrint(
+        '[ProviderRegistry] pruned ${stale.length} bundled source(s) the '
+        'current pack no longer ships',
+      );
+    }
+    return stale.length;
+  }
+
   /// Removes the entry at composite [key] and drops it from the runtime
   /// when no OTHER installed entry shares its sourceId.
   Future<void> uninstall(String key) async {
@@ -479,7 +505,10 @@ class ProviderRegistry {
   /// Loads every enabled installed entry into the runtime. Best-effort:
   /// per-entry failures are logged, not thrown, so one broken provider
   /// doesn't sink the app.
-  Future<List<String>> loadAll({bool force = false, Duration? perEntryTimeout}) async {
+  Future<List<String>> loadAll({
+    bool force = false,
+    Duration? perEntryTimeout,
+  }) async {
     final allEntries = getAll();
     final enabledEntries = allEntries.where((e) => e.enabled).toList();
     debugPrint(

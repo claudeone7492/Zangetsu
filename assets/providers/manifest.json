@@ -183,16 +183,6 @@
       "nsfw": false
     },
     {
-      "id": "mangapanda",
-      "name": "MangaPanda",
-      "version": "1.0.0",
-      "type": "manga",
-      "lang": "en",
-      "file": "mangapanda.js",
-      "logo": "https://mangapanda.onl/favicon.ico",
-      "nsfw": false
-    },
-    {
       "id": "mangakakalotgg",
       "name": "Mangakakalot.gg",
       "version": "1.0.0",
@@ -323,16 +313,6 @@
       "nsfw": false
     },
     {
-      "id": "novelfire",
-      "name": "NovelFire",
-      "version": "1.0.0",
-      "type": "novel",
-      "lang": "en",
-      "file": "novelfire.js",
-      "logo": "https://novelfire.net/frontend/img/logo.png",
-      "nsfw": false
-    },
-    {
       "id": "weebcentral",
       "name": "WeebCentral",
       "version": "1.0.5",
@@ -385,31 +365,91 @@
     {
       "id": "novelbin",
       "name": "NovelBin",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "type": "novel",
       "lang": "en",
       "file": "novelbin.js",
-      "logo": "https://novelbin.cc/favicon.ico",
+      "logo": "https://novelbin.xyz/favicon.ico",
       "nsfw": false
     },
     {
-      "id": "novelight",
-      "name": "Novelight",
+      "id": "novelbuddy",
+      "name": "NovelBuddy",
       "version": "1.0.0",
       "type": "novel",
       "lang": "en",
-      "file": "novelight.js",
-      "logo": "https://novelight.net/static/core/img/favicon.ico",
+      "file": "novelbuddy.js",
+      "logo": "https://novelbuddy.me/favicon.ico",
       "nsfw": false
     },
     {
-      "id": "inkitt",
-      "name": "Inkitt",
+      "id": "novelfull",
+      "name": "NovelFull",
       "version": "1.0.0",
       "type": "novel",
       "lang": "en",
-      "file": "inkitt.js",
-      "logo": "https://www.inkitt.com/favicon.ico",
+      "file": "novelfull.js",
+      "logo": "https://novelfull.com/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "fanmtl",
+      "name": "FanMTL",
+      "version": "1.0.0",
+      "type": "novel",
+      "lang": "en",
+      "file": "fanmtl.js",
+      "logo": "https://www.fanmtl.com/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "novelcool",
+      "name": "NovelCool",
+      "version": "1.0.0",
+      "type": "novel",
+      "lang": "en",
+      "file": "novelcool.js",
+      "logo": "https://www.novelcool.com/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "novelping",
+      "name": "NovelPing",
+      "version": "1.0.0",
+      "type": "novel",
+      "lang": "en",
+      "file": "novelping.js",
+      "logo": "https://novelping.com/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "novelrare",
+      "name": "NovelRare",
+      "version": "1.0.0",
+      "type": "novel",
+      "lang": "en",
+      "file": "novelrare.js",
+      "logo": "https://novelrare.com/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "wondernovels",
+      "name": "Wonder Novels",
+      "version": "1.0.0",
+      "type": "novel",
+      "lang": "en",
+      "file": "wondernovels.js",
+      "logo": "https://wondernovels.com/favicon.ico",
+      "nsfw": false
+    },
+    {
+      "id": "wuxiaworld",
+      "name": "WuxiaWorld",
+      "version": "1.0.0",
+      "type": "novel",
+      "lang": "en",
+      "file": "wuxiaworld.js",
+      "logo": "https://wuxiaworld.site/favicon.ico",
       "nsfw": false
     },
     {

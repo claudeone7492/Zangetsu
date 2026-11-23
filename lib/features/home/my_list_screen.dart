@@ -31,7 +31,6 @@ import '../../core/tracker/tracker.dart';
 import '../../core/tracker/tracker_hub.dart';
 import '../../core/tracker/tracker_switch_prefs.dart';
 import 'tracker_switch_popup.dart';
-import '../../core/ui/buttons.dart';
 import '../../core/ui/list_status_sheet.dart';
 import '../../core/ui/placement_slide.dart';
 import 'animated_library_grid.dart';
@@ -41,7 +40,6 @@ import '../../core/models/provider_info.dart';
 import '../../core/ui/states.dart';
 import '../../core/ui/tracker_entry_sheet.dart';
 import '../auth/auth_cubit.dart';
-import '../auth/auth_screens.dart';
 import '../detail/detail_screen.dart';
 import 'cubit/my_list_cubit.dart';
 import 'series_screen.dart';
@@ -469,8 +467,8 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
                 ContentMode.manga => l10n.yourSavedMangaList,
                 ContentMode.novel => l10n.yourSavedNovelList,
                 // Shorts shares the video list, so it reads as the video one.
-                ContentMode.anime || ContentMode.shorts =>
-                  l10n.yourSavedAnimeList,
+                ContentMode.anime ||
+                ContentMode.shorts => l10n.yourSavedAnimeList,
               };
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -1395,8 +1393,10 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
       onTap: () => entry is SeriesCardEntry
           ? Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) =>
-                    SeriesScreen(group: entry.group, members: entry.memberItems),
+                builder: (_) => SeriesScreen(
+                  group: entry.group,
+                  members: entry.memberItems,
+                ),
               ),
             )
           : onTap(entry.item),
@@ -1526,50 +1526,15 @@ class _MyListViewState extends State<_MyListView> with WidgetsBindingObserver {
     };
   }
 
-  // ── Empty / sign-in ────────────────────────────────────────────────────────
+  // ── Empty ─────────────────────────────────────────────────────────────────
 
   Widget _empty(BuildContext context) {
-    final auth = context.watch<AuthCubit>().state;
-    if (!auth.isLoggedIn) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.bookmark_outline,
-                size: 56,
-                color: AppColors.textTertiary,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                context.l10n.signInToBuildYourList,
-                style: AppText.body,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: 180,
-                child: PrimaryButton(
-                  label: context.l10n.signIn,
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
     return EmptyState(
       icon: Icons.bookmark_outline,
       message: myListEmptyMessage(context.l10n, sl<ContentModeCubit>().state),
     );
   }
 }
-
 
 /// EmptyState message for My List's per-status/type filter turning up
 /// nothing (the mode filter itself is applied before this — see [_grid]).

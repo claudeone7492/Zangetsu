@@ -1,8 +1,8 @@
 # Bundled provider pack
 
 Each `*.js` here is a source the app ships and can run. `assets/providers/`
-holds the copies a new install loads (plus `manifest.json`, the pack index);
-the two trees are kept byte-identical by hand when a provider changes.
+holds symlinks to these files plus `manifest.json`, the pack index; editing a
+provider here is immediately visible to the bundled pack.
 
 Every source in the pack was verified end-to-end before it was added —
 browse (`getHome`) → search → detail → reader/playback — with a live probe
@@ -28,22 +28,69 @@ same URL 404s once the match ends — the fixture, not a VOD, is the stream.
 
 | id | site | kind | reader |
 |---|---|---|---|
-| `novelfire` | novelfire.net | novel | text |
 | `wattpad` | wattpad.com | novel | text |
 | `freewebnovel` | freewebnovel.com | novel | text |
-| `novelbin` | novelbin.cc | novel | text |
-| `novelight` | novelight.net | novel | text |
-| `inkitt` | inkitt.com | novel | text |
+| `novelbin` | novelbin.xyz | novel | text (JSON API) |
+| `novelbuddy` | novelbuddy.me | novel | text |
+| `novelfull` | novelfull.com | novel | text |
+| `fanmtl` | fanmtl.com | novel | text |
+| `novelcool` | novelcool.com | novel | text |
+| `novelping` | novelping.com | novel | text |
+| `novelrare` | novelrare.com | novel | text |
+| `wondernovels` | wondernovels.com | novel | text |
+| `wuxiaworld` | wuxiaworld.site | novel | text |
 | `tapas` | tapas.io | novel | text |
-| `tapas-comics` | tapas.io | manga | page images |
+| `gutenberg` | gutenberg.org | novel | text |
+| `mangakakalot` | mangakakalot.fun | manga | page images |
+| `mangakatana` | mangakatana.com | manga | page images |
+| `mangapill` | mangapill.com | manga | page images |
+| `mangadex` | mangadex.org | manga | page images |
+| `mangaread` | mangaread.org | manga | page images |
+| `mangadna` | mangadna.com | manga | page images |
+| `mangafreak` | ww3.mangafreak.me | manga | page images |
+| `mangahub` | mangahub.io | manga | page images |
+| `mangakakalotgg` | mangakakalot.gg | manga | page images |
+| `manganato` | manganato.gg | manga | page images |
 | `weebcentral` | weebcentral.com | manga | page images |
 | `mangabats` | mangabats.com | manga | page images |
 | `asurascans` | asurascans.com | manga | page images |
+| `tapas-comics` | tapas.io | manga | page images |
 
 `tapas` and `tapas-comics` are one file (`providers/tapas.js`) registered twice:
 the provider reads its own runtime id (`__SOURCE_ID`) and serves novels or
 comics accordingly. A novel chapter is HTML text; a comic chapter is a list of
 page images.
+
+The manga pack also carries `mangadex`, `mangaread`, `mangadna`, `mangafreak`,
+`mangahub`, `mangakakalotgg`, `manganato`, `weebcentral`, `mangabats` and
+`asurascans`. Each was walked live from browse to chapter images; the per-source
+tests under `js_harness/` cover the same path (`getHome` → `search` →
+`getDetail` → `getPages`).
+
+## Maintained extension catalogues
+
+Providers whose sites changed their markup are no longer bundled as hand-written
+JS. On first launch the app seeds the actively maintained catalogues and installs
+their English entries, so those sources keep resolving without a port:
+
+| catalogue | ecosystem | installed automatically |
+|---|---|---|
+| `lnreader/lnreader-plugins` (`plugins/v3.0.0`) | LNReader novels (JS) | every English plugin |
+| `keiyoushi/extensions` | Mihon manga (native APK, Android) | MangaPanda, MangaFox, MangaHere and their `.onl`/`.fun` variants |
+| `m2k3a/mangayomi-extensions` + `kegareta-sauces` | Mangayomi manga/novel (Dart/JS) | every English manga/novel source |
+
+The repositories also appear in the Sources screens, so any remaining language
+or source can be installed from the catalogue. Install markers live in
+`lnreader_defaults`, `mihon_defaults` and `mangayomi_defaults`; a partial
+failure leaves its marker unset and retries only the missing entries next boot.
+
+`novelbin` reads the `novelbin.xyz` front end's static JSON API
+(`boxnovela.b-cdn.net`): `lists/popular.json` for the home rail,
+`lists/search.json` for title search, `novel/<slug>.json` for metadata,
+`chapters/<id>.json` for the full chapter list, and
+`read/<id>/<index>.json` for chapter HTML. The old `novelbin.cc` HTML chapter
+route answered 429 after a detail walk; the JSON route has the same catalogue
+without that rate limit.
 
 ## Intentionally excluded (WAF / JS-shield blocked)
 

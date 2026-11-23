@@ -86,7 +86,7 @@ class _DailyPicksScreenState extends State<DailyPicksScreen> {
 
   IconData _iconFor(DailyPickKind kind) => switch (kind) {
     DailyPickKind.trendingMovies => Icons.movie_rounded,
-    DailyPickKind.football => Icons.sports_soccer_rounded,
+    DailyPickKind.sports => Icons.sports_soccer_rounded,
     DailyPickKind.trendingAnime => Icons.auto_awesome_rounded,
     DailyPickKind.newRelease => Icons.fiber_new_rounded,
     DailyPickKind.recommended => Icons.recommend_rounded,

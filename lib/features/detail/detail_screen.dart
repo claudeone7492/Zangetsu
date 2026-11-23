@@ -43,7 +43,6 @@ import 'episode_sources_sheet.dart';
 import '../downloads/downloads_screen.dart';
 import '../downloads/episode_download_icon.dart';
 import '../downloads/episode_download_source_sheet.dart';
-import '../auth/auth_cubit.dart';
 import 'epub_export_sheet.dart';
 import 'chapter_download_range_sheet.dart';
 import 'stremio_episode_links_sheet.dart';
@@ -475,11 +474,7 @@ class _CueDetailRoute extends PageRouteBuilder<void>
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _DetailView extends StatefulWidget {
-  const _DetailView({
-    required this.item,
-    this.prefer,
-    this.autoplay = false,
-  });
+  const _DetailView({required this.item, this.prefer, this.autoplay = false});
   final MediaItem item;
 
   /// See [DetailScreen.autoplay].
@@ -496,8 +491,7 @@ class _DetailViewState extends State<_DetailView>
     with SingleTickerProviderStateMixin {
   /// The banner's height: 320 at 100 %, scaled by the user's detail-header
   /// preference (50..150 %) and by the interface scale, as Hikari does.
-  double get _expandedHeight =>
-      320 * HeaderPrefs.factorFor(UiScale.factor);
+  double get _expandedHeight => 320 * HeaderPrefs.factorFor(UiScale.factor);
   bool _showAppBarTitle = false;
   bool _hasEntered = false;
   bool _autoplayFired = false;
@@ -1671,8 +1665,7 @@ class _DetailViewState extends State<_DetailView>
         it == ProviderType.manga) {
       // Same auto-add as the video path below — reading titles route out
       // through this early return, so without this they never got it.
-      if (sl<AuthCubit>().state.isLoggedIn &&
-          sl<PlaybackPrefs>().autoAddToMyList &&
+      if (sl<PlaybackPrefs>().autoAddToMyList &&
           !IncognitoMode.on &&
           !_myList.contains(widget.item)) {
         _myList.add(widget.item);
@@ -1685,8 +1678,7 @@ class _DetailViewState extends State<_DetailView>
     // Auto-add this title to My List (as Watching) on play, if the user opted
     // in — mirrors the tracker auto-scrobble. Skipped in incognito and when it's
     // already listed; fire-and-forget so it never delays playback.
-    if (sl<AuthCubit>().state.isLoggedIn &&
-        sl<PlaybackPrefs>().autoAddToMyList &&
+    if (sl<PlaybackPrefs>().autoAddToMyList &&
         !IncognitoMode.on &&
         !_myList.contains(widget.item)) {
       _myList.add(widget.item);

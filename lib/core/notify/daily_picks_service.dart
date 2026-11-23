@@ -17,13 +17,14 @@ import '../repository/source_repository.dart';
 import '../zmode/metadata_repository.dart';
 import '../zmode/zmode_ids.dart';
 import 'daily_picks_prefs.dart';
+import 'notification_art.dart';
 import 'notification_service.dart';
 import 'subscription_store.dart';
 
 /// The five-a-day "daily picks" digest.
 ///
 /// Five notifications a day, each about a different *kind* of suggestion —
-/// trending movies, the next football fixture, trending anime, new TV/film
+/// trending movies, the next live sports fixtures, trending anime, new TV/film
 /// arrivals, and picked for you. Each slot is spread across the day and lands
 /// at a random minute inside its window ([DailyPickSlot.jitterMinutes]), so
 /// the cadence is five-a-day without arriving on a metronome.
@@ -107,10 +108,11 @@ class DailyPicksService {
       // user sees at 08:30 is fixed at the last app open rather than built at
       // fire time (a background isolate cannot reach the catalogue), but it is a
       // real card with a real show, not an empty title-less notification.
-      final picks = await _picksFor(slot.kind);
-      if (picks.isEmpty) continue;
+      final allPicks = await _picksFor(slot.kind);
+      if (allPicks.isEmpty) continue;
+      final picks = _cardPicks(slot, allPicks);
       final lead = picks.first;
-      final title = _titleFor(slot);
+      final title = _titleFor(slot, picks);
       final body = _bodyFor(slot, picks);
       await _rememberInApp(slot, title, body, lead, today);
       try {
@@ -121,7 +123,7 @@ class DailyPicksService {
           style: slot.style,
           when: _nextInstanceOf(slot, await _minuteOfDay(slot, today)),
           imageUrl: lead.banner ?? lead.cover,
-          posterUrl: lead.cover,
+          posters: postersFor(slot.kind, picks),
           lines: [for (final p in picks) p.title],
           payload: _payload(slot, lead),
         );
@@ -184,13 +186,20 @@ class DailyPicksService {
     }
   }
 
+  /// The items a slot actually puts on its card. Only the one showcase slot
+  /// carries three posters; every other card is a single MovieBox-style
+  /// poster, even when the pick source returned more candidates.
+  List<MediaItem> _cardPicks(DailyPickSlot slot, List<MediaItem> picks) =>
+      picks.take(slot.usesThreePosterCard ? 3 : 1).toList(growable: false);
+
   /// Build and show the card for [slot]. Returns false when there is nothing
   /// worth saying, so the slot is left unfilled and retried later.
   Future<bool> _post(DailyPickSlot slot) async {
-    final picks = await _picksFor(slot.kind);
-    if (picks.isEmpty) return false;
+    final allPicks = await _picksFor(slot.kind);
+    if (allPicks.isEmpty) return false;
+    final picks = _cardPicks(slot, allPicks);
     final lead = picks.first;
-    final title = _titleFor(slot);
+    final title = _titleFor(slot, picks);
     final body = _bodyFor(slot, picks);
     await _rememberInApp(slot, title, body, lead, _dayStamp(DateTime.now()));
     await NotificationService.instance.showDailyPick(
@@ -199,7 +208,7 @@ class DailyPicksService {
       body: body,
       style: slot.style,
       imageUrl: lead.banner ?? lead.cover,
-      posterUrl: lead.cover,
+      posters: postersFor(slot.kind, picks),
       lines: [for (final p in picks) p.title],
       payload: _payload(slot, lead),
     );
@@ -238,25 +247,59 @@ class DailyPicksService {
     }
   }
 
-  /// The headline for a slot's card. Each slot is a different *kind* of
-  /// suggestion, so each gets its own headline the way a streaming service
-  /// labels its "Trending", "Football", "New arrivals" and "Picks for you"
-  /// cards.
-  String _titleFor(DailyPickSlot slot) => switch (slot.kind) {
-    DailyPickKind.trendingMovies => 'Trending movies on $kAppName',
-    DailyPickKind.football => 'Football on $kAppName',
-    DailyPickKind.trendingAnime => 'Trending anime on $kAppName',
-    DailyPickKind.newRelease => 'New TV series & movies',
-    DailyPickKind.recommended => 'Picked for you',
-  };
+  /// The headline for a slot's card. The wording is derived from the items
+  /// that were actually selected, so an "anime" card can never carry movie
+  /// posters (and vice versa).
+  String _titleFor(DailyPickSlot slot, List<MediaItem> picks) =>
+      titleForKind(slot.kind, picks);
 
-  /// The body text for a slot's card. Football carries the kickoff time; the
+  /// The item-aware headline used by the tray card and the in-app history.
+  /// Public so tests can pin the wording to the selected content.
+  static String titleForKind(DailyPickKind kind, List<MediaItem> picks) {
+    switch (kind) {
+      case DailyPickKind.sports:
+        return picks.any(SportsFeed.isLive)
+            ? 'Live sports on $kAppName'
+            : 'Sports on $kAppName';
+      case DailyPickKind.trendingAnime:
+        if (picks.isNotEmpty && picks.every(_isAnime)) {
+          return 'Trending anime on $kAppName';
+        }
+        return 'Trending now on $kAppName';
+      case DailyPickKind.trendingMovies:
+        if (picks.isNotEmpty && picks.every(_isAnime)) {
+          return 'Trending anime on $kAppName';
+        }
+        if (picks.isNotEmpty && picks.every(_isSeries)) {
+          return 'Trending series on $kAppName';
+        }
+        if (picks.isNotEmpty && picks.every(_isMovie)) {
+          return 'Trending movies on $kAppName';
+        }
+        return 'Trending now on $kAppName';
+      case DailyPickKind.newRelease:
+        if (picks.isNotEmpty && picks.every(_isAnime)) {
+          return 'New anime on $kAppName';
+        }
+        if (picks.isNotEmpty && picks.every(_isMovie)) {
+          return 'New movies on $kAppName';
+        }
+        if (picks.isNotEmpty && picks.every(_isSeries)) {
+          return 'New series on $kAppName';
+        }
+        return 'New TV series & movies';
+      case DailyPickKind.recommended:
+        return 'Picked for you';
+    }
+  }
+
+  /// The body text for a slot's card. Sports carries the kickoff time; the
   /// big-text layout wants the long story form; the other layouts carry the
   /// detail in the image / line list, so they get a short one-liner. The lead
   /// title is always in the body, so the show being suggested reads clearly
   /// under the kind headline.
   String _bodyFor(DailyPickSlot slot, List<MediaItem> picks) {
-    if (slot.kind == DailyPickKind.football) return _footballBody(picks);
+    if (slot.kind == DailyPickKind.sports) return _sportsBody(picks);
     return slot.style == DailyPickStyle.bigText
         ? _bigTextBody(picks)
         : _shortBody(picks);
@@ -303,17 +346,26 @@ class DailyPicksService {
     return lead.title.isEmpty ? 'A pick for you' : lead.title;
   }
 
-  String _footballBody(List<MediaItem> picks) {
+  String _sportsBody(List<MediaItem> picks) {
     final lead = picks.first;
-    final league = lead.genres.isNotEmpty
-        ? lead.genres.first
-        : (lead.liveInfo ?? '');
-    final when = SportsFeed.isLive(lead)
-        ? 'LIVE now'
+    final league = _sportsLeague(lead);
+    final live = picks.where(SportsFeed.isLive).length;
+    final when = live > 0
+        ? (live == picks.length ? 'LIVE now' : '$live live')
         : lead.liveStartMs != null
         ? 'starts ${_kickoffLabel(lead.liveStartMs!)}'
         : 'kickoff TBC';
-    return [lead.title, if (league.trim().isNotEmpty) league, when].join(' · ');
+    final title = picks.length == 1
+        ? lead.title
+        : '${lead.title} + ${picks.length - 1} more';
+    return [title, if (league.isNotEmpty) league, when].join(' · ');
+  }
+
+  static String _sportsLeague(MediaItem item) {
+    if (item.genres.isNotEmpty) return item.genres.first;
+    final info = item.liveInfo?.trim() ?? '';
+    if (info.isEmpty) return '';
+    return info.split(RegExp(r'\s*[·|•]\s*')).first.trim();
   }
 
   /// "today at 20:00" / "tomorrow at 18:30" / "29/11 at 15:00".
@@ -337,7 +389,7 @@ class DailyPicksService {
   /// so the five cards a day are different suggestions:
   ///
   ///   • [DailyPickKind.trendingMovies] — the movie/TV home rows.
-  ///   • [DailyPickKind.football]       — the next soccer fixture.
+  ///   • [DailyPickKind.sports]         — the next soccer fixtures.
   ///   • [DailyPickKind.trendingAnime]  — the anime home rows.
   ///   • [DailyPickKind.newRelease]     — the newest TV/film arrivals.
   ///   • [DailyPickKind.recommended]    — the user's own subscriptions.
@@ -357,7 +409,7 @@ class DailyPicksService {
   }
 
   Future<List<MediaItem>> _buildPicksFor(DailyPickKind kind) async {
-    if (kind == DailyPickKind.football) return _footballPicks();
+    if (kind == DailyPickKind.sports) return _sportsPicks();
     final anime = await _cataloguePicks(ZKind.anime);
     final video = await _cataloguePicks(ZKind.movie);
     final trending = _take([...video, ...anime], 60);
@@ -368,31 +420,25 @@ class DailyPicksService {
             .toList();
         return _take(movies.isNotEmpty ? movies : trending, 5);
       case DailyPickKind.trendingAnime:
-        final animeOnly = trending
-            .where(
-              (m) =>
-                  m.type == ProviderType.anime ||
-                  m.malId != null ||
-                  m.anilistId != null,
-            )
-            .toList();
-        return _take(animeOnly.isNotEmpty ? animeOnly : trending, 5);
+        return _take(trending.where(_isAnime), 5);
       case DailyPickKind.newRelease:
         return _take(_newestPicks(trending), 5);
       case DailyPickKind.recommended:
         return _take([..._subscriptionPicks(), ...trending], 5);
-      case DailyPickKind.football:
-        return _footballPicks();
+      case DailyPickKind.sports:
+        return _sportsPicks();
     }
   }
 
   /// The next playable football fixtures, live first. The Sports feed already
-  /// merges all six sources and drops text-only/linear-channel rows.
-  Future<List<MediaItem>> _footballPicks() async {
+  /// merges all six sources and drops text-only/linear-channel rows; the
+  /// notification preflights live fixtures so a tap always has a stream.
+  Future<List<MediaItem>> _sportsPicks() async {
     if (!sl.isRegistered<SourceRepository>()) return const [];
     try {
       final fixtures = await SportsFeed.fetch(
         sl<SourceRepository>(),
+        playableOnly: true,
       ).timeout(const Duration(seconds: 25));
       final playable = fixtures.where((m) => !SportsFeed.isFinished(m));
       return _take(playable, 3);
@@ -400,6 +446,39 @@ class DailyPicksService {
       return const [];
     }
   }
+
+  static List<NotificationArtItem> postersFor(
+    DailyPickKind kind,
+    List<MediaItem> picks,
+  ) {
+    return [
+      for (final item in picks.take(3))
+        if (kind == DailyPickKind.sports)
+          NotificationArtItem(
+            title: item.title,
+            imageUrl: item.cover,
+            subtitle: _sportsLeague(item),
+            badge: SportsFeed.isLive(item) ? 'LIVE' : (item.liveBadge ?? ''),
+            kind: NotificationArtKind.match,
+          )
+        else
+          NotificationArtItem(
+            title: item.title,
+            imageUrl: item.cover,
+            subtitle: item.genres.isNotEmpty ? item.genres.first : null,
+          ),
+    ];
+  }
+
+  static bool _isAnime(MediaItem item) =>
+      item.type == ProviderType.anime ||
+      item.malId != null ||
+      item.anilistId != null;
+
+  static bool _isSeries(MediaItem item) => item.tmdbIsTv && !_isAnime(item);
+
+  static bool _isMovie(MediaItem item) =>
+      item.type == ProviderType.movie && !item.tmdbIsTv && !_isAnime(item);
 
   /// The user's subscribed shows, newest first — a new chapter or episode is the
   /// most useful nudge the app can give.

@@ -75,6 +75,9 @@ object PeerShare {
     }
 
     fun start(context: Context): Boolean {
+        // A disable that raced the enable call must win: never start a service
+        // the user has already turned off.
+        if (!BandwidthSharePrefs.isEnabled(context)) return false
         ensureInit(context)
         if (!initialized) return false
         // `start()` registers the device and dials the relay; calling it again

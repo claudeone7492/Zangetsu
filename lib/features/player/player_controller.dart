@@ -17,6 +17,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
 import '../../core/discord/discord_presence.dart';
+import '../../core/live/live_handles.dart';
 import '../../core/discord/discord_rpc.dart';
 import '../../core/share/share_link.dart';
 import '../../core/logging/app_logger.dart';
@@ -3632,12 +3633,19 @@ class PlayerCubit extends Cubit<PlayerState> {
   /// separately. The joke never replaces the information: a viewer has to be
   /// able to tell a dead host from no connection.
   String _deadEndMessage() {
+    final episodeUrl = _episodeUrl(currentEpisode);
+    if (isLiveHandle(episodeUrl)) {
+      final streams = state.sources.length;
+      return 'This live match isn\'t opening right now.\n'
+          '${streams <= 1 ? "Its stream" : "All $streams streams"} failed to '
+          'open. Tap Try again, or pick another match.';
+    }
     final url = showUrl;
     final sources =
         url != null && ZmodeIds.isZ(url) && sl.isRegistered<PlaybackResolver>()
         // The source playing now is not in the excluded set yet.
         ? sl<PlaybackResolver>().unplayableCount(
-                _episodeUrl(currentEpisode),
+                episodeUrl,
                 category: _activeCategory,
               ) +
               1

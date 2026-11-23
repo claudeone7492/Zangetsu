@@ -222,6 +222,154 @@ void main() {
       expect(repo.askedSources, ['nuviotv|nuviotv:nuvio_sport_1']);
     });
 
+    test('playback resolution keeps the owning provider first and adds the '
+        'other providers carrying the same fixture', () async {
+      final repo = _StubRepo(
+        installed: const ['moviebox', 'streamfree'],
+        fixturesBySource: {
+          'streamfree': [_fixture('streamfree', 'sf10', 'France vs Germany')],
+        },
+        sourcesByKey: {
+          'moviebox|live:mb10|https://moviebox.test/mb10.m3u8': [
+            _src('https://cdn.test/mb10.m3u8'),
+          ],
+          'streamfree|live:sf10|https://streamfree.test/sf10.m3u8': [
+            _src('https://cdn.test/sf10.m3u8'),
+          ],
+        },
+      );
+
+      final out = await repo.livePlaybackSources(
+        'live:mb10|https://moviebox.test/mb10.m3u8',
+        sourceId: 'moviebox',
+        title: 'France vs Germany',
+      );
+
+      expect(out.map((s) => s.url), [
+        'https://cdn.test/mb10.m3u8',
+        'https://cdn.test/sf10.m3u8',
+      ]);
+      expect(
+        repo.askedSources,
+        containsAll([
+          'moviebox|live:mb10|https://moviebox.test/mb10.m3u8',
+          'streamfree|live:sf10|https://streamfree.test/sf10.m3u8',
+        ]),
+      );
+    });
+
+    test('playback resolution dedupes the same link offered twice', () async {
+      final repo = _StubRepo(
+        installed: const ['moviebox', 'streamfree', 'cdnlivetv'],
+        fixturesBySource: {
+          'streamfree': [_fixture('streamfree', 'sf11', 'France vs Germany')],
+          'cdnlivetv': [_fixture('cdnlivetv', 'cd11', 'France vs Germany')],
+        },
+        sourcesByKey: {
+          'moviebox|live:mb11|': [_src('https://cdn.test/shared.m3u8')],
+          'streamfree|live:sf11|https://streamfree.test/sf11.m3u8': [
+            _src('https://cdn.test/shared.m3u8'),
+          ],
+          'cdnlivetv|live:cd11|https://cdnlivetv.test/cd11.m3u8': [
+            _src('https://cdn.test/other.m3u8'),
+          ],
+        },
+      );
+
+      final out = await repo.livePlaybackSources(
+        'live:mb11|',
+        sourceId: 'moviebox',
+        title: 'France vs Germany',
+      );
+
+      expect(out.map((s) => s.url), [
+        'https://cdn.test/shared.m3u8',
+        'https://cdn.test/other.m3u8',
+      ]);
+    });
+
+    test('playback resolution leads with Nuvio and MovieBox even when the '
+        'fixture was tapped on a lower-priority source', () async {
+      final repo = _StubRepo(
+        installed: const ['streamfree', 'nuviotv', 'moviebox'],
+        fixturesBySource: {
+          'nuviotv': [_fixture('nuviotv', 'nv13', 'France vs Germany')],
+          'moviebox': [_fixture('moviebox', 'mb13', 'France vs Germany')],
+        },
+        sourcesByKey: {
+          'streamfree|live:sf13|': [_src('https://cdn.test/streamfree.m3u8')],
+          'nuviotv|live:nv13|https://nuviotv.test/nv13.m3u8': [
+            _src('https://cdn.test/nuvio.m3u8'),
+          ],
+          'moviebox|live:mb13|https://moviebox.test/mb13.m3u8': [
+            _src('https://cdn.test/moviebox.m3u8'),
+          ],
+        },
+      );
+
+      final out = await repo.livePlaybackSources(
+        'live:sf13|',
+        sourceId: 'streamfree',
+        title: 'France vs Germany',
+      );
+
+      expect(out.map((s) => s.url), [
+        'https://cdn.test/nuvio.m3u8',
+        'https://cdn.test/moviebox.m3u8',
+        'https://cdn.test/streamfree.m3u8',
+      ]);
+    });
+
+    test(
+      'playback resolution with no title only asks the owning provider',
+      () async {
+        final repo = _StubRepo(
+          installed: const ['moviebox', 'streamfree'],
+          fixturesBySource: {
+            'streamfree': [_fixture('streamfree', 'sf12', 'France vs Germany')],
+          },
+          sourcesByKey: {
+            'moviebox|live:mb12|': [_src('https://cdn.test/mb12.m3u8')],
+          },
+        );
+
+        final out = await repo.livePlaybackSources(
+          'live:mb12|',
+          sourceId: 'moviebox',
+        );
+
+        expect(out.single.url, 'https://cdn.test/mb12.m3u8');
+        expect(
+          repo.askedSources.where((k) => k.startsWith('streamfree|')),
+          isEmpty,
+        );
+      },
+    );
+
+    test('a lower-priority fixture resolves through Nuvio before its own '
+        'provider', () async {
+      final repo = _StubRepo(
+        installed: const ['streamfree', 'nuviotv'],
+        fixturesBySource: {
+          'nuviotv': [_fixture('nuviotv', 'nv14', 'France vs Germany')],
+        },
+        sourcesByKey: {
+          'streamfree|live:sf14|': [_src('https://cdn.test/streamfree.m3u8')],
+          'nuviotv|live:nv14|https://nuviotv.test/nv14.m3u8': [
+            _src('https://cdn.test/nuvio.m3u8'),
+          ],
+        },
+      );
+
+      final out = await repo.liveSources(
+        'live:sf14|',
+        sourceId: 'streamfree',
+        title: 'France vs Germany',
+      );
+
+      expect(out.single.url, 'https://cdn.test/nuvio.m3u8');
+    });
+
     test('an ordinary title delegates to sources unchanged', () async {
       final repo = _StubRepo(
         installed: const ['moviebox'],

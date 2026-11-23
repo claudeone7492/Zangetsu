@@ -11,9 +11,9 @@
 // nextUrl anyway, and the per-source call timeout is 30s.
 
 var SOURCE_ID = 'novelfire';
-var SITE = 'https://novelfire.net';
+var SITE = 'https://novelphoenix.com';
 var REFERER = SITE + '/';
-var LOGO = SITE + '/frontend/img/logo.png';
+var LOGO = SITE + '/logo.png';
 var MAX_CHAPTER_PAGES = 6;
 
 function getInfo() {
@@ -43,7 +43,7 @@ function _all(html, re) {
 }
 
 function _slugFromUrl(url) {
-  var m = String(url).match(/\/book\/([^\/?#]+)/);
+  var m = String(url).match(/\/(?:book|novel)\/([^\/?#]+)/);
   return m ? m[1] : String(url);
 }
 
@@ -71,12 +71,12 @@ function _parseBrowse(html) {
   var items = _all(html, re);
   for (var i = 0; i < items.length; i++) {
     var block = items[i][1];
-    var linkM = block.match(/href="(\/book\/[^"]+)"/);
+    var linkM = block.match(/href="(\/(?:book|novel)\/[^"]+)"/);
     if (!linkM) continue;
     var link = absUrl(linkM[1], SITE);
     if (seen[link]) continue;
     seen[link] = true;
-    var titleM = block.match(/title="([^"]+)"/);
+    var titleM = block.match(/<h4[^>]*class="[^"]*novel-title[^"]*"[^>]*>([\s\S]*?)<\/h4>/i) || block.match(/title="([^"]+)"/);
     var imgM = block.match(/<img[^>]+(?:data-src|src)="([^"]+)"/i);
     out.push({
       id: _slugFromUrl(link),
@@ -142,7 +142,7 @@ async function search(query, page, opts) {
         id: s.slug,
         title: _clean(s.title),
         cover: s.image ? absUrl(s.image, SITE) : null,
-        url: SITE + '/book/' + s.slug,
+        url: SITE + '/novel/' + s.slug,
         type: 'novel'
       });
     }
@@ -181,7 +181,7 @@ async function _chaptersFor(bookUrl) {
     }
     var links = _all(
       html,
-      /<a[^>]+href="(\/book\/[^"]+\/chapter-[^"]+)"[^>]*(?:title="([^"]*)")?[^>]*>([\s\S]*?)<\/a>/gi
+      /<a[^>]+href="(\/(?:book|novel)\/[^"]+\/chapter-[^"]+)"[^>]*(?:title="([^"]*)")?[^>]*>([\s\S]*?)<\/a>/gi
     );
     for (var i = 0; i < links.length; i++) {
       var link = absUrl(links[i][1], SITE);
@@ -242,8 +242,8 @@ async function getDetail(url) {
     summary = chunks.length ? chunks.join('\n\n') : _clean(sumM[1]);
   }
 
-  var statusM = html.match(/Status:\s*<strong[^>]*>([\s\S]*?)<\/strong>/i);
-  if (!statusM) statusM = html.match(/<strong[^>]*class="[^"]*status[^"]*"[^>]*>([\s\S]*?)<\/strong>/i);
+  var statusM = html.match(/<strong[^>]*class="[^"]*(?:ongoing|completed|hiatus|cancelled)[^"]*"[^>]*>([\s\S]*?)<\/strong>/i)
+    || html.match(/Status:\s*<strong[^>]*>([\s\S]*?)<\/strong>/i);
   var status = _normalizeStatus(statusM ? _clean(statusM[1]) : '');
 
   // Genres live in the "Genres" info block; the site also drops genre links in
@@ -310,7 +310,8 @@ async function getChapterContent(chapterUrl) {
 }
 
 function _parseChapter(html, chapterUrl) {
-  var bodyM = html.match(/<div id="content"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i)
+  var bodyM = html.match(/<div[^>]+id="content"[^>]*>([\s\S]*?)<\/div>/i)
+    || html.match(/<div[^>]+class="[^"]*d-chapter-content[^"]*"[^>]*>([\s\S]*?)(?:<div[^>]+class="[^"]*cmt|<footer|<\/article>)/i)
     || html.match(/<div id="content"[^>]*>([\s\S]*?)(?:<div class="nf-ads|<footer|<\/article>)/i);
   var content = bodyM ? bodyM[1] : '';
 

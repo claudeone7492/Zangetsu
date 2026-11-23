@@ -11,6 +11,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../core/app_mode.dart';
 import '../../core/di/injector.dart';
+import '../../core/device/device_fingerprint.dart';
 import '../../core/profiles/profile_avatar_uploader.dart';
 import '../../core/profiles/viewer_profile.dart';
 import '../../core/profiles/viewer_profile_avatar.dart';
@@ -18,40 +19,11 @@ import '../../core/supabase/supabase_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/ui/buttons.dart';
-import '../../core/tv/tv_focusable.dart';
 import 'auth_cubit.dart';
 import 'auth_screens_tv.dart';
 import 'pair_tv_screen.dart';
-import 'reconnect.dart';
 import '../../l10n/l10n.dart';
 import '../../l10n/ui_strings.dart';
-
-/// Returns true if logged in. Otherwise shows a "Sign in to {action}" snackbar
-/// with a Sign-in action and returns false — the gate for My List / history.
-bool requireLogin(BuildContext context, {String? action}) {
-  if (context.read<AuthCubit>().state.isLoggedIn) return true;
-  final act = action ?? context.l10n.signInToUseThis;
-  ScaffoldMessenger.of(context)
-    ..clearSnackBars()
-    ..showSnackBar(
-      SnackBar(
-        backgroundColor: AppColors.surface2,
-        behavior: SnackBarBehavior.floating,
-        content: Text(
-          context.l10n.signInToAction(act),
-          style: AppText.body.copyWith(color: Colors.white),
-        ),
-        action: SnackBarAction(
-          label: context.l10n.signIn,
-          textColor: AppColors.accent,
-          onPressed: () => Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (_) => const LoginScreen())),
-        ),
-      ),
-    );
-  return false;
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared dark text field
@@ -395,11 +367,7 @@ class _ProfileAccountSectionState extends State<ProfileAccountSection> {
         if (await file.length() > ProfileAvatarUploader.maxGifSourceBytes) {
           if (context.mounted) {
             ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-              SnackBar(
-                content: Text(
-                  context.l10n.authGifTooLarge,
-                ),
-              ),
+              SnackBar(content: Text(context.l10n.authGifTooLarge)),
             );
           }
           return;
@@ -564,60 +532,31 @@ class _ProfileAccountSectionState extends State<ProfileAccountSection> {
     builder: (context, state) {
       final isTv = sl.isRegistered<AppMode>() && sl<AppMode>().isTv;
       if (!state.isLoggedIn) {
-        void signIn() {
-          Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
-        }
-
+        final deviceName = DeviceFingerprint.model?.trim();
         return Padding(
           padding: EdgeInsets.fromLTRB(24, isTv ? 20 : 28, 24, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(context.l10n.notSignedIn),
+              const Icon(
+                Icons.devices_rounded,
+                size: 44,
+                color: AppColors.textSecondary,
+              ),
               const SizedBox(height: 12),
-              if (isTv)
-                TvFocusable(
-                  autofocus: true,
-                  semanticLabel: context.l10n.signIn,
-                  onTap: signIn,
-                  variant: TvFocusVariant.row,
-                  borderRadius: 14,
-                  child: Container(
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: const Color(0x1AFFFFFF),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.hairline, width: 0.5),
-                    ),
-                    child: Center(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.login_rounded,
-                            color: AppColors.textPrimary,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            context.l10n.signIn,
-                            style: AppText.button.copyWith(
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                )
-              else
-                SecondaryButton(
-                  label: context.l10n.signIn,
-                  icon: Icons.login_rounded,
-                  onPressed: signIn,
-                ),
+              Text(
+                deviceName == null || deviceName.isEmpty
+                    ? 'This device'
+                    : deviceName,
+                style: AppText.title,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Lifetime device registration',
+                style: AppText.caption,
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         );
@@ -663,52 +602,6 @@ class _ProfileAccountSectionState extends State<ProfileAccountSection> {
       final avatar = accountAvatar();
       final avatarBusy = state.busy || _avatarUploading;
       final name = Text(state.displayName, style: AppText.title);
-      final logout = isTv
-          ? TvFocusable(
-              onTap: () {
-                context.read<AuthCubit>().logout();
-                Navigator.of(context).pop();
-              },
-              child: SizedBox(
-                height: 56,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: const Color(0x1AFFFFFF),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.hairline, width: 0.5),
-                  ),
-                  child: Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.logout_rounded,
-                          color: AppColors.textPrimary,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          context.l10n.logOut,
-                          style: AppText.button.copyWith(
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            )
-          : SecondaryButton(
-              label: context.l10n.logOut,
-              icon: Icons.logout_rounded,
-              onPressed: () async {
-                // Backs up an un-synced library first / warns before wiping.
-                final done = await safeLogout(context);
-                if (done && context.mounted) Navigator.of(context).pop();
-              },
-            );
-
       return Padding(
         padding: EdgeInsets.fromLTRB(24, isTv ? 20 : 28, 24, 24),
         child: Column(
@@ -786,7 +679,7 @@ class _ProfileAccountSectionState extends State<ProfileAccountSection> {
               child: Text(state.user?.email ?? '', style: AppText.caption),
             ),
             SizedBox(height: isTv ? 24 : 32),
-            if (!isTv) ...[
+            if (!isTv)
               SizedBox(
                 width: double.infinity,
                 child: SecondaryButton(
@@ -796,9 +689,6 @@ class _ProfileAccountSectionState extends State<ProfileAccountSection> {
                       Navigator.of(context).push(PairTvScreen.route()),
                 ),
               ),
-              const SizedBox(height: 12),
-            ],
-            SizedBox(width: double.infinity, child: logout),
           ],
         ),
       );

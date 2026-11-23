@@ -54,7 +54,6 @@ import '../../core/mihon/mihon_filters.dart';
 import '../aniyomi/aniyomi_filter_sheet.dart';
 import '../mihon/mihon_filter_sheet.dart';
 import '../search/mangayomi_filter_sheet.dart';
-import '../auth/auth_screens.dart';
 import '../detail/detail_screen.dart';
 import '../player/player_screen.dart';
 import '../sources/zangetsu_sources_screen.dart';
@@ -823,9 +822,6 @@ class _SearchViewState extends State<_SearchView>
       onPlay: () => _play(item),
       onOpenDetail: () => _openDetail(item),
       onToggleMyList: () async {
-        if (!requireLogin(context, action: 'add to My List')) {
-          return _myList.contains(item);
-        }
         await _myList.toggle(item);
         if (mounted) setState(() {});
         return _myList.contains(item);
@@ -1687,8 +1683,7 @@ class _SearchViewState extends State<_SearchView>
         _jsSourceHasFilters(sourceId)
             ? (
                 onFilter: () => _openJsFilters(sourceId),
-                active:
-                    (state.filterSelectionFor(sourceId) ?? '').isNotEmpty,
+                active: (state.filterSelectionFor(sourceId) ?? '').isNotEmpty,
               )
             : (onFilter: null, active: false),
       // CloudStream / LNReader / Mangayomi: no per-source sheet here.
@@ -2168,9 +2163,12 @@ class _SearchViewState extends State<_SearchView>
         SizedBox(
           height: itemH,
           child: ListView.builder(
-            scrollCacheExtent: ScrollCacheExtent.pixels(MediaQuery.accessibleNavigationOf(context)
-                ? double.infinity
-                : 600), scrollDirection: Axis.horizontal,
+            scrollCacheExtent: ScrollCacheExtent.pixels(
+              MediaQuery.accessibleNavigationOf(context)
+                  ? double.infinity
+                  : 600,
+            ),
+            scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: preview.length,
             itemBuilder: (context, i) {
@@ -2477,7 +2475,8 @@ class _SearchViewState extends State<_SearchView>
   // ── Flat results grid (single-source / vertical) ──────────────────────────
   Widget _resultsGrid(List<MediaItem> items, double cellW) {
     return GridView.builder(
-      scrollCacheExtent: ScrollCacheExtent.pixels(800), padding: EdgeInsets.fromLTRB(
+      scrollCacheExtent: ScrollCacheExtent.pixels(800),
+      padding: EdgeInsets.fromLTRB(
         16,
         6,
         16,
@@ -2533,9 +2532,9 @@ class _SearchViewState extends State<_SearchView>
       alignment: AlignmentDirectional.centerStart,
       child: GestureDetector(
         key: const ValueKey('phone-search-genres'),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (_) => const GenresScreen()),
-        ),
+        onTap: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute<void>(builder: (_) => const GenresScreen())),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
@@ -3103,11 +3102,7 @@ class _SearchViewState extends State<_SearchView>
     );
   }
 
-  Widget _discoverPageView(
-    List<MediaItem> items,
-    double cellW,
-    double cellH,
-  ) {
+  Widget _discoverPageView(List<MediaItem> items, double cellW, double cellH) {
     final cols = posterGridColumns(context);
     final rows = <List<MediaItem>>[];
     for (var i = 0; i < items.length; i += cols) {

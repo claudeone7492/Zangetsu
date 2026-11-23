@@ -326,9 +326,7 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
     if (!mounted || restore != true) return;
     if (!await _profiles.restoreRecoverable(profile.id) && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.profileCouldNotRestore),
-        ),
+        SnackBar(content: Text(context.l10n.profileCouldNotRestore)),
       );
     }
   }
@@ -371,10 +369,14 @@ class _ViewerProfilesScreenState extends State<ViewerProfilesScreen>
         builder: (context, _, _) => ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 36),
           children: [
-            if (sl.isRegistered<AuthCubit>()) ...[
+            if (sl.isRegistered<AuthCubit>() &&
+                sl<AuthCubit>().state.isLoggedIn) ...[
               Padding(
                 padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
-                child: Text(context.l10n.profileAccount, style: AppText.headline),
+                child: Text(
+                  context.l10n.profileAccount,
+                  style: AppText.headline,
+                ),
               ),
               BlocProvider.value(
                 value: sl<AuthCubit>(),

@@ -18,6 +18,7 @@ import 'core/app_mode.dart';
 import 'core/bandwidth/bandwidth_share.dart';
 import 'core/boot_network.dart';
 import 'core/di/injector.dart';
+import 'core/device/device_fingerprint.dart';
 import 'core/subscription/subscription_repository.dart';
 import 'core/ui/splash_style.dart';
 import 'core/hive/safe_box.dart';
@@ -614,7 +615,7 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
       await sl<AuthCubit>().restore().timeout(const Duration(seconds: 5));
     } catch (_) {}
     await sl<ViewerProfileStore>().loadForUser(
-      displayName: sl<AuthCubit>().state.displayName,
+      displayName: await _profileDisplayName(),
       attemptRemote: false,
     );
     // Rows saved under a source before the browse screen started resolving
@@ -672,6 +673,16 @@ class _WatchAppState extends State<WatchApp> with WidgetsBindingObserver {
     // to be 2000ms, which sat there doing nothing for ~400ms.
     const minSplash = Duration(milliseconds: 1700);
     if (elapsed < minSplash) await Future.delayed(minSplash - elapsed);
+  }
+
+  /// The device is the account. Use the signed-in account name when one
+  /// exists; otherwise name the default profile after the device model.
+  Future<String> _profileDisplayName() async {
+    final account = sl<AuthCubit>().state.displayName.trim();
+    if (account.isNotEmpty) return account;
+    await DeviceFingerprint.warmSignals();
+    final model = DeviceFingerprint.model?.trim();
+    return model == null || model.isEmpty ? 'This device' : model;
   }
 
   /// Refresh cloud data after local startup has released the splash.

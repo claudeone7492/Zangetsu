@@ -1232,8 +1232,8 @@ class SourceRepository implements CatalogueRepository {
   }
 
   /// Playable sources for a live-sports fixture, resolving through the
-  /// fixture's own provider and falling back to the other installed sports
-  /// providers.
+  /// priority sports providers (Nuvio, MovieBox) and falling back to the
+  /// fixture's own provider and the other installed sports sources.
   ///
   /// A live fixture is a provider-extension handle, not a title: its provider
   /// mints a signed, short-lived stream URL for it, and the URL 404s once the
@@ -1256,35 +1256,166 @@ class SourceRepository implements CatalogueRepository {
     if (!isLiveHandle(episodeUrl)) {
       return sources(episodeUrl, sourceId: sourceId, fast: true);
     }
+    final ownId = sourceId ?? _active.state;
+    final own = await _liveOwnSources(episodeUrl, sourceId);
+    // Nuvio and MovieBox are the priority sports players. A fixture tapped on
+    // a lower-priority source still resolves through them first; that source
+    // remains the fallback if neither carries the match.
+    if (own.isNotEmpty && kPriorityLiveSportsSourceIds.contains(ownId)) {
+      return _relayFallback(own);
+    }
+    if (title == null || title.trim().isEmpty) {
+      return own.isEmpty ? const [] : _relayFallback(own);
+    }
+    final priority = await _firstPriorityProviderSources(ownId, title);
+    if (priority.isNotEmpty) return priority;
+    if (own.isNotEmpty) return _relayFallback(own);
+    return _firstOtherProviderSources(ownId, title);
+  }
+
+  /// Every playable source for a live fixture, not just its owning provider's.
+  ///
+  /// A provider can answer with a link that no longer opens (the CDN dropped
+  /// it, the signed token expired, or the host now refuses the viewer). The
+  /// player has no cross-provider sweep of its own, so resolving only the
+  /// tapped provider dead-ended on "1 source answered, but its link failed to
+  /// open". This gathers the same fixture from the other installed sports
+  /// providers too, so the player's ordinary source failover has somewhere to
+  /// go.
+  Future<List<VideoSource>> livePlaybackSources(
+    String episodeUrl, {
+    String? sourceId,
+    String? title,
+  }) async {
+    if (!isLiveHandle(episodeUrl)) {
+      return sources(episodeUrl, sourceId: sourceId, fast: true);
+    }
+    final ownId = sourceId ?? _active.state;
+    final hasTitle = title != null && title.trim().isNotEmpty;
+    // Resolve the owning provider and the cross-provider fallback together:
+    // the fixture lists are already cached by the screen's preflight, so the
+    // extra work is mostly the matching provider's link resolve.
+    final ownFuture = _liveOwnSources(episodeUrl, sourceId);
+    final othersFuture = hasTitle
+        ? _allOtherProviderSources(ownId, title)
+        : Future<Map<String, List<VideoSource>>>.value(const {});
+    final own = await ownFuture;
+    final others = await othersFuture;
+
+    // Nuvio and MovieBox lead: they carry the fullest live lists and their
+    // links are the most reliable. A fixture tapped on a lower-priority source
+    // still opens through them first; that source then follows as a fallback.
+    final order = <String>[];
+    void addId(String id) {
+      if (id.isEmpty || order.contains(id)) return;
+      if (id != ownId && !hasSource(id)) return;
+      order.add(id);
+    }
+
+    if (!kPriorityLiveSportsSourceIds.contains(ownId)) {
+      for (final id in kPriorityLiveSportsSourceIds) {
+        addId(id);
+      }
+    }
+    addId(ownId);
+    for (final id in kPriorityLiveSportsSourceIds) {
+      addId(id);
+    }
+    for (final id in kLiveSportsSourceIds) {
+      addId(id);
+    }
+
+    final out = <VideoSource>[];
+    final seen = <String>{};
+    for (final id in order) {
+      final list = id == ownId ? _relayFallback(own) : others[id] ?? const [];
+      for (final source in list) {
+        if (seen.add(source.url)) out.add(source);
+      }
+    }
+    return out;
+  }
+
+  /// The owning provider's links for [episodeUrl]. Empty on a dead handle.
+  Future<List<VideoSource>> _liveOwnSources(
+    String episodeUrl,
+    String? sourceId,
+  ) async {
     try {
-      final own = await sources(
+      return await sources(
         episodeUrl,
         sourceId: sourceId,
         fast: true,
       ).timeout(_liveResolveTimeout);
-      if (own.isNotEmpty) return _relayFallback(own);
     } catch (_) {
-      // Fall through to the other sports sources.
+      return const [];
     }
-    if (title == null || title.trim().isEmpty) return const [];
-    final ownId = sourceId ?? _active.state;
-    for (final id in kLiveSportsSourceIds) {
+  }
+
+  /// The first priority provider (Nuvio, then MovieBox) carrying [title].
+  Future<List<VideoSource>> _firstPriorityProviderSources(
+    String ownId,
+    String title,
+  ) async {
+    for (final id in kPriorityLiveSportsSourceIds) {
       if (id == ownId || !hasSource(id)) continue;
-      try {
-        final list = await live(sourceId: id).timeout(_liveResolveTimeout);
-        final match = _findFixture(list, title);
-        if (match == null) continue;
-        final resolved = await sources(
-          match.url,
-          sourceId: match.sourceId,
-          fast: true,
-        ).timeout(_liveResolveTimeout);
-        if (resolved.isNotEmpty) return _relayFallback(resolved);
-      } catch (_) {
-        // Try the next provider.
-      }
+      final resolved = await _otherProviderSources(id, title);
+      if (resolved.isNotEmpty) return resolved;
     }
     return const [];
+  }
+
+  /// The first non-priority sports provider that still carries [title].
+  Future<List<VideoSource>> _firstOtherProviderSources(
+    String ownId,
+    String title,
+  ) async {
+    for (final id in kLiveSportsSourceIds) {
+      if (id == ownId ||
+          kPriorityLiveSportsSourceIds.contains(id) ||
+          !hasSource(id)) {
+        continue;
+      }
+      final resolved = await _otherProviderSources(id, title);
+      if (resolved.isNotEmpty) return resolved;
+    }
+    return const [];
+  }
+
+  /// Every other sports provider that still carries [title], keyed by source
+  /// id and queried concurrently so a single dead provider cannot hold up the
+  /// rest.
+  Future<Map<String, List<VideoSource>>> _allOtherProviderSources(
+    String ownId,
+    String title,
+  ) async {
+    final ids = [
+      for (final id in kLiveSportsSourceIds)
+        if (id != ownId && hasSource(id)) id,
+    ];
+    final lists = await Future.wait([
+      for (final id in ids) _otherProviderSources(id, title),
+    ]);
+    return {for (var i = 0; i < ids.length; i++) ids[i]: lists[i]};
+  }
+
+  Future<List<VideoSource>> _otherProviderSources(
+    String id,
+    String title,
+  ) async {
+    try {
+      final list = await live(sourceId: id).timeout(_liveResolveTimeout);
+      final match = _findFixture(list, title);
+      if (match == null) return const [];
+      final resolved = await sources(
+        match.url,
+        sourceId: match.sourceId,
+        fast: true,
+      ).timeout(_liveResolveTimeout);
+      return _relayFallback(resolved);
+    } catch (_) {
+      return const [];
+    }
   }
 
   /// Attach the public relay as a hidden fallback to live sources. The player

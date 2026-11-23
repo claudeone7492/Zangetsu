@@ -67,7 +67,8 @@ class _SeriesScreenState extends State<SeriesScreen>
     final key = '${item.sourceId}::${item.id}';
     return _episodesByMember.putIfAbsent(
       key,
-      () => sl<CatalogueRepository>().episodes(item.url, sourceId: item.sourceId),
+      () =>
+          sl<CatalogueRepository>().episodes(item.url, sourceId: item.sourceId),
     );
   }
 
@@ -78,8 +79,11 @@ class _SeriesScreenState extends State<SeriesScreen>
         builder: (_) => PlayerScreen(
           sourceId: item.sourceId,
           resume: sl<ResumeStore>(),
-          resolveSources: (u) =>
-              sl<CatalogueRepository>().sources(u, sourceId: item.sourceId, fast: true),
+          resolveSources: (u) => sl<CatalogueRepository>().sources(
+            u,
+            sourceId: item.sourceId,
+            fast: true,
+          ),
           episodes: episodes,
           startIndex: index,
           showTitle: item.title,
@@ -232,7 +236,10 @@ class _SeriesScreenState extends State<SeriesScreen>
                   indicatorColor: AppColors.accent,
                   indicatorSize: TabBarIndicatorSize.label,
                   dividerColor: Colors.transparent,
-                  tabs: const [Tab(text: 'Titles'), Tab(text: 'Episodes')],
+                  tabs: const [
+                    Tab(text: 'Titles'),
+                    Tab(text: 'Episodes'),
+                  ],
                 ),
                 Expanded(
                   child: TabBarView(
@@ -260,11 +267,9 @@ class _SeriesScreenState extends State<SeriesScreen>
       buildDefaultDragHandles: false,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       itemCount: group.memberKeys.length,
-      onReorder: (oldIndex, newIndex) async {
-        var to = newIndex;
-        if (oldIndex < newIndex) to -= 1;
+      onReorderItem: (oldIndex, newIndex) async {
         final key = group.memberKeys[oldIndex];
-        await _store.moveMember(group.id, key, to);
+        await _store.moveMember(group.id, key, newIndex);
         if (mounted) setState(() {});
       },
       itemBuilder: (context, i) {
@@ -437,49 +442,54 @@ class _CoverPickerSheet extends StatelessWidget {
             ),
           ),
           Flexible(
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                RadioListTile<String>(
-                  value: autoSentinel,
-                  groupValue: currentKey ?? autoSentinel,
-                  activeColor: AppColors.accent,
-                  title: Text(
-                    'Automatic',
-                    style: AppText.body.copyWith(color: AppColors.textPrimary),
-                  ),
-                  onChanged: (_) => Navigator.pop(context, autoSentinel),
-                ),
-                for (final m in members)
+            child: RadioGroup<String>(
+              groupValue: currentKey ?? autoSentinel,
+              onChanged: (picked) {
+                if (picked != null) Navigator.pop(context, picked);
+              },
+              child: ListView(
+                shrinkWrap: true,
+                children: [
                   RadioListTile<String>(
-                    value: '${m.sourceId}::${m.id}',
-                    groupValue: currentKey ?? autoSentinel,
+                    value: autoSentinel,
                     activeColor: AppColors.accent,
-                    secondary: ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: SizedBox(
-                        width: 36,
-                        height: 36 / 0.7,
-                        child: m.cover == null
-                            ? Container(color: AppColors.surface2)
-                            : CachedNetworkImage(
-                                imageUrl: m.cover!,
-                                cacheManager: AppImageCache.manager,
-                                httpHeaders: m.coverHeaders,
-                                fit: BoxFit.cover,
-                              ),
+                    title: Text(
+                      'Automatic',
+                      style: AppText.body.copyWith(
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                    title: Text(
-                      m.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppText.body.copyWith(color: AppColors.textPrimary),
-                    ),
-                    onChanged: (_) =>
-                        Navigator.pop(context, '${m.sourceId}::${m.id}'),
                   ),
-              ],
+                  for (final m in members)
+                    RadioListTile<String>(
+                      value: '${m.sourceId}::${m.id}',
+                      activeColor: AppColors.accent,
+                      secondary: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: SizedBox(
+                          width: 36,
+                          height: 36 / 0.7,
+                          child: m.cover == null
+                              ? Container(color: AppColors.surface2)
+                              : CachedNetworkImage(
+                                  imageUrl: m.cover!,
+                                  cacheManager: AppImageCache.manager,
+                                  httpHeaders: m.coverHeaders,
+                                  fit: BoxFit.cover,
+                                ),
+                        ),
+                      ),
+                      title: Text(
+                        m.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.body.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -649,7 +659,8 @@ class _MemberEpisodes extends StatefulWidget {
 
 class _MemberEpisodesState extends State<_MemberEpisodes> {
   static const _batchSize = 20;
-  static const _lookahead = 400.0; // px of slack before the sentinel is on screen
+  static const _lookahead =
+      400.0; // px of slack before the sentinel is on screen
   int _visibleCount = _batchSize;
   int _knownTotal = 0;
   final _sentinelKey = GlobalKey();

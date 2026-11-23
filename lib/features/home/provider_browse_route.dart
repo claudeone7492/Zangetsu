@@ -7,11 +7,13 @@ import '../../core/models/episode.dart';
 import '../../core/models/media_item.dart';
 import '../../core/playback/resume_store.dart';
 import '../../core/repository/catalogue_repository.dart';
+import '../../core/repository/source_repository.dart';
 import '../detail/detail_screen.dart';
 import '../player/player_screen.dart';
 import 'see_all_screen.dart';
 
-export '../../core/live/live_handles.dart' show isLiveHandle, kLiveHandleSchemes;
+export '../../core/live/live_handles.dart'
+    show isLiveHandle, kLiveHandleSchemes;
 
 /// True when [url] is a provider-extension handle rather than a playable title:
 /// a `browse:` category row (a streaming platform or a filter shortcut) or a
@@ -89,11 +91,20 @@ void _openLive(BuildContext context, MediaItem item, CatalogueRepository repo) {
         // provider can no longer mint a URL for it, through the other installed
         // sports providers (matched by title) — so a fixture that is still on
         // air somewhere does not dead-end on "no source to play this video".
-        resolveSources: (_) => repo.liveSources(
-          item.url,
-          sourceId: item.sourceId,
-          title: item.title,
-        ),
+        // When the owning provider answers but its link will not open, the
+        // extra providers are already in the player's list, so its normal
+        // source failover can move to one that does.
+        resolveSources: (_) => repo is SourceRepository
+            ? repo.livePlaybackSources(
+                item.url,
+                sourceId: item.sourceId,
+                title: item.title,
+              )
+            : repo.liveSources(
+                item.url,
+                sourceId: item.sourceId,
+                title: item.title,
+              ),
         showTitle: item.title,
         cover: item.cover,
         coverHeaders: item.coverHeaders,

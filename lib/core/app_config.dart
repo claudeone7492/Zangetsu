@@ -48,6 +48,11 @@ const List<String> kDefaultRepoUrls = [
 /// first source that did.
 const String kDefaultSourceId = 'anikoto';
 
+/// Preferred first source when entering Manga mode with no remembered pick.
+/// MangaPill's catalogue is the most complete of the bundled manga pack; the
+/// remaining manga sources stay selectable and act as fallbacks.
+const String kDefaultMangaSourceId = 'mangapill';
+
 /// Source the vertical Shorts feed draws from first. MovieBox carries a
 /// dedicated short-drama catalogue ("Hot Short TV" / "Trending Short Drama"
 /// rails), so it leads the feed's source list; the remaining installed video
@@ -108,6 +113,15 @@ const List<String> kLiveSportsSourceIds = <String>[
   'streamsports99',
   'timstreams',
   'streamfree',
+];
+
+/// The two providers that carry the fullest, most reliable live-stream lists.
+/// Playback resolves through these first even when the tapped fixture came from
+/// a lower-priority source; the rest stay as fallbacks for matches only they
+/// index.
+const List<String> kPriorityLiveSportsSourceIds = <String>[
+  'nuviotv',
+  'moviebox',
 ];
 
 /// Public directory of community source repos (Sozo Read format:

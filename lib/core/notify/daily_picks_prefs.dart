@@ -7,7 +7,7 @@ import '../hive/safe_box.dart';
 /// What a daily-pick slot is about, and therefore how its card is built.
 ///
 /// The five-a-day digest covers the five things a viewer opens the app for:
-/// trending movies, the next football fixture, trending anime, new TV/film
+/// trending movies, the next live sports fixtures, trending anime, new TV/film
 /// arrivals, and something from the shows they already follow. Each kind draws
 /// from a different part of what the app already knows, so the five cards a
 /// user gets in a day are genuinely different suggestions rather than the same
@@ -16,8 +16,8 @@ enum DailyPickKind {
   /// What the movie/TV catalogue is pushing right now.
   trendingMovies,
 
-  /// The next football fixture, with its kickoff time.
-  football,
+  /// The next football fixtures, live first.
+  sports,
 
   /// What the anime catalogue is pushing right now.
   trendingAnime,
@@ -50,7 +50,7 @@ enum DailyPickSlot {
     minute: 0,
     jitterMinutes: 0,
     style: DailyPickStyle.bigText,
-    kind: DailyPickKind.football,
+    kind: DailyPickKind.sports,
     titleKey: 'dailyPicksMidday',
   ),
   afternoon(
@@ -107,6 +107,11 @@ enum DailyPickSlot {
 
   /// Base time as minutes past midnight.
   int get baseMinuteOfDay => hour * 60 + minute;
+
+  /// Exactly one card carries the three-poster row; the other four use the
+  /// MovieBox-style single-poster card. The afternoon anime card is the
+  /// showcase because it is the one that must prove its posters are anime.
+  bool get usesThreePosterCard => this == DailyPickSlot.afternoon;
 }
 
 /// The notification-card designs the daily picks rotate through. These

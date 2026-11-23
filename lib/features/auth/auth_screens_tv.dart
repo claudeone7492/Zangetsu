@@ -463,9 +463,8 @@ class _SignupScreenTvState extends State<SignupScreenTv> {
 // Profile (TV)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// TV Profile: account info + a focusable Logout button. Avatar change is
-/// omitted on TV (gallery picker is not remote-friendly). All data and logout
-/// flow come from [AuthCubit] — identical to the phone [ProfileScreen].
+/// TV Profile: device identity and account info. Avatar change is omitted on TV
+/// (gallery picker is not remote-friendly).
 class ProfileScreenTv extends StatelessWidget {
   const ProfileScreenTv({super.key});
 
@@ -475,7 +474,14 @@ class ProfileScreenTv extends StatelessWidget {
       child: BlocBuilder<AuthCubit, AuthState>(
         builder: (context, state) {
           if (!state.isLoggedIn) {
-            return Center(child: Text(context.l10n.notSignedIn));
+            return Center(
+              child: Text(
+                state.displayName.isNotEmpty
+                    ? state.displayName
+                    : 'This device',
+                style: AppText.title,
+              ),
+            );
           }
           return Center(
             child: SizedBox(
@@ -513,48 +519,6 @@ class ProfileScreenTv extends StatelessWidget {
                     child: Text(
                       state.user?.email ?? '',
                       style: AppText.caption,
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-
-                  // Logout
-                  TvFocusable(
-                    autofocus: true,
-                    onTap: () {
-                      context.read<AuthCubit>().logout();
-                      Navigator.of(context).pop();
-                    },
-                    child: SizedBox(
-                      height: 56,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: const Color(0x1AFFFFFF),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: AppColors.hairline,
-                            width: 0.5,
-                          ),
-                        ),
-                        child: Center(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.logout_rounded,
-                                color: AppColors.textPrimary,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                context.l10n.logOut,
-                                style: AppText.button.copyWith(
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                     ),
                   ),
                 ],

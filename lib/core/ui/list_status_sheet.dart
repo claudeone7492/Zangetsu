@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/tv/tv_list_focusable.dart';
 
 import '../app_mode.dart';
@@ -12,7 +11,6 @@ import '../playback/category_store.dart';
 import '../playback/series_groups.dart';
 import '../../features/home/series_sheet.dart';
 import 'category_picker_sheet.dart';
-import '../../features/auth/auth_screens.dart' show requireLogin;
 import '../playback/my_list.dart';
 import '../repository/catalogue_repository.dart';
 import '../../l10n/l10n.dart';
@@ -22,7 +20,6 @@ import '../zmode/zmode_ids.dart';
 import '../theme/app_text.dart';
 import '../tracker/tracker.dart';
 import '../tracker/tracker_hub.dart';
-import '../../features/auth/auth_cubit.dart';
 
 /// Sentinel popped by [ListStatusSheet] for the "Remove from list" row.
 const String _kRemove = '__remove__';
@@ -88,10 +85,7 @@ Future<void> showListStatusSheet(
   if (picked == null) return;
   if (!context.mounted) return;
 
-  final signedIn = context.read<AuthCubit>().state.isLoggedIn;
-
   if (picked == _kCategories) {
-    if (!signedIn && !requireLogin(context, action: 'manage My List')) return;
     // Adding to a category implies the title belongs in the list at all.
     if (!inList) {
       await myList.add(item);
@@ -102,7 +96,6 @@ Future<void> showListStatusSheet(
   }
 
   if (picked == _kSeries) {
-    if (!signedIn && !requireLogin(context, action: 'manage My List')) return;
     if (!inList) {
       await myList.add(item);
       onChanged?.call();
@@ -145,11 +138,9 @@ Future<void> showListStatusSheet(
   }
 
   final status = picked as WatchStatus;
-  if (signedIn) {
-    await myList.add(item);
-    await statusStore.setStatus(item, status);
-    await myList.pushStatus(item); // sync the watch status to the cloud row
-  }
+  await myList.add(item);
+  await statusStore.setStatus(item, status);
+  await myList.pushStatus(item); // sync the watch status to the cloud row
   onChanged?.call();
   _syncToTrackers(
     item,
@@ -287,7 +278,10 @@ class ListStatusSheet extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(20, 14, 20, 6),
                 child: Align(
                   alignment: AlignmentDirectional.centerStart,
-                  child: Text(context.l10n.addToYourList, style: AppText.headline),
+                  child: Text(
+                    context.l10n.addToYourList,
+                    style: AppText.headline,
+                  ),
                 ),
               ),
               for (var i = 0; i < statuses.length; i++)

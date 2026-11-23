@@ -261,6 +261,21 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   /// the page sits open rather than freezing at whatever the source returned.
   Timer? _countdownTimer;
 
+  /// The first open races the JS pack loader: the IPTV provider can answer
+  /// "not loaded" once or twice before its runtime is ready. Retrying inside
+  /// the first load is what used to take three manual taps.
+  static const int _loadAttempts = 3;
+  static const Duration _retryDelay = Duration(milliseconds: 900);
+
+  /// A failed page keeps trying in the background, so a dead network at launch
+  /// recovers on its own instead of waiting for a pull or a tap.
+  static const Duration _autoRefreshDelay = Duration(seconds: 12);
+
+  int _loadGeneration = 0;
+  Timer? _autoRefreshTimer;
+  Timer? _retryTimer;
+  Completer<void>? _retryWait;
+
   @override
   void initState() {
     super.initState();
@@ -282,8 +297,31 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     _parental?.removeListener(_onParentalChanged);
     _debounce?.cancel();
     _countdownTimer?.cancel();
+    _autoRefreshTimer?.cancel();
+    _cancelRetryWait();
     _queryController.dispose();
     super.dispose();
+  }
+
+  /// A plain `Future.delayed` keeps its timer alive after the page is popped,
+  /// which trips the test binding's pending-timer check and keeps a dead
+  /// screen's retry loop scheduled. This version can be cancelled on dispose.
+  Future<void> _waitBeforeRetry() {
+    _cancelRetryWait();
+    final wait = _retryWait = Completer<void>();
+    _retryTimer = Timer(_retryDelay, () {
+      _retryTimer = null;
+      if (!wait.isCompleted) wait.complete();
+    });
+    return wait.future;
+  }
+
+  void _cancelRetryWait() {
+    _retryTimer?.cancel();
+    _retryTimer = null;
+    final wait = _retryWait;
+    _retryWait = null;
+    if (wait != null && !wait.isCompleted) wait.complete();
   }
 
   SourceRepository get _repo => sl<SourceRepository>();
@@ -342,8 +380,13 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     return (_cachedSections!, _cachedSports ?? const []);
   }
 
-  Future<void> _load() async {
-    final cached = _cachedFor(_repo);
+  Future<void> _load({bool autoRetry = true}) async {
+    if (!mounted) return;
+    final repo = _repo;
+    final generation = ++_loadGeneration;
+    _autoRefreshTimer?.cancel();
+    _cancelRetryWait();
+    final cached = _cachedFor(repo);
     setState(() {
       // Paint the last-known channels immediately on a re-open; the fetch below
       // replaces them when it lands. No cache → the normal spinner.
@@ -354,50 +397,117 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
         _sports = cached.$2;
       }
     });
-    // The sports feed is a second, optional source. Fetch it alongside the
-    // channels so the two don't serialize, but never let it sink the page: a
-    // missing MovieBox (or a dead sports endpoint) just yields no rail.
-    final sportsFuture = _fetchSports(_repo);
+
+    // Sports and user playlists are auxiliary sources. Start them alongside
+    // the channels, but never await them before painting the channels: a slow
+    // sports feed used to hold the whole page in its loading state.
+    final sportsFuture = _fetchSports(repo);
     final importedFuture = _importedSections();
-    try {
-      final sections = await _repo
-          .home(sourceId: kLiveTvSourceId)
-          .timeout(_timeout);
-      final sports = await sportsFuture;
-      final imported = await importedFuture;
-      if (!mounted) return;
-      final merged = [...imported, ...sections];
-      _cachedSections = merged;
-      _cachedSports = sports;
-      _cacheOwner = _repo;
-      setState(() {
-        _sections = merged;
-        _sports = sports;
-        _loading = false;
-      });
-      _enrichSports(sports);
-    } catch (_) {
-      if (!mounted) return;
-      // Keep whatever cache painted rather than blanking the page: a transient
-      // fetch failure on a re-open should not hide the channels the user was
-      // just looking at. Only a first open with no cache shows the error state.
-      if (cached != null) return;
-      final imported = await importedFuture;
-      if (imported.isNotEmpty) {
+
+    Object? lastError;
+    final attempts = autoRetry ? _loadAttempts : 1;
+    for (var attempt = 1; attempt <= attempts; attempt++) {
+      try {
+        final sections = await repo
+            .home(sourceId: kLiveTvSourceId)
+            .timeout(_timeout);
+        if (!mounted || generation != _loadGeneration) return;
+        _cacheOwner = repo;
+        _cachedSections = sections;
         setState(() {
-          _sections = imported;
+          _sections = sections;
           _loading = false;
           _failed = false;
         });
+        _attachAuxiliary(
+          repo,
+          sections,
+          importedFuture,
+          sportsFuture,
+          generation,
+        );
         return;
+      } catch (error) {
+        lastError = error;
+        if (attempt >= attempts) break;
+        await _waitBeforeRetry();
+        if (!mounted || generation != _loadGeneration) return;
       }
-      setState(() {
-        _failed = true;
-        _loading = false;
-        _sections = const [];
-        _sports = const [];
-      });
     }
+
+    if (!mounted || generation != _loadGeneration) return;
+    // Keep whatever cache painted rather than blanking the page: a transient
+    // fetch failure on a re-open should not hide the channels the user was
+    // just looking at. Only a first open with no cache shows the error state.
+    if (cached != null) return;
+
+    // The user's own playlists may still answer even when the bundled IPTV
+    // catalogue did not. Paint them rather than the error page when they do.
+    final imported = await importedFuture;
+    if (!mounted || generation != _loadGeneration) return;
+    if (imported.isNotEmpty) {
+      _cacheOwner = repo;
+      _cachedSections = imported;
+      setState(() {
+        _sections = imported;
+        _loading = false;
+        _failed = false;
+      });
+      _attachSports(sportsFuture, generation);
+      return;
+    }
+
+    debugPrint('[live-tv] load failed after $attempts attempt(s): $lastError');
+    setState(() {
+      _failed = true;
+      _loading = false;
+      _sections = const [];
+      _sports = const [];
+    });
+    _scheduleAutoRefresh();
+  }
+
+  /// Manual retry: one attempt, then the background refresh takes over again.
+  Future<void> _retry() => _load(autoRetry: false);
+
+  void _scheduleAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer(_autoRefreshDelay, () {
+      if (!mounted || !_failed) return;
+      _load();
+    });
+  }
+
+  void _attachAuxiliary(
+    SourceRepository repo,
+    List<HomeSection> base,
+    Future<List<HomeSection>> importedFuture,
+    Future<List<MediaItem>> sportsFuture,
+    int generation,
+  ) {
+    importedFuture
+        .then((imported) {
+          if (!mounted || generation != _loadGeneration || imported.isEmpty) {
+            return;
+          }
+          final merged = [...imported, ...base];
+          _cacheOwner = repo;
+          _cachedSections = merged;
+          setState(() => _sections = merged);
+        })
+        .catchError((_) {});
+    _attachSports(sportsFuture, generation);
+  }
+
+  void _attachSports(Future<List<MediaItem>> sportsFuture, int generation) {
+    sportsFuture
+        .then((sports) {
+          if (!mounted || generation != _loadGeneration) return;
+          _cachedSports = sports;
+          setState(() => _sports = sports);
+          _enrichSports(sports);
+        })
+        .catchError((_) {});
   }
 
   /// Every installed sports source's soccer fixtures, merged in
@@ -747,7 +857,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
                     onPlay: () => _open(item),
                   ),
               ],
-              onRefresh: _load,
+              onRefresh: () => _load(),
             ),
           ),
         );
@@ -883,7 +993,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
           ),
           IconButton(
             tooltip: context.l10n.retry,
-            onPressed: _loading ? null : _load,
+            onPressed: _loading ? null : _retry,
             icon: const Icon(Icons.refresh_rounded),
           ),
         ],
@@ -926,9 +1036,16 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
           ),
         ),
       ),
-      body: _query.isEmpty ? _phoneBrowse() : _phoneSearchResults(),
+      body: RefreshIndicator(
+        key: const ValueKey('live-refresh'),
+        color: AppColors.accent,
+        onRefresh: () => _load(),
+        child: _query.isEmpty ? _phoneBrowse() : _phoneSearchResults(),
+      ),
     );
   }
+
+  int get _liveSportsCount => _sports.where(SportsFeed.isLive).length;
 
   /// The sub-header under the search bar: a horizontally scrollable category
   /// selector (All + one per IPTV category) followed by a compact sort button.
@@ -956,47 +1073,73 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     );
   }
 
-  /// The fixed Sports entry that leads the sub-header. It is a destination,
-  /// not a channel filter, so it sits outside the indexed category chips and
-  /// keeps its own key.
+  /// The fixed Sports destination that leads the sub-header. The section
+  /// label doubles as the header; the compact "L.S ⚽" pill stays small enough
+  /// to leave the category strip room.
   Widget _phoneSportsChip() {
+    final live = _liveSportsCount;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
-      child: Center(
-        child: GestureDetector(
-          key: const ValueKey('live-sports-chip'),
-          onTap: _openSports,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-            decoration: BoxDecoration(
-              color: AppColors.accentSoft,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: AppColors.accent.withValues(alpha: 0.6),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Sports',
-                  style: AppText.caption.copyWith(
-                    color: AppColors.accent,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 11,
-                    letterSpacing: 0.4,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.sports_soccer_rounded,
-                  size: 13,
-                  color: AppColors.accent,
-                ),
-              ],
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'SPORTS',
+            style: AppText.caption.copyWith(
+              color: AppColors.textTertiary,
+              fontWeight: FontWeight.w800,
+              fontSize: 9,
+              letterSpacing: 1.3,
             ),
           ),
-        ),
+          const SizedBox(width: 6),
+          GestureDetector(
+            key: const ValueKey('live-sports-chip'),
+            onTap: _openSports,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.accentSoft,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppColors.accent.withValues(alpha: 0.6),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'L.S',
+                    style: AppText.caption.copyWith(
+                      color: AppColors.accent,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 10,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  Icon(
+                    Icons.sports_soccer_rounded,
+                    size: 11,
+                    color: AppColors.accent,
+                  ),
+                  if (live > 0) ...[
+                    const SizedBox(width: 3),
+                    Text(
+                      '$live',
+                      key: const ValueKey('live-sports-count'),
+                      style: AppText.caption.copyWith(
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 9,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1082,6 +1225,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     final items = [for (final section in sections) ...section.items];
     return CustomScrollView(
       key: const ValueKey('live-category-grid'),
+      physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -1133,6 +1277,16 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     );
   }
 
+  /// Makes an error/empty state pullable: a bare [EmptyState] is not a
+  /// scrollable, so `RefreshIndicator` would have nothing to overscroll.
+  Widget _phonePullable(Widget child) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(top: 96),
+      children: [child],
+    );
+  }
+
   Widget _phoneBrowse() {
     if (_loading) {
       // Preloader, not a spinner: the page is warmed at boot (see [preload])
@@ -1151,25 +1305,30 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
       );
     }
     if (_failed) {
-      return EmptyState(
-        icon: Icons.cloud_off_outlined,
-        message: context.l10n.somethingWentWrong,
-        actionLabel: context.l10n.tryAgain,
-        onAction: _load,
+      return _phonePullable(
+        EmptyState(
+          icon: Icons.cloud_off_outlined,
+          message: context.l10n.somethingWentWrong,
+          actionLabel: context.l10n.tryAgain,
+          onAction: _retry,
+        ),
       );
     }
     final sections = _visibleSections;
     if (sections.isEmpty) {
-      return EmptyState(
-        icon: Icons.live_tv_outlined,
-        message: context.l10n.noResults,
-        actionLabel: context.l10n.tryAgain,
-        onAction: _load,
+      return _phonePullable(
+        EmptyState(
+          icon: Icons.live_tv_outlined,
+          message: context.l10n.noResults,
+          actionLabel: context.l10n.tryAgain,
+          onAction: _retry,
+        ),
       );
     }
     if (_selectedCategory != null) return _phoneCategoryGrid(sections);
     return ListView.builder(
       padding: const EdgeInsets.only(top: 8, bottom: 96),
+      physics: const AlwaysScrollableScrollPhysics(),
       itemCount: sections.length,
       itemBuilder: (context, i) {
         final section = sections[i];
@@ -1230,6 +1389,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     }
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+      physics: const AlwaysScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: _phoneSearchColumns,
         childAspectRatio: posterCellAspect(
@@ -1317,6 +1477,20 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
         padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
         children: [
           Padding(
+            padding: const EdgeInsetsDirectional.only(end: 6),
+            child: Center(
+              child: Text(
+                'SPORTS',
+                style: AppText.caption.copyWith(
+                  color: AppColors.textTertiary,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 9,
+                  letterSpacing: 1.3,
+                ),
+              ),
+            ),
+          ),
+          Padding(
             padding: const EdgeInsetsDirectional.only(end: 10),
             child: _tvSportsPill(l10n),
           ),
@@ -1338,30 +1512,44 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
   /// sub-header, and the only one that opens a destination instead of
   /// filtering channels.
   Widget _tvSportsPill(AppLocalizations l10n) {
+    final live = _liveSportsCount;
     return TvFocusable(
+      key: const ValueKey('live-sports-chip'),
       variant: TvFocusVariant.pill,
       semanticLabel: l10n.liveSports,
       onTap: _openSports,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Sports',
+              'L.S',
               style: AppText.caption.copyWith(
                 color: AppColors.accent,
                 fontWeight: FontWeight.w800,
-                fontSize: 11,
-                letterSpacing: 0.4,
+                fontSize: 10,
+                letterSpacing: 0.2,
               ),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 3),
             Icon(
               Icons.sports_soccer_rounded,
-              size: 14,
+              size: 12,
               color: AppColors.accent,
             ),
+            if (live > 0) ...[
+              const SizedBox(width: 3),
+              Text(
+                '$live',
+                key: const ValueKey('live-sports-count'),
+                style: AppText.caption.copyWith(
+                  color: AppColors.accent,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 9,
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -1460,6 +1648,7 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
     final items = [for (final section in sections) ...section.items];
     return CustomScrollView(
       key: const ValueKey('live-category-grid'),
+      physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(40, 0, 40, 16),
@@ -1529,9 +1718,9 @@ class _LiveTvScreenState extends State<LiveTvScreen> {
         ),
       );
     }
-    if (_failed) return _tvMessage(l10n.somethingWentWrong, retry: _load);
+    if (_failed) return _tvMessage(l10n.somethingWentWrong, retry: _retry);
     final sections = _visibleSections;
-    if (sections.isEmpty) return _tvMessage(l10n.noResults, retry: _load);
+    if (sections.isEmpty) return _tvMessage(l10n.noResults, retry: _retry);
     if (_selectedCategory != null) return _tvCategoryGrid(sections);
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 32),

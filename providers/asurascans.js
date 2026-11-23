@@ -102,9 +102,10 @@ async function search(query, page, opts) {
   page = page || 1;
   opts = opts || {};
   var q = String(query || '').trim();
-  var url = q
-    ? SITE + '/browse?q=' + encodeURIComponent(q) + (page > 1 ? '&page=' + page : '')
-    : SITE + '/browse?order=popular' + (page > 1 ? '&page=' + page : '');
+  // Asura's browse grid is server-filtered by ?q=; /browse/comics ignores the
+  // query and only returns the first page, which made search miss everything.
+  var url = SITE + '/browse' + (q ? '?q=' + encodeURIComponent(q) : '?order=popular') +
+    (page > 1 ? (q ? '&' : '?') + 'page=' + page : '');
   console.log('asurascans search url: ' + url);
   var res = await fetch(url, { headers: { Referer: REFERER, Accept: HTML_ACCEPT } });
   if (res.status !== 200) {
@@ -112,6 +113,13 @@ async function search(query, page, opts) {
     return [];
   }
   var out = _parseGrid(res.body || '');
+  if (q) {
+    var needle = q.toLowerCase();
+    out = out.filter(function (item) {
+      return item.title.toLowerCase().indexOf(needle) !== -1 ||
+        item.id.toLowerCase().indexOf(needle) !== -1;
+    });
+  }
   console.log('asurascans search count: ' + out.length);
   return out;
 }

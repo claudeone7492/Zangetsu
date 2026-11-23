@@ -41,8 +41,12 @@ class _FakeFetcher implements ProviderJsFetcher {
     required String name,
     required String url,
     bool force = false,
-  }) async =>
-      CachedProvider(name: name, jsCode: '// $name', url: url, fetchedAt: DateTime.now());
+  }) async => CachedProvider(
+    name: name,
+    jsCode: '// $name',
+    url: url,
+    fetchedAt: DateTime.now(),
+  );
 
   @override
   Future<void> remove(String name) async {}
@@ -55,7 +59,8 @@ String _bundledManifest() =>
 
 /// Minimal DummyDio-free [ProviderReposRegistry]: parseManifest is static, and
 /// cacheManifest only needs the Hive box, so a real Dio is never used here.
-Dio _unusedDio() => Dio(BaseOptions(connectTimeout: const Duration(seconds: 1)));
+Dio _unusedDio() =>
+    Dio(BaseOptions(connectTimeout: const Duration(seconds: 1)));
 
 void main() {
   late Directory tempDir;
@@ -68,7 +73,10 @@ void main() {
     await ProviderReposRegistry.init();
     final repos = ProviderReposRegistry(dio: _unusedDio());
     await repos.cacheManifest(
-      ProviderReposRegistry.parseManifest('bundled://official-pack', _bundledManifest()),
+      ProviderReposRegistry.parseManifest(
+        'bundled://official-pack',
+        _bundledManifest(),
+      ),
     );
     registry = ProviderRegistry(
       downloader: _FakeFetcher(),
@@ -85,43 +93,106 @@ void main() {
     await tempDir.delete(recursive: true);
   });
 
-  test('the bundled pack classifies manga and novel sources into their modes', () {
-    final types = manifestSourceTypes();
+  test(
+    'the bundled pack classifies manga and novel sources into their modes',
+    () {
+      final types = manifestSourceTypes();
 
-    expect(types['mangakakalot'], ProviderType.manga);
-    expect(types['mangapill'], ProviderType.manga);
-    expect(types['gutenberg'], ProviderType.novel);
+      expect(types['mangakakalot'], ProviderType.manga);
+      expect(types['mangapill'], ProviderType.manga);
+      expect(types['gutenberg'], ProviderType.novel);
 
-    // Every reading source the pack ships must classify into its mode, so a
-    // newly-added manga/novel source that only carries a plain JS id still
-    // shows up on the Manga/Novel tabs and in a scoped search.
-    for (final id in ['weebcentral', 'mangabats', 'asurascans']) {
-      expect(types[id], ProviderType.manga, reason: '$id should be manga');
-      expect(sourceMatchesContentMode(id, ContentMode.manga), isTrue,
-          reason: '$id should match manga mode');
-      expect(sourceMatchesContentMode(id, ContentMode.anime), isFalse,
-          reason: '$id should not match streaming mode');
-    }
-    for (final id in ['novelfire', 'wattpad', 'freewebnovel', 'novelbin', 'novelight', 'inkitt', 'tapas']) {
-      expect(types[id], ProviderType.novel, reason: '$id should be novel');
-      expect(sourceMatchesContentMode(id, ContentMode.novel), isTrue,
-          reason: '$id should match novel mode');
-      expect(sourceMatchesContentMode(id, ContentMode.anime), isFalse,
-          reason: '$id should not match streaming mode');
-    }
-    // Tapas ships as two bundled sources off one JS file: the novel half and a
-    // separate comic half, each typed into its own mode.
-    expect(types['tapas-comics'], ProviderType.manga, reason: 'tapas-comics is manga');
-    expect(sourceMatchesContentMode('tapas-comics', ContentMode.manga), isTrue);
-    expect(sourceMatchesContentMode('tapas-comics', ContentMode.novel), isFalse);
+      // Every reading source the pack ships must classify into its mode, so a
+      // newly-added manga/novel source that only carries a plain JS id still
+      // shows up on the Manga/Novel tabs and in a scoped search.
+      const mangaIds = [
+        'mangakakalot',
+        'mangakatana',
+        'mangapill',
+        'mangadex',
+        'mangaread',
+        'mangadna',
+        'mangafreak',
+        'mangahub',
+        'mangakakalotgg',
+        'manganato',
+        'weebcentral',
+        'mangabats',
+        'asurascans',
+      ];
+      const novelIds = [
+        'wattpad',
+        'freewebnovel',
+        'novelbin',
+        'novelbuddy',
+        'novelfull',
+        'fanmtl',
+        'novelcool',
+        'novelping',
+        'novelrare',
+        'wondernovels',
+        'wuxiaworld',
+        'tapas',
+        'gutenberg',
+      ];
+      for (final id in mangaIds) {
+        expect(types[id], ProviderType.manga, reason: '$id should be manga');
+        expect(
+          sourceMatchesContentMode(id, ContentMode.manga),
+          isTrue,
+          reason: '$id should match manga mode',
+        );
+        expect(
+          sourceMatchesContentMode(id, ContentMode.anime),
+          isFalse,
+          reason: '$id should not match streaming mode',
+        );
+      }
+      for (final id in novelIds) {
+        expect(types[id], ProviderType.novel, reason: '$id should be novel');
+        expect(
+          sourceMatchesContentMode(id, ContentMode.novel),
+          isTrue,
+          reason: '$id should match novel mode',
+        );
+        expect(
+          sourceMatchesContentMode(id, ContentMode.anime),
+          isFalse,
+          reason: '$id should not match streaming mode',
+        );
+      }
+      expect(mangaIds.length, greaterThanOrEqualTo(10));
+      expect(novelIds.length, greaterThanOrEqualTo(10));
+      // Tapas ships as two bundled sources off one JS file: the novel half and a
+      // separate comic half, each typed into its own mode.
+      expect(
+        types['tapas-comics'],
+        ProviderType.manga,
+        reason: 'tapas-comics is manga',
+      );
+      expect(
+        sourceMatchesContentMode('tapas-comics', ContentMode.manga),
+        isTrue,
+      );
+      expect(
+        sourceMatchesContentMode('tapas-comics', ContentMode.novel),
+        isFalse,
+      );
 
-    // The bug: these are plain JS ids, so without the manifest resolver they
-    // resolved as anime and Manga/Novel mode showed the "no sources" guide.
-    expect(sourceMatchesContentMode('mangakakalot', ContentMode.manga), isTrue);
-    expect(sourceMatchesContentMode('mangakakalot', ContentMode.anime), isFalse);
-    expect(sourceMatchesContentMode('gutenberg', ContentMode.novel), isTrue);
-    expect(sourceMatchesContentMode('gutenberg', ContentMode.anime), isFalse);
-  });
+      // The bug: these are plain JS ids, so without the manifest resolver they
+      // resolved as anime and Manga/Novel mode showed the "no sources" guide.
+      expect(
+        sourceMatchesContentMode('mangakakalot', ContentMode.manga),
+        isTrue,
+      );
+      expect(
+        sourceMatchesContentMode('mangakakalot', ContentMode.anime),
+        isFalse,
+      );
+      expect(sourceMatchesContentMode('gutenberg', ContentMode.novel), isTrue);
+      expect(sourceMatchesContentMode('gutenberg', ContentMode.anime), isFalse);
+    },
+  );
 
   test('video sources still resolve as anime', () {
     expect(sourceMatchesContentMode('framextv', ContentMode.anime), isTrue);
@@ -129,10 +200,19 @@ void main() {
     expect(sourceMatchesContentMode('iptv', ContentMode.novel), isFalse);
   });
 
-  test('an unregistered registry falls back to video rather than throwing', () async {
-    await GetIt.I.reset();
-    expect(manifestSourceTypes(), isEmpty);
-    expect(sourceMatchesContentMode('mangakakalot', ContentMode.manga), isFalse);
-    expect(sourceMatchesContentMode('mangakakalot', ContentMode.anime), isTrue);
-  });
+  test(
+    'an unregistered registry falls back to video rather than throwing',
+    () async {
+      await GetIt.I.reset();
+      expect(manifestSourceTypes(), isEmpty);
+      expect(
+        sourceMatchesContentMode('mangakakalot', ContentMode.manga),
+        isFalse,
+      );
+      expect(
+        sourceMatchesContentMode('mangakakalot', ContentMode.anime),
+        isTrue,
+      );
+    },
+  );
 }

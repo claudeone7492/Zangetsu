@@ -428,6 +428,13 @@ class ReaderPrefs {
   Future<void> setNovelPaginated(bool value) =>
       _box.put('novelPaginated', value);
 
+  /// Bold the first few letters of each word (bionic reading). Off by default;
+  /// it changes the look of every page, so it is an explicit accessibility
+  /// choice rather than something the reader turns on for everyone.
+  bool get bionicReading =>
+      _box.get('bionicReading', defaultValue: false) as bool;
+  Future<void> setBionicReading(bool value) => _box.put('bionicReading', value);
+
   /// Novel text direction: 'auto' | 'ltr' | 'rtl'. 'auto' detects RTL scripts
   /// (Arabic, Hebrew, ...) from the chapter text itself so Arabic novels read
   /// right-to-left without the user having to flip a setting per source.

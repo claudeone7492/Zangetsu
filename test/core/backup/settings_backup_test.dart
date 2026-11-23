@@ -189,6 +189,11 @@ void _driftGuard() {
       // Signing-cert digests pinned on this install. Restoring them elsewhere
       // would vouch for extensions this device never verified.
       'extension_signers': 'per-install extension pins',
+      // First-launch auto-install markers. A restore must not make another
+      // device skip provisioning its own providers.
+      'lnreader_defaults': 'per-device auto-install marker',
+      'mangayomi_defaults': 'per-device auto-install marker',
+      'mihon_defaults': 'per-device auto-install marker',
     };
 
     test('every settings box is either backed up or explicitly excluded', () {

@@ -423,12 +423,15 @@ void main() {
     await pumpLive(tester);
     await tester.pumpAndSettle();
 
-    expect(repo.homeCalls, 1);
+    // The first open retries internally (the JS pack can answer "not loaded"
+    // while its runtime warms up), so a dead source is asked three times.
+    expect(repo.homeCalls, 3);
     expect(find.text('Try again'), findsOneWidget);
 
     await tester.tap(find.text('Try again'));
     await tester.pumpAndSettle();
-    expect(repo.homeCalls, 2);
+    // Manual retry is a single attempt; the 12s background refresh takes over.
+    expect(repo.homeCalls, 4);
   });
 
   testWidgets('an empty catalogue shows the empty state, not a blank page', (
@@ -531,6 +534,25 @@ void main() {
     expect(find.text('England vs Croatia'), findsOneWidget);
     // The IPTV channels are still there, below the matches.
     expect(find.text('World News'), findsOneWidget);
+  });
+
+  testWidgets('the sports header counts only in-play fixtures', (tester) async {
+    final repo = _FakeSourceRepository(
+      liveMatches: [
+        _match('l1', 'England vs Croatia', badge: 'LIVE'),
+        _match('l2', 'Italy vs France', badge: 'LIVE'),
+        _match('u1', 'Spain vs Portugal', badge: 'in 2h'),
+      ],
+    );
+    sl.registerSingleton<SourceRepository>(repo);
+
+    await pumpLive(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.text('SPORTS'), findsOneWidget);
+    expect(find.text('L.S'), findsOneWidget);
+    expect(find.byKey(const ValueKey('live-sports-count')), findsOneWidget);
+    expect(find.text('2'), findsOneWidget);
   });
 
   testWidgets('the rail keeps soccer only and drops every other sport', (
@@ -767,7 +789,8 @@ void main() {
     expect(repo.liveCalls, 0);
     // The fixed Sports destination stays in the sub-header; only the rail goes.
     expect(find.byKey(const ValueKey('live-sports-chip')), findsOneWidget);
-    expect(find.text('Sports'), findsOneWidget);
+    expect(find.text('SPORTS'), findsOneWidget);
+    expect(find.text('L.S'), findsOneWidget);
     expect(find.text('World News'), findsOneWidget);
   });
 
@@ -816,7 +839,8 @@ void main() {
 
     expect(find.text('World News'), findsOneWidget);
     expect(find.byKey(const ValueKey('live-sports-chip')), findsOneWidget);
-    expect(find.text('Sports'), findsOneWidget);
+    expect(find.text('SPORTS'), findsOneWidget);
+    expect(find.text('L.S'), findsOneWidget);
     // No "failed" screen — the page is up, just without sports.
     expect(find.text('Try again'), findsNothing);
   });

@@ -229,7 +229,7 @@ void main() {
         );
       }
       expect(find.text('Profiles & account'), findsOneWidget);
-      expect(find.text('Watching as Home · Not signed in'), findsOneWidget);
+      expect(find.text('Watching as Home · This device'), findsOneWidget);
       expect(find.text('Profiles'), findsNothing);
       // Notifications is Android-only (its sole entry), so its category is absent
       // on the non-Android test host.
@@ -254,20 +254,21 @@ void main() {
     expect(find.byIcon(Icons.arrow_back), findsOneWidget);
   });
 
-  testWidgets(
-    'combined profile row opens viewer manager and keeps sign-in available',
-    (tester) async {
-      await pumpSettings(tester);
+  testWidgets('combined profile row opens viewer manager without sign-in UI', (
+    tester,
+  ) async {
+    await pumpSettings(tester);
 
-      await tester.tap(find.text('Profiles & account'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Profiles & account'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Profiles'), findsOneWidget);
-      expect(find.text('Ask who is watching on launch'), findsOneWidget);
-      expect(find.text('Not signed in'), findsOneWidget);
-      expect(find.text('Sign in'), findsOneWidget);
-    },
-  );
+    expect(find.text('Profiles'), findsOneWidget);
+    expect(find.text('Ask who is watching on launch'), findsOneWidget);
+    // Device registration is automatic; the account section only appears
+    // once a cloud account is linked, so no sign-in prompt is shown here.
+    expect(find.text('Not signed in'), findsNothing);
+    expect(find.text('Sign in'), findsNothing);
+  });
 
   testWidgets('tapping a category drills into its settings', (tester) async {
     await pumpSettings(tester);

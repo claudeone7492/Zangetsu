@@ -151,11 +151,13 @@ import '../discord/discord_rpc.dart';
 import '../aniyomi/aniyomi_extension_service.dart';
 import '../aniyomi/extension_verify_guard.dart';
 import '../aniyomi/aniyomi_provider.dart';
+import '../lnreader/lnreader_defaults.dart';
 import '../lnreader/lnreader_extension_service.dart';
 import '../lnreader/lnreader_manager.dart';
 import '../lnreader/novel_lang_prefs.dart';
 import '../prefs/source_lang_prefs.dart';
 import '../lnreader/lnreader_runtime.dart' show LnReaderHttpResponse;
+import '../mihon/mihon_defaults.dart';
 import '../mihon/mihon_extension_service.dart';
 import '../mihon/mihon_manager.dart';
 import '../mihon/mihon_provider.dart';
@@ -336,9 +338,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   // the same instance. Without this alias `SubscriptionCubit(sl())` looks up
   // SubscriptionApi, finds nothing registered, and throws — the paywall can
   // never open.
-  sl.registerLazySingleton<SubscriptionApi>(
-    () => sl<SubscriptionRepository>(),
-  );
+  sl.registerLazySingleton<SubscriptionApi>(() => sl<SubscriptionRepository>());
   // Resolved lazily so cached signed-in accounts can keep local offline writes.
   String? currentUserId() => sl.isRegistered<AuthCubit>()
       ? localSyncUserId(
@@ -564,9 +564,7 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   NsfwGate.setHideAdult(!sl<PlaybackPrefs>().nsfwSources);
   final dubPrefs = await DubPrefs.open();
   sl.registerSingleton<DubPrefs>(dubPrefs);
-  sl.registerSingleton<DubEngine>(
-    SwitchingDubEngine(prefs: dubPrefs),
-  );
+  sl.registerSingleton<DubEngine>(SwitchingDubEngine(prefs: dubPrefs));
   final telegramPrefs = await TelegramPrefs.open();
   sl.registerSingleton<TelegramPrefs>(telegramPrefs);
   sl.registerLazySingleton<TelegramService>(TelegramService.new);
@@ -606,7 +604,9 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   sl.registerSingleton<TorrentDownloadService>(TorrentDownloadService());
   await DebridPrefs.init();
   sl.registerSingleton<DebridPrefs>(DebridPrefs());
-  sl.registerSingleton<DebridResolver>(DebridResolver(prefs: sl<DebridPrefs>()));
+  sl.registerSingleton<DebridResolver>(
+    DebridResolver(prefs: sl<DebridPrefs>()),
+  );
   sl.registerSingleton<PlayableTorrent>(
     PlayableTorrent(
       debrid: sl<DebridResolver>(),
@@ -972,6 +972,14 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   if (!Hive.isBoxOpen('lnreader_repos')) {
     await openBoxSafely<String>('lnreader_repos');
   }
+  if (!Hive.isBoxOpen('lnreader_defaults')) {
+    await openBoxSafely<String>('lnreader_defaults');
+  }
+  // Zero-input novel provisioning: the maintained LNReader index carries the
+  // fixes for the bundled providers that sites have since broken. Installing
+  // it in the background keeps first paint unaffected while making those
+  // sources resolvable without the user pasting a repo URL.
+  unawaited(seedDefaultLnReaderPlugins(lnrService));
 
   // Mangayomi is a separate, on-device runtime. Boot only reads its local
   // repository/install metadata; extension code and both runtimes stay lazy
@@ -984,7 +992,13 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
   // Seed the Anymex/Mangayomi default catalogues in the background: a first
   // launch should already list them, but fetching two indexes over the network
   // must never hold up the splash.
-  unawaited(seedDefaultMangayomiRepos(mangayomiManager));
+  if (!Hive.isBoxOpen('mangayomi_defaults')) {
+    await openBoxSafely<String>('mangayomi_defaults');
+  }
+  unawaited(() async {
+    await seedDefaultMangayomiRepos(mangayomiManager);
+    await provisionDefaultMangayomiSources(mangayomiManager);
+  }());
 
   // Config-driven universal scrapers (`us:`). Pure Dart — a JSON config per
   // site, interpreted by UniversalProvider — so it needs no runtime and no
@@ -1306,6 +1320,13 @@ Future<void> initDependencies({bool Function()? isOffline}) async {
       if (!Hive.isBoxOpen(SourceIconStore.boxName)) {
         await openBoxSafely<String>(SourceIconStore.boxName);
       }
+      if (!Hive.isBoxOpen('mihon_defaults')) {
+        await openBoxSafely<String>('mihon_defaults');
+      }
+      // Install the maintained replacements for the bundled manga providers
+      // whose sites changed. It registers providers itself, so an empty box is
+      // no reason to skip it.
+      unawaited(seedDefaultMihonExtensions(manager: mihonManager));
       final box = Hive.box<dynamic>(MihonExtensionService.installedBoxName);
       if (box.isEmpty) {
         return; // nothing installed yet

@@ -2,12 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show AuthException, UserAttributes;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show AuthException, UserAttributes;
 
 import '../../core/appwrite/appwrite_service.dart';
+import '../../core/device/device_fingerprint.dart';
 import '../../core/supabase/auth_user.dart';
 import '../../core/supabase/supabase_service.dart';
 import 'migration_bridge.dart';
@@ -39,7 +43,8 @@ class AuthState extends Equatable {
   final String? error;
 
   bool get isLoggedIn => status == AuthStatus.authenticated && user != null;
-  String get displayName => user?.name.isNotEmpty == true ? user!.name : (user?.email ?? '');
+  String get displayName =>
+      user?.name.isNotEmpty == true ? user!.name : (user?.email ?? '');
 
   AuthState copyWith({
     AuthStatus? status,
@@ -58,8 +63,16 @@ class AuthState extends Equatable {
   );
 
   @override
-  List<Object?> get props =>
-      [status, user?.id, user?.name, user?.email, avatarUrl, busy, error, needsReconnect];
+  List<Object?> get props => [
+    status,
+    user?.id,
+    user?.name,
+    user?.email,
+    avatarUrl,
+    busy,
+    error,
+    needsReconnect,
+  ];
 }
 
 /// Owns Supabase email/password auth + the profile (name + avatar), plus the
@@ -93,11 +106,15 @@ class AuthCubit extends Cubit<AuthState> {
   /// - network error → keep whatever we have ([hasLiveSession]) so being offline
   ///   doesn't nag for a password.
   Future<bool> ensureFreshSession() async {
-    if (_sb.client.auth.currentSession == null) return false; // nothing to refresh
+    if (_sb.client.auth.currentSession == null) {
+      return false; // nothing to refresh
+    }
     try {
       final res = await _sb.client.auth.refreshSession();
       final ok = res.session != null;
-      if (ok && state.needsReconnect) emit(state.copyWith(needsReconnect: false));
+      if (ok && state.needsReconnect) {
+        emit(state.copyWith(needsReconnect: false));
+      }
       return ok;
     } on AuthException catch (_) {
       return false;
@@ -160,14 +177,18 @@ class AuthCubit extends Cubit<AuthState> {
       if (raw is String && raw.isNotEmpty) {
         return AuthUser.fromJson(jsonDecode(raw) as Map<String, dynamic>);
       }
-    } catch (_) {/* malformed cache → treat as none */}
+    } catch (_) {
+      /* malformed cache → treat as none */
+    }
     return null;
   }
 
   void _writeCachedUser(AuthUser u) {
     try {
       _cache?.put(_userKey, jsonEncode(u.toJson()));
-    } catch (_) {/* best-effort */}
+    } catch (_) {
+      /* best-effort */
+    }
   }
 
   void _clearCachedUser() {
@@ -231,7 +252,11 @@ class AuthCubit extends Cubit<AuthState> {
   /// Load the `profiles` row for [uid], or null if missing/offline.
   Future<Map<String, dynamic>?> _loadProfile(String uid) async {
     try {
-      return await _sb.client.from('profiles').select().eq('id', uid).maybeSingle();
+      return await _sb.client
+          .from('profiles')
+          .select()
+          .eq('id', uid)
+          .maybeSingle();
     } catch (_) {
       return null;
     }
@@ -246,15 +271,68 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> restore() async {
     final cached = _readCachedUser();
     if (cached != null) {
-      emit(state.copyWith(
-        status: AuthStatus.authenticated,
-        user: () => cached,
-        avatarUrl: () => _avatarFromUser(cached),
-      ));
+      emit(
+        state.copyWith(
+          status: AuthStatus.authenticated,
+          user: () => cached,
+          avatarUrl: () => _avatarFromUser(cached),
+        ),
+      );
       unawaited(_validate(hadCache: true)); // refresh, don't block boot
       return;
     }
     await _validate(hadCache: false);
+    if (!state.isLoggedIn) await ensureDeviceSession();
+  }
+
+  /// The device is the account: there is no sign-in and no sign-out. A stable
+  /// Supabase identity is derived from the hardware fingerprint so the same
+  /// device lands on the same cloud rows after an uninstall or a data wipe.
+  Future<bool> ensureDeviceSession() async {
+    if (state.isLoggedIn) return true;
+    try {
+      final fingerprint = await DeviceFingerprint.value();
+      final email = 'device-$fingerprint@device.zangetsu.app';
+      final password = sha256
+          .convert(utf8.encode('zangetsu-device-v1|$fingerprint'))
+          .toString();
+      try {
+        await _sb.client.auth.signInWithPassword(
+          email: email,
+          password: password,
+        );
+      } on AuthException {
+        await _sb.client.auth.signUp(
+          email: email,
+          password: password,
+          data: {'name': await _deviceName()},
+        );
+        if (_sb.client.auth.currentSession == null) {
+          await _sb.client.auth.signInWithPassword(
+            email: email,
+            password: password,
+          );
+        }
+        final user = _sb.client.auth.currentUser;
+        if (user != null) {
+          await _sb.client.from('profiles').upsert({
+            'id': user.id,
+            'display_name': await _deviceName(),
+          });
+        }
+      }
+      return await _emitFromCurrentUser();
+    } catch (_) {
+      // Offline or backend unavailable: keep the app usable locally. The next
+      // launch retries; the fingerprint never changes.
+      return false;
+    }
+  }
+
+  Future<String> _deviceName() async {
+    await DeviceFingerprint.warmSignals();
+    final model = DeviceFingerprint.model?.trim();
+    return model == null || model.isEmpty ? 'This device' : model;
   }
 
   /// Confirm the session with Supabase and refresh the cached user. If there
@@ -272,12 +350,14 @@ class AuthCubit extends Cubit<AuthState> {
         final profile = await _loadProfile(authUser.id);
         final u = AuthUser.fromSupabase(authUser, profile);
         _writeCachedUser(u);
-        emit(state.copyWith(
-          status: AuthStatus.authenticated,
-          user: () => u,
-          avatarUrl: () => _avatarFromUser(u),
-          needsReconnect: false,
-        ));
+        emit(
+          state.copyWith(
+            status: AuthStatus.authenticated,
+            user: () => u,
+            avatarUrl: () => _avatarFromUser(u),
+            needsReconnect: false,
+          ),
+        );
         return;
       }
 
@@ -293,16 +373,20 @@ class AuthCubit extends Cubit<AuthState> {
             final profile = await _loadProfile(u2.id);
             final u = AuthUser.fromSupabase(u2, profile);
             _writeCachedUser(u);
-            emit(state.copyWith(
-              status: AuthStatus.authenticated,
-              user: () => u,
-              avatarUrl: () => _avatarFromUser(u),
-              needsReconnect: false,
-            ));
+            emit(
+              state.copyWith(
+                status: AuthStatus.authenticated,
+                user: () => u,
+                avatarUrl: () => _avatarFromUser(u),
+                needsReconnect: false,
+              ),
+            );
             return;
           }
         }
-      } catch (_) {/* Appwrite unavailable — fall through to reconnect */}
+      } catch (_) {
+        /* Appwrite unavailable — fall through to reconnect */
+      }
 
       if (hadCache) {
         // Keep the user logged-in from cache, but flag that the session is dead
@@ -312,14 +396,18 @@ class AuthCubit extends Cubit<AuthState> {
         emit(state.copyWith(needsReconnect: true));
       } else {
         _clearCachedUser();
-        emit(state.copyWith(status: AuthStatus.unauthenticated, user: () => null));
+        emit(
+          state.copyWith(status: AuthStatus.unauthenticated, user: () => null),
+        );
       }
     } catch (_) {
       // A network blip shouldn't sign a cached user out (keep them logged in);
       // only give up when there was nothing cached to begin with. If we couldn't
       // confirm a usable session, flag reconnect so sync isn't silently dead.
       if (!hadCache) {
-        emit(state.copyWith(status: AuthStatus.unauthenticated, user: () => null));
+        emit(
+          state.copyWith(status: AuthStatus.unauthenticated, user: () => null),
+        );
       } else if (!hasLiveSession) {
         emit(state.copyWith(needsReconnect: true));
       }
@@ -329,7 +417,10 @@ class AuthCubit extends Cubit<AuthState> {
   Future<bool> login(String email, String password) async {
     emit(state.copyWith(busy: true, error: () => null));
     try {
-      await _sb.client.auth.signInWithPassword(email: email, password: password);
+      await _sb.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
       return await _emitFromCurrentUser();
     } on AuthException catch (_) {
       return _loginViaMigration(email, password);
@@ -343,7 +434,9 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       final migrated = await _bridge.tryPasswordMigration(email, password);
       if (migrated) return _emitFromCurrentUser();
-      emit(state.copyWith(busy: false, error: () => 'Invalid email or password'));
+      emit(
+        state.copyWith(busy: false, error: () => 'Invalid email or password'),
+      );
       return false;
     } catch (_) {
       emit(state.copyWith(busy: false, error: () => 'Authentication failed'));
@@ -366,7 +459,10 @@ class AuthCubit extends Cubit<AuthState> {
     if (email == null || email.isEmpty) return false;
     emit(state.copyWith(busy: true, error: () => null));
     try {
-      await _sb.client.auth.signInWithPassword(email: email, password: password);
+      await _sb.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
       final ok = await _emitFromCurrentUser();
       if (ok) emit(state.copyWith(needsReconnect: false));
       return ok;
@@ -388,33 +484,44 @@ class AuthCubit extends Cubit<AuthState> {
     final profile = await _loadProfile(authUser.id);
     final u = AuthUser.fromSupabase(authUser, profile);
     _writeCachedUser(u);
-    emit(state.copyWith(
-      status: AuthStatus.authenticated,
-      user: () => u,
-      avatarUrl: () => _avatarFromUser(u),
-      busy: false,
-    ));
+    emit(
+      state.copyWith(
+        status: AuthStatus.authenticated,
+        user: () => u,
+        avatarUrl: () => _avatarFromUser(u),
+        busy: false,
+      ),
+    );
     return true;
   }
 
   Future<bool> signUp(String name, String email, String password) async {
     emit(state.copyWith(busy: true, error: () => null));
     try {
-      await _sb.client.auth.signUp(email: email, password: password, data: {'name': name});
+      await _sb.client.auth.signUp(
+        email: email,
+        password: password,
+        data: {'name': name},
+      );
       final authUser = _sb.client.auth.currentUser;
       if (authUser == null) {
         emit(state.copyWith(busy: false, error: () => 'Sign up failed'));
         return false;
       }
-      await _sb.client.from('profiles').upsert({'id': authUser.id, 'display_name': name});
+      await _sb.client.from('profiles').upsert({
+        'id': authUser.id,
+        'display_name': name,
+      });
       final u = AuthUser.fromSupabase(authUser, {'display_name': name});
       _writeCachedUser(u);
-      emit(state.copyWith(
-        status: AuthStatus.authenticated,
-        user: () => u,
-        avatarUrl: () => _avatarFromUser(u),
-        busy: false,
-      ));
+      emit(
+        state.copyWith(
+          status: AuthStatus.authenticated,
+          user: () => u,
+          avatarUrl: () => _avatarFromUser(u),
+          busy: false,
+        ),
+      );
       return true;
     } on AuthException catch (e) {
       emit(state.copyWith(busy: false, error: () => e.message));
@@ -441,7 +548,9 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> logout() async {
     try {
       await _sb.client.auth.signOut();
-    } catch (_) {/* ignore — clear locally regardless */}
+    } catch (_) {
+      /* ignore — clear locally regardless */
+    }
     _clearCachedUser();
     emit(const AuthState(status: AuthStatus.unauthenticated));
   }
@@ -450,11 +559,19 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       final uid = _sb.currentUserId();
       if (uid == null) return false;
-      await _sb.client.from('profiles').upsert({'id': uid, 'display_name': name});
+      await _sb.client.from('profiles').upsert({
+        'id': uid,
+        'display_name': name,
+      });
       await _sb.client.auth.updateUser(UserAttributes(data: {'name': name}));
       final current = state.user;
       if (current == null) return false;
-      final u = AuthUser(id: current.id, name: name, email: current.email, avatarPath: current.avatarPath);
+      final u = AuthUser(
+        id: current.id,
+        name: name,
+        email: current.email,
+        avatarPath: current.avatarPath,
+      );
       _writeCachedUser(u);
       emit(state.copyWith(user: () => u));
       return true;
@@ -483,23 +600,35 @@ class AuthCubit extends Cubit<AuthState> {
       final name = '${DateTime.now().microsecondsSinceEpoch}${path.hashCode}';
       final objectPath = '$uid/$name.$ext';
       await _sb.client.storage.from('avatars').upload(objectPath, File(path));
-      await _sb.client.from('profiles').upsert({'id': uid, 'avatar_path': objectPath});
+      await _sb.client.from('profiles').upsert({
+        'id': uid,
+        'avatar_path': objectPath,
+      });
 
       final current = state.user;
       final u = current == null
           ? null
-          : AuthUser(id: current.id, name: current.name, email: current.email, avatarPath: objectPath);
+          : AuthUser(
+              id: current.id,
+              name: current.name,
+              email: current.email,
+              avatarPath: objectPath,
+            );
       if (u != null) _writeCachedUser(u);
-      emit(state.copyWith(
-        user: () => u,
-        avatarUrl: () => _sb.avatarUrl(objectPath),
-        busy: false,
-      ));
+      emit(
+        state.copyWith(
+          user: () => u,
+          avatarUrl: () => _sb.avatarUrl(objectPath),
+          busy: false,
+        ),
+      );
       // Best-effort cleanup of the previous picture (never blocks success).
       if (oldPath != null && oldPath.isNotEmpty && oldPath != objectPath) {
         try {
           await _sb.client.storage.from('avatars').remove([oldPath]);
-        } catch (_) {/* already gone / offline — harmless */}
+        } catch (_) {
+          /* already gone / offline — harmless */
+        }
       }
       return true;
     } catch (_) {

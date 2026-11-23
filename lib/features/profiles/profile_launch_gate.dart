@@ -9,7 +9,6 @@ import '../../core/profiles/profile_lock_remote.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/l10n.dart';
 import 'viewer_profiles_screen.dart';
-import '../auth/auth_screens.dart' show LoginScreen;
 import '../auth/auth_cubit.dart';
 
 class ProfileLaunchGate extends StatefulWidget {
@@ -123,13 +122,11 @@ class _ProfileLaunchGateState extends State<ProfileLaunchGate> {
         bool locked = false;
         try {
           locked = await locks.isLocked(active.id);
-        } on ProfileLockException {
-          // Asking is off: launch never enforces the lock, so an unreadable
-          // status (offline with no cache yet, dead backend) must not trap
-          // the user on the error screen — go straight in. Asking on keeps
-          // the existing behavior: surface the failure instead of silently
-          // skipping the picker.
-          if (store.askOnLaunch) rethrow;
+        } on ProfileLockException catch (error) {
+          // The device is the account: there is no sign-in to fall back to,
+          // so a lock that needs an account (or a dead backend) is skipped.
+          // An unreadable status must not trap the user on an error screen.
+          if (store.askOnLaunch && error.code != 'sign_in_required') rethrow;
         }
         if (!mounted || generation != _checkGeneration) return;
         if (locked && !locks.isUnlocked(active.id) && store.askOnLaunch) {
@@ -192,20 +189,6 @@ class _ProfileLaunchGateState extends State<ProfileLaunchGate> {
                           : context.l10n.somethingWentWrong,
                     ),
                     const SizedBox(height: 12),
-                    if (_lockError is ProfileLockException &&
-                        (_lockError as ProfileLockException).code ==
-                            'sign_in_required')
-                      FilledButton(
-                        onPressed: () async {
-                          await Navigator.of(context).push<void>(
-                            MaterialPageRoute(
-                              builder: (_) => const LoginScreen(),
-                            ),
-                          );
-                          if (mounted) _ensureGate();
-                        },
-                        child: Text(context.l10n.signIn),
-                      ),
                     FilledButton(
                       onPressed: _ensureGate,
                       child: Text(context.l10n.retry),

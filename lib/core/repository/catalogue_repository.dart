@@ -96,8 +96,9 @@ abstract interface class CatalogueRepository {
   });
 
   /// Playable sources for a live-sports fixture handle (`live:`/`ev:`/`ts:`),
-  /// resolving through the fixture's own provider first and falling back to
-  /// every other installed sports provider.
+  /// resolving through the priority sports providers (Nuvio, MovieBox) first
+  /// and falling back to the fixture's own provider and the other installed
+  /// sports sources.
   ///
   /// A live fixture is a provider-extension handle, not a title: its provider
   /// mints a signed, short-lived stream URL for it. The sports providers index

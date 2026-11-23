@@ -111,6 +111,18 @@ function _parseChapters(html) {
   return out;
 }
 
+function getHome(opts) {
+  return Promise.all([
+    search('', 1, 'trending'),
+    search('', 1, 'latest')
+  ]).then(function(rows) {
+    var out = [];
+    if (rows[0].length) out.push({ title: 'Popular', items: rows[0] });
+    if (rows[1].length) out.push({ title: 'Latest', items: rows[1] });
+    return out;
+  });
+}
+
 function getDetail(url) {
   console.log('mangapill detail url: ' + url);
   return fetch(url).then(function(r) {

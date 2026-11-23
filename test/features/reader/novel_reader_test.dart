@@ -90,9 +90,9 @@ class _FakeReadingProvider implements BaseProvider, ReadingProvider {
 
   @override
   Future<ChapterText> getText(String chapterUrl) async => ChapterText(
-        html: '<p>${textByUrl[chapterUrl] ?? 'missing'}</p>',
-        folder: folderByUrl?[chapterUrl],
-      );
+    html: '<p>${textByUrl[chapterUrl] ?? 'missing'}</p>',
+    folder: folderByUrl?[chapterUrl],
+  );
 }
 
 /// A reading source whose `getText` throws on the first call and succeeds on
@@ -457,7 +457,10 @@ void main() {
     ) async {
       await tester.pumpWidget(harness());
       await tester.pumpAndSettle();
-      expect(find.textContaining('chapter one text', findRichText: true), findsOneWidget);
+      expect(
+        find.textContaining('chapter one text', findRichText: true),
+        findsOneWidget,
+      );
 
       // chrome → next — the scroll body is now a lazy sliver HTML view
       // inside a CustomScrollView (was SingleChildScrollView, then a
@@ -474,12 +477,51 @@ void main() {
       });
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('chapter two text', findRichText: true), findsOneWidget);
+      expect(
+        find.textContaining('chapter two text', findRichText: true),
+        findsOneWidget,
+      );
 
       // Explicitly dispose the reader (under runAsync, same reason as
       // above) instead of relying on the framework's between-test teardown
       // — dispose() also fire-and-forgets a flushed ReadHistory write, and
       // letting that dangle outside runAsync hangs tearDown's Hive.close().
+      await tester.runAsync(() async {
+        await tester.pumpWidget(const SizedBox());
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      });
+    });
+
+    testWidgets('the paginated layout toggle does not freeze the reader', (
+      tester,
+    ) async {
+      await tester.pumpWidget(harness());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(CustomScrollView));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.more_vert_rounded));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Reader settings'), findsOneWidget);
+
+      // The paginated layout toggle. It used to re-paginate the whole chapter
+      // on the UI isolate and freeze the app.
+      final paginated = find.byKey(const ValueKey('reader-paginated-toggle'));
+      await tester.ensureVisible(paginated);
+      await tester.pumpAndSettle();
+
+      // Hive writes must run outside the fake-async zone, or the pending put
+      // holds the box lock and the test teardown hangs.
+      await tester.runAsync(() async {
+        await tester.tap(paginated);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      });
+      await tester.pumpAndSettle();
+
+      expect(sl<ReaderPrefs>().novelPaginated, isTrue);
+      expect(tester.takeException(), isNull);
+
       await tester.runAsync(() async {
         await tester.pumpWidget(const SizedBox());
         await Future<void>.delayed(const Duration(milliseconds: 50));
@@ -532,12 +574,18 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Retry'), findsOneWidget);
-        expect(find.textContaining('chapter one text', findRichText: true), findsNothing);
+        expect(
+          find.textContaining('chapter one text', findRichText: true),
+          findsNothing,
+        );
 
         await tester.tap(find.text('Retry'));
         await tester.pumpAndSettle();
 
-        expect(find.textContaining('chapter one text', findRichText: true), findsOneWidget);
+        expect(
+          find.textContaining('chapter one text', findRichText: true),
+          findsOneWidget,
+        );
         expect(find.text('Retry'), findsNothing);
 
         // Dispose under runAsync — same reason as the tests above.

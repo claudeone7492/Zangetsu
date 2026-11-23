@@ -112,6 +112,12 @@ function _extractChapters(html) {
   return out;
 }
 
+function getHome(opts) {
+  return search('', 1).then(function(items) {
+    return items.length ? [{ title: 'Popular', items: items }] : [];
+  });
+}
+
 function getDetail(url) {
   console.log('mangakakalot detail url: ' + url);
   return fetch(url).then(function(r) {

@@ -104,10 +104,10 @@ function _browseRow(title, path) {
 function getHome(opts) {
   opts = opts || {};
   var rows = [
-    { title: 'Latest Novels', path: '/sort/latest-novel' },
-    { title: 'Latest Release', path: '/sort/latest-release' },
-    { title: 'Most Popular', path: '/sort/most-popular' },
-    { title: 'Completed', path: '/sort/completed-novel' }
+    { title: 'Latest Release', path: '/latest-release-novel' },
+    { title: 'New Novels', path: '/new-novel' },
+    { title: 'Hot Novels', path: '/hot-novel' },
+    { title: 'Completed', path: '/completed-novel' }
   ];
   var chain = Promise.resolve();
   var sections = [];

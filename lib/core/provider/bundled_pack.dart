@@ -67,6 +67,9 @@ Future<List<String>> installBundledPack({
       debugPrint('[bundled-pack] source failed, skipping: ${s.id} ($e)');
     }
   }
+  await registry.pruneBundledRemovedFromPack([
+    for (final s in repo.sources) s.id,
+  ]);
   debugPrint(
     '[bundled-pack] installed ${installed.length}/${repo.sources.length} '
     'sources',

@@ -270,7 +270,7 @@ void main() {
   }
 
   testWidgets(
-    'signed-out users can update a tracker without adding to My List',
+    'a device with no cloud session updates a tracker and keeps My List local',
     (tester) async {
       final fake = _FakeTracker();
       sl.registerSingleton<TrackerHub>(TrackerHub([fake]));
@@ -283,7 +283,7 @@ void main() {
       expect(fake.lastSetStatusKind, MediaKind.anime);
       expect(
         (sl<MyListStore>() as _FakeMyListStore).contains(_animeItem),
-        isFalse,
+        isTrue,
       );
     },
   );

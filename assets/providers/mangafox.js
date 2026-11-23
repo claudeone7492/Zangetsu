@@ -1,0 +1,1 @@
+../../providers/mangafox.js

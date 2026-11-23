@@ -31,15 +31,15 @@ class BandwidthShareBridge(context: Context) : MethodChannel.MethodCallHandler {
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "enable" -> {
-                // The answer is recorded before anything is started, so a
-                // refused relay — or a crash — cannot bring the consent sheet
-                // back on the next launch.
+                // The answer and the opt-in are recorded before anything is
+                // started, so a slow or refused relay — or a crash — cannot
+                // bring the consent sheet back on the next launch. The opt-in
+                // stays set even if this attempt fails; resume retries it.
                 BandwidthSharePrefs.setAnswered(appContext, true)
                 BandwidthSharePrefs.setEnabled(appContext, true)
                 // `start()` returns as soon as it has launched the registration
-                // coroutine, so the reply waits for a terminal status: reporting
-                // "started" for a key the relay rejects is what left the switch
-                // on with nothing running.
+                // coroutine, so the reply waits for a terminal status. Settings
+                // uses that to show Failed/Connected; the opt-in is separate.
                 Thread {
                     val configured = PeerShare.isConfigured()
                     val requested = configured && PeerShare.start(appContext)
@@ -49,7 +49,6 @@ class BandwidthShareBridge(context: Context) : MethodChannel.MethodCallHandler {
                         "unsupported"
                     }
                     val started = requested && status != "error"
-                    if (!started) BandwidthSharePrefs.setEnabled(appContext, false)
                     result.success(
                         mapOf(
                             "started" to started,

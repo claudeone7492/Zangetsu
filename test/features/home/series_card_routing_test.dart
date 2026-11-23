@@ -40,8 +40,7 @@ class _Statuses implements ListStatusStore {
 }
 
 class _Series implements SeriesGroupStore {
-  _Series({this.memberKeys = const ['s::g1']});
-  final List<String> memberKeys;
+  final List<String> memberKeys = const ['s::g1'];
   @override
   final ValueNotifier<int> revision = ValueNotifier<int>(0);
   @override

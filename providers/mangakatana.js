@@ -5,6 +5,7 @@
 var SOURCE_ID = 'mangakatana';
 var SITE = 'https://mangakatana.com';
 var REFERER = SITE + '/';
+var _searchCache = {};
 
 function getInfo() {
   return {
@@ -27,6 +28,22 @@ function _allMatches(html, regex) {
 }
 
 function _clean(s) { return htmlText(s || '').replace(/\s+/g, ' ').trim(); }
+
+function _sleep(ms) { return new Promise(function(resolve) { setTimeout(resolve, ms); }); }
+
+// Mangakatana intermittently answers 200 with an empty body under load. A
+// single retry clears it; without this a search/detail walk sees zero cards.
+function _fetch(url, tries) {
+  tries = tries || 3;
+  return fetch(url, { headers: { 'Referer': REFERER } }).then(function(r) {
+    if (r.status === 200 && (r.body || '').length > 0) return r;
+    if (tries <= 1) return r;
+    return _sleep(600).then(function() { return _fetch(url, tries - 1); });
+  }).catch(function(e) {
+    if (tries <= 1) throw e;
+    return _sleep(600).then(function() { return _fetch(url, tries - 1); });
+  });
+}
 
 function _statusOf(s) {
   s = (s || '').toLowerCase();
@@ -53,7 +70,8 @@ function search(query, page, category) {
     url = SITE + '/popular' + (page > 1 ? '/page/' + page : '');
   }
   console.log('mangakatana search url: ' + url);
-  return fetch(url).then(function(r) {
+  if (_searchCache[url]) return Promise.resolve(_searchCache[url]);
+  return _fetch(url).then(function(r) {
     console.log('mangakatana search status: ' + r.status + ' bodyLen: ' + (r.body || '').length);
     var html = r.body || '';
     var results = [];
@@ -78,6 +96,7 @@ function search(query, page, category) {
       });
     }
     console.log('mangakatana search count: ' + results.length);
+    if (results.length) _searchCache[url] = results;
     return results;
   });
 }
@@ -107,9 +126,21 @@ function _parseChapters(html, baseUrl) {
   return out;
 }
 
+function getHome(opts) {
+  return Promise.all([
+    search('', 1, 'trending'),
+    search('', 1, 'latest')
+  ]).then(function(rows) {
+    var out = [];
+    if (rows[0].length) out.push({ title: 'Popular', items: rows[0] });
+    if (rows[1].length) out.push({ title: 'Latest', items: rows[1] });
+    return out;
+  });
+}
+
 function getDetail(url) {
   console.log('mangakatana detail url: ' + url);
-  return fetch(url).then(function(r) {
+  return _fetch(url).then(function(r) {
     var html = r.body || '';
     var titleM = html.match(/<h1[^>]*class="[^"]*heading[^"]*"[^>]*>([^<]+)<\/h1>/i)
               || html.match(/<h1[^>]*>([^<]+)<\/h1>/);
@@ -148,12 +179,12 @@ function getDetail(url) {
 }
 
 function getChapters(url) {
-  return fetch(url).then(function(r) { return _parseChapters(r.body || '', url); });
+  return _fetch(url).then(function(r) { return _parseChapters(r.body || '', url); });
 }
 
 function getPages(chapterUrl) {
   console.log('mangakatana pages url: ' + chapterUrl);
-  return fetch(chapterUrl).then(function(r) {
+  return _fetch(chapterUrl).then(function(r) {
     var html = r.body || '';
     // Find ALL "var <name>=[ ... ]" arrays that contain mangakatana.com image URLs,
     // pick the longest one.

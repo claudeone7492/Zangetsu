@@ -22,8 +22,6 @@ import '../../core/tv/tv_focusable.dart';
 import '../../core/tv/tv_shell_tab_scope.dart';
 import '../../core/ui/dock_visibility.dart';
 import '../auth/auth_cubit.dart';
-import '../auth/auth_screens_tv.dart';
-import '../auth/reconnect.dart';
 import '../downloads/downloads_screen.dart';
 import '../live/live_tv_screen.dart';
 import '../../l10n/l10n.dart';
@@ -67,8 +65,6 @@ class _RailItem {
   final String label;
   final String iconAsset;
 }
-
-enum _AvatarAction { changeProfile, logOut }
 
 const int _kRailItemCount = 7;
 const int _kMyListRailItem = 2;
@@ -556,42 +552,6 @@ class _RootShellTvState extends State<RootShellTv> with WidgetsBindingObserver {
       ? Duration.zero
       : const Duration(milliseconds: 360);
   Future<void> _confirmProfileSwitch() async {
-    final auth = context.read<AuthCubit>();
-    final action = await showDialog<_AvatarAction>(
-      context: context,
-      builder: (dialogContext) {
-        final l10n = dialogContext.l10n;
-        return AlertDialog(
-          title: Text(l10n.changeProfile),
-          content: Text(l10n.chooseWhoIsWatching),
-          actions: [
-            TextButton(
-              autofocus: true,
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(l10n.cancel),
-            ),
-            TextButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(_AvatarAction.logOut),
-              child: Text(l10n.logOut),
-            ),
-            TextButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(_AvatarAction.changeProfile),
-              child: Text(l10n.change),
-            ),
-          ],
-        );
-      },
-    );
-    if (!mounted || action == null) return;
-    if (action == _AvatarAction.logOut) {
-      // Back the library up first (if we have a live session) so the
-      // logout-time clearLocal can't lose an un-synced library.
-      await backupLibraryIfPossible();
-      await auth.logout();
-      return;
-    }
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => const ViewerProfilesScreen(selectionOnly: true),
@@ -600,31 +560,22 @@ class _RootShellTvState extends State<RootShellTv> with WidgetsBindingObserver {
     if (mounted) _openRail();
   }
 
-  /// Profile shortcut at the top of the dock. Always
-  /// visible: signed in → avatar + name (OK opens the profile switch confirmation); signed
-  /// out → a placeholder + "Sign in" (OK opens the TV login screen).
+  /// Profile shortcut at the top of the dock. The device is the account, so
+  /// it always shows the active profile and opens the profile switch.
   Widget _avatarBlock() => BlocBuilder<AuthCubit, AuthState>(
     builder: (context, auth) {
       final profile = sl.isRegistered<ViewerProfileStore>()
           ? sl<ViewerProfileStore>().activeProfile
           : null;
-      final name = auth.isLoggedIn
-          ? (profile?.name ?? auth.displayName)
-          : context.l10n.signIn;
+      final name =
+          profile?.name ??
+          (auth.displayName.isNotEmpty ? auth.displayName : 'This device');
       final avatar = profile?.photoUrl ?? auth.avatarUrl;
       return TvFocusable(
         key: const ValueKey('tv-nav-avatar'),
         variant: TvFocusVariant.none,
-        semanticLabel: name,
-        onTap: () {
-          if (auth.isLoggedIn) {
-            _confirmProfileSwitch();
-          } else {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const LoginScreenTv()),
-            );
-          }
-        },
+        semanticLabel: '${context.l10n.settingsProfilesAccount}: $name',
+        onTap: _confirmProfileSwitch,
         builder: (focused) => SizedBox(
           height: 42,
           child: Row(

@@ -152,10 +152,26 @@ function _fullIndex() {
   }).catch(function () { return []; });
 }
 
+// A category pill passes its key/title through `opts.category`; searching
+// that pill's own playlist keeps the search inside the selected category
+// instead of sweeping the full index. Unknown/empty categories fall back to
+// the full index (the "All" pill).
+function _categoryMeta(value) {
+  var v = String(value || '').toLowerCase().trim();
+  if (!v) return null;
+  for (var i = 0; i < CATEGORIES.length; i++) {
+    var c = CATEGORIES[i];
+    if (c.key === v || c.title.toLowerCase() === v) return c;
+  }
+  return null;
+}
+
 function search(query, page, opts) {
   var q = String(query || '').toLowerCase().trim();
   if (!q) return Promise.resolve([]);
-  return _fullIndex().then(function (chs) {
+  var cat = _categoryMeta(opts && opts.category);
+  var source = cat ? _category(cat.key) : _fullIndex();
+  return source.then(function (chs) {
     var out = [], seen = {};
     for (var i = 0; i < chs.length && out.length < 60; i++) {
       var c = chs[i];
@@ -166,7 +182,10 @@ function search(query, page, opts) {
       out.push({
         id: _encode(c.name, c.url), title: c.name || 'Channel',
         cover: c.logo || null, url: _encode(c.name, c.url),
-        type: 'movie', sourceId: SOURCE_ID
+        type: 'movie', sourceId: SOURCE_ID,
+        // Tag the hit so the screen can keep a category search scoped even if
+        // the user changes pills while the request is in flight.
+        genres: cat ? [cat.title] : []
       });
     }
     return out;

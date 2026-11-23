@@ -9,7 +9,6 @@ import '../../core/profiles/viewer_profile_avatar.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../l10n/l10n.dart';
-import '../auth/auth_screens.dart' show LoginScreen;
 
 /// Reuses authentication only for the active profile. Switching back to a
 /// locked profile requires biometric/PIN verification again.
@@ -26,13 +25,13 @@ Future<bool> ensureProfileUnlocked(
   try {
     if (!await store.isLocked(profile.id)) return true;
   } catch (error) {
+    // The device is the account, so a lock that asks for an account cannot be
+    // enforced here; let the profile through rather than dead-ending on a
+    // sign-in screen that no longer exists.
+    if (error is ProfileLockException && error.code == 'sign_in_required') {
+      return true;
+    }
     if (context.mounted) {
-      if (error is ProfileLockException && error.code == 'sign_in_required') {
-        await Navigator.of(
-          context,
-        ).push<void>(MaterialPageRoute(builder: (_) => const LoginScreen()));
-        return false;
-      }
       ScaffoldMessenger.maybeOf(
         context,
       )?.showSnackBar(SnackBar(content: Text(_lockErrorText(context, error))));
@@ -895,9 +894,7 @@ class _PinRecoverySheetState extends State<_PinRecoverySheet> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          context.l10n.profileLockRecoveryCodeHint,
-        ),
+        Text(context.l10n.profileLockRecoveryCodeHint),
         const SizedBox(height: 12),
         _pinField(
           controller: _code,
