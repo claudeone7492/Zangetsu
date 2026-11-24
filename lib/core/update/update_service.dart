@@ -50,20 +50,20 @@ class UpdateService {
   static const String _releasesUrl =
       'https://api.github.com/repos/$_repo/releases?per_page=10';
   static const String _boxName = 'updates';
-  static const String _skipKey = 'skippedVersion';
   static const String _betaKey = 'betaOptIn';
 
   final Dio _dio = Dio();
 
   /// Query GitHub for the latest release. Returns an [UpdateInfo] when it is
-  /// newer than the installed version (and, when [respectSkip] is true, not the
-  /// version the user chose to skip). Returns null on no-update or any error —
-  /// callers must treat null as "nothing to do" (never throws).
-  Future<UpdateInfo?> checkForUpdate({bool respectSkip = false}) async {
+  /// newer than the installed version. There is no skip path: an available
+  /// update must be installed before the app can be used. Returns null on
+  /// no-update or any error — callers treat null as "nothing to do".
+  Future<UpdateInfo?> checkForUpdate() async {
     try {
       final beta = await betaOptIn();
-      final release =
-          beta ? await _newestBetaRelease() : await _latestStableRelease();
+      final release = beta
+          ? await _newestBetaRelease()
+          : await _latestStableRelease();
       if (release == null) return null;
 
       final rawTag = ((release['tag_name'] as String?) ?? '').trim();
@@ -72,10 +72,11 @@ class UpdateService {
 
       final pkg = await PackageInfo.fromPlatform();
       if (compareVersions(version, pkg.version) <= 0) return null;
-      if (respectSkip && await _skippedVersion() == version) return null;
 
       final apk = _pickApk(
-          (release['assets'] as List?) ?? const [], await _deviceAbis());
+        (release['assets'] as List?) ?? const [],
+        await _deviceAbis(),
+      );
       if (apk == null) return null;
 
       return UpdateInfo(
@@ -193,14 +194,6 @@ class UpdateService {
     return res.type == ResultType.done;
   }
 
-  /// Remember a version the user chose to skip (so auto-check won't re-prompt).
-  Future<void> skipVersion(String version) async {
-    (await _box()).put(_skipKey, version);
-  }
-
-  Future<String?> _skippedVersion() async =>
-      (await _box()).get(_skipKey) as String?;
-
   /// Whether the user opted into pre-release (beta) updates. Defaults to false.
   Future<bool> betaOptIn() async =>
       (await _box()).get(_betaKey, defaultValue: false) as bool;
@@ -265,7 +258,9 @@ class UpdateService {
   static int compareVersions(String a, String b) {
     final pa = _parseVersion(a);
     final pb = _parseVersion(b);
-    final len = pa.core.length > pb.core.length ? pa.core.length : pb.core.length;
+    final len = pa.core.length > pb.core.length
+        ? pa.core.length
+        : pb.core.length;
     for (var i = 0; i < len; i++) {
       final x = i < pa.core.length ? pa.core[i] : 0;
       final y = i < pb.core.length ? pb.core[i] : 0;
@@ -287,8 +282,10 @@ class UpdateService {
     final dash = s.indexOf('-');
     final corePart = dash >= 0 ? s.substring(0, dash) : s;
     final label = dash >= 0 ? s.substring(dash + 1) : null;
-    final core =
-        corePart.split('.').map((e) => int.tryParse(e.trim()) ?? 0).toList();
+    final core = corePart
+        .split('.')
+        .map((e) => int.tryParse(e.trim()) ?? 0)
+        .toList();
     int? pre;
     if (label != null) {
       final m = RegExp(r'(\d+)').firstMatch(label);
