@@ -158,28 +158,6 @@ class AdminCubit extends Cubit<AdminState> {
     return true;
   }
 
-  /// Grants a fresh [days]-day period to one device. Admin-only server-side;
-  /// this is the supported escape hatch for a device whose trial has lapsed.
-  Future<bool> refreshTrial(String fingerprint, {int days = 14}) async {
-    emit(state.copyWith(busy: true, error: () => null));
-    final ok = await _repo.adminRefreshTrial(
-      passcode: _passcode,
-      fingerprint: fingerprint,
-      days: days,
-    );
-    if (!ok) {
-      emit(
-        state.copyWith(
-          busy: false,
-          error: () => 'Could not refresh this device.',
-        ),
-      );
-      return false;
-    }
-    await refresh();
-    return true;
-  }
-
   void setTab(AdminTab tab) => emit(state.copyWith(tab: tab));
 
   /// Drop the in-memory passcode and return to the sign-in gate.
@@ -291,14 +269,12 @@ class AdminCubit extends Cubit<AdminState> {
   Future<bool> updatePlan({
     required String key,
     required int priceCents,
-    int? trialDays,
     bool? active,
   }) => _mutate(
     () => _repo.adminUpdatePlan(
       passcode: _passcode,
       key: key,
       priceCents: priceCents,
-      trialDays: trialDays,
       active: active,
     ),
     error: 'Could not update this plan.',

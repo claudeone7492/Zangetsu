@@ -9,8 +9,8 @@ import 'subscription_models.dart';
 ///
 /// The cache is only a fallback for [deviceEntitled]. A fresh server answer
 /// always wins and overwrites it. When the server cannot be reached, the cached
-/// verdict is honoured only while its paid/trial period is still running, so an
-/// expired trial cannot be extended by going offline.
+/// verdict is honoured only while its paid period is still running, so an
+/// expired plan cannot be extended by going offline.
 class CachedEntitlement {
   const CachedEntitlement({required this.identity, required this.checkedAt});
 

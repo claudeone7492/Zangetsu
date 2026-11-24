@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/subscription/geo_pricing.dart';
 import '../../core/subscription/subscription_models.dart';
 import '../../core/subscription/subscription_repository.dart';
-import '../../core/subscription/trial_countdown.dart';
 
 /// Where the user is in the subscribe flow.
 enum PaywallStage { loading, ready, activating, error }
@@ -60,10 +59,6 @@ class SubscriptionState extends Equatable {
     }
     return null;
   }
-
-  /// First-time device: eligible for the free-trial button.
-  bool get trialEligible =>
-      identity != null && !identity!.trialUsed && !identity!.isActive;
 
   /// List price in cents.
   int get listCents => selected?.priceCents ?? 0;
@@ -119,7 +114,6 @@ class SubscriptionState extends Equatable {
     stage,
     plans.length,
     identity?.sessionId,
-    identity?.trialUsed,
     // Entitlement fields matter: a payment settles without changing the
     // session id, and without these the state compares equal and the rebuild
     // is dropped, leaving the paywall up after a successful charge.
@@ -127,7 +121,6 @@ class SubscriptionState extends Equatable {
     identity?.showPaywall,
     identity?.status,
     identity?.daysLeft,
-    identity?.isTrial,
     identity?.periodEnd,
     selectedKey,
     promo?.code,
@@ -140,7 +133,7 @@ class SubscriptionState extends Equatable {
 }
 
 /// Drives the paywall: loads plans + identity, computes the live total, and
-/// performs trial activation / promo redemption.
+/// performs promo redemption and checkout.
 class SubscriptionCubit extends Cubit<SubscriptionState> {
   SubscriptionCubit(this._repo) : super(const SubscriptionState());
 
@@ -159,9 +152,6 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     final identity = results[1] as DeviceIdentity?;
     final geoQuote = results[2] as GeoQuote?;
     final config = results[3] as SubscriptionConfig;
-    if (identity != null) {
-      TrialCountdownController.instance.update(identity);
-    }
 
     // One product: the premium subscription at the standard price. The backend
     // still carries a tiered catalogue, so collapse it to a single card rather
@@ -279,36 +269,6 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     ),
   );
 
-  /// Activates the free trial for a first-time device. Returns true on success.
-  Future<bool> startTrial() async {
-    final plan = state.selected;
-    if (plan == null || !plan.hasTrial) return false;
-    emit(state.copyWith(stage: PaywallStage.activating));
-    final id = await _repo.startTrial(plan.key);
-    if (id == null) {
-      emit(
-        state.copyWith(
-          stage: PaywallStage.ready,
-          message: () => 'This device has already used its free trial.',
-          promoRejected: true,
-        ),
-      );
-      return false;
-    }
-    final identity = await _repo.identify();
-    if (identity != null) {
-      TrialCountdownController.instance.update(identity);
-    }
-    emit(
-      state.copyWith(
-        stage: PaywallStage.ready,
-        identity: identity,
-        message: () => 'Trial active — ${plan.trialDays} days free.',
-      ),
-    );
-    return true;
-  }
-
   /// Starts a paid checkout for the selected plan.
   ///
   /// Returns the result so the caller can open the Korapay checkout. When the
@@ -349,9 +309,6 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   /// the server's verdict rather than the WebView's return.
   Future<bool> refreshEntitlement() async {
     final identity = await _repo.identify();
-    if (identity != null) {
-      TrialCountdownController.instance.update(identity);
-    }
     emit(state.copyWith(identity: identity));
     return identity?.entitled ?? false;
   }
@@ -363,9 +320,6 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     final result = await _repo.linkDevice(code);
     if (result?.ok == true) {
       final identity = await _repo.identify();
-      if (identity != null) {
-        TrialCountdownController.instance.update(identity);
-      }
       emit(state.copyWith(stage: PaywallStage.ready, identity: identity));
     } else {
       emit(state.copyWith(stage: PaywallStage.ready));

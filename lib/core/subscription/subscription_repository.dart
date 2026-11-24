@@ -16,7 +16,6 @@ abstract class SubscriptionApi {
   /// Resolves a typed code for this device. The result carries `alreadyUsed`
   /// so the paywall can explain that the code has expired for this device.
   Future<PromoResult?> resolvePromo(String code, {String? planKey});
-  Future<String?> startTrial(String planKey);
 
   /// Mints a short code this device's plan can be joined with. Null when the
   /// call itself failed; a refusal comes back as `SeatResult(ok: false)`.
@@ -59,14 +58,6 @@ abstract class SubscriptionApi {
   Future<List<AdminPromoRow>> adminPromos(String passcode);
   Future<List<AdminPlanRow>> adminSubscriptions(String passcode);
 
-  /// Grants a fresh trial period to [fingerprint]. This is the only supported
-  /// way to extend a device after its trial has lapsed.
-  Future<bool> adminRefreshTrial({
-    required String passcode,
-    required String fingerprint,
-    int days = 14,
-  });
-
   Future<bool> adminSetPromo({
     required String passcode,
     required String code,
@@ -79,14 +70,13 @@ abstract class SubscriptionApi {
   /// Dashboard totals. Concrete default keeps existing fakes compiling.
   Future<AdminOverview?> adminOverview(String passcode) async => null;
 
-  /// The editable plan catalogue (price, trial, active).
+  /// The editable plan catalogue (price, active).
   Future<List<AdminPlanConfig>> adminPlans(String passcode) async => const [];
 
   Future<bool> adminUpdatePlan({
     required String passcode,
     required String key,
     required int priceCents,
-    int? trialDays,
     bool? active,
   }) async => false;
 
@@ -264,17 +254,6 @@ class SubscriptionRepository implements SubscriptionApi {
     );
   }
 
-  /// Grants the one-time trial for a first-time device. Returns the new
-  /// subscription id, or null when the device already used its trial.
-  @override
-  Future<String?> startTrial(String planKey) async {
-    final fp = await _fingerprint();
-    return _rpc('start_trial', {
-      'p_fingerprint': fp,
-      'p_plan': planKey,
-    }, (d) => d is String ? d : null);
-  }
-
   /// Mints a join code for this plan.
   @override
   Future<SeatResult?> createDeviceCode() async {
@@ -397,19 +376,6 @@ class SubscriptionRepository implements SubscriptionApi {
       false;
 
   @override
-  Future<bool> adminRefreshTrial({
-    required String passcode,
-    required String fingerprint,
-    int days = 14,
-  }) async =>
-      await _rpc('admin_refresh_trial', {
-        'p_passcode': passcode,
-        'p_fingerprint': fingerprint,
-        'p_days': days,
-      }, (d) => d is Map && d['ok'] == true) ??
-      false;
-
-  @override
   Future<bool> adminClaim(String passcode) async {
     final fp = await _fingerprint();
     return await _rpc('admin_claim', {
@@ -478,14 +444,12 @@ class SubscriptionRepository implements SubscriptionApi {
     required String passcode,
     required String key,
     required int priceCents,
-    int? trialDays,
     bool? active,
   }) async =>
       await _rpc('admin_update_plan', {
         'p_passcode': passcode,
         'p_key': key,
         'p_price_usd_cents': priceCents,
-        'p_trial_days': trialDays,
         'p_active': active,
       }, (d) => d == true) ??
       false;

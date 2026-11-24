@@ -18,7 +18,6 @@ void main() {
   DeviceIdentity identity() => DeviceIdentity(
     sessionId: 's1',
     isNew: false,
-    trialUsed: true,
     planKey: 'stream_standard',
     status: 'active',
     periodEnd: DateTime(2026, 12, 24),

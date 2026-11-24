@@ -11,12 +11,10 @@ class FakeSubscriptionApi implements SubscriptionApi {
     this.plansResult = const [],
     this.identityResult,
     this.promoResult,
-    this.trialResult = 'sub-id',
     this.adminConfiguredResult = false,
     this.adminCheckResult = true,
     this.adminLoginResult = true,
     this.adminRegisterResult = true,
-    this.adminRefreshTrialResult = true,
     this.configResult = const SubscriptionConfig(),
     this.seatsResult,
     this.linkResult,
@@ -32,7 +30,6 @@ class FakeSubscriptionApi implements SubscriptionApi {
   List<SubscriptionPlan> plansResult;
   DeviceIdentity? identityResult;
   PromoResult? promoResult;
-  String? trialResult;
   SubscriptionConfig configResult;
   CheckoutResult checkoutResult = const CheckoutResult(
     ok: true,
@@ -43,16 +40,12 @@ class FakeSubscriptionApi implements SubscriptionApi {
   bool adminCheckResult;
   bool adminLoginResult;
   bool adminRegisterResult;
-  bool adminRefreshTrialResult;
 
-  int startTrialCalls = 0;
   int adminLoginCalls = 0;
   int adminRegisterCalls = 0;
-  int adminRefreshTrialCalls = 0;
   String? lastAdminEmail;
   String? lastAdminPassword;
   String? lastNewPassword;
-  String? lastRefreshFingerprint;
   int startCheckoutCalls = 0;
   String? lastCheckoutPlan;
   String? lastCheckoutPromo;
@@ -84,12 +77,6 @@ class FakeSubscriptionApi implements SubscriptionApi {
       promoResult;
 
   @override
-  Future<String?> startTrial(String planKey) async {
-    startTrialCalls++;
-    return trialResult;
-  }
-
-  @override
   Future<SeatResult?> createDeviceCode() async {
     createDeviceCodeCalls++;
     return deviceCodeResult;
@@ -102,7 +89,6 @@ class FakeSubscriptionApi implements SubscriptionApi {
       identityResult = const DeviceIdentity(
         sessionId: 's1',
         isNew: false,
-        trialUsed: true,
         planKey: 'stream_standard',
         status: 'active',
         entitled: true,
@@ -168,17 +154,6 @@ class FakeSubscriptionApi implements SubscriptionApi {
   Future<List<AdminDeviceRow>> adminDevices(String passcode) async => const [];
 
   @override
-  Future<bool> adminRefreshTrial({
-    required String passcode,
-    required String fingerprint,
-    int days = 14,
-  }) async {
-    adminRefreshTrialCalls++;
-    lastRefreshFingerprint = fingerprint;
-    return adminRefreshTrialResult;
-  }
-
-  @override
   Future<List<AdminPromoRow>> adminPromos(String passcode) async => const [];
 
   @override
@@ -219,14 +194,12 @@ class FakeSubscriptionApi implements SubscriptionApi {
     required String passcode,
     required String key,
     required int priceCents,
-    int? trialDays,
     bool? active,
   }) async {
     adminActions.add({
       'action': 'plan',
       'key': key,
       'price': priceCents,
-      'trial': trialDays,
       'active': active,
     });
     return true;
@@ -373,27 +346,24 @@ List<SubscriptionPlan> samplePlans() => const [
   SubscriptionPlan(
     key: 'stream_basic',
     label: 'Basic (with ads)',
-    priceCents: 199,
+    priceCents: 75,
     periodDays: 30,
-    trialDays: 0,
     features: ['HD', '1 screen'],
     sortOrder: 1,
   ),
   SubscriptionPlan(
     key: 'stream_standard',
     label: 'Standard',
-    priceCents: 200,
+    priceCents: 75,
     periodDays: 30,
-    trialDays: 14,
     features: ['Full HD', '2 screens', 'Downloads'],
     sortOrder: 2,
   ),
   SubscriptionPlan(
     key: 'stream_premium',
     label: 'Premium',
-    priceCents: 599,
+    priceCents: 75,
     periodDays: 30,
-    trialDays: 14,
     features: ['4K', '4 screens', 'Downloads'],
     sortOrder: 3,
   ),

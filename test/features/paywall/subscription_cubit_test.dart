@@ -6,6 +6,16 @@ import '../../support/fake_subscription_api.dart';
 
 void main() {
   group('SubscriptionState pricing', () {
+    SubscriptionPlan planAt(int cents, {String key = 'stream_standard'}) =>
+        SubscriptionPlan(
+          key: key,
+          label: 'Test plan',
+          priceCents: cents,
+          periodDays: 30,
+          features: const [],
+          sortOrder: 1,
+        );
+
     SubscriptionState withPlan(SubscriptionPlan plan, {int discountPct = 15}) =>
         SubscriptionState(
           plans: [plan],
@@ -14,14 +24,14 @@ void main() {
         );
 
     test('launch offer takes the discount off the list price', () {
-      final state = withPlan(samplePlans()[1]); // Standard, 200c
+      final state = withPlan(planAt(200));
       expect(state.listCents, 200);
       expect(state.offerCents, 170); // 200 * 0.85 = 170
       expect(money(state.listCents), '\$2.00');
     });
 
     test('promo percentage stacks on top of the offer', () {
-      var state = withPlan(samplePlans()[2]); // Premium, 599c
+      var state = withPlan(planAt(599));
       expect(state.offerCents, 509); // 599 * 0.85 = 509.15 -> 509
 
       state = state.copyWith(
@@ -37,7 +47,7 @@ void main() {
     });
 
     test('a 100% promo is free access regardless of kind', () {
-      final state = withPlan(samplePlans()[1]).copyWith(
+      final state = withPlan(planAt(200)).copyWith(
         promo: () =>
             const PromoResult(code: '\$EDGES', percentOff: 100, kind: 'free'),
       );
@@ -46,7 +56,7 @@ void main() {
     });
 
     test('discount is configurable', () {
-      final state = withPlan(samplePlans()[1], discountPct: 0);
+      final state = withPlan(planAt(200), discountPct: 0);
       expect(state.offerCents, 200);
     });
 
@@ -54,7 +64,7 @@ void main() {
       // The plan card renders payableCents; the summary renders totalCents.
       // They must be the same number, or a promo shows one price on the card
       // and charges another at checkout.
-      final state = withPlan(samplePlans()[1], discountPct: 0).copyWith(
+      final state = withPlan(planAt(200), discountPct: 0).copyWith(
         promo: () =>
             const PromoResult(code: 'HALF', percentOff: 50, kind: 'percent'),
       );
@@ -64,7 +74,7 @@ void main() {
     });
 
     test('a free promo makes the card amount zero', () {
-      final state = withPlan(samplePlans()[1]).copyWith(
+      final state = withPlan(planAt(200)).copyWith(
         promo: () =>
             const PromoResult(code: 'FREEWATCH', percentOff: 100, kind: 'free'),
       );
@@ -72,7 +82,7 @@ void main() {
     });
 
     test('without a promo the card quotes the list price', () {
-      final state = withPlan(samplePlans()[1], discountPct: 0);
+      final state = withPlan(planAt(200), discountPct: 0);
       expect(state.payableCents, 200);
     });
 
@@ -160,11 +170,7 @@ void main() {
     test('load collapses to the single premium subscription', () async {
       final api = FakeSubscriptionApi(
         plansResult: samplePlans(),
-        identityResult: const DeviceIdentity(
-          sessionId: 's1',
-          isNew: true,
-          trialUsed: false,
-        ),
+        identityResult: const DeviceIdentity(sessionId: 's1', isNew: true),
       );
       final cubit = SubscriptionCubit(api);
       await cubit.load();
@@ -175,8 +181,7 @@ void main() {
       expect(cubit.state.plans, hasLength(1));
       expect(cubit.state.selectedKey, 'stream_standard');
       expect(cubit.state.selected?.label, kPremiumPlanLabel);
-      expect(cubit.state.selected?.priceCents, 200);
-      expect(cubit.state.trialEligible, isTrue);
+      expect(cubit.state.selected?.priceCents, 75);
     });
 
     test(
@@ -189,7 +194,6 @@ void main() {
               label: 'Standard',
               priceCents: 350,
               periodDays: 30,
-              trialDays: 14,
               features: ['Full HD'],
               sortOrder: 11,
             ),
@@ -222,8 +226,8 @@ void main() {
       await cubit.load();
 
       expect(cubit.state.discountPct, 20);
-      // Standard is 200c; 20% off -> 160c.
-      expect(cubit.state.offerCents, 160);
+      // Standard is 75c; 20% off -> 60c.
+      expect(cubit.state.offerCents, 60);
     });
 
     test('unknown promo is rejected without clearing the plan', () async {
@@ -278,83 +282,13 @@ void main() {
       expect(cubit.state.promo?.code, 'STARZ_85');
       expect(cubit.state.promoRejected, isFalse);
     });
-
-    test('trial eligibility is false once the device used its trial', () async {
-      final api = FakeSubscriptionApi(
-        plansResult: samplePlans(),
-        identityResult: const DeviceIdentity(
-          sessionId: 's1',
-          isNew: false,
-          trialUsed: true,
-        ),
-      );
-      final cubit = SubscriptionCubit(api);
-      await cubit.load();
-
-      expect(cubit.state.trialEligible, isFalse);
-    });
-
-    test('startTrial grants once and refreshes identity', () async {
-      final api = FakeSubscriptionApi(
-        plansResult: samplePlans(),
-        identityResult: const DeviceIdentity(
-          sessionId: 's1',
-          isNew: true,
-          trialUsed: false,
-        ),
-      );
-      final cubit = SubscriptionCubit(api);
-      await cubit.load();
-
-      // After the trial the server reports it used; the second identify()
-      // (inside startTrial) reflects that.
-      api.identityResult = const DeviceIdentity(
-        sessionId: 's1',
-        isNew: false,
-        trialUsed: true,
-        planKey: 'stream_standard',
-        status: 'active',
-      );
-      final ok = await cubit.startTrial();
-
-      expect(ok, isTrue);
-      expect(api.startTrialCalls, 1);
-      expect(cubit.state.trialEligible, isFalse);
-    });
-
-    test(
-      'startTrial surfaces a refusal when the trial was already used',
-      () async {
-        final api = FakeSubscriptionApi(
-          plansResult: samplePlans(),
-          identityResult: const DeviceIdentity(
-            sessionId: 's1',
-            isNew: false,
-            trialUsed: false,
-          ),
-          trialResult: null,
-        );
-        final cubit = SubscriptionCubit(api);
-        await cubit.load();
-
-        final ok = await cubit.startTrial();
-
-        expect(ok, isFalse);
-        expect(cubit.state.stage, PaywallStage.ready);
-        expect(cubit.state.message, contains('already used'));
-      },
-    );
   });
 
   group('SubscriptionCubit checkout', () {
     test('beginCheckout sends the selected plan and current promo', () async {
       final api = FakeSubscriptionApi(
         plansResult: samplePlans(),
-        identityResult: const DeviceIdentity(
-          sessionId: 's1',
-          isNew: false,
-          trialUsed: true,
-        ),
+        identityResult: const DeviceIdentity(sessionId: 's1', isNew: false),
         promoResult: const PromoResult(
           code: 'STARZ_85',
           percentOff: 85,
@@ -381,7 +315,6 @@ void main() {
               identityResult: const DeviceIdentity(
                 sessionId: 's1',
                 isNew: false,
-                trialUsed: true,
               ),
             )
             ..checkoutResult = const CheckoutResult(
@@ -407,7 +340,6 @@ void main() {
               identityResult: const DeviceIdentity(
                 sessionId: 's1',
                 isNew: false,
-                trialUsed: true,
               ),
               promoResult: const PromoResult(
                 code: 'STARZ_85',
@@ -435,11 +367,7 @@ void main() {
     test('a free checkout needs no URL', () async {
       final api = FakeSubscriptionApi(
         plansResult: samplePlans(),
-        identityResult: const DeviceIdentity(
-          sessionId: 's1',
-          isNew: false,
-          trialUsed: true,
-        ),
+        identityResult: const DeviceIdentity(sessionId: 's1', isNew: false),
       )..checkoutResult = const CheckoutResult(ok: true, free: true);
       final cubit = SubscriptionCubit(api);
       await cubit.load();
@@ -457,7 +385,6 @@ void main() {
         identityResult: const DeviceIdentity(
           sessionId: 's1',
           isNew: false,
-          trialUsed: true,
           entitled: false,
         ),
       );
@@ -469,7 +396,6 @@ void main() {
       api.identityResult = const DeviceIdentity(
         sessionId: 's1',
         isNew: false,
-        trialUsed: true,
         planKey: 'stream_standard',
         status: 'active',
         entitled: true,

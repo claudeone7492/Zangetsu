@@ -89,7 +89,6 @@ class _SubscriptionHistoryScreenState extends State<SubscriptionHistoryScreen> {
     final identity = _identity;
     final unavailable = identity == null;
     final active = identity?.entitled == true;
-    final trial = identity?.isTrial == true;
     final title = unavailable
         ? 'Plan status unavailable'
         : active
@@ -119,7 +118,7 @@ class _SubscriptionHistoryScreenState extends State<SubscriptionHistoryScreen> {
               ),
               const SizedBox(width: 10),
               Expanded(child: Text(title, style: AppText.headline)),
-              if (active) _statusChip(trial ? 'Trial' : 'Active', active: true),
+              if (active) _statusChip('Active', active: true),
             ],
           ),
           const SizedBox(height: 8),
@@ -144,9 +143,6 @@ class _SubscriptionHistoryScreenState extends State<SubscriptionHistoryScreen> {
 
   String _periodLine(DeviceIdentity? identity) {
     if (identity == null) return 'Plan details are unavailable right now.';
-    if (identity.isTrial) {
-      return 'Free trial · ${identity.daysLeft} days left';
-    }
     final end = identity.periodEnd;
     if (end == null) return 'Your plan is active on this device.';
     return 'Renews or ends on ${_date(end)}';

@@ -111,8 +111,6 @@
   .pill .dot { width: 6px; height: 6px; border-radius: 50%; }
   .pill.active { color: var(--green); background: rgba(52,199,89,0.12); }
   .pill.active .dot { background: var(--green); }
-  .pill.trial { color: var(--blue); background: rgba(91,141,239,0.14); }
-  .pill.trial .dot { background: var(--blue); }
   .pill.expired { color: var(--accent); background: var(--accent-soft); }
   .pill.expired .dot { background: var(--accent); }
   .pill.free { color: var(--amber); background: rgba(245,196,81,0.14); }
@@ -258,13 +256,13 @@
     { fp:'c0d4…88b1', plat:'Android 13', plan:'Basic',    code:'PRIME25!',    pct:25,  paid:'$1.49',  st:'active',  renew:'Nov 28', watch:56,  seen:'3 hrs ago' },
     { fp:'1b2c…9d3f', plat:'iOS 17',     plan:'Standard', code:'—',           pct:0,   paid:'$3.49',  st:'active',  renew:'Dec 09', watch:401, seen:'5 hrs ago' },
     { fp:'ee10…4477', plat:'Android 14', plan:'Premium',  code:'BOSSSLINGZS', pct:100, paid:'$0.00',  st:'free',    renew:'—',      watch:620, seen:'yesterday' },
-    { fp:'90af…6c55', plat:'Android 12', plan:'Basic',    code:'HULU#10',     pct:10,  paid:'$1.79',  st:'trial',   renew:'Nov 22', watch:18,  seen:'yesterday' },
+    { fp:'90af…6c55', plat:'Android 12', plan:'Basic',    code:'HULU#10',     pct:10,  paid:'$0.75',  st:'active',  renew:'Dec 22', watch:18,  seen:'yesterday' },
     { fp:'5f7a…0b12', plat:'iOS 18',     plan:'Standard', code:'STARZ_85',    pct:85,  paid:'$0.52',  st:'active',  renew:'Dec 15', watch:233, seen:'2 days ago' },
     { fp:'b3e9…aa70', plat:'Android TV', plan:'Premium',  code:'APPLE50!',    pct:50,  paid:'$3.00',  st:'active',  renew:'Dec 04', watch:98,  seen:'2 days ago' },
     { fp:'2c66…d1e8', plat:'Android 14', plan:'Basic',    code:'TUBI_10',     pct:10,  paid:'$1.79',  st:'expired', renew:'Nov 10', watch:9,   seen:'6 days ago' },
   ];
   const stPill = (st) => {
-    const map = { active:['active','Active'], trial:['trial','Trial'], free:['free','Free access'], expired:['expired','Expired'] };
+    const map = { active:['active','Active'], free:['free','Free access'], expired:['expired','Expired'] };
     const [cls,label] = map[st];
     return `<span class="pill ${cls}"><span class="dot"></span>${label}</span>`;
   };

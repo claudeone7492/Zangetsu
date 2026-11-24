@@ -4,7 +4,6 @@ import 'package:get_it/get_it.dart';
 import 'package:watch_app/core/subscription/entitlement_cache.dart';
 import 'package:watch_app/core/subscription/subscription_models.dart';
 import 'package:watch_app/core/subscription/subscription_repository.dart';
-import 'package:watch_app/core/subscription/trial_countdown.dart';
 import 'package:watch_app/features/paywall/subscription_gate.dart';
 
 import '../../support/fake_subscription_api.dart';
@@ -19,12 +18,10 @@ void main() {
   setUp(() {
     sl.reset();
     EntitlementCache.debugSet(null);
-    TrialCountdownController.instance.debugReset();
   });
   tearDown(() {
     sl.reset();
     EntitlementCache.debugSet(null);
-    TrialCountdownController.instance.debugReset();
   });
 
   Widget host(FakeSubscriptionApi api) {
@@ -34,6 +31,7 @@ void main() {
     return MaterialApp(
       home: SubscriptionGate(
         api: api,
+        checkForUpdates: false,
         child: const Scaffold(body: Text('HOME')),
       ),
     );
@@ -55,7 +53,6 @@ void main() {
       identityResult: const DeviceIdentity(
         sessionId: 's1',
         isNew: false,
-        trialUsed: true,
         status: 'active',
         entitled: true,
         showPaywall: false,
@@ -88,7 +85,6 @@ void main() {
       DeviceIdentity(
         sessionId: 's1',
         isNew: false,
-        trialUsed: true,
         status: 'active',
         entitled: true,
         showPaywall: false,
@@ -110,7 +106,6 @@ void main() {
       DeviceIdentity(
         sessionId: 's1',
         isNew: false,
-        trialUsed: true,
         status: 'active',
         entitled: true,
         showPaywall: false,
@@ -130,7 +125,6 @@ void main() {
       identityResult: const DeviceIdentity(
         sessionId: 's1',
         isNew: false,
-        trialUsed: true,
         daysLeft: 0,
         showPaywall: true,
       ),
@@ -159,9 +153,7 @@ void main() {
       identityResult: const DeviceIdentity(
         sessionId: 's1',
         isNew: true,
-        trialUsed: false,
         showPaywall: true,
-        trialAvailable: true,
       ),
     );
     sl.registerLazySingleton<SubscriptionApi>(() => api);
@@ -172,6 +164,7 @@ void main() {
       MaterialApp(
         home: SubscriptionGate(
           api: api,
+          checkForUpdates: false,
           child: const Scaffold(body: Text('ONBOARDING')),
         ),
       ),
@@ -191,9 +184,7 @@ void main() {
             identityResult: const DeviceIdentity(
               sessionId: 's1',
               isNew: true,
-              trialUsed: false,
               showPaywall: true,
-              trialAvailable: true,
             ),
           )
           ..linkResult = SeatResult.fromMap({
@@ -234,22 +225,18 @@ void main() {
     t,
   ) async {
     // What `identify_device` returns for a device whose row already exists —
-    // the reinstall case, once the fingerprint survives the uninstall. The
-    // trial clock comes back with the same remaining time, not a fresh 14
-    // days.
+    // the reinstall case, once the fingerprint survives the uninstall.
     final now = DateTime.now().toUtc();
     final api = FakeSubscriptionApi(
       plansResult: samplePlans(),
       identityResult: DeviceIdentity(
         sessionId: 's1',
         isNew: false,
-        trialUsed: true,
         planKey: 'stream_standard',
         status: 'active',
         entitled: true,
         showPaywall: false,
         daysLeft: 14,
-        isTrial: true,
         periodEnd: now.add(const Duration(days: 3, hours: 4)),
         serverNow: now,
       ),
@@ -260,44 +247,7 @@ void main() {
 
     expect(find.text('HOME'), findsOneWidget);
     expect(find.text(kPremiumPlanLabel), findsNothing);
-    expect(TrialCountdownController.instance.countdown.value, isNotNull);
   });
-
-  testWidgets(
-    'a running trial shows the countdown, then the paywall at expiry',
-    (t) async {
-      var clock = DateTime.now().toUtc();
-      TrialCountdownController.instance.debugNow = () => clock;
-      final api = FakeSubscriptionApi(
-        plansResult: samplePlans(),
-        identityResult: DeviceIdentity(
-          sessionId: 's1',
-          isNew: false,
-          trialUsed: true,
-          status: 'active',
-          entitled: true,
-          showPaywall: false,
-          isTrial: true,
-          periodEnd: clock.add(const Duration(seconds: 1)),
-          serverNow: clock,
-        ),
-      );
-      sl.registerLazySingleton<SubscriptionApi>(() => api);
-
-      await t.pumpWidget(host(api));
-      await t.pump();
-      expect(find.text('HOME'), findsOneWidget);
-      expect(TrialCountdownController.instance.countdown.value, isNotNull);
-
-      // The one-second trial runs out while the app is open. The gate must not
-      // wait for a relaunch or a network round trip to put the card back up.
-      clock = clock.add(const Duration(seconds: 2));
-      await settle(t);
-      expect(find.text('HOME'), findsNothing);
-      expect(find.text(kPremiumPlanLabel), findsOneWidget);
-      expect(find.byKey(const ValueKey('paywall-close')), findsNothing);
-    },
-  );
 }
 
 /// An api with no server verdict, standing in for an offline device. The

@@ -217,7 +217,6 @@ class _Console extends StatelessWidget {
             AdminTab.overview => _OverviewTab(state: state, cubit: cubit),
             AdminTab.devices => _DevicesTable(
               rows: state.devices,
-              onRefreshTrial: (row) => cubit.refreshTrial(row.fingerprint),
               onGrant: (row) => _grant(context, cubit, row),
               onRevoke: (row) => _confirm(
                 context,
@@ -501,7 +500,6 @@ class _Console extends StatelessWidget {
     AdminPlanConfig row,
   ) async {
     final price = TextEditingController(text: '${row.priceCents}');
-    final trial = TextEditingController(text: '${row.trialDays}');
     var active = row.active;
     final ok = await showDialog<bool>(
       context: context,
@@ -517,13 +515,8 @@ class _Console extends StatelessWidget {
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   labelText: 'Price (USD cents)',
-                  helperText: '200 = \$2.00',
+                  helperText: '75 = \$0.75',
                 ),
-              ),
-              TextField(
-                controller: trial,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Trial days'),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
@@ -550,12 +543,10 @@ class _Console extends StatelessWidget {
       await cubit.updatePlan(
         key: row.key,
         priceCents: int.tryParse(price.text) ?? row.priceCents,
-        trialDays: int.tryParse(trial.text),
         active: active,
       );
     }
     price.dispose();
-    trial.dispose();
   }
 
   Future<void> _createPromo(BuildContext context, AdminCubit cubit) async {
@@ -827,7 +818,6 @@ class _Tabs extends StatelessWidget {
 class _DevicesTable extends StatelessWidget {
   const _DevicesTable({
     required this.rows,
-    required this.onRefreshTrial,
     required this.onGrant,
     required this.onRevoke,
     required this.onBlock,
@@ -835,7 +825,6 @@ class _DevicesTable extends StatelessWidget {
   });
 
   final List<AdminDeviceRow> rows;
-  final ValueChanged<AdminDeviceRow> onRefreshTrial;
   final ValueChanged<AdminDeviceRow> onGrant;
   final ValueChanged<AdminDeviceRow> onRevoke;
   final ValueChanged<AdminDeviceRow> onBlock;
@@ -896,8 +885,6 @@ class _DevicesTable extends StatelessWidget {
                     tooltip: 'Device actions',
                     onSelected: (value) {
                       switch (value) {
-                        case 'refresh':
-                          _confirmRefresh(context, r);
                         case 'grant':
                           onGrant(r);
                         case 'revoke':
@@ -909,10 +896,6 @@ class _DevicesTable extends StatelessWidget {
                       }
                     },
                     itemBuilder: (_) => [
-                      const PopupMenuItem(
-                        value: 'refresh',
-                        child: Text('Refresh 14 days'),
-                      ),
                       const PopupMenuItem(
                         value: 'grant',
                         child: Text('Grant subscription'),
@@ -949,32 +932,6 @@ class _DevicesTable extends StatelessWidget {
       ),
     ),
   );
-
-  Future<void> _confirmRefresh(BuildContext context, AdminDeviceRow row) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: Text('Refresh trial?', style: AppText.title),
-        content: Text(
-          'Grant this device a fresh 14-day period?\n\n'
-          '${_short(row.fingerprint)} · ${row.platform ?? "unknown device"}',
-          style: AppText.body.copyWith(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(context.l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Grant 14 days'),
-          ),
-        ],
-      ),
-    );
-    if (ok == true) onRefreshTrial(row);
-  }
 
   static String _short(String fp) => fp.length <= 12
       ? fp
@@ -1071,7 +1028,6 @@ class _OverviewTab extends StatelessWidget {
       ('Devices', '${o.devices}'),
       ('Active 24h', '${o.devicesActive24h}'),
       ('Active subs', '${o.activeSubs}'),
-      ('Trialing', '${o.trialing}'),
       ('Expiring 7d', '${o.expiring7d}'),
       ('Blocked', '${o.blocked}'),
       ('MRR', money(o.mrrCents)),
@@ -1306,7 +1262,7 @@ class _PlansTab extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       '${r.key} · ${money(r.priceCents)} · '
-                      '${r.trialDays}d trial · ${r.subscribers} subscribers',
+                      '${r.subscribers} subscribers',
                       style: AppText.caption.copyWith(
                         color: AppColors.textSecondary,
                       ),

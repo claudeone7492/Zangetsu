@@ -38,16 +38,13 @@ Upgraded / added:
 
 ## 2. Pricing — affordable to African rails, in USD
 
-USD, but priced to African purchasing power (not US/UK list). List price, then
-15% launch offer:
+USD, priced at $0.75/month for every subscriber:
 
-| Tier           | List  | App price (15% off) | Devices | Quality           |
-|----------------|-------|---------------------|---------|-------------------|
-| Basic (ads)    | $2.34 | **$1.99**/mo        | 1       | 720p              |
-| Standard       | $4.11 | **$3.49**/mo        | 2       | 1080p + downloads |
-| Premium        | $7.05 | **$5.99**/mo        | 4       | 4K + HDR + spatial|
+| Plan              | Price          | Devices | Quality           |
+|-------------------|----------------|---------|-------------------|
+| Premium           | **$0.75**/mo   | 4       | 4K + HDR + spatial|
 
-7-day trial on Standard & Premium. Cancel anytime.
+No free trial. Cancel anytime.
 
 ## 3. Promo codes — hidden from users
 

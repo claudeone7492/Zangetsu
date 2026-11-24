@@ -69,15 +69,13 @@ void main() {
           devices: 12,
           activeSubs: 7,
           mrrCents: 1400,
-          trialing: 3,
         ),
         adminPlansResult: const [
           AdminPlanConfig(
             key: 'stream_standard',
             label: 'Standard',
-            priceCents: 200,
+            priceCents: 75,
             periodDays: 30,
-            trialDays: 14,
             active: true,
             sortOrder: 11,
           ),
@@ -107,7 +105,7 @@ void main() {
       expect(cubit.state.overview.devices, 12);
       expect(cubit.state.activeSubs, 7);
       expect(cubit.state.mrrCents, 1400);
-      expect(cubit.state.planConfigs.single.priceCents, 200);
+      expect(cubit.state.planConfigs.single.priceCents, 75);
       expect(cubit.state.admins.single.role, 'owner');
       expect(cubit.state.audit.single.action, 'plan.update');
       expect(cubit.state.redemptions.single.code, 'LAUNCH');
@@ -161,15 +159,13 @@ void main() {
 
       await cubit.updatePlan(
         key: 'stream_standard',
-        priceCents: 250,
-        trialDays: 7,
+        priceCents: 75,
         active: true,
       );
 
       final action = api.adminActions.single;
       expect(action['action'], 'plan');
-      expect(action['price'], 250);
-      expect(action['trial'], 7);
+      expect(action['price'], 75);
     });
 
     test('changing the password keeps the console usable', () async {
@@ -202,7 +198,6 @@ void main() {
         'devices': 10,
         'devices_active_24h': 4,
         'active_subs': 6,
-        'trialing': 2,
         'mrr_cents': 1200,
         'revenue_30d_cents': 2400,
         'promos_active': 3,
@@ -225,19 +220,6 @@ void main() {
       cubit.lock();
 
       expect(cubit.state.gate, AdminGate.locked);
-    });
-
-    test('refreshTrial forwards the fingerprint and refreshes', () async {
-      final api = FakeSubscriptionApi(adminConfiguredResult: true);
-      final cubit = AdminCubit(api);
-      await cubit.init();
-      await cubit.unlock('admin@example.com', 'zangetsu-admin');
-
-      final ok = await cubit.refreshTrial('abcdef0123456789');
-
-      expect(ok, isTrue);
-      expect(api.adminRefreshTrialCalls, 1);
-      expect(api.lastRefreshFingerprint, 'abcdef0123456789');
     });
 
     test('setPromo forwards to the API and refreshes', () async {

@@ -13,7 +13,6 @@ class SubscriptionPlan {
     required this.label,
     required this.priceCents,
     required this.periodDays,
-    required this.trialDays,
     required this.features,
     required this.sortOrder,
   });
@@ -22,13 +21,10 @@ class SubscriptionPlan {
   final String label;
   final int priceCents;
   final int periodDays;
-  final int trialDays;
   final List<String> features;
   final int sortOrder;
 
-  bool get hasTrial => trialDays > 0;
-
-  /// List price in dollars, e.g. `4.11`.
+  /// List price in dollars, e.g. `0.75`.
   double get listDollars => priceCents / 100;
 
   SubscriptionPlan copyWith({String? label}) => SubscriptionPlan(
@@ -36,7 +32,6 @@ class SubscriptionPlan {
     label: label ?? this.label,
     priceCents: priceCents,
     periodDays: periodDays,
-    trialDays: trialDays,
     features: features,
     sortOrder: sortOrder,
   );
@@ -50,7 +45,6 @@ class SubscriptionPlan {
       label: label,
       priceCents: (m['price_usd_cents'] as num?)?.toInt() ?? 0,
       periodDays: (m['period_days'] as num?)?.toInt() ?? 30,
-      trialDays: (m['trial_days'] as num?)?.toInt() ?? 0,
       features: ((m['features'] as List?) ?? const [])
           .map((e) => '$e')
           .toList(growable: false),
@@ -103,21 +97,17 @@ class DeviceIdentity {
   const DeviceIdentity({
     required this.sessionId,
     required this.isNew,
-    required this.trialUsed,
     this.planKey,
     this.status = 'inactive',
     this.periodEnd,
     this.entitled = false,
     this.showPaywall = true,
-    this.trialAvailable = false,
     this.daysLeft = 0,
-    this.isTrial = false,
     this.serverNow,
   });
 
   final String sessionId;
   final bool isNew;
-  final bool trialUsed;
   final String? planKey;
   final String status;
   final DateTime? periodEnd;
@@ -128,39 +118,27 @@ class DeviceIdentity {
   /// Server verdict: the paywall must be shown (no entitlement).
   final bool showPaywall;
 
-  /// First-time device that has never used its trial.
-  final bool trialAvailable;
-
   /// Whole days left in the current period.
   final int daysLeft;
-
-  /// True only while the current entitlement is the one-time free trial.
-  /// Paid plans and admin-paid grants are false, so the app never shows a
-  /// trial countdown to a paying subscriber.
-  final bool isTrial;
 
   /// Server clock at the moment this identity was read. The countdown uses
   /// this instead of the device clock, so moving the device clock back cannot
   /// stretch a trial.
   final DateTime? serverNow;
 
-  bool get isActive =>
-      entitled || status == 'active' || status == 'grace' || status == 'trial';
+  bool get isActive => entitled || status == 'active' || status == 'grace';
 
   /// Round-trips through [DeviceIdentity.fromMap] for the offline entitlement
   /// cache. Only fields the gate needs are written.
   Map<String, dynamic> toMap() => {
     'session_id': sessionId,
     'is_new': isNew,
-    'trial_used': trialUsed,
     'plan_key': planKey,
     'status': status,
     'period_end': periodEnd?.toUtc().toIso8601String(),
     'entitled': entitled,
     'show_paywall': showPaywall,
-    'trial_available': trialAvailable,
     'days_left': daysLeft,
-    'is_trial': isTrial,
     'server_now': serverNow?.toUtc().toIso8601String(),
   };
 
@@ -172,15 +150,12 @@ class DeviceIdentity {
     return DeviceIdentity(
       sessionId: session,
       isNew: m['is_new'] == true,
-      trialUsed: m['trial_used'] == true,
       planKey: m['plan_key'] as String?,
       status: (m['status'] as String?) ?? 'inactive',
       periodEnd: end is String ? DateTime.tryParse(end) : null,
       entitled: m['entitled'] == true,
       showPaywall: m['show_paywall'] != false,
-      trialAvailable: m['trial_available'] == true,
       daysLeft: (m['days_left'] as num?)?.toInt() ?? 0,
-      isTrial: m['is_trial'] == true,
       serverNow: server is String ? DateTime.tryParse(server) : null,
     );
   }
@@ -436,7 +411,6 @@ class AdminOverview {
     this.devicesActive24h = 0,
     this.blocked = 0,
     this.activeSubs = 0,
-    this.trialing = 0,
     this.expiring7d = 0,
     this.promosActive = 0,
     this.redemptions30d = 0,
@@ -449,7 +423,6 @@ class AdminOverview {
   final int devicesActive24h;
   final int blocked;
   final int activeSubs;
-  final int trialing;
   final int expiring7d;
   final int promosActive;
   final int redemptions30d;
@@ -462,7 +435,6 @@ class AdminOverview {
     devicesActive24h: (m['devices_active_24h'] as num?)?.toInt() ?? 0,
     blocked: (m['blocked'] as num?)?.toInt() ?? 0,
     activeSubs: (m['active_subs'] as num?)?.toInt() ?? 0,
-    trialing: (m['trialing'] as num?)?.toInt() ?? 0,
     expiring7d: (m['expiring_7d'] as num?)?.toInt() ?? 0,
     promosActive: (m['promos_active'] as num?)?.toInt() ?? 0,
     redemptions30d: (m['redemptions_30d'] as num?)?.toInt() ?? 0,
@@ -480,7 +452,6 @@ class AdminPlanConfig {
     required this.label,
     required this.priceCents,
     required this.periodDays,
-    required this.trialDays,
     required this.active,
     required this.sortOrder,
     this.subscribers = 0,
@@ -490,7 +461,6 @@ class AdminPlanConfig {
   final String label;
   final int priceCents;
   final int periodDays;
-  final int trialDays;
   final bool active;
   final int sortOrder;
   final int subscribers;
@@ -500,7 +470,6 @@ class AdminPlanConfig {
     label: '${m['label']}',
     priceCents: (m['price_usd_cents'] as num?)?.toInt() ?? 0,
     periodDays: (m['period_days'] as num?)?.toInt() ?? 30,
-    trialDays: (m['trial_days'] as num?)?.toInt() ?? 0,
     active: m['active'] == true,
     sortOrder: (m['sort_order'] as num?)?.toInt() ?? 0,
     subscribers: (m['subscribers'] as num?)?.toInt() ?? 0,

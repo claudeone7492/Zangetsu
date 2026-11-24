@@ -14,7 +14,7 @@ import 'subscription_cubit.dart';
 import '../../l10n/l10n.dart';
 
 /// Opens the subscription card as a frosted modal. Resolves true when the user
-/// unlocked access (trial started, free promo, or a completed payment).
+/// unlocked access (free promo or a completed payment).
 ///
 /// The card is modal by default: it cannot be swiped away, tapped away, or
 /// popped with Back. A caller that is only showing the plans (not gating
@@ -50,7 +50,7 @@ Future<bool> showPaywall(
   return unlocked;
 }
 
-/// The subscription card: the premium tier, promo input, live total, trial CTA.
+/// The subscription card: the premium tier, promo input and live total.
 class PaywallSheet extends StatefulWidget {
   const PaywallSheet({
     super.key,
@@ -65,8 +65,8 @@ class PaywallSheet extends StatefulWidget {
   /// before the device is entitled.
   final bool canClose;
 
-  /// Called once the user unlocks access (trial, free promo or paid), in
-  /// addition to the modal resolving true. Lets a host that cannot await the
+  /// Called once the user unlocks access (free promo or paid), in addition to
+  /// the modal resolving true. Lets a host that cannot await the
   /// result — the launch gate — react to the unlock.
   final VoidCallback? onUnlocked;
 
@@ -239,8 +239,6 @@ class _PaywallSheetState extends State<PaywallSheet> {
   /// a locked title reads why they landed here.
   Widget _hero(SubscriptionState state) {
     final identity = state.identity;
-    final trialLeft = state.trialEligible;
-    final days = state.selected?.trialDays ?? 14;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,10 +270,7 @@ class _PaywallSheetState extends State<PaywallSheet> {
         ),
         const SizedBox(height: 8),
         Text(
-          trialLeft
-              ? 'Start your $days-day free trial and watch every drama, short '
-                    'and live match — no card needed to begin.'
-              : 'Keep watching every drama, short and live match, on any device.',
+          'Keep watching every drama, short and live match, on any device.',
           style: AppText.body.copyWith(color: AppColors.textSecondary),
         ),
         if (identity != null &&
@@ -612,24 +607,13 @@ class _PaywallSheetState extends State<PaywallSheet> {
   }) {
     final label = state.isFreeAccess
         ? 'Activate free access'
-        : state.trialEligible
-        ? 'Start ${state.selected?.trialDays ?? 14} days free trial'
         : 'Continue to payment · ${money(state.totalCents)}'
               '${periodSuffix(state.selected?.periodDays ?? 30)}';
 
     return SizedBox(
       height: 52,
       child: FilledButton(
-        onPressed: busy
-            ? null
-            : () async {
-                if (state.trialEligible && !state.isFreeAccess) {
-                  final ok = await cubit.startTrial();
-                  if (ok && context.mounted) Navigator.of(context).pop(true);
-                  return;
-                }
-                await _pay(context, cubit);
-              },
+        onPressed: busy ? null : () => _pay(context, cubit),
         style: FilledButton.styleFrom(
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,

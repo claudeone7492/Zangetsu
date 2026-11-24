@@ -39,8 +39,6 @@ void main() {
       identityResult: const DeviceIdentity(
         sessionId: 's1',
         isNew: true,
-        trialUsed: false,
-        trialAvailable: true,
         showPaywall: true,
       ),
     );
@@ -55,37 +53,36 @@ void main() {
       find.text('Keep watching — this one is a Zangetsu exclusive'),
       findsOneWidget,
     );
-    // A first-time device is pitched the trial.
-    expect(find.textContaining('14-day free trial'), findsOneWidget);
-    // ...and the CTA itself offers to start it.
-    expect(find.text('Start 14 days free trial'), findsOneWidget);
+    expect(find.textContaining('Keep watching every drama'), findsOneWidget);
+    expect(find.textContaining('Continue to payment'), findsOneWidget);
+    expect(find.textContaining('free trial'), findsNothing);
     // The internal state word must never reach the screen.
     expect(find.textContaining('unentitled'), findsNothing);
     expect(find.textContaining('entitled'), findsNothing);
   });
 
-  testWidgets('an expired viewer sees the trial offer, not a state word', (
-    t,
-  ) async {
-    final api = FakeSubscriptionApi(
-      plansResult: samplePlans(),
-      identityResult: const DeviceIdentity(
-        sessionId: 's1',
-        isNew: false,
-        trialUsed: true,
-        daysLeft: 3,
-        showPaywall: true,
-      ),
-    );
-    final cubit = await loaded(api, t);
+  testWidgets(
+    'an expired viewer sees the subscription offer, not a state word',
+    (t) async {
+      final api = FakeSubscriptionApi(
+        plansResult: samplePlans(),
+        identityResult: const DeviceIdentity(
+          sessionId: 's1',
+          isNew: false,
+          daysLeft: 3,
+          showPaywall: true,
+        ),
+      );
+      final cubit = await loaded(api, t);
 
-    await t.pumpWidget(host(cubit));
-    await t.pump();
+      await t.pumpWidget(host(cubit));
+      await t.pump();
 
-    expect(find.textContaining('Keep watching every drama'), findsOneWidget);
-    expect(find.textContaining('access ended 3 days ago'), findsOneWidget);
-    expect(find.textContaining('unentitled'), findsNothing);
-  });
+      expect(find.textContaining('Keep watching every drama'), findsOneWidget);
+      expect(find.textContaining('access ended 3 days ago'), findsOneWidget);
+      expect(find.textContaining('unentitled'), findsNothing);
+    },
+  );
 
   testWidgets('rejects an unknown promo and then applies a real one', (
     t,
@@ -114,10 +111,8 @@ void main() {
     expect(find.text('Promo · 50% off'), findsOneWidget);
     expect(find.text('You save'), findsOneWidget);
     expect(find.text('Total'), findsOneWidget);
-    // One product: standard list 200c, no launch discount, then 50% off -> 100c.
-    expect(find.text('\$1.00'), findsWidgets);
-    // The promo discount and the "You save" row both read 100c.
-    expect(find.text('\$1.00'), findsWidgets);
+    // One product: standard list 75c, no launch discount, then 50% off -> 38c.
+    expect(find.text('\$0.38'), findsWidgets);
   });
 
   testWidgets('a reused promo shows the expired notification pill', (t) async {
@@ -167,16 +162,16 @@ void main() {
     await t.pump();
 
     // Before the promo the card quotes the full list price.
-    expect(cardPrice('\$2.00'), findsOneWidget);
-    expect(cardPrice('\$1.00'), findsNothing);
+    expect(cardPrice('\$0.75'), findsOneWidget);
+    expect(cardPrice('\$0.38'), findsNothing);
 
     await t.runAsync(() => cubit.applyPromo('HALF'));
     await t.pump();
 
     // After it, the card headline is the discounted amount — the same figure
     // the summary's Total row quotes.
-    expect(cardPrice('\$1.00'), findsOneWidget);
-    expect(cardPrice('\$2.00'), findsNothing);
+    expect(cardPrice('\$0.38'), findsOneWidget);
+    expect(cardPrice('\$0.75'), findsNothing);
   });
 
   testWidgets('a free promo turns the CTA into free activation', (t) async {
@@ -212,8 +207,8 @@ void main() {
     await t.pumpWidget(host(cubit));
     await t.pump();
 
-    // Standard list 200c at the current rate -> $2.00 -> ~N2,704.
-    expect(find.textContaining('₦2,704'), findsWidgets);
+    // Standard list 75c at the current rate -> $0.75 -> ~N1,014.
+    expect(find.textContaining('₦1,014'), findsWidgets);
   });
 
   testWidgets('shows a single plan labelled "Premium subscription"', (t) async {
@@ -230,7 +225,7 @@ void main() {
     expect(find.text('Premium'), findsNothing);
     // The price shown is the standard list price, not a discounted offer
     // (it appears on the plan card and again in the summary "Price" row).
-    expect(find.text('\$2.00'), findsWidgets);
+    expect(find.text('\$0.75'), findsWidgets);
     expect(find.textContaining('Launch offer'), findsNothing);
   });
 }
