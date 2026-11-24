@@ -4364,6 +4364,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Impossible d\'ouvrir le programme d\'installation. Activez l\'option « Installer des applications inconnues » pour Zangetsu dans les paramètres système, puis réessayez.';
 
   @override
+  String get finishInstallingToContinue =>
+      'Finish installing the update to continue.';
+
+  @override
   String get downloadFailedCheckConnection =>
       'Le téléchargement a échoué — vérifiez votre connexion et réessayez.';
 

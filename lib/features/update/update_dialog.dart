@@ -5,17 +5,18 @@ import '../../core/theme/app_text.dart';
 import '../../core/update/update_service.dart';
 import '../../l10n/l10n.dart';
 
-/// Check for an update and, if one exists, show the update dialog.
+/// Check for an update and, if one exists, show the mandatory update dialog.
 ///
-/// In [manual] mode (the Settings "Check for updates" tap) it also tells the
-/// user when they're already up to date. In auto mode (app launch) it stays
-/// silent unless a newer, non-skipped release is found — so it never nags.
+/// Every device is checked, including devices that previously skipped a
+/// release. The dialog cannot be dismissed: the only way past it is to install
+/// the newer build. In [manual] mode (Settings → Check for updates) it also
+/// tells the user when they are already up to date.
 Future<void> maybeShowUpdateDialog(
   BuildContext context, {
   bool manual = false,
 }) async {
   final service = UpdateService();
-  final info = await service.checkForUpdate(respectSkip: !manual);
+  final info = await service.checkForUpdate();
   if (!context.mounted) return;
   if (info == null) {
     if (manual) {
@@ -33,6 +34,7 @@ Future<void> maybeShowUpdateDialog(
   }
   await showDialog<void>(
     context: context,
+    barrierDismissible: false,
     builder: (_) => _UpdateDialog(info: info, service: service),
   );
 }
@@ -119,12 +121,14 @@ class _UpdateDialog extends StatefulWidget {
 class _UpdateDialogState extends State<_UpdateDialog> {
   double? _progress; // null until the download starts
   bool _busy = false; // downloading or installing
+  bool _installerOpened = false;
   String? _error;
 
   Future<void> _startUpdate() async {
     setState(() {
       _busy = true;
       _progress = 0;
+      _installerOpened = false;
       _error = null;
     });
     try {
@@ -139,14 +143,12 @@ class _UpdateDialogState extends State<_UpdateDialog> {
       setState(() => _progress = 1);
       final ok = await widget.service.installApk(file);
       if (!mounted) return;
-      if (ok) {
-        Navigator.of(context).pop(); // installer launched — close the dialog
-      } else {
-        setState(() {
-          _busy = false;
-          _error = context.l10n.couldnTOpenInstaller;
-        });
-      }
+      setState(() {
+        _busy = false;
+        _progress = null;
+        _installerOpened = ok;
+        if (!ok) _error = context.l10n.couldnTOpenInstaller;
+      });
     } catch (_) {
       if (!mounted) return;
       setState(() {
@@ -160,120 +162,103 @@ class _UpdateDialogState extends State<_UpdateDialog> {
   @override
   Widget build(BuildContext context) {
     final notes = widget.info.notes;
-    return Dialog(
-      backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.system_update_rounded,
-                  color: AppColors.accent,
-                  size: 26,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    widget.info.isPrerelease
-                        ? context.l10n.betaUpdateAvailable
-                        : context.l10n.updateAvailable,
-                    style: AppText.title,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Version ${widget.info.version}',
-              style: AppText.caption.copyWith(color: AppColors.accent),
-            ),
-            const SizedBox(height: 14),
-            if (notes.isNotEmpty) ...[
-              Text(context.l10n.whatSNew, style: AppText.caption),
-              const SizedBox(height: 6),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 220),
-                child: SingleChildScrollView(
-                  child: _ReleaseNotes(notes),
-                ),
-              ),
-              const SizedBox(height: 14),
-            ],
-            if (_progress != null) ...[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: _progress,
-                  minHeight: 6,
-                  backgroundColor: AppColors.surface2,
-                  color: AppColors.accent,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                _progress! >= 1
-                    ? context.l10n.startingInstaller
-                    : context.l10n.downloadingPercent((_progress! * 100).round()),
-                style: AppText.caption,
-              ),
-              const SizedBox(height: 8),
-            ],
-            if (_error != null) ...[
-              Text(
-                _error!,
-                style: AppText.caption.copyWith(color: AppColors.accent),
-              ),
-              const SizedBox(height: 8),
-            ],
-            Align(
-              alignment: AlignmentDirectional.centerEnd,
-              child: Wrap(
-                spacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
+    return PopScope(
+      canPop: false,
+      child: Dialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  if (!_busy)
-                    TextButton(
-                      onPressed: () async {
-                        await widget.service.skipVersion(widget.info.version);
-                        if (context.mounted) Navigator.of(context).pop();
-                      },
-                      child: Text(
-                        context.l10n.skip,
-                        style: AppText.button.copyWith(
-                          color: AppColors.textTertiary,
-                        ),
-                      ),
-                    ),
-                  if (!_busy)
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(
-                        context.l10n.later,
-                        style: AppText.button.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.accent,
-                    ),
-                    onPressed: _busy ? null : _startUpdate,
+                  Icon(
+                    Icons.system_update_rounded,
+                    color: AppColors.accent,
+                    size: 26,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
                     child: Text(
-                      _error != null ? context.l10n.retry : context.l10n.update,
-                      style: AppText.button.copyWith(color: Colors.white),
+                      widget.info.isPrerelease
+                          ? context.l10n.betaUpdateAvailable
+                          : context.l10n.updateAvailable,
+                      style: AppText.title,
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                'Version ${widget.info.version}',
+                style: AppText.caption.copyWith(color: AppColors.accent),
+              ),
+              const SizedBox(height: 14),
+              if (notes.isNotEmpty) ...[
+                Text(context.l10n.whatSNew, style: AppText.caption),
+                const SizedBox(height: 6),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 220),
+                  child: SingleChildScrollView(child: _ReleaseNotes(notes)),
+                ),
+                const SizedBox(height: 14),
+              ],
+              if (_progress != null) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: _progress,
+                    minHeight: 6,
+                    backgroundColor: AppColors.surface2,
+                    color: AppColors.accent,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _progress! >= 1
+                      ? context.l10n.startingInstaller
+                      : context.l10n.downloadingPercent(
+                          (_progress! * 100).round(),
+                        ),
+                  style: AppText.caption,
+                ),
+                const SizedBox(height: 8),
+              ],
+              if (_installerOpened) ...[
+                Text(
+                  context.l10n.finishInstallingToContinue,
+                  style: AppText.caption.copyWith(color: AppColors.accent),
+                ),
+                const SizedBox(height: 8),
+              ],
+              if (_error != null) ...[
+                Text(
+                  _error!,
+                  style: AppText.caption.copyWith(color: AppColors.accent),
+                ),
+                const SizedBox(height: 8),
+              ],
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                  ),
+                  onPressed: _busy ? null : _startUpdate,
+                  child: Text(
+                    _error != null || _installerOpened
+                        ? context.l10n.retry
+                        : context.l10n.update,
+                    style: AppText.button.copyWith(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -304,41 +289,51 @@ class _ReleaseNotes extends StatelessWidget {
         case 'blank':
           widgets.add(const SizedBox(height: 8));
         case 'hr':
-          widgets.add(Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Divider(
-              color: AppColors.textTertiary.withValues(alpha: 0.3),
-              height: 1,
-            ),
-          ));
-        case 'header':
-          widgets.add(Padding(
-            padding: const EdgeInsets.only(top: 4, bottom: 2),
-            child: Text.rich(_inline(
-              b.text,
-              base.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: b.level <= 1 ? 16 : (b.level == 2 ? 15 : 14),
+          widgets.add(
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Divider(
+                color: AppColors.textTertiary.withValues(alpha: 0.3),
+                height: 1,
               ),
-            )),
-          ));
-        case 'bullet':
-          widgets.add(Padding(
-            padding: const EdgeInsets.only(bottom: 3),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('•  ', style: base),
-                Expanded(child: Text.rich(_inline(b.text, base))),
-              ],
             ),
-          ));
+          );
+        case 'header':
+          widgets.add(
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 2),
+              child: Text.rich(
+                _inline(
+                  b.text,
+                  base.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: b.level <= 1 ? 16 : (b.level == 2 ? 15 : 14),
+                  ),
+                ),
+              ),
+            ),
+          );
+        case 'bullet':
+          widgets.add(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 3),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('•  ', style: base),
+                  Expanded(child: Text.rich(_inline(b.text, base))),
+                ],
+              ),
+            ),
+          );
         default:
-          widgets.add(Padding(
-            padding: const EdgeInsets.only(bottom: 3),
-            child: Text.rich(_inline(b.text, base)),
-          ));
+          widgets.add(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 3),
+              child: Text.rich(_inline(b.text, base)),
+            ),
+          );
       }
     }
     return Column(
@@ -388,23 +383,29 @@ class _ReleaseNotes extends StatelessWidget {
         spans.add(TextSpan(text: delinked.substring(i, m.start), style: style));
       }
       if (m.group(2) != null) {
-        spans.add(TextSpan(
-          text: m.group(2),
-          style: style.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
+        spans.add(
+          TextSpan(
+            text: m.group(2),
+            style: style.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ));
+        );
       } else if (m.group(4) != null) {
-        spans.add(TextSpan(
-          text: m.group(4),
-          style: style.copyWith(fontStyle: FontStyle.italic),
-        ));
+        spans.add(
+          TextSpan(
+            text: m.group(4),
+            style: style.copyWith(fontStyle: FontStyle.italic),
+          ),
+        );
       } else if (m.group(5) != null) {
-        spans.add(TextSpan(
-          text: m.group(5),
-          style: style.copyWith(fontFamily: 'monospace', color: Colors.white),
-        ));
+        spans.add(
+          TextSpan(
+            text: m.group(5),
+            style: style.copyWith(fontFamily: 'monospace', color: Colors.white),
+          ),
+        );
       }
       i = m.end;
     }

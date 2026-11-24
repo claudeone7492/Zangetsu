@@ -4345,6 +4345,10 @@ class AppLocalizationsId extends AppLocalizations {
       'Tidak bisa membuka installer. Aktifkan \"Pasang aplikasi tidak dikenal\" untuk Zangetsu di pengaturan sistem, lalu coba lagi.';
 
   @override
+  String get finishInstallingToContinue =>
+      'Finish installing the update to continue.';
+
+  @override
   String get downloadFailedCheckConnection =>
       'Unduhan gagal — cek koneksimu lalu coba lagi.';
 

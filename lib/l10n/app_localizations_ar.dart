@@ -4361,6 +4361,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'تعذّر فتح المُثبِّت. فعّل «تثبيت التطبيقات غير المعروفة» لـ Zangetsu في إعدادات النظام ثم أعد المحاولة.';
 
   @override
+  String get finishInstallingToContinue =>
+      'Finish installing the update to continue.';
+
+  @override
   String get downloadFailedCheckConnection =>
       'فشل التنزيل — تحقق من اتصالك وأعد المحاولة.';
 

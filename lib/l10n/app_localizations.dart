@@ -7822,6 +7822,12 @@ abstract class AppLocalizations {
   /// **'Couldn\'t open the installer. Enable \"Install unknown apps\" for Zangetsu in system settings, then try again.'**
   String get couldnTOpenInstaller;
 
+  /// No description provided for @finishInstallingToContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish installing the update to continue.'**
+  String get finishInstallingToContinue;
+
   /// No description provided for @downloadFailedCheckConnection.
   ///
   /// In en, this message translates to:

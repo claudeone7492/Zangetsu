@@ -4338,6 +4338,10 @@ class AppLocalizationsTr extends AppLocalizations {
       'Kurulum sihirbazı açılamadı. Sistem ayarlarında Zangetsu için \"Bilinmeyen uygulamaları yükle\"yi etkinleştir, sonra tekrar dene.';
 
   @override
+  String get finishInstallingToContinue =>
+      'Finish installing the update to continue.';
+
+  @override
   String get downloadFailedCheckConnection =>
       'İndirme başarısız — bağlantını denetle ve tekrar dene.';
 

@@ -366,6 +366,10 @@ class NotificationService {
   }) async {
     if (!Platform.isAndroid) return;
     if (!_inited) await init();
+    final thumb = await _bitmap(
+      _dailyThumbUrl(posters, imageUrl),
+      square: true,
+    );
     final styleInfo = await _dailyPickStyle(
       style,
       title,
@@ -373,6 +377,7 @@ class NotificationService {
       imageUrl,
       posters,
       lines,
+      thumb,
     );
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
@@ -384,7 +389,11 @@ class NotificationService {
         priority: Priority.high,
         color: AppColors.accent,
         icon: _smallIcon,
+        category: AndroidNotificationCategory.recommendation,
+        visibility: NotificationVisibility.public,
+        largeIcon: thumb,
         styleInformation: styleInfo,
+        actions: _dailyActions(payload),
       ),
     );
     await _plugin.show(id, title, body, details, payload: payload);
@@ -411,6 +420,10 @@ class NotificationService {
   }) async {
     if (!Platform.isAndroid) return;
     if (!_inited) await init();
+    final thumb = await _bitmap(
+      _dailyThumbUrl(posters, imageUrl),
+      square: true,
+    );
     final styleInfo = await _dailyPickStyle(
       style,
       title,
@@ -418,6 +431,7 @@ class NotificationService {
       imageUrl,
       posters,
       lines,
+      thumb,
     );
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
@@ -429,7 +443,11 @@ class NotificationService {
         priority: Priority.high,
         color: AppColors.accent,
         icon: _smallIcon,
+        category: AndroidNotificationCategory.recommendation,
+        visibility: NotificationVisibility.public,
+        largeIcon: thumb,
         styleInformation: styleInfo,
+        actions: _dailyActions(payload),
       ),
     );
     await _plugin.zonedSchedule(
@@ -490,6 +508,33 @@ class NotificationService {
 
   Future<void> cancelScheduled(int id) => _plugin.cancel(id);
 
+  static String? _dailyThumbUrl(
+    List<NotificationArtItem>? posters,
+    String? fallback,
+  ) {
+    if (posters != null) {
+      for (final poster in posters) {
+        final url = poster.imageUrl?.trim() ?? '';
+        if (url.isNotEmpty) return url;
+      }
+    }
+    final clean = fallback?.trim() ?? '';
+    return clean.isEmpty ? null : clean;
+  }
+
+  static List<AndroidNotificationAction>? _dailyActions(String? payload) {
+    if (payload == null || payload.trim().isEmpty) return null;
+    return [
+      const AndroidNotificationAction(
+        kWatchNowAction,
+        'Watch Now',
+        icon: DrawableResourceAndroidBitmap('ic_notif_watch'),
+        showsUserInterface: true,
+        cancelNotification: true,
+      ),
+    ];
+  }
+
   Future<StyleInformation?> _dailyPickStyle(
     DailyPickStyle style,
     String title,
@@ -497,9 +542,18 @@ class NotificationService {
     String? imageUrl,
     List<NotificationArtItem>? posters,
     List<String>? lines,
+    FilePathAndroidBitmap? thumb,
   ) async {
-    // Every slot gets the approved art card when its lead item has artwork.
-    // The original text/inbox layouts remain as the no-artwork fallback.
+    // Prefer the Netflix-style media card: 2:1 banner expanded, square
+    // thumbnail collapsed. The poster-row and text layouts stay as fallbacks
+    // for a slot whose artwork cannot be fetched.
+    final media = await _mediaStyle(
+      title: title,
+      body: body,
+      bannerUrl: imageUrl,
+      thumb: thumb,
+    );
+    if (media != null) return media;
     final rich = await _richStyle(
       title: title,
       body: body,

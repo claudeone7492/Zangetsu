@@ -4217,6 +4217,10 @@ class AppLocalizationsJa extends AppLocalizations {
       'インストーラーを開けませんでした。システム設定で「不明なアプリのインストールを許可する」を有効にしてから、もう一度お試しください。';
 
   @override
+  String get finishInstallingToContinue =>
+      'Finish installing the update to continue.';
+
+  @override
   String get downloadFailedCheckConnection =>
       'ダウンロードに失敗しました。接続状況を確認して、もう一度お試しください。';
 

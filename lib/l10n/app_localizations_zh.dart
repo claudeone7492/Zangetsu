@@ -4186,6 +4186,10 @@ class AppLocalizationsZh extends AppLocalizations {
       '安装程序无法打开。请在系统设置中为 Zangetsu 启用“安装未知应用”，然后重试。';
 
   @override
+  String get finishInstallingToContinue =>
+      'Finish installing the update to continue.';
+
+  @override
   String get downloadFailedCheckConnection => '下载失败——请检查您的网络连接并重试。';
 
   @override

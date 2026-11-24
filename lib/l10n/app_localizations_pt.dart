@@ -4367,6 +4367,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'Não foi possível abrir o instalador. Ative \"Instalar apps desconhecidos\" para o Zangetsu nas configurações do sistema e tente de novo.';
 
   @override
+  String get finishInstallingToContinue =>
+      'Finish installing the update to continue.';
+
+  @override
   String get downloadFailedCheckConnection =>
       'Falha no download — verifique sua conexão e tente de novo.';
 

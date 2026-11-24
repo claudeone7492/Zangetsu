@@ -2053,6 +2053,7 @@
   "updateAvailable": "Update available",
   "startingInstaller": "Starting installer…",
   "couldnTOpenInstaller": "Couldn't open the installer. Enable \"Install unknown apps\" for Zangetsu in system settings, then try again.",
+  "finishInstallingToContinue": "Finish installing the update to continue.",
   "downloadFailedCheckConnection": "Download failed — check your connection and try again.",
   "libraryIsntSavedReconnect": "Your library isn't saved to the cloud yet, so logging out will remove it from this device. Reconnect to back it up first?",
   "sessionExpiredEnterPassword": "Your session expired. Enter your password to reconnect {account} and sync your library.",
