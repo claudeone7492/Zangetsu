@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -60,7 +61,8 @@ class NotificationService {
   // A new id, not the old 'daily_picks': Android freezes a channel's importance
   // at creation, so reusing it would keep the old default-importance behaviour.
   static const String _dailyPicksChannelId = 'daily_picks_v2';
-  static const String _smallIcon = 'ic_stat_zangetsu_star';
+  static const String _richChannelId = 'rich_media_v1';
+  static const String _smallIcon = 'ic_stat_zangetsu_mono';
   bool _inited = false;
 
   Future<bool> get canShowAlerts async {
@@ -88,11 +90,30 @@ class NotificationService {
     const settings = InitializationSettings(android: android, iOS: darwin);
     await _plugin.initialize(
       settings,
-      onDidReceiveNotificationResponse: (r) =>
-          openShowFromNotification(r.payload),
+      onDidReceiveNotificationResponse: handleNotificationResponse,
     );
+    // Create the rich-media channel up front so every card lands in the same
+    // high-importance channel instead of Android inventing a default one.
+    await _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.createNotificationChannel(
+          const AndroidNotificationChannel(
+            _richChannelId,
+            'New releases',
+            description:
+                'New movies, premieres and watchlist alerts from $kAppName',
+            importance: Importance.high,
+          ),
+        );
     _inited = true;
   }
+
+  /// Route a tap on the card or one of its action buttons. The payload carries
+  /// the movie/watchlist URLs; the action id decides which one wins.
+  Future<void> handleNotificationResponse(NotificationResponse r) =>
+      openShowFromNotification(r.payload, actionId: r.actionId);
 
   /// Wire notification taps and open the show if the app was launched by one.
   /// Call once the navigator is ready. Handles both notification kinds:
@@ -111,7 +132,11 @@ class NotificationService {
     });
     final d = await _plugin.getNotificationAppLaunchDetails();
     if (d?.didNotificationLaunchApp ?? false) {
-      await openShowFromNotification(d!.notificationResponse?.payload);
+      final response = d!.notificationResponse;
+      await openShowFromNotification(
+        response?.payload,
+        actionId: response?.actionId,
+      );
     }
     try {
       final native = await _notifChannel.invokeMethod<String>(
@@ -188,39 +213,136 @@ class NotificationService {
     );
   }
 
-  /// Show a general announcement. Used for in-app events the app observes
-  /// itself (e.g. extension updates). [imageUrl], when set and reachable,
-  /// renders as a big-picture notification; [payload] is optional tap data.
+  /// Show a rich media announcement.
+  ///
+  /// Collapsed: monochrome badge on the left, square [thumbnailUrl] on the
+  /// right. Expanded: the square thumbnail disappears and [bannerUrl] fills a
+  /// 2:1 card, with the full body and up to two actions. [movieUrl] powers
+  /// "Watch Now"; [watchlistUrl] powers "My List". When neither is supplied the
+  /// card stays a plain text announcement.
+  ///
   Future<void> showMessage({
     required int id,
     required String title,
     required String body,
     String? imageUrl,
     String? posterUrl,
+    String? thumbnailUrl,
+    String? bannerUrl,
+    String? movieUrl,
+    String? watchlistUrl,
+    String? action1Label,
+    String? action2Label,
     String? payload,
   }) async {
     if (!Platform.isAndroid) return;
     if (!_inited) await init();
-    final style = await _richStyle(
+
+    final banner = (bannerUrl ?? imageUrl)?.trim();
+    final thumb = (thumbnailUrl ?? posterUrl ?? banner)?.trim();
+    final richPayload = _richPayload(movieUrl, watchlistUrl) ?? payload;
+    final thumbBitmap = await _bitmap(thumb, square: true);
+    final style = await _mediaStyle(
       title: title,
       body: body,
-      bannerUrl: imageUrl,
-      posterUrl: posterUrl,
-      eyebrow: 'Announcement',
+      bannerUrl: banner,
+      thumb: thumbBitmap,
     );
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
-        'announcements',
-        'Announcements',
-        channelDescription: 'News and updates from $kAppName — $kAppTagline',
+        _richChannelId,
+        'New releases',
+        channelDescription:
+            'New movies, premieres and watchlist alerts from $kAppName',
         importance: Importance.high,
         priority: Priority.high,
         color: AppColors.accent,
         icon: _smallIcon,
+        category: AndroidNotificationCategory.recommendation,
+        visibility: NotificationVisibility.public,
+        largeIcon: thumbBitmap,
         styleInformation: style,
+        actions: _actions(movieUrl, watchlistUrl, action1Label, action2Label),
       ),
     );
-    await _plugin.show(id, title, body, details, payload: payload);
+    await _plugin.show(id, title, body, details, payload: richPayload);
+  }
+
+  static List<AndroidNotificationAction> _actions(
+    String? movieUrl,
+    String? watchlistUrl,
+    String? action1Label,
+    String? action2Label,
+  ) {
+    final actions = <AndroidNotificationAction>[];
+    if (movieUrl?.trim().isNotEmpty ?? false) {
+      actions.add(
+        AndroidNotificationAction(
+          kWatchNowAction,
+          action1Label?.trim().isNotEmpty == true
+              ? action1Label!.trim()
+              : 'Watch Now',
+          icon: const DrawableResourceAndroidBitmap('ic_notif_watch'),
+          showsUserInterface: true,
+          cancelNotification: true,
+        ),
+      );
+    }
+    if (watchlistUrl?.trim().isNotEmpty ?? false) {
+      actions.add(
+        AndroidNotificationAction(
+          kWatchlistAction,
+          action2Label?.trim().isNotEmpty == true
+              ? action2Label!.trim()
+              : 'My List',
+          icon: const DrawableResourceAndroidBitmap('ic_notif_add'),
+          showsUserInterface: true,
+          cancelNotification: true,
+        ),
+      );
+    }
+    return actions;
+  }
+
+  static String? _richPayload(String? movieUrl, String? watchlistUrl) {
+    final data = <String, String>{};
+    if (movieUrl?.trim().isNotEmpty ?? false) {
+      data['movieUrl'] = movieUrl!.trim();
+    }
+    if (watchlistUrl?.trim().isNotEmpty ?? false) {
+      data['watchlistUrl'] = watchlistUrl!.trim();
+    }
+    if (data.isEmpty) return null;
+    return 'rich:${base64Url.encode(utf8.encode(jsonEncode(data)))}';
+  }
+
+  Future<FilePathAndroidBitmap?> _bitmap(
+    String? url, {
+    required bool square,
+  }) async {
+    final clean = url?.trim() ?? '';
+    if (clean.isEmpty) return null;
+    final path = square
+        ? await NotificationArt.squareThumbnail(dio: _dio, url: clean)
+        : await NotificationArt.wideBanner(dio: _dio, url: clean);
+    return path == null ? null : FilePathAndroidBitmap(path);
+  }
+
+  Future<StyleInformation?> _mediaStyle({
+    required String title,
+    required String body,
+    required String? bannerUrl,
+    required FilePathAndroidBitmap? thumb,
+  }) async {
+    final banner = await _bitmap(bannerUrl, square: false);
+    if (banner == null) return null;
+    return BigPictureStyleInformation(
+      banner,
+      contentTitle: title,
+      summaryText: body,
+      largeIcon: thumb,
+      hideExpandedLargeIcon: true,
+    );
   }
 
   /// Show one of the daily-pick cards, choosing the Android expanded layout by

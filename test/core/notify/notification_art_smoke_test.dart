@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
@@ -54,4 +57,67 @@ void main() {
       await dir.delete(recursive: true);
     },
   );
+
+  test('the collapsed thumb and expanded banner are the spec sizes', () async {
+    final dir = await Directory.systemTemp.createTemp('zangetsu_media_test');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (call) async => dir.path,
+        );
+
+    final png = base64Decode(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8'
+      '/x8AAwMCAO+ip1sAAAAASUVORK5CYII=',
+    );
+    final url = 'https://example.com/poster.png';
+    final dio = Dio()..httpClientAdapter = _BytesAdapter(png);
+
+    final thumb = await NotificationArt.squareThumbnail(dio: dio, url: url);
+    final banner = await NotificationArt.wideBanner(dio: dio, url: url);
+    expect(thumb, isNotNull);
+    expect(banner, isNotNull);
+
+    Future<ui.Image> decode(String path) async {
+      final codec = await ui.instantiateImageCodec(
+        File(path).readAsBytesSync(),
+      );
+      final frame = await codec.getNextFrame();
+      codec.dispose();
+      return frame.image;
+    }
+
+    final thumbImage = await decode(thumb!);
+    final bannerImage = await decode(banner!);
+    expect(thumbImage.width, 256);
+    expect(thumbImage.height, 256);
+    expect(bannerImage.width, 1024);
+    expect(bannerImage.height, 512);
+    thumbImage.dispose();
+    bannerImage.dispose();
+
+    await dir.delete(recursive: true);
+  });
+}
+
+class _BytesAdapter implements HttpClientAdapter {
+  _BytesAdapter(this.bytes);
+
+  final Uint8List bytes;
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async => ResponseBody.fromBytes(
+    bytes,
+    200,
+    headers: {
+      Headers.contentTypeHeader: ['image/png'],
+    },
+  );
+
+  @override
+  void close({bool force = false}) {}
 }

@@ -48,6 +48,27 @@ void main() {
       await openShowFromNotification('daily:morning:$data');
     });
 
+    test('a rich payload exposes both action targets', () {
+      final payload =
+          'rich:${base64Url.encode(utf8.encode(jsonEncode({'movieUrl': 'https://zangetsu.online/watch/1', 'watchlistUrl': 'https://zangetsu.online/list/1'})))}';
+      final rich = RichNotificationPayload.parse(payload);
+      expect(rich, isNotNull);
+      expect(
+        rich!.targetFor(kWatchNowAction),
+        'https://zangetsu.online/watch/1',
+      );
+      expect(
+        rich.targetFor(kWatchlistAction),
+        'https://zangetsu.online/list/1',
+      );
+      expect(rich.targetFor(null), 'https://zangetsu.online/watch/1');
+    });
+
+    test('a malformed rich payload is ignored', () {
+      expect(RichNotificationPayload.parse('rich:not-base64'), isNull);
+      expect(RichNotificationPayload.parse('ani:1|https://x.tld/a'), isNull);
+    });
+
     test('null and empty payloads are no-ops', () async {
       await openShowFromNotification(null);
       await openShowFromNotification('');

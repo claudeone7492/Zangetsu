@@ -254,6 +254,62 @@ class NotificationArt {
     }
   }
 
+  /// A square 256×256 thumbnail for the collapsed notification's large icon.
+  /// Android crops the large icon to a square, so doing it here keeps the
+  /// subject centred instead of letterboxed.
+  static Future<String?> squareThumbnail({required Dio dio, String? url}) =>
+      _crop(dio: dio, url: url, width: 256, height: 256, prefix: 'thumb');
+
+  /// A 2:1 landscape banner (1024×512) for the expanded BigPicture card.
+  static Future<String?> wideBanner({required Dio dio, String? url}) =>
+      _crop(dio: dio, url: url, width: 1024, height: 512, prefix: 'wide');
+
+  static Future<String?> _crop({
+    required Dio dio,
+    required String? url,
+    required int width,
+    required int height,
+    required String prefix,
+  }) async {
+    final clean = url?.trim() ?? '';
+    if (clean.isEmpty) return null;
+    final key = '$prefix|$width|$height|$clean';
+    final hit = _cards[key];
+    if (hit != null && File(hit).existsSync()) return hit;
+
+    final image = await _decode(dio, clean);
+    if (image == null) return null;
+    try {
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(
+        recorder,
+        Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+      );
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+        Paint()..color = const Color(0xFF16161C),
+      );
+      _drawCover(
+        canvas,
+        image,
+        Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+      );
+      final picture = recorder.endRecording();
+      final out = await picture.toImage(width, height);
+      final data = await out.toByteData(format: ui.ImageByteFormat.png);
+      out.dispose();
+
+      final dir = await _notificationDir();
+      final file = File('${dir.path}/${prefix}_${key.hashCode}.png');
+      await file.writeAsBytes(data!.buffer.asUint8List(), flush: true);
+      _prune(dir);
+      _cards[key] = file.path;
+      return file.path;
+    } finally {
+      image.dispose();
+    }
+  }
+
   static String _rowKey(List<NotificationArtItem> items) {
     final body = items
         .map(
