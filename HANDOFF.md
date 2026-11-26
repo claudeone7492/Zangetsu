@@ -4,6 +4,42 @@
 Written 2026-11-21, after `30e0dd30` on `main`. Working tree clean.
 
 
+## Release signing — the key is stored, stop hunting for it
+
+Published APKs are signed by the certificate with
+
+```
+SHA-256 805c450aedab52b2c93b8f68f12a8a9070cfd2439b3c43f12e570a76b800b344
+CN=Zangetsu, OU=Release, O=Zangetsu, L=Lagos, ST=Lagos, C=NG
+```
+
+`scripts/publish_release.sh` refuses to upload an APK signed by anything else,
+because users on the published build cannot upgrade across a different key. Do
+not generate a replacement keystore: it would force every user to uninstall.
+
+The keystore and its passwords are stored in two places:
+
+- **GitLab `exploit7492/Zangetsu`** (the copy you can read back) — CI/CD
+  variables `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`,
+  `ANDROID_KEY_PASSWORD`, `ANDROID_KEY_ALIAS`, plus the secure file
+  `zangetsu-release.jks`.
+- **GitHub `claudeone7492/Zangetsu`** — the same four names as Actions secrets.
+  Secrets are write-only, so this is for CI, not for recovery.
+
+In a fresh sandbox:
+
+```bash
+source scripts/env.sh                                   # toolchain first
+GITLAB_TOKEN=... scripts/restore-signing-key.sh         # keystore + key.properties
+```
+
+The script writes `/workspace/keys/zangetsu-release.jks` and
+`android/key.properties`, then checks the fingerprint against the value above.
+A signed build also needs `PROXIES_API_KEY` in `android/proxies.properties`
+(GitLab variable / Actions secret of the same name); without it the Gradle
+release build fails on purpose.
+
+
 ## 0. Start here
 
 
