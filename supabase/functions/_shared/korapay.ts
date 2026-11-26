@@ -40,6 +40,16 @@ export function publicKey(): string | null {
     : Deno.env.get("KORAPAY_TEST_PUBLIC_KEY") ?? null;
 }
 
+/** True when the selected mode has a secret key, without throwing. */
+export function korapayConfigured(): boolean {
+  try {
+    secretKey();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function baseUrl(): string {
   return Deno.env.get("KORAPAY_BASE_URL") ?? DEFAULT_BASE;
 }

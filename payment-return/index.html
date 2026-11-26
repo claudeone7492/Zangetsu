@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex, nofollow">
+<title>Zangetsu payment</title>
+<style>
+  :root {
+    --bg: #08080c;
+    --card: #121218;
+    --line: rgba(255, 255, 255, 0.12);
+    --text: #f5f5f7;
+    --muted: rgba(245, 245, 247, 0.62);
+    --accent: #7c5cff;
+    --green: #35c58b;
+    --amber: #f2b64c;
+    --red: #f2646a;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    min-height: 100%;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(124, 92, 255, 0.22), transparent 70%),
+      var(--bg);
+    color: var(--text);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  main {
+    width: min(440px, 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015));
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 28px 24px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+    text-align: center;
+  }
+  .brand {
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 22px;
+  }
+  .mark {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 28px;
+    line-height: 1;
+  }
+  h1 { font-size: 22px; line-height: 1.25; margin: 0 0 10px; }
+  p { margin: 0; color: var(--muted); }
+  .ref {
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--muted);
+    word-break: break-all;
+  }
+  a.open {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 50px;
+    margin-top: 22px;
+    border-radius: 14px;
+    background: var(--text);
+    color: #08080c;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  a.open:hover { opacity: 0.92; }
+  .hint { margin-top: 14px; font-size: 13px; color: var(--muted); }
+  .paid .mark { color: var(--green); border-color: rgba(53, 197, 139, 0.4); }
+  .pending .mark { color: var(--amber); border-color: rgba(242, 182, 76, 0.4); }
+  .cancelled .mark { color: var(--red); border-color: rgba(242, 100, 106, 0.4); }
+</style>
+</head>
+<body>
+<main id="card" role="status" aria-live="polite">
+  <div class="brand">Zangetsu</div>
+  <div class="mark" id="mark" aria-hidden="true">✓</div>
+  <h1 id="title">Payment received</h1>
+  <p id="body">Returning you to the app…</p>
+  <p class="ref" id="ref" hidden></p>
+  <a class="open" id="open" href="zangetsu://payment/return">Open Zangetsu</a>
+  <p class="hint">You can close this page once the app opens.</p>
+</main>
+<script>
+  (function () {
+    var params = new URLSearchParams(window.location.search);
+    var status = (params.get('status') || params.get('payment_status') || '').toLowerCase();
+    var cancelled = window.location.pathname.toLowerCase().indexOf('/cancel') !== -1 ||
+      ['cancelled', 'canceled', 'failed', 'error', 'declined'].indexOf(status) !== -1;
+    var pending = ['pending', 'processing', 'initiated', 'queued'].indexOf(status) !== -1;
+    var state = cancelled ? 'cancelled' : (pending ? 'pending' : 'paid');
+
+    var copy = {
+      paid: ['✓', 'Payment received', 'Returning you to Zangetsu. Access unlocks as soon as the gateway confirms it.'],
+      pending: ['…', 'Payment processing', 'Your bank or mobile money is confirming the payment. Return to Zangetsu — access unlocks automatically.'],
+      cancelled: ['×', 'Payment cancelled', 'Nothing was charged. Return to Zangetsu to try again.']
+    }[state];
+
+    document.getElementById('card').className = state;
+    document.getElementById('mark').textContent = copy[0];
+    document.getElementById('title').textContent = copy[1];
+    document.getElementById('body').textContent = copy[2];
+
+    var ref = params.get('tx_ref') || params.get('reference');
+    if (ref) {
+      var el = document.getElementById('ref');
+      el.textContent = 'Reference: ' + ref;
+      el.hidden = false;
+    }
+
+    var deepLink = 'zangetsu://payment/return' + window.location.search;
+    var open = document.getElementById('open');
+    open.href = deepLink;
+
+    // In the app's WebView this URL is intercepted before the page loads, so
+    // this document only runs in an external browser. Try the hand-off once on
+    // a phone; the button stays for when the browser blocks the automatic jump.
+    var mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    if (mobile && !cancelled) {
+      window.setTimeout(function () {
+        window.location.href = deepLink;
+      }, 900);
+    }
+  })();
+</script>
+</body>
+</html>

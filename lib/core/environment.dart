@@ -61,6 +61,19 @@ class Environment {
   /// `zangetsu://pair`. App-facing TV QRs encode the deeplink directly.
   static const String sitePairUrl = '$siteBaseUrl/pair/';
 
+  /// Where the payment gateways send the browser back after a charge. A
+  /// separate, globally reachable domain because [siteBaseUrl] is blocked in
+  /// some regions, which would strand the callback behind a VPN. The server
+  /// receives this URL as a hint (pinned to an allowlist) and passes the same
+  /// URL to the gateway, so the checkout screen intercepts exactly it.
+  static const String paymentReturnUrl =
+      'https://edgesenterprise.com/payment/return';
+
+  /// The callback earlier builds and un-upgraded edge functions still use.
+  /// The checkout screen watches both, so app and function can be deployed in
+  /// either order without a callback that no WebView recognises.
+  static const String legacyPaymentReturnUrl = '$siteBaseUrl/payment/success';
+
   /// The "open" page redirects to `zangetsu://open?…`; an installed app catches
   /// it (see [OpenLinkService] + the Android manifest intent-filter).
   static const String openLinkScheme = trackerRedirectScheme; // 'zangetsu'

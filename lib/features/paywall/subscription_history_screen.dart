@@ -12,8 +12,9 @@ import 'paywall_screen.dart';
 ///
 /// The server scopes `device_transactions` to the device session that started
 /// the checkout, so a shared-plan guest never sees the payer's card history.
-/// Every charge is billed to the merchant Kora account, but the reference on
-/// each row is the link back to the device that initiated it.
+/// Every charge is billed to the merchant account (KoraPay or Flutterwave,
+/// depending on the device's region), and the reference on each row is the
+/// link back to the device that initiated it.
 class SubscriptionHistoryScreen extends StatefulWidget {
   const SubscriptionHistoryScreen({super.key});
 

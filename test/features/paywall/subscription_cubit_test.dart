@@ -405,7 +405,25 @@ void main() {
       final entitled = await cubit.refreshEntitlement();
 
       expect(entitled, isTrue);
+      expect(api.confirmCalls, 1);
       expect(cubit.state.identity?.daysLeft, 30);
+    });
+
+    test('a late webhook offers a status check, not a second charge', () async {
+      final api = FakeSubscriptionApi(
+        plansResult: samplePlans(),
+        identityResult: const DeviceIdentity(sessionId: 's1', isNew: false),
+      );
+      final cubit = SubscriptionCubit(api);
+      await cubit.load();
+
+      cubit.markConfirming();
+      expect(cubit.state.stage, PaywallStage.activating);
+
+      cubit.paymentStillConfirming();
+
+      expect(cubit.state.stage, PaywallStage.confirming);
+      expect(cubit.state.message, contains('unlocks'));
     });
   });
 

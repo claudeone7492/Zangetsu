@@ -1,8 +1,10 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../device/device_fingerprint.dart';
+import '../environment.dart';
 import '../logging/app_logger.dart';
 import 'entitlement_cache.dart';
+import 'geo_pricing.dart';
 import 'subscription_models.dart';
 
 /// The subscription surface the UI depends on. An interface so the cubits can
@@ -37,6 +39,11 @@ abstract class SubscriptionApi {
     required String planKey,
     String? promoCode,
   });
+
+  /// Settles a charge the gateway accepted but did not webhook, by asking the
+  /// server to verify its reference with the gateway's secret key. Best-effort:
+  /// the caller re-reads entitlement afterwards either way.
+  Future<void> confirmPendingPayment();
 
   /// Payments initiated by this device, newest first. A shared-plan guest gets
   /// its own (usually empty) history, not the payer's card history.
@@ -302,6 +309,8 @@ class SubscriptionRepository implements SubscriptionApi {
 
   /// Starts a checkout through the `stream-subscribe` edge function.
   ///
+  /// The server picks the gateway from the caller's country; this device only
+  /// supplies a locale hint for the case where the edge cannot see its IP.
   /// A function error is returned as a [CheckoutResult] with `ok == false`
   /// rather than thrown, so the UI can show a reason without a try/catch.
   @override
@@ -310,6 +319,7 @@ class SubscriptionRepository implements SubscriptionApi {
     String? promoCode,
   }) async {
     final fp = await _fingerprint();
+    final country = GeoPricing.countryCode();
     try {
       final res = await _client.functions.invoke(
         'stream-subscribe',
@@ -317,6 +327,8 @@ class SubscriptionRepository implements SubscriptionApi {
           'fingerprint': fp,
           'planKey': planKey,
           if (promoCode != null && promoCode.isNotEmpty) 'promoCode': promoCode,
+          if (country != null && country.isNotEmpty) 'country': country,
+          'returnUrl': Environment.paymentReturnUrl,
         },
       );
       final data = res.data;
@@ -330,6 +342,22 @@ class SubscriptionRepository implements SubscriptionApi {
       );
     } catch (e) {
       return CheckoutResult(ok: false, free: false, error: '$e');
+    }
+  }
+
+  @override
+  Future<void> confirmPendingPayment() async {
+    final fp = await _fingerprint();
+    try {
+      await _client.functions.invoke(
+        'stream-subscribe',
+        body: {'action': 'verify', 'fingerprint': fp},
+      );
+    } catch (e) {
+      AppLogger.instance.log(
+        '[subscription] confirmPendingPayment failed: $e',
+        level: 'E',
+      );
     }
   }
 

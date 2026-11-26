@@ -8,7 +8,7 @@ import '../../core/subscription/subscription_models.dart';
 import '../../core/subscription/subscription_repository.dart';
 
 /// Where the user is in the subscribe flow.
-enum PaywallStage { loading, ready, activating, error }
+enum PaywallStage { loading, ready, activating, confirming, error }
 
 /// Paywall + subscription state.
 ///
@@ -271,9 +271,9 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
   /// Starts a paid checkout for the selected plan.
   ///
-  /// Returns the result so the caller can open the Korapay checkout. When the
-  /// promo covers the whole price the server grants access immediately and
-  /// [CheckoutResult.free] is true, with no checkout URL to open.
+  /// Returns the result so the caller can open the gateway's hosted checkout.
+  /// When the promo covers the whole price the server grants access immediately
+  /// and [CheckoutResult.free] is true, with no checkout URL to open.
   Future<CheckoutResult?> beginCheckout() async {
     final plan = state.selected;
     if (plan == null) return null;
@@ -308,9 +308,38 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   /// Re-reads this device's entitlement after a payment, so the unlock reflects
   /// the server's verdict rather than the WebView's return.
   Future<bool> refreshEntitlement() async {
+    await _repo.confirmPendingPayment();
     final identity = await _repo.identify();
     emit(state.copyWith(identity: identity));
     return identity?.entitled ?? false;
+  }
+
+  /// Keeps the paywall CTA spinning while the gateway confirms a payment and
+  /// the webhook settles it. The poll then re-reads the entitlement.
+  void markConfirming() {
+    if (isClosed) return;
+    emit(state.copyWith(stage: PaywallStage.activating, message: () => null));
+  }
+
+  /// Re-enables the CTA when the checkout ended without a charge to confirm.
+  void markReady() {
+    if (isClosed) return;
+    emit(state.copyWith(stage: PaywallStage.ready, message: () => null));
+  }
+
+  /// Ends the confirmation wait when the webhook has not landed in time. The
+  /// CTA stops spinning and turns into "Check payment status" — re-enabling
+  /// "pay" would invite a second charge — while the entitlement is read again
+  /// on demand and the next time the paywall opens.
+  void paymentStillConfirming() {
+    if (isClosed) return;
+    emit(
+      state.copyWith(
+        stage: PaywallStage.confirming,
+        message: () =>
+            'Payment received. It unlocks as soon as the gateway confirms it.',
+      ),
+    );
   }
 
   /// Joins the plan behind a device code. On success the identity is re-read,

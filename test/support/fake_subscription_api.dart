@@ -47,6 +47,7 @@ class FakeSubscriptionApi implements SubscriptionApi {
   String? lastAdminPassword;
   String? lastNewPassword;
   int startCheckoutCalls = 0;
+  int confirmCalls = 0;
   String? lastCheckoutPlan;
   String? lastCheckoutPromo;
   int identifyCalls = 0;
@@ -117,6 +118,11 @@ class FakeSubscriptionApi implements SubscriptionApi {
     lastCheckoutPlan = planKey;
     lastCheckoutPromo = promoCode;
     return checkoutResult;
+  }
+
+  @override
+  Future<void> confirmPendingPayment() async {
+    confirmCalls++;
   }
 
   @override

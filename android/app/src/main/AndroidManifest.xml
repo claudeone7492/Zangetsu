@@ -132,6 +132,10 @@
                 <data android:scheme="zangetsu" android:host="room"/>
                 <!-- TV pairing QR: zangetsu://pair?code=… (see OpenLinkService). -->
                 <data android:scheme="zangetsu" android:host="pair"/>
+                <!-- Payment return page hand-off: zangetsu://payment/return?…
+                     Just brings the app forward; entitlement is read from the
+                     server, so no route payload is trusted. -->
+                <data android:scheme="zangetsu" android:host="payment"/>
             </intent-filter>
             <!-- Keep the hostless Discord callback separate from tracker hosts. -->
             <intent-filter>

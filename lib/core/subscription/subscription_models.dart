@@ -171,6 +171,8 @@ class CheckoutResult {
     this.planKey,
     this.amountCents = 0,
     this.error,
+    this.provider,
+    this.returnUrl,
   });
 
   final bool ok;
@@ -183,6 +185,13 @@ class CheckoutResult {
   final int amountCents;
   final String? error;
 
+  /// Gateway the server routed this checkout to: `korapay` or `flutterwave`.
+  final String? provider;
+
+  /// The page the gateway sends the browser back to. The server passes the
+  /// same URL to the gateway, so the checkout screen intercepts exactly it.
+  final String? returnUrl;
+
   static CheckoutResult fromMap(Map<String, dynamic> m) => CheckoutResult(
     ok: m['ok'] == true,
     free: m['free'] == true,
@@ -191,11 +200,13 @@ class CheckoutResult {
     planKey: m['planKey'] as String?,
     amountCents: (m['amountUsdCents'] as num?)?.toInt() ?? 0,
     error: m['error'] as String?,
+    provider: m['provider'] as String?,
+    returnUrl: m['returnUrl'] as String?,
   );
 }
 
 /// One payment row from `device_transactions`, scoped to this device's own
-/// session. The Korapay reference is the link between the merchant-billed
+/// session. The gateway reference is the link between the merchant-billed
 /// charge and the device that initiated it.
 class DeviceTransaction {
   const DeviceTransaction({

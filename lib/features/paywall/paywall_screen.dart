@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/di/injector.dart';
+import '../../core/environment.dart';
 import '../../core/subscription/geo_pricing.dart';
 import '../../core/subscription/subscription_models.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import 'join_plan_dialog.dart';
-import 'korapay_checkout.dart';
+import 'hosted_checkout.dart';
 import 'subscription_cubit.dart';
 import '../../l10n/l10n.dart';
 
@@ -215,13 +216,6 @@ class _PaywallSheetState extends State<PaywallSheet> {
             const SizedBox(height: 16),
             _cta(context, state, cubit, busy: busy),
             const SizedBox(height: 12),
-            Center(
-              child: Text(
-                context.l10n.paywallPayWithKorapay,
-                style: AppText.caption.copyWith(color: AppColors.textTertiary),
-              ),
-            ),
-            const SizedBox(height: 4),
             Center(
               child: Text(
                 context.l10n.paywallSecuredInApp,
@@ -605,15 +599,21 @@ class _PaywallSheetState extends State<PaywallSheet> {
     SubscriptionCubit cubit, {
     required bool busy,
   }) {
+    final confirming = state.stage == PaywallStage.confirming;
     final label = state.isFreeAccess
         ? 'Activate free access'
+        : confirming
+        ? 'Check payment status'
         : 'Continue to payment · ${money(state.totalCents)}'
               '${periodSuffix(state.selected?.periodDays ?? 30)}';
 
     return SizedBox(
       height: 52,
       child: FilledButton(
-        onPressed: busy ? null : () => _pay(context, cubit),
+        onPressed: busy
+            ? null
+            : () =>
+                  confirming ? _recheck(context, cubit) : _pay(context, cubit),
         style: FilledButton.styleFrom(
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
@@ -636,8 +636,8 @@ class _PaywallSheetState extends State<PaywallSheet> {
   }
 
   /// Runs the paid path: start the checkout server-side, then either finish
-  /// (a free promo already granted access) or open the Korapay WebView and
-  /// re-check entitlement on the way back.
+  /// (a free promo already granted access) or open the gateway's hosted
+  /// checkout and re-check entitlement on the way back.
   Future<void> _pay(BuildContext context, SubscriptionCubit cubit) async {
     final result = await cubit.beginCheckout();
     if (!context.mounted || result == null || !result.ok) return;
@@ -660,30 +660,67 @@ class _PaywallSheetState extends State<PaywallSheet> {
       return;
     }
 
-    final returned = await Navigator.of(context).push<bool>(
+    final outcome = await Navigator.of(context).push<CheckoutOutcome>(
       MaterialPageRoute(
-        builder: (_) => KoraPayCheckout(checkoutUrl: url),
+        builder: (_) => HostedCheckout(
+          checkoutUrl: url,
+          provider: result.provider,
+          returnUrl: result.returnUrl ?? Environment.paymentReturnUrl,
+        ),
         fullscreenDialog: true,
       ),
     );
     if (!context.mounted) return;
 
     // The WebView returning only means the user came back. Entitlement is
-    // re-read from the server, which the webhook settles independently. Poll
-    // briefly after a redirect or a manual close, because the webhook can
-    // arrive just after the browser lands on the success URL.
+    // re-read from the server, which the webhook settles independently. A
+    // success or pending return keeps the CTA busy while polling, because the
+    // webhook can arrive a moment after the browser lands on the return URL.
+    final waiting =
+        outcome == CheckoutOutcome.paid || outcome == CheckoutOutcome.pending;
+    if (outcome == CheckoutOutcome.cancelled) {
+      cubit.markReady();
+    } else {
+      cubit.markConfirming();
+    }
     var unlocked = await cubit.refreshEntitlement();
-    final attempts = switch (returned) {
-      true => 5,
+    final attempts = switch (outcome) {
+      CheckoutOutcome.paid || CheckoutOutcome.pending => 15,
       null => 3,
-      _ => 0,
+      CheckoutOutcome.cancelled => 0,
     };
     for (var attempt = 0; attempt < attempts && !unlocked; attempt++) {
       await Future<void>.delayed(const Duration(seconds: 2));
       if (!context.mounted) return;
       unlocked = await cubit.refreshEntitlement();
     }
-    if (unlocked && context.mounted) Navigator.of(context).pop(true);
+    if (!context.mounted) return;
+    if (unlocked) {
+      Navigator.of(context).pop(true);
+    } else if (waiting) {
+      cubit.paymentStillConfirming();
+    } else {
+      cubit.markReady();
+    }
+  }
+
+  /// Re-checks a payment the gateway accepted but the webhook has not settled
+  /// yet. A miss returns to the confirming state rather than offering a second
+  /// checkout.
+  Future<void> _recheck(BuildContext context, SubscriptionCubit cubit) async {
+    cubit.markConfirming();
+    var unlocked = await cubit.refreshEntitlement();
+    for (var attempt = 0; attempt < 5 && !unlocked; attempt++) {
+      await Future<void>.delayed(const Duration(seconds: 2));
+      if (!context.mounted) return;
+      unlocked = await cubit.refreshEntitlement();
+    }
+    if (!context.mounted) return;
+    if (unlocked) {
+      Navigator.of(context).pop(true);
+    } else {
+      cubit.paymentStillConfirming();
+    }
   }
 }
 

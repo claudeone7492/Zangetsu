@@ -55,6 +55,11 @@ class GeoPricing {
 
   static GeoQuote? _memo;
 
+  /// ISO 3166-1 alpha-2 country hint for server-side gateway routing. The
+  /// server treats its own IP lookup as authoritative; this only helps when the
+  /// edge cannot see the caller's address.
+  static String? countryCode() => PlatformDispatcher.instance.locale.countryCode;
+
   /// The device's local currency + rate, or null when it cannot be resolved,
   /// is not African, or the network is unavailable and nothing is cached.
   static Future<GeoQuote?> quote() async {
