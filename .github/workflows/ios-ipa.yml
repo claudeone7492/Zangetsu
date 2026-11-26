@@ -1,0 +1,70 @@
+name: iOS IPA
+
+# Builds an unsigned .ipa on a macOS runner. Unsigned, because a signed build
+# needs an Apple certificate and provisioning profile that live outside this
+# repo. Sideloading takes the unsigned archive and re-signs it with the
+# user's own Apple ID (Sideloadly, AltStore), or the signing steps at the
+# bottom take over when the APPLE_* secrets are present.
+on:
+  workflow_dispatch:
+    inputs:
+      signed:
+        description: "Codesign with the APPLE_* secrets instead of the unsigned archive"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ios-ipa-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Bump alongside .github/workflows/ci.yml and pubspec.lock.
+  FLUTTER_VERSION: "3.44.9"
+
+jobs:
+  ipa:
+    name: Build IPA
+    runs-on: macos-14
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Toolchain versions
+        run: |
+          flutter --version
+          xcodebuild -version
+          pod --version
+
+      - name: Resolve packages
+        run: |
+          flutter pub get
+          # Pod install is where iOS-only dependency problems surface, so run it
+          # on its own rather than inside `flutter build`.
+          (cd ios && pod install --repo-update)
+
+      - name: Build the app bundle
+        run: |
+          if [ "${{ inputs.signed }}" = "true" ]; then
+            echo "Signed build requested; expecting APPLE_* secrets."
+            scripts/ios-export.sh --sign
+          else
+            scripts/ios-export.sh
+          fi
+
+      - name: Show what was produced
+        run: |
+          ls -lh build/ios/ipa/*.ipa
+          shasum -a 256 build/ios/ipa/*.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zangetsu-ios-${{ github.run_number }}
+          path: build/ios/ipa/*.ipa
+          if-no-files-found: error
+          retention-days: 30
