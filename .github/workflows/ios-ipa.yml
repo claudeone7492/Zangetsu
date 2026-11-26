@@ -44,9 +44,7 @@ jobs:
       - name: Resolve packages
         run: |
           flutter pub get
-          # Pod install is where iOS-only dependency problems surface, so run it
-          # on its own rather than inside `flutter build`.
-          (cd ios && pod install --repo-update)
+          flutter precache --ios
 
       - name: Build the app bundle
         run: |
