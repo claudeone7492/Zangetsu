@@ -12,6 +12,8 @@ on:
         description: "Codesign with the APPLE_* secrets instead of the unsigned archive"
         type: boolean
         default: false
+  push:
+    branches: [ci/ios-ipa]
 
 concurrency:
   group: ios-ipa-${{ github.ref }}
