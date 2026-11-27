@@ -2,7 +2,8 @@ import { assertEquals } from "https://deno.land/std/assert/mod.ts";
 import {
   currencyForCountry,
   decimalsFor,
-  isKorapayRail,
+  AFRICAN_COUNTRIES,
+  isAfricanCountry,
   listPriceCents,
   planCharge,
   rateFor,
@@ -101,29 +102,53 @@ Deno.test("an unconfigured gateway is dropped from the order", async () => {
   assertEquals(neither.error, "currency_not_supported");
 });
 
-Deno.test("the rail picks the tier: Korapay rails $1, Flutterwave $6.99", () => {
+Deno.test("Africa is $1 on either rail, the rest of the world $6.99", () => {
   const plan = { price_usd_cents: 100, price_intl_usd_cents: 699 };
+  // Korapay rails.
   assertEquals(listPriceCents(plan, "NG"), 100);
   assertEquals(listPriceCents(plan, "sn"), 100);
+  // African countries Korapay cannot collect, so Flutterwave takes them in USD.
+  assertEquals(listPriceCents(plan, "TZ"), 100);
+  assertEquals(listPriceCents(plan, "EG"), 100);
+  assertEquals(listPriceCents(plan, "UG"), 100);
+  // Everywhere else.
   assertEquals(listPriceCents(plan, "US"), 699);
   assertEquals(listPriceCents(plan, "DE"), 699);
   // Unknown country quotes the higher price: never show less than is charged.
   assertEquals(listPriceCents(plan, null), 699);
-  assertEquals(isKorapayRail("KE"), true);
-  assertEquals(isKorapayRail("EG"), false);
+  assertEquals(isAfricanCountry("KE"), true);
+  assertEquals(isAfricanCountry("tz"), true);
+  assertEquals(isAfricanCountry("US"), false);
 });
 
-Deno.test("the SQL rail list matches the edge rail map", async () => {
+Deno.test("the SQL country list matches the edge country set", async () => {
   const sql = await Deno.readTextFile(
-    new URL(
-      "../../migrations/20261127_paywall_country_from_request.sql",
-      import.meta.url,
-    ),
+    new URL("../../migrations/20261127_african_tier.sql", import.meta.url),
   );
-  const start = sql.indexOf("is_korapay_rail_country");
-  const block = sql.slice(start, sql.indexOf("drop function if exists", start));
+  const block = sql.slice(sql.indexOf("is_african_country"));
   const codes = [...block.matchAll(/'([A-Z]{2})'/g)].map((m) => m[1]).sort();
-  assertEquals(codes, Object.keys(KORA_COUNTRY_CURRENCIES).sort());
+  assertEquals(codes, [...AFRICAN_COUNTRIES].sort());
+});
+
+Deno.test("the Korapay rails are a subset of Africa", () => {
+  for (const code of Object.keys(KORA_COUNTRY_CURRENCIES)) {
+    assertEquals(isAfricanCountry(code), true, code);
+  }
+});
+
+Deno.test("an African USD rail charges the dollar figure Flutterwave accepts", async () => {
+  const charge = await planCharge(100, "TZ", { rates: { USD: 1 } });
+  assertEquals(charge.currency, "USD");
+  assertEquals(charge.amountMajor, 1);
+  // Korapay has no USD channel, so Flutterwave is the only rail.
+  assertEquals(charge.providers, ["flutterwave"]);
+  assertEquals(charge.error, undefined);
+});
+
+Deno.test("a promo on an African USD rail falls under the gateway floor", async () => {
+  // The accepted cost of a $1 list price there: 85% off is $0.15.
+  const deepest = await planCharge(15, "TZ", { rates: { USD: 1 } });
+  assertEquals(deepest.error, "amount_below_minimum");
 });
 
 Deno.test("a plan with no overseas tier keeps its single price", () => {

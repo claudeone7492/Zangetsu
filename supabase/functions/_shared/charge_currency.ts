@@ -96,21 +96,30 @@ export function roundMajor(amount: number, currency: string): number {
 }
 
 /** Countries on a local African rail — the $1 tier. */
-export const KORAPAY_RAIL_COUNTRIES: ReadonlySet<string> = new Set(
-  Object.keys(KORA_COUNTRY_CURRENCIES),
-);
+/**
+ * African countries. The tier follows the continent, not the rail: Korapay
+ * charges $1 in the local currency where its account has it, and Flutterwave
+ * collects the same $1 in USD everywhere else on the continent.
+ */
+export const AFRICAN_COUNTRIES: ReadonlySet<string> = new Set([
+  "DZ", "AO", "BJ", "BW", "BF", "BI", "CV", "CM",
+  "CF", "TD", "KM", "CG", "CD", "CI", "DJ", "EG",
+  "GQ", "ER", "SZ", "ET", "GA", "GM", "GH", "GN",
+  "GW", "KE", "LS", "LR", "LY", "MG", "MW", "ML",
+  "MR", "MU", "MA", "MZ", "NA", "NE", "NG", "RW",
+  "ST", "SN", "SC", "SL", "SO", "ZA", "SS", "SD",
+  "TZ", "TG", "TN", "UG", "ZM", "ZW",
+]);
 
-/** True where the payer's rail is Korapay — the $1 tier. */
-export function isKorapayRail(country: string | null): boolean {
-  return KORAPAY_RAIL_COUNTRIES.has((country ?? "").trim().toUpperCase());
+export function isAfricanCountry(country: string | null): boolean {
+  return AFRICAN_COUNTRIES.has((country ?? "").trim().toUpperCase());
 }
 
 /**
- * The USD-cents list price for [country]. The tier follows the rail, not the
- * continent: Korapay's local currencies are $1, everything Flutterwave collects
- * is the overseas price. That price is deliberately higher so promo codes stay
- * payable — Flutterwave refuses any charge under one major unit, so an 85% code
- * against a $1 price lands on $0.15 and never starts.
+ * The USD-cents list price for [country]. African payers are $1 on either rail;
+ * the rest of the world pays the overseas tier, which is deliberately higher so
+ * promo codes stay payable — Flutterwave refuses any charge under one major
+ * unit, so an 85% code against a $1 price lands on $0.15 and never starts.
  *
  * [country] must be the network's answer (`resolvePaymentCountry`), not the
  * device locale: an English (US) phone in Lagos reports US. `public.list_plans`
@@ -121,7 +130,7 @@ export function listPriceCents(
   plan: { price_usd_cents: number; price_intl_usd_cents?: number | null },
   country: string | null,
 ): number {
-  if (isKorapayRail(country)) return plan.price_usd_cents;
+  if (isAfricanCountry(country)) return plan.price_usd_cents;
   return plan.price_intl_usd_cents ?? plan.price_usd_cents;
 }
 
