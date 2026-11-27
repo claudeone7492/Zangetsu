@@ -515,10 +515,8 @@ class _DetailScreenTvState extends State<DetailScreenTv> {
             availableCategories: availableCategories,
             coverUrl: detail.cover ?? widget.item.cover ?? '',
             coverHeaders: detail.coverHeaders ?? widget.item.coverHeaders,
-            resolve: (ep) => sl<CatalogueRepository>().sources(
-              ep.url,
-              sourceId: widget.item.sourceId,
-            ),
+            resolve: (ep) =>
+                resolveDownloadSources(ep.url, sourceId: widget.item.sourceId),
             resolveEpisodes: _episodesByCategory,
           ),
         );
@@ -562,10 +560,8 @@ class _DetailScreenTvState extends State<DetailScreenTv> {
           if ((detail.dubCount ?? 0) > 0) 'dub',
         ],
         resolveEpisodes: _episodesByCategory,
-        resolve: (episode) => sl<CatalogueRepository>().sources(
-          episode.url,
-          sourceId: item.sourceId,
-        ),
+        resolve: (episode) =>
+            resolveDownloadSources(episode.url, sourceId: item.sourceId),
       ),
     );
     if (res == null || !mounted) return;

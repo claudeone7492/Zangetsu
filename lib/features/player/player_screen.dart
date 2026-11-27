@@ -33,6 +33,7 @@ import 'player_engine_fallback.dart';
 import '../paywall/entitlement_gate.dart';
 import '../../core/download/download_manager.dart';
 import '../../core/download/download_record.dart';
+import '../../core/download/download_source_resolver.dart';
 import '../downloads/episode_download_icon.dart';
 import '../downloads/episode_download_source_sheet.dart';
 import '../../core/playback/playback_prefs.dart';
@@ -3142,6 +3143,27 @@ class _PlayerScreenState extends State<PlayerScreen> {
   String? _resolvedWatchDownloadId;
   bool _watchDownloadPending = false;
 
+  /// The catalogue id that keys this title's downloads, or null when the
+  /// catalogue can't answer. Never throws: the picker must open regardless.
+  Future<String?> _watchDownloadId(DownloadManager manager) async {
+    try {
+      final id = await resolveEpisodeDownloadShowId(
+        sourceId: widget.sourceId,
+        showUrl: widget.showUrl!,
+        knownId: widget.downloadShowId ?? _resolvedWatchDownloadId,
+        downloads: manager.all,
+        loadShowId: () async => (await sl<CatalogueRepository>().detail(
+          widget.showUrl!,
+          sourceId: widget.sourceId,
+        )).id,
+      );
+      if (mounted) setState(() => _resolvedWatchDownloadId = id);
+      return id;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _downloadWatchEpisode(int index) async {
     if (_watchDownloadPending ||
         index < 0 ||
@@ -3156,23 +3178,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
       final episode = _c.episodes[index];
       final category = _c.activeCategory;
       final episodeId = episode.id;
-      final downloadShowId = await resolveEpisodeDownloadShowId(
-        sourceId: widget.sourceId,
-        showUrl: widget.showUrl!,
-        knownId: widget.downloadShowId ?? _resolvedWatchDownloadId,
-        downloads: manager.all,
-        loadShowId: () async => (await sl<CatalogueRepository>().detail(
-          widget.showUrl!,
-          sourceId: widget.sourceId,
-        )).id,
-      );
-      if (!mounted) return;
-      setState(() => _resolvedWatchDownloadId = downloadShowId);
-      final record = manager.recordFor(
-        widget.sourceId,
-        downloadShowId,
-        episodeId,
-      );
+      // The title id only keys the queue entry. Fetching it before the picker
+      // decided whether the picker could open at all: one failed detail call
+      // and the viewer got "Couldn't load download options" with nothing to
+      // do about it. A miss now just opens the picker without the
+      // already-downloading shortcut, and the id is asked for again once a
+      // mirror is chosen.
+      final downloadShowId = await _watchDownloadId(manager);
+      final record = downloadShowId == null
+          ? null
+          : manager.recordFor(widget.sourceId, downloadShowId, episodeId);
       if (record != null &&
           {
             DownloadStatus.downloading,
@@ -3195,6 +3210,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           episode: episode,
           category: category,
           availableCategories: _c.categories,
+          initialSources: _c.state.sources,
           resolveEpisodes: (cut) async {
             final episodes = await sl<CatalogueRepository>().episodes(
               widget.showUrl ?? widget.sourceId,
@@ -3210,18 +3226,21 @@ class _PlayerScreenState extends State<PlayerScreen> {
             };
           },
           resolve: (ep) => sl.isRegistered<CatalogueRepository>()
-              ? sl<CatalogueRepository>().sources(
-                  ep.url,
-                  sourceId: widget.sourceId,
-                  fast: false,
-                )
+              ? resolveDownloadSources(ep.url, sourceId: widget.sourceId)
               : widget.resolveSources(ep.url),
         ),
       );
       if (choice == null || !mounted) return;
+      final showId = downloadShowId ?? await _watchDownloadId(manager);
+      if (showId == null) {
+        if (mounted) {
+          showAppToast(context, context.l10n.couldntLoadDownloadOptions);
+        }
+        return;
+      }
       await manager.enqueueSource(
         sourceId: widget.sourceId,
-        showId: downloadShowId,
+        showId: showId,
         showTitle: widget.showTitle ?? '',
         cover: widget.cover,
         coverHeaders: widget.coverHeaders,

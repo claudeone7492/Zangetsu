@@ -65,6 +65,7 @@ import '../../core/download/chapter_download.dart';
 import '../../core/download/chapter_download_store.dart';
 import '../../core/download/chapter_downloader.dart';
 import '../../core/download/download_manager.dart';
+import '../../core/download/download_source_resolver.dart';
 import '../../core/mode/content_mode.dart';
 import '../../core/models/episode.dart';
 import '../../core/models/episode_title.dart';
@@ -2121,10 +2122,8 @@ class _DetailViewState extends State<_DetailView>
             availableCategories: availableCategories,
             coverUrl: detail.cover ?? widget.item.cover ?? '',
             coverHeaders: detail.coverHeaders ?? widget.item.coverHeaders,
-            resolve: (ep) => sl<CatalogueRepository>().sources(
-              ep.url,
-              sourceId: widget.item.sourceId,
-            ),
+            resolve: (ep) =>
+                resolveDownloadSources(ep.url, sourceId: widget.item.sourceId),
             resolveEpisodes: _episodesByCategory,
           ),
         );
@@ -2220,10 +2219,8 @@ class _DetailViewState extends State<_DetailView>
           if ((detail.dubCount ?? 0) > 0) 'dub',
         ],
         resolveEpisodes: _episodesByCategory,
-        resolve: (episode) => sl<CatalogueRepository>().sources(
-          episode.url,
-          sourceId: item.sourceId,
-        ),
+        resolve: (episode) =>
+            resolveDownloadSources(episode.url, sourceId: item.sourceId),
       ),
     );
     if (res == null || !mounted) return;
