@@ -194,10 +194,16 @@ class SubscriptionRepository implements SubscriptionApi {
     return const [];
   }
 
-  /// Plans for the paywall.
+  /// Plans for the paywall, priced for this device's region.
+  ///
+  /// The server holds two tiers — $1 on the local African rails, $4.99
+  /// elsewhere — and picks by country. Without the hint it quotes the overseas
+  /// price, so the paywall must send one to avoid showing more than is charged.
   @override
   Future<List<SubscriptionPlan>> plans() async {
-    final res = await _rpc('list_plans', const {}, (d) {
+    final res = await _rpc('list_plans', {
+      'p_country': GeoPricing.countryCode(),
+    }, (d) {
       return _rows(
         d,
       ).map(SubscriptionPlan.fromMap).whereType<SubscriptionPlan>().toList();

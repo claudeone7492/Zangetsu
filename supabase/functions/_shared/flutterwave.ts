@@ -6,8 +6,8 @@
 // encryption key is intentionally unused: it exists for direct card charges
 // that handle PAN data, which this integration deliberately avoids.
 //
-// Amounts: the rest of the paywall works in cents, Flutterwave takes major
-// units ("3.49" for USD), so `amountToMajorUnits` is the one conversion point.
+// Amounts: Flutterwave takes major units ("3.49" for USD), so the caller
+// converts and this client never sees cents.
 
 import { safeEqual } from "./cors.ts";
 
@@ -72,12 +72,9 @@ function baseUrl(): string {
   return Deno.env.get("FLUTTERWAVE_BASE_URL") ?? DEFAULT_BASE;
 }
 
-export function amountToMajorUnits(amountCents: number): number {
-  return Math.round(amountCents) / 100;
-}
-
 export interface ChargeInit {
-  amountCents: number;
+  /** Major units of [currency]: 3.49 is $3.49, and must be at least 1. */
+  amountMajor: number;
   currency?: string;
   reference: string;
   customerName: string;
@@ -100,7 +97,7 @@ export async function initializeCharge(
 ): Promise<ChargeResult> {
   const body = {
     tx_ref: input.reference,
-    amount: amountToMajorUnits(input.amountCents),
+    amount: input.amountMajor,
     currency: input.currency ?? "USD",
     ...(input.redirectUrl ? { redirect_url: input.redirectUrl } : {}),
     customer: { email: input.customerEmail, name: input.customerName },
@@ -152,7 +149,8 @@ export async function initializeCharge(
 export interface VerifyResult {
   ok: boolean;
   status?: string;
-  amountCents?: number;
+  /** The verified amount, in major units of [currency]. */
+  amountMajor?: number;
   currency?: string;
   txRef?: string;
   raw?: unknown;
@@ -196,9 +194,7 @@ async function verifyAt(path: string): Promise<VerifyResult> {
     return {
       ok: true,
       status: data.status,
-      amountCents: Number.isFinite(amount)
-        ? Math.round(amount * 100)
-        : undefined,
+      amountMajor: Number.isFinite(amount) ? amount : undefined,
       currency: data.currency,
       txRef: data.tx_ref,
       raw,

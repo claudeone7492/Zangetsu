@@ -3,7 +3,6 @@ import {
   assertThrows,
 } from "https://deno.land/std/assert/mod.ts";
 import {
-  amountToMajorUnits,
   flutterwaveConfigured,
   resolveFlutterwaveMode,
   verifyWebhookHash,
@@ -24,14 +23,6 @@ Deno.test("an explicit mode is honoured, case/space insensitive", () => {
 Deno.test("an unrecognised mode throws rather than picking test", () => {
   assertThrows(() => resolveFlutterwaveMode("production"));
   assertThrows(() => resolveFlutterwaveMode("liv"));
-});
-
-// The paywall quotes cents; Flutterwave charges major units.
-Deno.test("amountToMajorUnits converts cents to the charged figure", () => {
-  assertEquals(amountToMajorUnits(349), 3.49);
-  assertEquals(amountToMajorUnits(76), 0.76);
-  assertEquals(amountToMajorUnits(100), 1);
-  assertEquals(amountToMajorUnits(0), 0);
 });
 
 Deno.test("webhook hash verification fails closed", () => {

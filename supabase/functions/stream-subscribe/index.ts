@@ -28,11 +28,10 @@ import {
   verifyTransactionByReference,
 } from "../_shared/flutterwave.ts";
 import {
-  type PaymentProvider,
-  providerForCountry,
   resolvePaymentCountry,
   resolvePaymentReturnUrl,
 } from "../_shared/payment_routing.ts";
+import { listPriceCents, planCharge } from "../_shared/charge_currency.ts";
 import {
   buildSubscriptionReference,
   loadLaunchDiscountPct,
@@ -107,6 +106,11 @@ Deno.serve(async (req) => {
   const plan = await loadPlan(db, body.planKey);
   if (!plan) return json({ error: "unknown_plan" }, 404);
 
+  // The charge currency follows the same country the rail is picked from, so
+  // the list price is chosen here rather than at plan load: local African
+  // rails are $1, everything else the overseas tier.
+  const country = await resolvePaymentCountry(req, body.country);
+
   // Resolve the promo server-side; the client's copy is only a preview. The
   // RPC is the same one the app calls, so both sides agree on the canonical
   // code, its discount, and whether this device has already consumed it.
@@ -135,7 +139,7 @@ Deno.serve(async (req) => {
 
   const launchDiscountPct = await loadLaunchDiscountPct(db);
   const pricing = priceStreamPlan(
-    plan.price_usd_cents,
+    listPriceCents(plan, country),
     launchDiscountPct,
     percentOff,
   );
@@ -199,14 +203,24 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Gateway selection is server-side: trusted edge country header, then the
-  // caller's IP, then the client's locale hint. Both gateways charge the same
-  // USD amount, so this only decides which rail can take the payment.
-  const country = await resolvePaymentCountry(req, body.country);
-  let provider = providerForCountry(country, {
+  // Gateway and currency selection are server-side: trusted edge country
+  // header, then the caller's IP, then the client's locale hint. Local African
+  // rails charge in their own currency; everything else is charged in USD by
+  // Flutterwave.
+  const chargePlan = await planCharge(amountCents, country, {
     korapayConfigured: korapayConfigured(),
     flutterwaveConfigured: flutterwaveConfigured(),
   });
+  if (chargePlan.error) {
+    return json({
+      error: chargePlan.error,
+      detail: chargePlan.detail,
+      currency: chargePlan.currency,
+      amount: chargePlan.amountMajor,
+      amountUsdCents: amountCents,
+    }, 409);
+  }
+  let provider = chargePlan.providers[0];
 
   const fee = platformFee(amountCents);
   const billingEmail = merchantEmail();
@@ -245,6 +259,8 @@ Deno.serve(async (req) => {
       receiver_session_id: session,
       product_type: plan.product_type,
       amount: amountCents,
+      charge_currency: chargePlan.currency,
+      charge_amount: chargePlan.amountMajor,
       customer_email: billingEmail,
       korapay_reference: reference,
       payment_provider: provider,
@@ -269,21 +285,17 @@ Deno.serve(async (req) => {
   const customerName = profile?.display_name ?? "Zangetsu User";
   const routedProvider = provider;
 
-  // If the routed gateway cannot start the charge (a country/currency it does
-  // not accept, or an outage), try the other configured gateway with the same
-  // reference. Only one checkout link reaches the user, and the webhook of the
-  // gateway that produced it is the only one allowed to settle it.
-  const candidates: PaymentProvider[] = provider === "korapay"
-    ? ["korapay", "flutterwave"]
-    : ["flutterwave", "korapay"];
+  // If the preferred gateway cannot start the charge (an outage, or a rail it
+  // no longer takes), try the other one with the same reference. Only one
+  // checkout link reaches the user, and the webhook of the gateway that
+  // produced it is the only one allowed to settle it.
+  const candidates = chargePlan.providers;
   let charge: ChargeResult | null = null;
   for (const candidate of candidates) {
-    if (candidate === "korapay" && !korapayConfigured()) continue;
-    if (candidate === "flutterwave" && !flutterwaveConfigured()) continue;
-
     charge = candidate === "korapay"
       ? await initializeKorapayCharge({
-        amountCents,
+        amountMajor: chargePlan.amountMajor,
+        currency: chargePlan.currency,
         reference,
         narration: "Zangetsu subscription",
         customerName,
@@ -294,7 +306,8 @@ Deno.serve(async (req) => {
         redirectUrl,
       })
       : await initializeFlutterwaveCharge({
-        amountCents,
+        amountMajor: chargePlan.amountMajor,
+        currency: chargePlan.currency,
         reference,
         narration: "Zangetsu subscription",
         customerName,
@@ -314,10 +327,13 @@ Deno.serve(async (req) => {
       "id",
       sub.id,
     );
-    return json(
-      { error: "checkout_init_failed", detail: charge?.error, reference },
-      502,
-    );
+    return json({
+      error: "checkout_init_failed",
+      detail: charge?.error,
+      reference,
+      currency: chargePlan.currency,
+      amount: chargePlan.amountMajor,
+    }, 502);
   }
 
   if (provider !== routedProvider) {
@@ -338,6 +354,8 @@ Deno.serve(async (req) => {
     listUsdCents: listCents,
     offerUsdCents: pricing.offerCents,
     amountUsdCents: amountCents,
+    chargeCurrency: chargePlan.currency,
+    chargeAmount: chargePlan.amountMajor,
     launchDiscountPct: pricing.launchDiscountPct,
     percentOff,
     platformFeeUsdCents: fee,
@@ -368,7 +386,7 @@ async function confirmPendingFlutterwavePayment(
   const { data: pending, error } = await db
     .from("payments")
     .select(
-      "id, payer_session_id, receiver_session_id, product_type, amount, status, subscription_id, promo_code_used, payment_provider, korapay_reference",
+      "id, payer_session_id, receiver_session_id, product_type, amount, charge_currency, charge_amount, status, subscription_id, promo_code_used, payment_provider, korapay_reference",
     )
     .eq("payer_session_id", session)
     .eq("status", "pending")
@@ -394,8 +412,16 @@ async function confirmPendingFlutterwavePayment(
     if (verified.txRef && verified.txRef !== payment.korapay_reference) {
       continue;
     }
+    const expectedAmount = Number(
+      payment.charge_amount ?? payment.amount / 100,
+    );
+    const expectedCurrency = (payment.charge_currency ?? "USD").toUpperCase();
+    if (verified.currency && verified.currency.toUpperCase() !== expectedCurrency) {
+      continue;
+    }
     if (
-      verified.amountCents != null && verified.amountCents !== payment.amount
+      verified.amountMajor != null &&
+      Math.abs(verified.amountMajor - expectedAmount) > 0.01
     ) {
       continue;
     }

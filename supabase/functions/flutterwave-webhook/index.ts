@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
   const { data: payment } = await db
     .from("payments")
     .select(
-      "id, payer_session_id, receiver_session_id, product_type, amount, status, subscription_id, promo_code_used, payment_provider",
+      "id, payer_session_id, receiver_session_id, product_type, amount, charge_currency, charge_amount, status, subscription_id, promo_code_used, payment_provider",
     )
     .eq("korapay_reference", reference)
     .maybeSingle();
@@ -105,13 +105,23 @@ Deno.serve(async (req) => {
     if (verified.txRef !== reference) {
       return json({ error: "reference_mismatch" }, 409);
     }
-    if (verified.currency && verified.currency.toUpperCase() !== "USD") {
+    // The charge is taken in the payer's local currency, so the verified
+    // currency and figure must match what this payment asked for — not the USD
+    // list price.
+    const expectedCurrency = ((payment as PaymentRow).charge_currency ?? "USD")
+      .toUpperCase();
+    const expectedAmount = Number(
+      (payment as PaymentRow).charge_amount ?? payment.amount / 100,
+    );
+    if (
+      verified.currency && verified.currency.toUpperCase() !== expectedCurrency
+    ) {
       await recordPaymentEvent(db, reference, eventType, data);
       return json({ received: true, status: "currency_mismatch" });
     }
     if (
-      verified.amountCents != null &&
-      verified.amountCents !== payment.amount
+      verified.amountMajor != null &&
+      Math.abs(verified.amountMajor - expectedAmount) > 0.01
     ) {
       await recordPaymentEvent(db, reference, eventType, data);
       return json({ received: true, status: "amount_mismatch" });

@@ -19,7 +19,11 @@ export interface PaymentRow {
   payer_session_id: string;
   receiver_session_id: string;
   product_type: string;
+  /** The USD-cents list price the subscription was sold at. */
   amount: number;
+  /** What the gateway was asked to charge, in [charge_currency]. */
+  charge_currency?: string | null;
+  charge_amount?: number | null;
   status: string;
   subscription_id: string | null;
   promo_code_used: string | null;

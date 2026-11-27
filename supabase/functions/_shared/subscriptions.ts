@@ -11,7 +11,10 @@ export interface PlanRow {
   product_type: string;
   entitlement: string;
   label: string;
+  /** List price on the local African rails, in USD cents. */
   price_usd_cents: number;
+  /** List price everywhere else, in USD cents. */
+  price_intl_usd_cents: number;
   period_days: number;
   trial_days: number;
   grace_days: number;
@@ -24,7 +27,7 @@ export async function loadPlan(
 ): Promise<PlanRow | null> {
   const { data } = await db
     .from("subscription_plans")
-    .select("key, product_type, entitlement, label, price_usd_cents, period_days, trial_days, grace_days, features")
+    .select("key, product_type, entitlement, label, price_usd_cents, price_intl_usd_cents, period_days, trial_days, grace_days, features")
     .eq("key", planKey)
     .eq("active", true)
     .maybeSingle();

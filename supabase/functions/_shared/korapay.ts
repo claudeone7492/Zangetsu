@@ -55,7 +55,8 @@ function baseUrl(): string {
 }
 
 export interface ChargeInit {
-  amountCents: number;
+  /** Major units of [currency]: 1017.16 is ₦1,017.16, not kobo. */
+  amountMajor: number;
   currency?: string;
   reference: string;
   customerName: string;
@@ -74,10 +75,10 @@ export interface ChargeResult {
   headers?: Record<string, string>;
 }
 
-/** Creates a hosted-checkout charge. Amount is in cents, as Korapay expects. */
+/** Creates a hosted-checkout charge. The amount is in major units. */
 export async function initializeCharge(input: ChargeInit): Promise<ChargeResult> {
   const body = {
-    amount: input.amountCents,
+    amount: input.amountMajor,
     currency: input.currency ?? "USD",
     reference: input.reference,
     narration: input.narration ?? "Zangetsu subscription",
