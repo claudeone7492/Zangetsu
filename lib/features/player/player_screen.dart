@@ -33,6 +33,7 @@ import 'player_engine_fallback.dart';
 import '../paywall/entitlement_gate.dart';
 import '../../core/download/download_manager.dart';
 import '../../core/download/download_record.dart';
+import '../../core/download/download_source_cache.dart';
 import '../../core/download/download_source_resolver.dart';
 import '../downloads/episode_download_icon.dart';
 import '../downloads/episode_download_source_sheet.dart';
@@ -1689,6 +1690,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
       engineFallback: _canTryOtherPlayer ? _engineFallback : null,
       forceInitialResume: widget.engineRecovery,
     )..init(startIndex);
+    unawaited(_warmDownloadIdentity());
 
     // Bind the wake-lock to playback now that the player exists: on while
     // playing/buffering, released on pause. Set up here (not _initInApp) because
@@ -3143,6 +3145,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
   String? _resolvedWatchDownloadId;
   bool _watchDownloadPending = false;
 
+  /// The exact list already handed to the download cache, so a rebuild that
+  /// re-emits the same sources does not re-probe any sizes.
+  List<VideoSource>? _cachedDownloadSources;
+  final Set<String> _downloadPrefetched = {};
+
   /// The catalogue id that keys this title's downloads, or null when the
   /// catalogue can't answer. Never throws: the picker must open regardless.
   Future<String?> _watchDownloadId(DownloadManager manager) async {
@@ -3157,11 +3164,85 @@ class _PlayerScreenState extends State<PlayerScreen> {
           sourceId: widget.sourceId,
         )).id,
       );
+      final showUrl = widget.showUrl;
+      if (showUrl != null) {
+        DownloadSourceCache.instance.storeShowId(widget.sourceId, showUrl, id);
+      }
       if (mounted) setState(() => _resolvedWatchDownloadId = id);
       return id;
     } catch (_) {
       return null;
     }
+  }
+
+  /// Playback already paid for these mirrors, so hand them to the download
+  /// cache and warm their sizes: tapping Download should open a ready grid,
+  /// not a spinner.
+  void _cacheDownloadSources(PlayerState state) {
+    final eps = _c.episodes;
+    final index = state.currentIndex;
+    if (state.sources.isEmpty || index < 0 || index >= eps.length) return;
+    if (identical(_cachedDownloadSources, state.sources)) return;
+    _cachedDownloadSources = state.sources;
+    final episode = eps[index];
+    DownloadSourceCache.instance.storeSources(episode.url, state.sources);
+    unawaited(
+      warmDownloadSizes(state.sources, runtimeMinutes: episode.runtimeMinutes),
+    );
+    _prefetchNextDownload(eps, index);
+  }
+
+  /// "Download the next one" is what a viewer moving through a season almost
+  /// always means, and one extra resolve is cheap next to a spinner. Once per
+  /// URL, and delayed so it never competes with playback start.
+  void _prefetchNextDownload(List<Episode> eps, int index) {
+    final next = index + 1;
+    if (next >= eps.length) return;
+    final episode = eps[next];
+    if (!_downloadPrefetched.add(episode.url)) return;
+    unawaited(
+      Future<void>.delayed(const Duration(seconds: 4)).then((_) async {
+        if (!mounted) return;
+        await preloadDownloadSources(
+          episode.url,
+          sourceId: widget.sourceId,
+          runtimeMinutes: episode.runtimeMinutes,
+        );
+      }),
+    );
+  }
+
+  /// Learn the queue title id while the viewer watches, so the Download tap
+  /// never has to wait on a detail call.
+  Future<void> _warmDownloadIdentity() async {
+    if (widget.localOnly || widget.downloadShowId != null) return;
+    final showUrl = widget.showUrl;
+    if (showUrl == null) return;
+    if (DownloadSourceCache.instance.showId(widget.sourceId, showUrl) != null) {
+      return;
+    }
+    await _watchDownloadId(sl<DownloadManager>());
+  }
+
+  /// The queue title id when it is already known — from the caller, a live
+  /// session, the cache, or an existing queue entry. Synchronous on purpose:
+  /// anything slower would sit between the tap and the picker.
+  String? _knownDownloadId(DownloadManager manager) {
+    final known = widget.downloadShowId ?? _resolvedWatchDownloadId;
+    if (known != null && known.isNotEmpty) return known;
+    final showUrl = widget.showUrl;
+    if (showUrl == null) return null;
+    final cached = DownloadSourceCache.instance.showId(
+      widget.sourceId,
+      showUrl,
+    );
+    if (cached != null && cached.isNotEmpty) return cached;
+    for (final record in manager.all) {
+      if (record.sourceId == widget.sourceId && record.showUrl == showUrl) {
+        return record.showId;
+      }
+    }
+    return null;
   }
 
   Future<void> _downloadWatchEpisode(int index) async {
@@ -3178,13 +3259,18 @@ class _PlayerScreenState extends State<PlayerScreen> {
       final episode = _c.episodes[index];
       final category = _c.activeCategory;
       final episodeId = episode.id;
-      // The title id only keys the queue entry. Fetching it before the picker
-      // decided whether the picker could open at all: one failed detail call
-      // and the viewer got "Couldn't load download options" with nothing to
-      // do about it. A miss now just opens the picker without the
-      // already-downloading shortcut, and the id is asked for again once a
-      // mirror is chosen.
-      final downloadShowId = await _watchDownloadId(manager);
+      // Mirrors already resolved for this episode (by playback or a preload)
+      // paint the grid on the first frame. The player's live list only belongs
+      // to the episode that is actually playing.
+      final cachedSources = DownloadSourceCache.instance.sources(episode.url);
+      final liveSources = index == _c.state.currentIndex
+          ? _c.state.sources
+          : const <VideoSource>[];
+      // The title id only keys the queue entry, and resolving it used to sit
+      // between the tap and the picker: one failed detail call and the viewer
+      // got "Couldn't load download options" with nothing to do about it.
+      // Use it only when it is already known, and fetch it after the pick.
+      final downloadShowId = _knownDownloadId(manager);
       final record = downloadShowId == null
           ? null
           : manager.recordFor(widget.sourceId, downloadShowId, episodeId);
@@ -3210,7 +3296,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           episode: episode,
           category: category,
           availableCategories: _c.categories,
-          initialSources: _c.state.sources,
+          initialSources: cachedSources ?? liveSources,
           resolveEpisodes: (cut) async {
             final episodes = await sl<CatalogueRepository>().episodes(
               widget.showUrl ?? widget.sourceId,
@@ -3228,6 +3314,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
           resolve: (ep) => sl.isRegistered<CatalogueRepository>()
               ? resolveDownloadSources(ep.url, sourceId: widget.sourceId)
               : widget.resolveSources(ep.url),
+          reload: (ep) => resolveDownloadSources(
+            ep.url,
+            sourceId: widget.sourceId,
+            refresh: true,
+          ),
         ),
       );
       if (choice == null || !mounted) return;
@@ -4053,6 +4144,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
             if (state.error != null && !_c.everStarted) {
               _handleDeadEnd(state.error!);
             }
+            _cacheDownloadSources(state);
           },
           builder: (context, state) {
             // Inside the PiP window: render ONLY the video — no overlay, no

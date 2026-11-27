@@ -293,9 +293,18 @@ class _DownloadSheetState extends State<_DownloadSheet> {
     _sizePerEpisode = null;
     _sizeSolid = false;
     if (src == null) return;
-    estimateEpisodeBytes(src, runtimeMinutes: first?.runtimeMinutes).then((
+    final source = src;
+    final cache = DownloadSourceCache.instance;
+    if (cache.hasSize(source.url)) {
+      final est = cache.size(source.url);
+      _sizePerEpisode = est?.bytes;
+      _sizeSolid = est?.solid ?? false;
+      return;
+    }
+    estimateEpisodeBytes(source, runtimeMinutes: first?.runtimeMinutes).then((
       est,
     ) {
+      cache.storeSize(source.url, est);
       if (!mounted || key != _sizeKey) return;
       setState(() {
         _sizePerEpisode = est?.bytes;

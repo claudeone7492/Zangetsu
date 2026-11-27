@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:watch_app/core/app_mode.dart';
 import 'package:watch_app/core/di/injector.dart';
 import 'package:watch_app/core/download/download_size_estimate.dart';
+import 'package:watch_app/core/download/download_source_cache.dart';
 import 'package:watch_app/core/models/episode.dart';
 import 'package:watch_app/core/models/video_source.dart';
 import 'package:watch_app/core/download/download_record.dart';
@@ -25,6 +26,7 @@ VideoSource _source(String url, String quality) =>
 Future<void> _openSheet(
   WidgetTester tester, {
   required Future<List<VideoSource>> Function(Episode) resolve,
+  Future<List<VideoSource>> Function(Episode)? reload,
   List<VideoSource> initialSources = const [],
   Future<SizeEstimate?> Function(VideoSource source, int? runtimeMinutes)?
   estimateSize,
@@ -41,8 +43,11 @@ Future<void> _openSheet(
                 category: 'sub',
                 episode: _episode,
                 availableCategories: const ['sub'],
-                resolveEpisodes: (_) async => {1: const [_episode]},
+                resolveEpisodes: (_) async => {
+                  1: const [_episode],
+                },
                 resolve: resolve,
+                reload: reload,
                 initialSources: initialSources,
                 estimateSize:
                     estimateSize ??
@@ -60,8 +65,14 @@ Future<void> _openSheet(
 }
 
 void main() {
-  setUp(() => sl.registerSingleton<AppMode>(const AppMode(isTv: false)));
-  tearDown(() => sl.reset());
+  setUp(() {
+    DownloadSourceCache.instance.clear();
+    sl.registerSingleton<AppMode>(const AppMode(isTv: false));
+  });
+  tearDown(() {
+    DownloadSourceCache.instance.clear();
+    sl.reset();
+  });
 
   testWidgets('qualities lay out as grid tiles, not a full-width list', (
     tester,
@@ -89,8 +100,10 @@ void main() {
         _source('https://cdn.test/1.mp4', '1080p'),
         _source('https://cdn.test/2.mp4', '720p'),
       ],
-      estimateSize: (source, _) async =>
-          (bytes: source.quality == '1080p' ? 200 << 20 : 60 << 20, solid: true),
+      estimateSize: (source, _) async => (
+        bytes: source.quality == '1080p' ? 200 << 20 : 60 << 20,
+        solid: true,
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -201,6 +214,49 @@ void main() {
     expect(find.text('1 sources'), findsOneWidget);
   });
 
+  testWidgets('a size measured during playback paints with no extra probe', (
+    tester,
+  ) async {
+    var probes = 0;
+    DownloadSourceCache.instance.storeSize('https://cdn.test/1.mp4', (
+      bytes: 150 << 20,
+      solid: true,
+    ));
+
+    await _openSheet(
+      tester,
+      resolve: (_) async => [_source('https://cdn.test/1.mp4', '1080p')],
+      estimateSize: (_, _) async {
+        probes++;
+        return null;
+      },
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('~150 MB'), findsOneWidget);
+    expect(probes, 0);
+  });
+
+  testWidgets('refresh re-resolves through the reload path', (tester) async {
+    var reloads = 0;
+    await _openSheet(
+      tester,
+      resolve: (_) async => [_source('https://cdn.test/1.mp4', '720p')],
+      reload: (_) async {
+        reloads++;
+        return [_source('https://cdn.test/1.mp4', '1080p')];
+      },
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('720p'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.refresh_rounded));
+    await tester.pumpAndSettle();
+
+    expect(reloads, 1);
+    expect(find.text('1080p'), findsOneWidget);
+  });
+
   testWidgets('subtitle and audio badges ride along with the quality', (
     tester,
   ) async {
@@ -233,18 +289,23 @@ void main() {
           body: Builder(
             builder: (context) => ElevatedButton(
               onPressed: () async {
-                picked = await showModalBottomSheet<SingleEpisodeDownloadChoice>(
-                  context: context,
-                  builder: (_) => EpisodeDownloadSourceSheet(
-                    title: 'Some Show',
-                    category: 'sub',
-                    episode: _episode,
-                    availableCategories: const ['sub'],
-                    resolveEpisodes: (_) async => {1: const [_episode]},
-                    resolve: (_) async => [_source('https://cdn.test/1.mp4', '1080p')],
-                    estimateSize: (_, _) async => null,
-                  ),
-                );
+                picked =
+                    await showModalBottomSheet<SingleEpisodeDownloadChoice>(
+                      context: context,
+                      builder: (_) => EpisodeDownloadSourceSheet(
+                        title: 'Some Show',
+                        category: 'sub',
+                        episode: _episode,
+                        availableCategories: const ['sub'],
+                        resolveEpisodes: (_) async => {
+                          1: const [_episode],
+                        },
+                        resolve: (_) async => [
+                          _source('https://cdn.test/1.mp4', '1080p'),
+                        ],
+                        estimateSize: (_, _) async => null,
+                      ),
+                    );
               },
               child: const Text('open'),
             ),

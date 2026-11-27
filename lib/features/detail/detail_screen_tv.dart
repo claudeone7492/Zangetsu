@@ -562,6 +562,11 @@ class _DetailScreenTvState extends State<DetailScreenTv> {
         resolveEpisodes: _episodesByCategory,
         resolve: (episode) =>
             resolveDownloadSources(episode.url, sourceId: item.sourceId),
+        reload: (episode) => resolveDownloadSources(
+          episode.url,
+          sourceId: item.sourceId,
+          refresh: true,
+        ),
       ),
     );
     if (res == null || !mounted) return;
@@ -649,9 +654,40 @@ class _DetailScreenTvState extends State<DetailScreenTv> {
       );
   }
 
+  final Set<String> _downloadPrefetched = {};
+
+  void _warmDownloadCache(MediaDetail? detail, String category) {
+    if (detail == null) return;
+    final item = widget.item;
+    DownloadSourceCache.instance.storeShowId(
+      item.sourceId,
+      item.url,
+      detail.id.isNotEmpty ? detail.id : item.id,
+    );
+    final episodes = detail.episodes;
+    if (episodes.isEmpty) return;
+    final episode = episodes.first;
+    if (!_downloadPrefetched.add('${item.sourceId}|${episode.url}|$category')) {
+      return;
+    }
+    unawaited(
+      preloadDownloadSources(
+        episode.url,
+        sourceId: item.sourceId,
+        runtimeMinutes: episode.runtimeMinutes,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DetailCubit, DetailState>(
+    return BlocConsumer<DetailCubit, DetailState>(
+      // Same warm-up as the phone page: the queue id and the first episode's
+      // mirrors are ready before anyone taps Download.
+      listenWhen: (a, b) =>
+          a.detail?.id != b.detail?.id || a.category != b.category,
+      listener: (context, state) =>
+          _warmDownloadCache(state.detail, state.category),
       builder: (context, state) {
         if (state.status == DetailStatus.loading) {
           return Scaffold(

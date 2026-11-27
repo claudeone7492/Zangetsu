@@ -65,6 +65,7 @@ import '../../core/download/chapter_download.dart';
 import '../../core/download/chapter_download_store.dart';
 import '../../core/download/chapter_downloader.dart';
 import '../../core/download/download_manager.dart';
+import '../../core/download/download_source_cache.dart';
 import '../../core/download/download_source_resolver.dart';
 import '../../core/mode/content_mode.dart';
 import '../../core/models/episode.dart';
@@ -2070,6 +2071,37 @@ class _DetailViewState extends State<_DetailView>
 
   // ── Downloads ─────────────────────────────────────────────────────────────
 
+  /// Fill the download cache while the page is open: the queue title id
+  /// always, and the mirrors too when this is a single-episode title (the one
+  /// case where Download goes straight to the server picker).
+  void _warmDownloadCache(MediaDetail? detail, String category) {
+    if (detail == null) return;
+    final item = widget.item;
+    DownloadSourceCache.instance.storeShowId(
+      item.sourceId,
+      item.url,
+      detail.id.isNotEmpty ? detail.id : item.id,
+    );
+    final episodes = detail.episodes;
+    if (episodes.isEmpty) return;
+    // The batch sheet lists a season's mirrors from its first episode, and a
+    // single-episode title goes straight to the picker with the same one, so
+    // this is the episode worth having ready either way.
+    final episode = episodes.first;
+    if (!_downloadPrefetched.add('${item.sourceId}|${episode.url}|$category')) {
+      return;
+    }
+    unawaited(
+      preloadDownloadSources(
+        episode.url,
+        sourceId: item.sourceId,
+        runtimeMinutes: episode.runtimeMinutes,
+      ),
+    );
+  }
+
+  final Set<String> _downloadPrefetched = {};
+
   /// The main Download button. A single movie/episode goes straight to the
   /// server picker; a multi-episode title opens the batch sheet (season chips +
   /// tappable episode selection + quality).
@@ -2219,8 +2251,14 @@ class _DetailViewState extends State<_DetailView>
           if ((detail.dubCount ?? 0) > 0) 'dub',
         ],
         resolveEpisodes: _episodesByCategory,
+        initialSources: DownloadSourceCache.instance.sources(ep.url) ?? const [],
         resolve: (episode) =>
             resolveDownloadSources(episode.url, sourceId: item.sourceId),
+        reload: (episode) => resolveDownloadSources(
+          episode.url,
+          sourceId: item.sourceId,
+          refresh: true,
+        ),
       ),
     );
     if (res == null || !mounted) return;
@@ -2297,7 +2335,16 @@ class _DetailViewState extends State<_DetailView>
             ),
           Material(
             type: MaterialType.transparency,
-            child: BlocBuilder<DetailCubit, DetailState>(
+            child: BlocConsumer<DetailCubit, DetailState>(
+              // The download picker should never open on a spinner. The title
+              // id and (for a single-episode title) the episode's mirrors are
+              // warmed the moment the detail lands, which is long before
+              // anyone taps Download.
+              listenWhen: (a, b) =>
+                  a.detail?.id != b.detail?.id ||
+                  a.category != b.category,
+              listener: (context, state) =>
+                  _warmDownloadCache(state.detail, state.category),
               builder: (context, state) {
                 if (state.status == DetailStatus.loading) {
                   // The row that was tapped already carried a title, a cover and a

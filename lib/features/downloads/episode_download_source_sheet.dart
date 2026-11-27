@@ -7,6 +7,7 @@ import '../../core/download/download_manager.dart';
 import '../../core/download/download_prefs.dart';
 import '../../core/download/download_record.dart';
 import '../../core/download/download_size_estimate.dart';
+import '../../core/download/download_source_cache.dart';
 import '../../core/models/episode.dart';
 import '../../core/models/video_source.dart';
 import '../../core/storage/storage_info.dart';
@@ -93,6 +94,7 @@ class EpisodeDownloadSourceSheet extends StatefulWidget {
     required this.episode,
     required this.availableCategories,
     required this.resolveEpisodes,
+    this.reload,
     this.initialSources = const [],
     this.estimateSize,
   });
@@ -103,6 +105,11 @@ class EpisodeDownloadSourceSheet extends StatefulWidget {
   final List<String> availableCategories;
   final Future<Map<int, List<Episode>>> Function(String) resolveEpisodes;
   final Future<List<VideoSource>> Function(Episode) resolve;
+
+  /// Resolve again, ignoring anything cached. Used by the refresh action and
+  /// by Retry after a failure; defaults to [resolve] when the caller has no
+  /// cache-aware path of its own.
+  final Future<List<VideoSource>> Function(Episode)? reload;
 
   /// Sources the caller already resolved (the player's current list). Seeds
   /// the grid so it is tappable while the fresh resolve runs.
@@ -140,11 +147,11 @@ class _EpisodeDownloadSourceSheetState
     _load(_category);
   }
 
-  Future<void> _load(String category) async {
+  Future<void> _load(String category, {bool refresh = false}) async {
     final request = ++_request;
-    final seeded = category == widget.category
-        ? _prepare(widget.initialSources, category)
-        : const <VideoSource>[];
+    final seeded = refresh || category != widget.category
+        ? const <VideoSource>[]
+        : _prepare(widget.initialSources, category);
     setState(() {
       _category = category;
       _episode = null;
@@ -153,6 +160,7 @@ class _EpisodeDownloadSourceSheetState
       _loading = seeded.isEmpty;
       _loadFailed = false;
     });
+    _seedSizes(seeded);
     if (seeded.isNotEmpty) unawaited(_estimateSizes(seeded));
 
     try {
@@ -168,9 +176,12 @@ class _EpisodeDownloadSourceSheetState
         if (mounted && request == _request) setState(() => _loading = false);
         return;
       }
-      final sources = await widget.resolve(episode);
+      final sources = await (refresh
+          ? (widget.reload ?? widget.resolve)(episode)
+          : widget.resolve(episode));
       if (!mounted || request != _request) return;
       final resolved = _prepare(sources, category);
+      _seedSizes(resolved);
       setState(() {
         _episode = episode;
         // A failed sweep must not wipe a list the caller already handed us.
@@ -208,8 +219,20 @@ class _EpisodeDownloadSourceSheetState
     return [for (final entry in indexed) entry.$2];
   }
 
+  /// Paint the sizes already measured during playback; the rest are probed.
+  void _seedSizes(List<VideoSource> sources) {
+    final cache = DownloadSourceCache.instance;
+    for (final source in sources) {
+      if (_sizes.containsKey(source.url)) continue;
+      if (cache.hasSize(source.url)) {
+        _sizes[source.url] = cache.size(source.url);
+      }
+    }
+  }
+
   /// Fill the size column, four probes at a time. Each probe is a HEAD or a
-  /// manifest read; the grid stays interactive throughout.
+  /// manifest read; the grid stays interactive throughout. Results land in
+  /// [DownloadSourceCache] too, so the next open is instant.
   Future<void> _estimateSizes(List<VideoSource> sources) async {
     final request = _request;
     final runtime = _episode?.runtimeMinutes ?? widget.episode.runtimeMinutes;
@@ -218,6 +241,13 @@ class _EpisodeDownloadSourceSheetState
       while (next < sources.length) {
         final source = sources[next++];
         if (_sizes.containsKey(source.url)) continue;
+        final cache = DownloadSourceCache.instance;
+        if (cache.hasSize(source.url)) {
+          if (mounted && request == _request) {
+            setState(() => _sizes[source.url] = cache.size(source.url));
+          }
+          continue;
+        }
         SizeEstimate? estimate;
         try {
           final probe = widget.estimateSize;
@@ -227,6 +257,7 @@ class _EpisodeDownloadSourceSheetState
         } catch (_) {
           estimate = null;
         }
+        cache.storeSize(source.url, estimate);
         if (!mounted || request != _request) return;
         setState(() => _sizes[source.url] = estimate);
       }
@@ -341,7 +372,9 @@ class _EpisodeDownloadSourceSheetState
                     ),
                   ),
                   IconButton(
-                    onPressed: _loading ? null : () => _load(_category),
+                    onPressed: _loading
+                        ? null
+                        : () => _load(_category, refresh: true),
                     tooltip: context.l10n.refresh,
                     icon: _loading
                         ? SizedBox(
@@ -437,16 +470,14 @@ class _EpisodeDownloadSourceSheetState
                   _loadFailed
                       ? context.l10n.couldntLoadDownloadOptions
                       : context.l10n.noDownloadSourcesFound,
-                  style: AppText.body.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  style: AppText.body.copyWith(color: AppColors.textSecondary),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
-            onPressed: _loading ? null : () => _load(_category),
+            onPressed: _loading ? null : () => _load(_category, refresh: true),
             icon: const Icon(Icons.refresh_rounded, size: 18),
             label: Text(context.l10n.retry),
           ),
@@ -476,7 +507,10 @@ class _EpisodeDownloadSourceSheetState
     final label = _sourceName(context.l10n, source, i);
     final badge = _qualityBadge(context.l10n, source, i);
     if (label != badge) return label;
-    final host = (Uri.tryParse(source.url)?.host ?? '').replaceFirst('www.', '');
+    final host = (Uri.tryParse(source.url)?.host ?? '').replaceFirst(
+      'www.',
+      '',
+    );
     return host.isNotEmpty ? host : context.l10n.serverNumber(i + 1);
   }
 
