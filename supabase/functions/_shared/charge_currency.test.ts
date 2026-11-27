@@ -2,7 +2,7 @@ import { assertEquals } from "https://deno.land/std/assert/mod.ts";
 import {
   currencyForCountry,
   decimalsFor,
-  isAfricanRail,
+  isKorapayRail,
   listPriceCents,
   planCharge,
   rateFor,
@@ -10,6 +10,7 @@ import {
   toMajorUnits,
   usdRates,
 } from "./charge_currency.ts";
+import { KORA_COUNTRY_CURRENCIES } from "./payment_routing.ts";
 
 Deno.test("country decides the charge currency, unknown falls back to USD", () => {
   assertEquals(currencyForCountry("NG"), "NGN");
@@ -100,7 +101,7 @@ Deno.test("an unconfigured gateway is dropped from the order", async () => {
   assertEquals(neither.error, "currency_not_supported");
 });
 
-Deno.test("the rail picks the tier: African rails $1, the rest $6.99", () => {
+Deno.test("the rail picks the tier: Korapay rails $1, Flutterwave $6.99", () => {
   const plan = { price_usd_cents: 100, price_intl_usd_cents: 699 };
   assertEquals(listPriceCents(plan, "NG"), 100);
   assertEquals(listPriceCents(plan, "sn"), 100);
@@ -108,8 +109,21 @@ Deno.test("the rail picks the tier: African rails $1, the rest $6.99", () => {
   assertEquals(listPriceCents(plan, "DE"), 699);
   // Unknown country quotes the higher price: never show less than is charged.
   assertEquals(listPriceCents(plan, null), 699);
-  assertEquals(isAfricanRail("KE"), true);
-  assertEquals(isAfricanRail("EG"), false);
+  assertEquals(isKorapayRail("KE"), true);
+  assertEquals(isKorapayRail("EG"), false);
+});
+
+Deno.test("the SQL rail list matches the edge rail map", async () => {
+  const sql = await Deno.readTextFile(
+    new URL(
+      "../../migrations/20261127_paywall_country_from_request.sql",
+      import.meta.url,
+    ),
+  );
+  const start = sql.indexOf("is_korapay_rail_country");
+  const block = sql.slice(start, sql.indexOf("drop function if exists", start));
+  const codes = [...block.matchAll(/'([A-Z]{2})'/g)].map((m) => m[1]).sort();
+  assertEquals(codes, Object.keys(KORA_COUNTRY_CURRENCIES).sort());
 });
 
 Deno.test("a plan with no overseas tier keeps its single price", () => {

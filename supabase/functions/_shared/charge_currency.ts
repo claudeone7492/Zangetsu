@@ -96,26 +96,32 @@ export function roundMajor(amount: number, currency: string): number {
 }
 
 /** Countries on a local African rail — the $1 tier. */
-export const AFRICAN_RAIL_COUNTRIES: ReadonlySet<string> = new Set(
+export const KORAPAY_RAIL_COUNTRIES: ReadonlySet<string> = new Set(
   Object.keys(KORA_COUNTRY_CURRENCIES),
 );
 
-export function isAfricanRail(country: string | null): boolean {
-  return AFRICAN_RAIL_COUNTRIES.has((country ?? "").trim().toUpperCase());
+/** True where the payer's rail is Korapay — the $1 tier. */
+export function isKorapayRail(country: string | null): boolean {
+  return KORAPAY_RAIL_COUNTRIES.has((country ?? "").trim().toUpperCase());
 }
 
 /**
- * The USD-cents list price for [country]. Local African rails pay $1; the rest
- * of the world pays the overseas tier. That tier is deliberately higher so
- * promo codes stay payable: Flutterwave refuses any charge under one major
- * unit, so an 85% code against a $1 price lands on $0.15 and never starts.
- * Kept in step with `public.list_plans`, which quotes the same figure.
+ * The USD-cents list price for [country]. The tier follows the rail, not the
+ * continent: Korapay's local currencies are $1, everything Flutterwave collects
+ * is the overseas price. That price is deliberately higher so promo codes stay
+ * payable — Flutterwave refuses any charge under one major unit, so an 85% code
+ * against a $1 price lands on $0.15 and never starts.
+ *
+ * [country] must be the network's answer (`resolvePaymentCountry`), not the
+ * device locale: an English (US) phone in Lagos reports US. `public.list_plans`
+ * quotes the same figure from the same header, so the paywall and the charge
+ * cannot disagree.
  */
 export function listPriceCents(
   plan: { price_usd_cents: number; price_intl_usd_cents?: number | null },
   country: string | null,
 ): number {
-  if (isAfricanRail(country)) return plan.price_usd_cents;
+  if (isKorapayRail(country)) return plan.price_usd_cents;
   return plan.price_intl_usd_cents ?? plan.price_usd_cents;
 }
 
